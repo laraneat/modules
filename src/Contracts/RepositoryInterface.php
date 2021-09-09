@@ -2,6 +2,8 @@
 
 namespace Laraneat\Modules\Contracts;
 
+use Illuminate\Filesystem\Filesystem;
+use Laraneat\Modules\Collection;
 use Laraneat\Modules\Exceptions\ModuleNotFoundException;
 use Laraneat\Modules\Module;
 
@@ -10,113 +12,118 @@ interface RepositoryInterface
     /**
      * Get all modules.
      *
-     * @return mixed
+     * @return array
      */
-    public function all();
+    public function all(): array;
 
     /**
      * Get cached modules.
      *
      * @return array
      */
-    public function getCached();
+    public function getCached(): array;
 
     /**
      * Scan & get all available modules.
      *
      * @return array
      */
-    public function scan();
+    public function scan(): array;
 
     /**
      * Get modules as modules collection instance.
      *
-     * @return \Laraneat\Modules\Collection
+     * @return Collection
      */
-    public function toCollection();
+    public function toCollection(): Collection;
 
     /**
      * Get scanned paths.
      *
      * @return array
      */
-    public function getScanPaths();
+    public function getScanPaths(): array;
 
     /**
      * Get list of enabled modules.
      *
-     * @return mixed
+     * @return array
      */
-    public function allEnabled();
+    public function allEnabled(): array;
 
     /**
      * Get list of disabled modules.
      *
-     * @return mixed
+     * @return array
      */
-    public function allDisabled();
+    public function allDisabled(): array;
 
     /**
      * Get count from all modules.
      *
      * @return int
      */
-    public function count();
+    public function count(): int;
 
     /**
      * Get all ordered modules.
+     *
      * @param string $direction
-     * @return mixed
+     *
+     * @return array
      */
-    public function getOrdered($direction = 'asc');
+    public function getOrdered(string $direction = 'asc'): array;
 
     /**
      * Get modules by the given status.
      *
-     * @param int $status
+     * @param bool $status
      *
      * @return mixed
      */
-    public function getByStatus($status);
+    public function getByStatus(bool $status): array;
 
     /**
      * Find a specific module.
      *
-     * @param $name
+     * @param string $moduleName
+     *
      * @return Module|null
      */
-    public function find(string $name);
+    public function find(string $moduleName): ?Module;
 
     /**
      * Find all modules that are required by a module. If the module cannot be found, throw an exception.
      *
-     * @param $name
+     * @param string $moduleName
+     *
      * @return array
      * @throws ModuleNotFoundException
      */
-    public function findRequirements($name): array;
+    public function findRequirements(string $moduleName): array;
 
     /**
      * Find a specific module. If there return that, otherwise throw exception.
      *
-     * @param $name
+     * @param string $moduleName
      *
-     * @return mixed
+     * @return Module
      */
-    public function findOrFail(string $name);
+    public function findOrFail(string $moduleName): Module;
 
-    public function getModulePath($moduleName);
+    public function getModulePath(string $moduleName);
 
     /**
-     * @return \Illuminate\Filesystem\Filesystem
+     * @return Filesystem
      */
-    public function getFiles();
+    public function getFiles(): Filesystem;
 
     /**
      * Get a specific config data from a configuration file.
-     * @param string $key
      *
-     * @param string|null $default
+     * @param string $key
+     * @param mixed $default
+     *
      * @return mixed
      */
     public function config(string $key, $default = null);
@@ -126,11 +133,13 @@ interface RepositoryInterface
      *
      * @return string
      */
-    public function getPath() : string;
+    public function getPath(): string;
 
     /**
      * Find a specific module by its alias.
+     *
      * @param string $alias
+     *
      * @return Module|void
      */
     public function findByAlias(string $alias);
@@ -148,32 +157,39 @@ interface RepositoryInterface
     /**
      * Get asset path for a specific module.
      *
-     * @param string $module
+     * @param string $moduleName
+     *
      * @return string
      */
-    public function assetPath(string $module): string;
+    public function assetPath(string $moduleName): string;
 
     /**
      * Delete a specific module.
-     * @param string $module
+     *
+     * @param string $moduleName
+     *
      * @return bool
-     * @throws \Laraneat\Modules\Exceptions\ModuleNotFoundException
+     * @throws ModuleNotFoundException
      */
-    public function delete(string $module): bool;
+    public function delete(string $moduleName): bool;
 
     /**
      * Determine whether the given module is activated.
-     * @param string $name
+     *
+     * @param string $moduleName
+     *
      * @return bool
      * @throws ModuleNotFoundException
      */
-    public function isEnabled(string $name) : bool;
+    public function isEnabled(string $moduleName): bool;
 
     /**
      * Determine whether the given module is not activated.
-     * @param string $name
+     *
+     * @param string $moduleName
+     *
      * @return bool
      * @throws ModuleNotFoundException
      */
-    public function isDisabled(string $name) : bool;
+    public function isDisabled(string $moduleName): bool;
 }

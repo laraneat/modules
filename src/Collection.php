@@ -32,7 +32,7 @@ class Collection extends BaseCollection
                 return $attributes;
             }
 
-            return $value instanceof Arrayable ? $value->toArray() : $value;
+            return $value instanceof Arrayable ? $value->toArray(): $value;
         }, $this->items);
     }
 }

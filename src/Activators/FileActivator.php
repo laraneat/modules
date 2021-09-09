@@ -5,7 +5,6 @@ namespace Laraneat\Modules\Activators;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use Laraneat\Modules\Contracts\ActivatorInterface;
 use Laraneat\Modules\Module;
@@ -159,8 +158,8 @@ class FileActivator implements ActivatorInterface
 
     /**
      * Reads the json file that contains the activation statuses.
+     *
      * @return array
-     * @throws FileNotFoundException
      */
     private function readJson(): array
     {
@@ -174,8 +173,8 @@ class FileActivator implements ActivatorInterface
     /**
      * Get modules statuses, either from the cache or from
      * the json statuses file if the cache is disabled.
+     *
      * @return array
-     * @throws FileNotFoundException
      */
     private function getModulesStatuses(): array
     {

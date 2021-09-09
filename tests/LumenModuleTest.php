@@ -109,7 +109,7 @@ class LumenModuleTest extends BaseTestCase
     /** @test */
     public function it_reads_key_from_composer_json_file_via_helper_method()
     {
-        $this->assertEquals('nwidart/recipe', $this->module->getComposerAttr('name'));
+        $this->assertEquals('laraneat/recipe', $this->module->getComposerAttr('name'));
     }
 
     /** @test */

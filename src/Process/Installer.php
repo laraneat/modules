@@ -14,59 +14,62 @@ class Installer
      *
      * @var string
      */
-    protected $name;
+    protected string $name;
 
     /**
      * The version of module being installed.
      *
-     * @var string
+     * @var string|null
      */
-    protected $version;
+    protected ?string $version;
 
     /**
      * The module repository instance.
-     * @var \Laraneat\Modules\Contracts\RepositoryInterface
+     *
+     * @var RepositoryInterface|null
      */
-    protected $repository;
+    protected ?RepositoryInterface $repository;
 
     /**
      * The console command instance.
      *
-     * @var \Illuminate\Console\Command
+     * @var Command|null
      */
-    protected $console;
+    protected ?Command $console;
 
     /**
-     * The destionation path.
+     * The destination path.
      *
-     * @var string
+     * @var string| null
      */
-    protected $path;
+    protected ?string $path;
 
     /**
      * The process timeout.
      *
      * @var int
      */
-    protected $timeout = 3360;
+    protected int $timeout = 3360;
+
     /**
      * @var null|string
      */
-    private $type;
+    private ?string $type;
+    
     /**
      * @var bool
      */
-    private $tree;
+    private bool $tree;
 
     /**
      * The constructor.
      *
      * @param string $name
-     * @param string $version
-     * @param string $type
-     * @param bool   $tree
+     * @param string|null $version
+     * @param string|null $type
+     * @param bool $tree
      */
-    public function __construct($name, $version = null, $type = null, $tree = false)
+    public function __construct(string $name, ?string $version = null, ?string $type = null, bool $tree = false)
     {
         $this->name = $name;
         $this->version = $version;
@@ -81,7 +84,7 @@ class Installer
      *
      * @return $this
      */
-    public function setPath($path)
+    public function setPath(string $path)
     {
         $this->path = $path;
 
@@ -90,7 +93,9 @@ class Installer
 
     /**
      * Set the module repository instance.
-     * @param \Laraneat\Modules\Contracts\RepositoryInterface $repository
+     *
+     * @param RepositoryInterface $repository
+     *
      * @return $this
      */
     public function setRepository(RepositoryInterface $repository)
@@ -103,7 +108,7 @@ class Installer
     /**
      * Set console command instance.
      *
-     * @param \Illuminate\Console\Command $console
+     * @param Command $console
      *
      * @return $this
      */
@@ -121,7 +126,7 @@ class Installer
      *
      * @return $this
      */
-    public function setTimeout($timeout)
+    public function setTimeout(int $timeout)
     {
         $this->timeout = $timeout;
 
@@ -131,9 +136,9 @@ class Installer
     /**
      * Run the installation process.
      *
-     * @return \Symfony\Component\Process\Process
+     * @return Process
      */
-    public function run()
+    public function run(): Process
     {
         $process = $this->getProcess();
 
@@ -151,9 +156,9 @@ class Installer
     /**
      * Get process instance.
      *
-     * @return \Symfony\Component\Process\Process
+     * @return Process
      */
-    public function getProcess()
+    public function getProcess(): Process
     {
         if ($this->type) {
             if ($this->tree) {
@@ -171,7 +176,7 @@ class Installer
      *
      * @return string
      */
-    public function getDestinationPath()
+    public function getDestinationPath(): string
     {
         if ($this->path) {
             return $this->path;
@@ -185,7 +190,7 @@ class Installer
      *
      * @return string|null
      */
-    public function getRepoUrl()
+    public function getRepoUrl(): ?string
     {
         switch ($this->type) {
             case 'github':
@@ -202,7 +207,6 @@ class Installer
                 return "git@bitbucket.org:{$this->name}.git";
 
             default:
-
                 // Check of type 'scheme://host/path'
                 if (filter_var($this->type, FILTER_VALIDATE_URL)) {
                     return $this->type;
@@ -213,8 +217,7 @@ class Installer
                     return "{$this->type}:{$this->name}.git";
                 }
 
-                return;
-                break;
+                return null;
         }
     }
 
@@ -223,7 +226,7 @@ class Installer
      *
      * @return string
      */
-    public function getBranch()
+    public function getBranch(): string
     {
         return is_null($this->version) ? 'master' : $this->version;
     }
@@ -233,7 +236,7 @@ class Installer
      *
      * @return string
      */
-    public function getModuleName()
+    public function getModuleName(): string
     {
         $parts = explode('/', $this->name);
 
@@ -245,7 +248,7 @@ class Installer
      *
      * @return string
      */
-    public function getPackageName()
+    public function getPackageName(): string
     {
         if (is_null($this->version)) {
             return $this->name . ':dev-master';
@@ -257,9 +260,9 @@ class Installer
     /**
      * Install the module via git.
      *
-     * @return \Symfony\Component\Process\Process
+     * @return Process
      */
-    public function installViaGit()
+    public function installViaGit(): Process
     {
         return Process::fromShellCommandline(sprintf(
             'cd %s && git clone %s %s && cd %s && git checkout %s',
@@ -274,9 +277,9 @@ class Installer
     /**
      * Install the module via git subtree.
      *
-     * @return \Symfony\Component\Process\Process
+     * @return Process
      */
-    public function installViaSubtree()
+    public function installViaSubtree(): Process
     {
         return Process::fromShellCommandline(sprintf(
             'cd %s && git remote add %s %s && git subtree add --prefix=%s --squash %s %s',
@@ -292,9 +295,9 @@ class Installer
     /**
      * Install the module via composer.
      *
-     * @return \Symfony\Component\Process\Process
+     * @return Process
      */
-    public function installViaComposer()
+    public function installViaComposer(): Process
     {
         return Process::fromShellCommandline(sprintf(
             'cd %s && composer require %s',

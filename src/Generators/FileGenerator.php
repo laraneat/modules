@@ -107,7 +107,7 @@ class FileGenerator extends Generator
     /**
      * Set path.
      *
-     * @param mixed $path
+     * @param string $path
      *
      * @return $this
      */

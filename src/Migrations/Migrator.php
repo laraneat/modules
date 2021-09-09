@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Migrations;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Module;
@@ -14,21 +15,21 @@ class Migrator
      * Module instance.
      * @var Module
      */
-    protected $module;
+    protected Module $module;
 
     /**
      * Laravel Application instance.
      *
      * @var Application.
      */
-    protected $laravel;
+    protected Application $laravel;
 
     /**
      * The database connection to be used
      *
      * @var string
      */
-    protected $database = '';
+    protected string $database = '';
 
     /**
      * Create new instance.
@@ -44,7 +45,7 @@ class Migrator
     /**
      * Set the database connection to be used
      *
-     * @param $database
+     * @param string $database
      *
      * @return $this
      */
@@ -60,7 +61,7 @@ class Migrator
     /**
      * @return Module
      */
-    public function getModule()
+    public function getModule(): Module
     {
         return $this->module;
     }
@@ -70,7 +71,7 @@ class Migrator
      *
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         $config = $this->module->get('migration');
 
@@ -86,7 +87,7 @@ class Migrator
      * @param boolean $reverse
      * @return array
      */
-    public function getMigrations($reverse = false)
+    public function getMigrations(bool $reverse = false): array
     {
         $files = $this->laravel['files']->glob($this->getPath() . '/*_*.php');
 
@@ -118,7 +119,7 @@ class Migrator
      *
      * @return array
      */
-    public function rollback()
+    public function rollback(): array
     {
         $migrations = $this->getLast($this->getMigrations(true));
 
@@ -146,7 +147,7 @@ class Migrator
      *
      * @return array
      */
-    public function reset()
+    public function reset(): array
     {
         $migrations = $this->getMigrations(true);
 
@@ -174,7 +175,7 @@ class Migrator
      *
      * @param string $migration
      */
-    public function down($migration)
+    public function down(string $migration): void
     {
         $this->resolve($migration)->down();
     }
@@ -184,7 +185,7 @@ class Migrator
      *
      * @param string $migration
      */
-    public function up($migration)
+    public function up(string $migration): void
     {
         $this->resolve($migration)->up();
     }
@@ -196,7 +197,7 @@ class Migrator
      *
      * @return object
      */
-    public function resolve($file)
+    public function resolve(string $file)
     {
         $file = implode('_', array_slice(explode('_', $file), 4));
 
@@ -208,9 +209,9 @@ class Migrator
     /**
      * Require in all the migration files in a given path.
      *
-     * @param array  $files
+     * @param array $files
      */
-    public function requireFiles(array $files)
+    public function requireFiles(array $files): void
     {
         $path = $this->getPath();
         foreach ($files as $file) {
@@ -221,9 +222,9 @@ class Migrator
     /**
      * Get table instance.
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder
      */
-    public function table()
+    public function table(): Builder
     {
         return $this->laravel['db']->connection($this->database ?: null)->table(config('database.migrations'));
     }
@@ -235,7 +236,7 @@ class Migrator
      *
      * @return object
      */
-    public function find($migration)
+    public function find(string $migration)
     {
         return $this->table()->whereMigration($migration);
     }
@@ -247,7 +248,7 @@ class Migrator
      *
      * @return mixed
      */
-    public function log($migration)
+    public function log(string $migration)
     {
         return $this->table()->insert([
             'migration' => $migration,
@@ -260,7 +261,7 @@ class Migrator
      *
      * @return int
      */
-    public function getNextBatchNumber()
+    public function getNextBatchNumber(): int
     {
         return $this->getLastBatchNumber() + 1;
     }
@@ -271,7 +272,7 @@ class Migrator
      * @param array|null $migrations
      * @return int
      */
-    public function getLastBatchNumber($migrations = null)
+    public function getLastBatchNumber(?array $migrations = null): int
     {
         $table = $this->table();
 
@@ -289,7 +290,7 @@ class Migrator
      *
      * @return Collection
      */
-    public function getLast($migrations)
+    public function getLast(array $migrations): Collection
     {
         $query = $this->table()
             ->where('batch', $this->getLastBatchNumber($migrations))
@@ -307,7 +308,7 @@ class Migrator
      *
      * @return Collection
      */
-    public function getRan()
+    public function getRan(): Collection
     {
         return $this->table()->pluck('migration');
     }

@@ -58,11 +58,11 @@ class ListCommand extends Command
     {
         switch ($this->option('only')) {
             case 'enabled':
-                return $this->laravel['modules']->getByStatus(1);
+                return $this->laravel['modules']->getByStatus(true);
                 break;
 
             case 'disabled':
-                return $this->laravel['modules']->getByStatus(0);
+                return $this->laravel['modules']->getByStatus(false);
                 break;
 
             case 'priority':
