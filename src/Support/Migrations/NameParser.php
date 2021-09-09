@@ -9,7 +9,7 @@ class NameParser
      *
      * @var string
      */
-    protected $name;
+    protected string $name;
 
     /**
      * The array data.

@@ -2,6 +2,7 @@
 
 namespace Laraneat\Modules;
 
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use Laraneat\Modules\Exceptions\InvalidJsonException;
 
@@ -12,27 +13,27 @@ class Json
      *
      * @var string
      */
-    protected $path;
+    protected string $path;
 
     /**
      * The laravel filesystem instance.
      *
-     * @var \Illuminate\Filesystem\Filesystem
+     * @var Filesystem
      */
-    protected $filesystem;
+    protected Filesystem $filesystem;
 
     /**
      * The attributes collection.
      *
      * @var \Illuminate\Support\Collection
      */
-    protected $attributes;
+    protected Collection|\Illuminate\Support\Collection $attributes;
 
     /**
      * The constructor.
      *
-     * @param mixed                             $path
-     * @param \Illuminate\Filesystem\Filesystem $filesystem
+     * @param mixed $path
+     * @param Filesystem $filesystem
      */
     public function __construct($path, Filesystem $filesystem = null)
     {
@@ -46,7 +47,7 @@ class Json
      *
      * @return Filesystem
      */
-    public function getFilesystem()
+    public function getFilesystem(): Filesystem
     {
         return $this->filesystem;
     }
@@ -70,7 +71,7 @@ class Json
      *
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -92,12 +93,12 @@ class Json
     /**
      * Make new instance.
      *
-     * @param string                            $path
-     * @param \Illuminate\Filesystem\Filesystem $filesystem
+     * @param string $path
+     * @param Filesystem|null $filesystem
      *
      * @return static
      */
-    public static function make($path, Filesystem $filesystem = null)
+    public static function make(string $path, ?Filesystem $filesystem = null): static
     {
         return new static($path, $filesystem);
     }
@@ -106,18 +107,20 @@ class Json
      * Get file content.
      *
      * @return string
+     * @throws FileNotFoundException
      */
-    public function getContents()
+    public function getContents(): string
     {
         return $this->filesystem->get($this->getPath());
     }
 
     /**
      * Get file contents as array.
+     *
      * @return array
-     * @throws \Exception
+     * @throws InvalidJsonException|FileNotFoundException
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         $attributes = json_decode($this->getContents(), 1);
 
@@ -138,11 +141,11 @@ class Json
     /**
      * Convert the given array data to pretty json.
      *
-     * @param array $data
+     * @param array|null $data
      *
      * @return string
      */
-    public function toJsonPretty(array $data = null)
+    public function toJsonPretty(?array $data = null): string
     {
         return json_encode($data ?: $this->attributes, JSON_PRETTY_PRINT);
     }
@@ -202,7 +205,7 @@ class Json
      * Get the specified attribute from json file.
      *
      * @param $key
-     * @param null $default
+     * @param mixed $default
      *
      * @return mixed
      */

@@ -9,7 +9,7 @@ trait ModuleCommandTrait
      *
      * @return string
      */
-    public function getModuleName()
+    public function getModuleName(): string
     {
         $module = $this->argument('module') ?: app('modules')->getUsedNow();
 

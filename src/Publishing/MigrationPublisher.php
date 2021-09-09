@@ -9,10 +9,11 @@ class MigrationPublisher extends AssetPublisher
     /**
      * @var Migrator
      */
-    private $migrator;
+    private Migrator $migrator;
 
     /**
      * MigrationPublisher constructor.
+     *
      * @param Migrator $migrator
      */
     public function __construct(Migrator $migrator)
@@ -26,9 +27,9 @@ class MigrationPublisher extends AssetPublisher
      *
      * @return string
      */
-    public function getDestinationPath()
+    public function getDestinationPath(): string
     {
-        return $this->repository->config('paths.migration');
+        return $this->repository->config('paths.migration', '');
     }
 
     /**
@@ -36,7 +37,7 @@ class MigrationPublisher extends AssetPublisher
      *
      * @return string
      */
-    public function getSourcePath()
+    public function getSourcePath(): string
     {
         return $this->migrator->getPath();
     }

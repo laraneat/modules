@@ -27,35 +27,39 @@ abstract class Module
      *
      * @var
      */
-    protected $name;
+    protected string $name;
 
     /**
      * The module path.
      *
      * @var string
      */
-    protected $path;
+    protected string $path;
 
     /**
      * @var array of cached Json objects, keyed by filename
      */
-    protected $moduleJson = [];
+    protected array $moduleJson = [];
+
     /**
      * @var CacheManager
      */
-    private $cache;
+    private CacheManager $cache;
+
     /**
      * @var Filesystem
      */
-    private $files;
+    private Filesystem $files;
+
     /**
      * @var Translator
      */
-    private $translator;
+    private Translator $translator;
+
     /**
      * @var ActivatorInterface
      */
-    private $activator;
+    private ActivatorInterface $activator;
 
     /**
      * The constructor.
@@ -171,7 +175,7 @@ abstract class Module
      *
      * @return $this
      */
-    public function setPath($path): Module
+    public function setPath(string $path): Module
     {
         $this->path = $path;
 
@@ -213,18 +217,18 @@ abstract class Module
     /**
      * Get json contents from the cache, setting as needed.
      *
-     * @param string $file
+     * @param ?string $fileName
      *
      * @return Json
      */
-    public function json($file = null): Json
+    public function json(string $fileName = null): Json
     {
-        if ($file === null) {
-            $file = 'module.json';
+        if ($fileName === null) {
+            $fileName = 'module.json';
         }
 
-        return Arr::get($this->moduleJson, $file, function () use ($file) {
-            return $this->moduleJson[$file] = new Json($this->getPath() . '/' . $file, $this->files);
+        return Arr::get($this->moduleJson, $fileName, function () use ($fileName) {
+            return $this->moduleJson[$fileName] = new Json($this->getPath() . '/' . $fileName, $this->files);
         });
     }
 
@@ -232,7 +236,7 @@ abstract class Module
      * Get a specific data from json file by given the key.
      *
      * @param string $key
-     * @param null $default
+     * @param mixed $default
      *
      * @return mixed
      */
@@ -244,12 +248,12 @@ abstract class Module
     /**
      * Get a specific data from composer.json file by given the key.
      *
-     * @param $key
-     * @param null $default
+     * @param string $key
+     * @param mixed $default
      *
      * @return mixed
      */
-    public function getComposerAttr($key, $default = null)
+    public function getComposerAttr(string $key, $default = null)
     {
         return $this->json('composer.json')->get($key, $default);
     }
@@ -301,8 +305,8 @@ abstract class Module
      */
     protected function registerFiles(): void
     {
-        foreach ($this->get('files', []) as $file) {
-            include $this->path . '/' . $file;
+        foreach ($this->get('files', []) as $fileName) {
+            include $this->path . '/' . $fileName;
         }
     }
 

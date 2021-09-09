@@ -3,11 +3,15 @@
 node_modules
 vendor
 build
+coverage
 .env
 .env.backup
+.php_cs.cache
 .phpunit.result.cache
 .phpstorm.meta.php
 _ide_helper*.php
 _ide_macros*.php
 npm-debug.log
 yarn-error.log
+composer.phar
+composer.lock

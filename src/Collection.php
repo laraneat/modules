@@ -12,7 +12,7 @@ class Collection extends BaseCollection
      *
      * @return array
      */
-    public function getItems()
+    public function getItems(): array
     {
         return $this->items;
     }
@@ -22,9 +22,9 @@ class Collection extends BaseCollection
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
-        return array_map(function ($value) {
+        return array_map(static function ($value) {
             if ($value instanceof Module) {
                 $attributes = $value->json()->getAttributes();
                 $attributes["path"] = $value->getPath();

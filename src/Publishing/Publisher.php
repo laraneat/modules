@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Publishing;
 
 use Illuminate\Console\Command;
+use Illuminate\Filesystem\Filesystem;
 use Laraneat\Modules\Contracts\PublisherInterface;
 use Laraneat\Modules\Contracts\RepositoryInterface;
 use Laraneat\Modules\Module;
@@ -10,45 +11,46 @@ use Laraneat\Modules\Module;
 abstract class Publisher implements PublisherInterface
 {
     /**
-     * The name of module will used.
+     * The module instance.
      *
-     * @var string
+     * @var Module
      */
-    protected $module;
+    protected Module $module;
 
     /**
      * The modules repository instance.
-     * @var RepositoryInterface
+     *
+     * @var RepositoryInterface|null
      */
-    protected $repository;
+    protected ?RepositoryInterface $repository = null;
 
     /**
      * The laravel console instance.
      *
-     * @var \Illuminate\Console\Command
+     * @var Command|null
      */
-    protected $console;
+    protected ?Command $console = null;
 
     /**
      * The success message will displayed at console.
      *
      * @var string
      */
-    protected $success;
+    protected string $success = '';
 
     /**
      * The error message will displayed at console.
      *
      * @var string
      */
-    protected $error = '';
+    protected string $error = '';
 
     /**
      * Determine whether the result message will shown in the console.
      *
      * @var bool
      */
-    protected $showMessage = true;
+    protected bool $showMessage = true;
 
     /**
      * The constructor.
@@ -63,7 +65,7 @@ abstract class Publisher implements PublisherInterface
     /**
      * Show the result message.
      *
-     * @return self
+     * @return $this
      */
     public function showMessage()
     {
@@ -75,7 +77,7 @@ abstract class Publisher implements PublisherInterface
     /**
      * Hide the result message.
      *
-     * @return self
+     * @return $this
      */
     public function hideMessage()
     {
@@ -87,15 +89,16 @@ abstract class Publisher implements PublisherInterface
     /**
      * Get module instance.
      *
-     * @return \Laraneat\Modules\Module
+     * @return Module
      */
-    public function getModule()
+    public function getModule(): Module
     {
         return $this->module;
     }
 
     /**
      * Set modules repository instance.
+     *
      * @param RepositoryInterface $repository
      * @return $this
      */
@@ -109,9 +112,9 @@ abstract class Publisher implements PublisherInterface
     /**
      * Get modules repository instance.
      *
-     * @return RepositoryInterface
+     * @return RepositoryInterface|null
      */
-    public function getRepository()
+    public function getRepository(): ?RepositoryInterface
     {
         return $this->repository;
     }
@@ -119,7 +122,7 @@ abstract class Publisher implements PublisherInterface
     /**
      * Set console instance.
      *
-     * @param \Illuminate\Console\Command $console
+     * @param Command $console
      *
      * @return $this
      */
@@ -133,9 +136,9 @@ abstract class Publisher implements PublisherInterface
     /**
      * Get console instance.
      *
-     * @return \Illuminate\Console\Command
+     * @return Command|null
      */
-    public function getConsole()
+    public function getConsole(): ?Command
     {
         return $this->console;
     }
@@ -143,9 +146,9 @@ abstract class Publisher implements PublisherInterface
     /**
      * Get laravel filesystem instance.
      *
-     * @return \Illuminate\Filesystem\Filesystem
+     * @return Filesystem|null
      */
-    public function getFilesystem()
+    public function getFilesystem(): ?Filesystem
     {
         return $this->repository->getFiles();
     }
@@ -155,14 +158,14 @@ abstract class Publisher implements PublisherInterface
      *
      * @return string
      */
-    abstract public function getDestinationPath();
+    abstract public function getDestinationPath(): string;
 
     /**
      * Get source path.
      *
      * @return string
      */
-    abstract public function getSourcePath();
+    abstract public function getSourcePath(): string;
 
     /**
      * Publish something.
