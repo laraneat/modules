@@ -1,0 +1,13 @@
+.idea
+.vscode
+node_modules
+vendor
+build
+.env
+.env.backup
+.phpunit.result.cache
+.phpstorm.meta.php
+_ide_helper*.php
+_ide_macros*.php
+npm-debug.log
+yarn-error.log
