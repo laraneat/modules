@@ -1,6 +1,6 @@
 <?php
 
-namespace Nwidart\Modules;
+namespace Laraneat\Modules;
 
 use Countable;
 use Illuminate\Cache\CacheManager;
@@ -10,11 +10,11 @@ use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use Nwidart\Modules\Contracts\RepositoryInterface;
-use Nwidart\Modules\Exceptions\InvalidAssetPath;
-use Nwidart\Modules\Exceptions\ModuleNotFoundException;
-use Nwidart\Modules\Process\Installer;
-use Nwidart\Modules\Process\Updater;
+use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Exceptions\InvalidAssetPath;
+use Laraneat\Modules\Exceptions\ModuleNotFoundException;
+use Laraneat\Modules\Process\Installer;
+use Laraneat\Modules\Process\Updater;
 
 abstract class FileRepository implements RepositoryInterface, Countable
 {
@@ -487,7 +487,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * Get module used for cli session.
      * @return string
-     * @throws \Nwidart\Modules\Exceptions\ModuleNotFoundException
+     * @throws \Laraneat\Modules\Exceptions\ModuleNotFoundException
      */
     public function getUsedNow() : string
     {
@@ -554,7 +554,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
      * Enabling a specific module.
      * @param string $name
      * @return void
-     * @throws \Nwidart\Modules\Exceptions\ModuleNotFoundException
+     * @throws \Laraneat\Modules\Exceptions\ModuleNotFoundException
      */
     public function enable($name)
     {
@@ -565,7 +565,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
      * Disabling a specific module.
      * @param string $name
      * @return void
-     * @throws \Nwidart\Modules\Exceptions\ModuleNotFoundException
+     * @throws \Laraneat\Modules\Exceptions\ModuleNotFoundException
      */
     public function disable($name)
     {

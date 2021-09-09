@@ -1,14 +1,14 @@
 <?php
 
-namespace Nwidart\Modules\Tests;
+namespace Laraneat\Modules\Tests;
 
 use Illuminate\Filesystem\Filesystem;
-use Nwidart\Modules\Collection;
-use Nwidart\Modules\Contracts\ActivatorInterface;
-use Nwidart\Modules\Exceptions\InvalidAssetPath;
-use Nwidart\Modules\Exceptions\ModuleNotFoundException;
-use Nwidart\Modules\Laravel\LaravelFileRepository;
-use Nwidart\Modules\Module;
+use Laraneat\Modules\Collection;
+use Laraneat\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Exceptions\InvalidAssetPath;
+use Laraneat\Modules\Exceptions\ModuleNotFoundException;
+use Laraneat\Modules\Laravel\LaravelFileRepository;
+use Laraneat\Modules\Module;
 
 class LaravelFileRepositoryTest extends BaseTestCase
 {

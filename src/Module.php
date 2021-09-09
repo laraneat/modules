@@ -1,6 +1,6 @@
 <?php
 
-namespace Nwidart\Modules;
+namespace Laraneat\Modules;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
@@ -9,7 +9,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Translation\Translator;
-use Nwidart\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Contracts\ActivatorInterface;
 
 abstract class Module
 {

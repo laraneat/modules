@@ -1,10 +1,10 @@
 <?php
 
-namespace Nwidart\Modules\Commands;
+namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
-use Nwidart\Modules\Contracts\ActivatorInterface;
-use Nwidart\Modules\Generators\ModuleGenerator;
+use Laraneat\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Generators\ModuleGenerator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -26,7 +26,7 @@ class ModuleMakeCommand extends Command
 
     /**
      * Execute the console command.
-     * @throws \Nwidart\Modules\Exceptions\ModuleNotFoundException
+     * @throws \Laraneat\Modules\Exceptions\ModuleNotFoundException
      */
     public function handle(): int
     {

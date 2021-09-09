@@ -1,10 +1,10 @@
 <?php
 
-namespace Nwidart\Modules\Providers;
+namespace Laraneat\Modules\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
-use Nwidart\Modules\Commands;
+use Laraneat\Modules\Commands;
 
 class ConsoleServiceProvider extends ServiceProvider
 {

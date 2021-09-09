@@ -1,7 +1,7 @@
 <?php
 
-use Nwidart\Modules\Activators\FileActivator;
-use Nwidart\Modules\Commands;
+use Laraneat\Modules\Activators\FileActivator;
+use Laraneat\Modules\Commands;
 
 return [
     /*

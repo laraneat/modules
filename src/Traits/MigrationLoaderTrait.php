@@ -1,6 +1,6 @@
 <?php
 
-namespace Nwidart\Modules\Traits;
+namespace Laraneat\Modules\Traits;
 
 trait MigrationLoaderTrait
 {

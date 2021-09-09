@@ -1,9 +1,9 @@
 <?php
 
-namespace Nwidart\Modules;
+namespace Laraneat\Modules;
 
 use Illuminate\Filesystem\Filesystem;
-use Nwidart\Modules\Exceptions\InvalidJsonException;
+use Laraneat\Modules\Exceptions\InvalidJsonException;
 
 class Json
 {

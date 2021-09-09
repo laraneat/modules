@@ -1,6 +1,6 @@
 <?php
 
-namespace Nwidart\Modules\Support;
+namespace Laraneat\Modules\Support;
 
 class Stub
 {

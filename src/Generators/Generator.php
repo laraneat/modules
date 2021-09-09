@@ -1,6 +1,6 @@
 <?php
 
-namespace Nwidart\Modules\Generators;
+namespace Laraneat\Modules\Generators;
 
 abstract class Generator
 {

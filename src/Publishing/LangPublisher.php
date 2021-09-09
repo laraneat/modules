@@ -1,8 +1,8 @@
 <?php
 
-namespace Nwidart\Modules\Publishing;
+namespace Laraneat\Modules\Publishing;
 
-use Nwidart\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Support\Config\GenerateConfigReader;
 
 class LangPublisher extends Publisher
 {

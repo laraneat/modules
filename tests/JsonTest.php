@@ -1,9 +1,9 @@
 <?php
 
-namespace Nwidart\Modules\Tests;
+namespace Laraneat\Modules\Tests;
 
-use Nwidart\Modules\Exceptions\InvalidJsonException;
-use Nwidart\Modules\Json;
+use Laraneat\Modules\Exceptions\InvalidJsonException;
+use Laraneat\Modules\Json;
 
 class JsonTest extends BaseTestCase
 {

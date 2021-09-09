@@ -1,8 +1,8 @@
 <?php
 
-namespace Nwidart\Modules;
+namespace Laraneat\Modules;
 
-use Nwidart\Modules\Support\Stub;
+use Laraneat\Modules\Support\Stub;
 
 class LumenModulesServiceProvider extends ModulesServiceProvider
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Nwidart\Modules\Support\Migrations;
+namespace Laraneat\Modules\Support\Migrations;
 
 class NameParser
 {

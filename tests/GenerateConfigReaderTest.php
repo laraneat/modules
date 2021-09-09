@@ -1,9 +1,9 @@
 <?php
 
-namespace Nwidart\Modules\Tests;
+namespace Laraneat\Modules\Tests;
 
-use Nwidart\Modules\Support\Config\GenerateConfigReader;
-use Nwidart\Modules\Support\Config\GeneratorPath;
+use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Support\Config\GeneratorPath;
 
 final class GenerateConfigReaderTest extends BaseTestCase
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Nwidart\Modules\Lumen;
+namespace Laraneat\Modules\Lumen;
 
-use Nwidart\Modules\FileRepository;
+use Laraneat\Modules\FileRepository;
 
 class LumenFileRepository extends FileRepository
 {

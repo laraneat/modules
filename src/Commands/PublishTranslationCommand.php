@@ -1,10 +1,10 @@
 <?php
 
-namespace Nwidart\Modules\Commands;
+namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
-use Nwidart\Modules\Module;
-use Nwidart\Modules\Publishing\LangPublisher;
+use Laraneat\Modules\Module;
+use Laraneat\Modules\Publishing\LangPublisher;
 use Symfony\Component\Console\Input\InputArgument;
 
 class PublishTranslationCommand extends Command

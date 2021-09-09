@@ -1,10 +1,10 @@
 <?php
 
-namespace Nwidart\Modules;
+namespace Laraneat\Modules;
 
-use Nwidart\Modules\Contracts\RepositoryInterface;
-use Nwidart\Modules\Exceptions\InvalidActivatorClass;
-use Nwidart\Modules\Support\Stub;
+use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Exceptions\InvalidActivatorClass;
+use Laraneat\Modules\Support\Stub;
 
 class LaravelModulesServiceProvider extends ModulesServiceProvider
 {

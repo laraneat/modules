@@ -1,9 +1,9 @@
 <?php
 
-namespace Nwidart\Modules\Process;
+namespace Laraneat\Modules\Process;
 
-use Nwidart\Modules\Contracts\RepositoryInterface;
-use Nwidart\Modules\Contracts\RunnableInterface;
+use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Contracts\RunnableInterface;
 
 class Runner implements RunnableInterface
 {

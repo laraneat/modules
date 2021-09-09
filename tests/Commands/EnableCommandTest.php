@@ -1,10 +1,10 @@
 <?php
 
-namespace Nwidart\Modules\Tests\Commands;
+namespace Laraneat\Modules\Tests\Commands;
 
-use Nwidart\Modules\Contracts\RepositoryInterface;
-use Nwidart\Modules\Module;
-use Nwidart\Modules\Tests\BaseTestCase;
+use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Module;
+use Laraneat\Modules\Tests\BaseTestCase;
 
 class EnableCommandTest extends BaseTestCase
 {

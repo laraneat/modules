@@ -1,9 +1,9 @@
 <?php
 
-namespace Nwidart\Modules\Tests;
+namespace Laraneat\Modules\Tests;
 
-use Nwidart\Modules\Contracts\ActivatorInterface;
-use Nwidart\Modules\Json;
+use Laraneat\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Json;
 
 class LumenModuleTest extends BaseTestCase
 {
@@ -164,6 +164,6 @@ class LumenModuleTest extends BaseTestCase
     }
 }
 
-class LumenTestingModule extends \Nwidart\Modules\Lumen\Module
+class LumenTestingModule extends \Laraneat\Modules\Lumen\Module
 {
 }

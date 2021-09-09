@@ -1,9 +1,9 @@
 <?php
 
-namespace Nwidart\Modules\Contracts;
+namespace Laraneat\Modules\Contracts;
 
-use Nwidart\Modules\Exceptions\ModuleNotFoundException;
-use Nwidart\Modules\Module;
+use Laraneat\Modules\Exceptions\ModuleNotFoundException;
+use Laraneat\Modules\Module;
 
 interface RepositoryInterface
 {
@@ -31,7 +31,7 @@ interface RepositoryInterface
     /**
      * Get modules as modules collection instance.
      *
-     * @return \Nwidart\Modules\Collection
+     * @return \Laraneat\Modules\Collection
      */
     public function toCollection();
 
@@ -157,7 +157,7 @@ interface RepositoryInterface
      * Delete a specific module.
      * @param string $module
      * @return bool
-     * @throws \Nwidart\Modules\Exceptions\ModuleNotFoundException
+     * @throws \Laraneat\Modules\Exceptions\ModuleNotFoundException
      */
     public function delete(string $module): bool;
 

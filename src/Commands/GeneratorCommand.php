@@ -1,10 +1,10 @@
 <?php
 
-namespace Nwidart\Modules\Commands;
+namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
-use Nwidart\Modules\Exceptions\FileAlreadyExistException;
-use Nwidart\Modules\Generators\FileGenerator;
+use Laraneat\Modules\Exceptions\FileAlreadyExistException;
+use Laraneat\Modules\Generators\FileGenerator;
 
 abstract class GeneratorCommand extends Command
 {
@@ -79,7 +79,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Get class namespace.
      *
-     * @param \Nwidart\Modules\Module $module
+     * @param \Laraneat\Modules\Module $module
      *
      * @return string
      */

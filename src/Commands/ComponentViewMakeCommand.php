@@ -1,12 +1,12 @@
 <?php
 
-namespace Nwidart\Modules\Commands;
+namespace Laraneat\Modules\Commands;
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Str;
-use Nwidart\Modules\Support\Config\GenerateConfigReader;
-use Nwidart\Modules\Support\Stub;
-use Nwidart\Modules\Traits\ModuleCommandTrait;
+use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Support\Stub;
+use Laraneat\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 
 class ComponentViewMakeCommand extends GeneratorCommand

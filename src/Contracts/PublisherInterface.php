@@ -1,6 +1,6 @@
 <?php
 
-namespace Nwidart\Modules\Contracts;
+namespace Laraneat\Modules\Contracts;
 
 interface PublisherInterface
 {

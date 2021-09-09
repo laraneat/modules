@@ -1,10 +1,10 @@
 <?php
 
-namespace Nwidart\Modules\Tests\Commands;
+namespace Laraneat\Modules\Tests\Commands;
 
-use Nwidart\Modules\Contracts\ActivatorInterface;
-use Nwidart\Modules\Contracts\RepositoryInterface;
-use Nwidart\Modules\Tests\BaseTestCase;
+use Laraneat\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Tests\BaseTestCase;
 use Spatie\Snapshots\MatchesSnapshots;
 
 class TestMakeCommandTest extends BaseTestCase

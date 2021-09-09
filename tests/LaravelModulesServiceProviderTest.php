@@ -1,10 +1,10 @@
 <?php
 
-namespace Nwidart\Modules\Tests;
+namespace Laraneat\Modules\Tests;
 
-use Nwidart\Modules\Contracts\ActivatorInterface;
-use Nwidart\Modules\Contracts\RepositoryInterface;
-use Nwidart\Modules\Exceptions\InvalidActivatorClass;
+use Laraneat\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Exceptions\InvalidActivatorClass;
 
 class LaravelModulesServiceProviderTest extends BaseTestCase
 {

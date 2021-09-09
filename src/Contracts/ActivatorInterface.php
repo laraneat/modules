@@ -1,8 +1,8 @@
 <?php
 
-namespace Nwidart\Modules\Contracts;
+namespace Laraneat\Modules\Contracts;
 
-use Nwidart\Modules\Module;
+use Laraneat\Modules\Module;
 
 interface ActivatorInterface
 {

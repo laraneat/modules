@@ -1,16 +1,16 @@
 <?php
 
-namespace Nwidart\Modules\Generators;
+namespace Laraneat\Modules\Generators;
 
 use Illuminate\Config\Repository as Config;
 use Illuminate\Console\Command as Console;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
-use Nwidart\Modules\Contracts\ActivatorInterface;
-use Nwidart\Modules\Exceptions\ModuleNotFoundException;
-use Nwidart\Modules\FileRepository;
-use Nwidart\Modules\Support\Config\GenerateConfigReader;
-use Nwidart\Modules\Support\Stub;
+use Laraneat\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Exceptions\ModuleNotFoundException;
+use Laraneat\Modules\FileRepository;
+use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Support\Stub;
 
 class ModuleGenerator extends Generator
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Nwidart\Modules\Tests;
+namespace Laraneat\Modules\Tests;
 
-use Nwidart\Modules\Contracts\RepositoryInterface;
-use Nwidart\Modules\Laravel\LaravelFileRepository;
+use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Laravel\LaravelFileRepository;
 
 class ContractsServiceProviderTest extends BaseTestCase
 {

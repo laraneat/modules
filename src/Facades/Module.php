@@ -1,11 +1,11 @@
 <?php
 
-namespace Nwidart\Modules\Facades;
+namespace Laraneat\Modules\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \Nwidart\Modules\Module
+ * @see \Laraneat\Modules\Module
  */
 class Module extends Facade
 {

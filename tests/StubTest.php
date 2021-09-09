@@ -1,9 +1,9 @@
 <?php
 
-namespace Nwidart\Modules\Tests;
+namespace Laraneat\Modules\Tests;
 
 use Illuminate\Support\Str;
-use Nwidart\Modules\Support\Stub;
+use Laraneat\Modules\Support\Stub;
 
 class StubTest extends BaseTestCase
 {

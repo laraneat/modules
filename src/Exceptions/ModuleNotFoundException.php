@@ -1,6 +1,6 @@
 <?php
 
-namespace Nwidart\Modules\Exceptions;
+namespace Laraneat\Modules\Exceptions;
 
 class ModuleNotFoundException extends \Exception
 {

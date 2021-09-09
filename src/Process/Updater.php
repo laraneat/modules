@@ -1,8 +1,8 @@
 <?php
 
-namespace Nwidart\Modules\Process;
+namespace Laraneat\Modules\Process;
 
-use Nwidart\Modules\Module;
+use Laraneat\Modules\Module;
 
 class Updater extends Runner
 {

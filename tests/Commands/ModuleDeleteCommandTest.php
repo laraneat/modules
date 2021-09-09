@@ -1,9 +1,9 @@
 <?php
 
-namespace Nwidart\Modules\Commands;
+namespace Laraneat\Modules\Commands;
 
-use Nwidart\Modules\Activators\FileActivator;
-use Nwidart\Modules\Tests\BaseTestCase;
+use Laraneat\Modules\Activators\FileActivator;
+use Laraneat\Modules\Tests\BaseTestCase;
 use Spatie\Snapshots\MatchesSnapshots;
 
 class ModuleDeleteCommandTest extends BaseTestCase

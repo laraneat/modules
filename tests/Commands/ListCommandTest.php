@@ -1,10 +1,10 @@
 <?php
 
-namespace Nwidart\Modules\Commands;
+namespace Laraneat\Modules\Commands;
 
 use Illuminate\Filesystem\Filesystem;
-use Nwidart\Modules\Contracts\RepositoryInterface;
-use Nwidart\Modules\Tests\BaseTestCase;
+use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Tests\BaseTestCase;
 
 class ListCommandTest extends BaseTestCase
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Nwidart\Modules\Tests;
+namespace Laraneat\Modules\Tests;
 
-use Nwidart\Modules\Facades\Module;
+use Laraneat\Modules\Facades\Module;
 
 class ModuleFacadeTest extends BaseTestCase
 {

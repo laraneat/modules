@@ -1,8 +1,8 @@
 <?php
 
-namespace Nwidart\Modules\Publishing;
+namespace Laraneat\Modules\Publishing;
 
-use Nwidart\Modules\Migrations\Migrator;
+use Laraneat\Modules\Migrations\Migrator;
 
 class MigrationPublisher extends AssetPublisher
 {

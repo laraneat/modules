@@ -1,13 +1,13 @@
 <?php
 
-namespace Nwidart\Modules\Commands;
+namespace Laraneat\Modules\Commands;
 
 use Illuminate\Support\Str;
-use Nwidart\Modules\Support\Config\GenerateConfigReader;
-use Nwidart\Modules\Support\Migrations\NameParser;
-use Nwidart\Modules\Support\Migrations\SchemaParser;
-use Nwidart\Modules\Support\Stub;
-use Nwidart\Modules\Traits\ModuleCommandTrait;
+use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Support\Migrations\NameParser;
+use Laraneat\Modules\Support\Migrations\SchemaParser;
+use Laraneat\Modules\Support\Stub;
+use Laraneat\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 

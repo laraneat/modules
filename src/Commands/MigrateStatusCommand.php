@@ -1,10 +1,10 @@
 <?php
 
-namespace Nwidart\Modules\Commands;
+namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
-use Nwidart\Modules\Migrations\Migrator;
-use Nwidart\Modules\Module;
+use Laraneat\Modules\Migrations\Migrator;
+use Laraneat\Modules\Module;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -25,7 +25,7 @@ class MigrateStatusCommand extends Command
     protected $description = 'Status for all module migrations';
 
     /**
-     * @var \Nwidart\Modules\Contracts\RepositoryInterface
+     * @var \Laraneat\Modules\Contracts\RepositoryInterface
      */
     protected $module;
 

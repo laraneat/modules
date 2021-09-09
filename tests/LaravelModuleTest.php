@@ -1,11 +1,11 @@
 <?php
 
-namespace Nwidart\Modules\Tests;
+namespace Laraneat\Modules\Tests;
 
 use App\Modules\Recipe\Providers\DeferredServiceProvider;
 use App\Modules\Recipe\Providers\RecipeServiceProvider;
-use Nwidart\Modules\Contracts\ActivatorInterface;
-use Nwidart\Modules\Json;
+use Laraneat\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Json;
 
 class LaravelModuleTest extends BaseTestCase
 {
@@ -243,7 +243,7 @@ class LaravelModuleTest extends BaseTestCase
     }
 }
 
-class TestingModule extends \Nwidart\Modules\Laravel\Module
+class TestingModule extends \Laraneat\Modules\Laravel\Module
 {
     public function registerProviders(): void
     {

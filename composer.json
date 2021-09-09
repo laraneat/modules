@@ -1,6 +1,6 @@
 {
-    "name": "laraneat/core",
-    "description": "Laraneat core.",
+    "name": "laraneat/modules",
+    "description": "Laraneat modules.",
     "homepage": "https://github.com/laraneat/core/",
     "support": {
         "issues": "https://github.com/laraneat/core/issues",
@@ -13,15 +13,14 @@
         }
     ],
     "keywords": [
-        "apiato",
-        "apiato core",
         "laraneat",
-        "laraneat core",
-        "core",
-        "Porto",
-        "Porto SAP",
         "modules",
-        "laravel"
+        "laraneat modules",
+        "laraneat-modules",
+        "core",
+        "laravel",
+        "Porto",
+        "Porto SAP"
     ],
     "license": "MIT",
     "require": {
@@ -40,7 +39,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Nwidart\\Modules\\": "src"
+            "Laraneat\\Modules\\": "src"
         },
         "files": [
             "src/helpers.php"
@@ -48,17 +47,17 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Nwidart\\Modules\\Tests\\": "tests",
+            "Laraneat\\Modules\\Tests\\": "tests",
             "App\\Modules\\Recipe\\": "tests/stubs/valid/Recipe"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Nwidart\\Modules\\LaravelModulesServiceProvider"
+                "Laraneat\\Modules\\LaravelModulesServiceProvider"
             ],
             "aliases": {
-                "Module": "Nwidart\\Modules\\Facades\\Module"
+                "Module": "Laraneat\\Modules\\Facades\\Module"
             }
         }
     },

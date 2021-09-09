@@ -1,9 +1,9 @@
 <?php
 
-namespace Nwidart\Modules;
+namespace Laraneat\Modules;
 
-use Nwidart\Modules\Laravel\Module;
-use Nwidart\Modules\Tests\BaseTestCase;
+use Laraneat\Modules\Laravel\Module;
+use Laraneat\Modules\Tests\BaseTestCase;
 
 class CollectionTest extends BaseTestCase
 {

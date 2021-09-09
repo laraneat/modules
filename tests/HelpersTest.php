@@ -1,6 +1,6 @@
 <?php
 
-namespace Nwidart\Modules\Tests;
+namespace Laraneat\Modules\Tests;
 
 use Illuminate\Support\Str;
 
