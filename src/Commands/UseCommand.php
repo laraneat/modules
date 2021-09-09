@@ -25,7 +25,7 @@ class UseCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $module = Str::studly($this->argument('module'));
 
@@ -47,7 +47,7 @@ class UseCommand extends Command
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['module', InputArgument::REQUIRED, 'The name of module will be used.'],

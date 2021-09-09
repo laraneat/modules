@@ -25,7 +25,7 @@ class DisableCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         /**
          * check if user entred an argument
@@ -74,7 +74,7 @@ class DisableCommand extends Command
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['module', InputArgument::OPTIONAL, 'Module name.'],

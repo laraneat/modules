@@ -24,7 +24,7 @@ class DumpCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $this->info('Generating optimized autoload modules.');
 
@@ -39,11 +39,11 @@ class DumpCommand extends Command
         return 0;
     }
 
-    public function dump($module)
+    public function dump(string $moduleName): void
     {
-        $module = $this->laravel['modules']->findOrFail($module);
+        $module = $this->laravel['modules']->findOrFail($moduleName);
 
-        $this->line("<comment>Running for module</comment>: {$module}");
+        $this->line("<comment>Running for module</comment>: {$moduleName}");
 
         chdir($module->getPath());
 
@@ -55,7 +55,7 @@ class DumpCommand extends Command
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['module', InputArgument::OPTIONAL, 'Module name.'],

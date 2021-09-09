@@ -35,7 +35,7 @@ class SeedCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         try {
             if ($name = $this->argument('module')) {
@@ -223,7 +223,7 @@ class SeedCommand extends Command
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
@@ -235,7 +235,7 @@ class SeedCommand extends Command
      *
      * @return array
      */
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['class', null, InputOption::VALUE_OPTIONAL, 'The class name of the root seeder.'],

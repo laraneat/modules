@@ -47,7 +47,7 @@ class AwesomeCommand extends Command
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['example', InputArgument::REQUIRED, 'An example argument.'],

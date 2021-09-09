@@ -13,11 +13,11 @@ class ResourceMakeCommand extends GeneratorCommand
 {
     use ModuleCommandTrait;
 
-    protected $argumentName = 'name';
+    protected string $argumentName = 'name';
     protected $name = 'module:make-resource';
     protected $description = 'Create a new resource class for the specified module.';
 
-    public function getDefaultNamespace() : string
+    public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
 
@@ -29,7 +29,7 @@ class ResourceMakeCommand extends GeneratorCommand
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['name', InputArgument::REQUIRED, 'The name of the resource class.'],
@@ -37,7 +37,7 @@ class ResourceMakeCommand extends GeneratorCommand
         ];
     }
 
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['collection', 'c', InputOption::VALUE_NONE, 'Create a resource collection.'],
@@ -45,9 +45,9 @@ class ResourceMakeCommand extends GeneratorCommand
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    protected function getTemplateContents()
+    protected function getTemplateContents(): string
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
 
@@ -58,9 +58,9 @@ class ResourceMakeCommand extends GeneratorCommand
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    protected function getDestinationFilePath()
+    protected function getDestinationFilePath(): string
     {
         $path = $this->laravel['modules']->getModulePath($this->getModuleName());
 
@@ -72,7 +72,7 @@ class ResourceMakeCommand extends GeneratorCommand
     /**
      * @return string
      */
-    private function getFileName()
+    private function getFileName(): string
     {
         return Str::studly($this->argument('name'));
     }
@@ -82,7 +82,7 @@ class ResourceMakeCommand extends GeneratorCommand
      *
      * @return bool
      */
-    protected function collection() : bool
+    protected function collection(): bool
     {
         return $this->option('collection') ||
             Str::endsWith($this->argument('name'), 'Collection');

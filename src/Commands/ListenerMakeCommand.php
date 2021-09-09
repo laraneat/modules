@@ -14,7 +14,7 @@ class ListenerMakeCommand extends GeneratorCommand
 {
     use ModuleCommandTrait;
 
-    protected $argumentName = 'name';
+    protected string $argumentName = 'name';
 
     /**
      * The console command name.
@@ -35,7 +35,7 @@ class ListenerMakeCommand extends GeneratorCommand
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['name', InputArgument::REQUIRED, 'The name of the command.'],
@@ -48,7 +48,7 @@ class ListenerMakeCommand extends GeneratorCommand
      *
      * @return array
      */
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['event', 'e', InputOption::VALUE_OPTIONAL, 'The event class being listened for.'],
@@ -56,7 +56,7 @@ class ListenerMakeCommand extends GeneratorCommand
         ];
     }
 
-    protected function getTemplateContents()
+    protected function getTemplateContents(): string
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
 
@@ -68,7 +68,7 @@ class ListenerMakeCommand extends GeneratorCommand
         ]))->render();
     }
 
-    public function getDefaultNamespace() : string
+    public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
 

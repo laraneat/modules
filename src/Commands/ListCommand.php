@@ -25,7 +25,7 @@ class ListCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $this->table(['Name', 'Status', 'Priority', 'Path'], $this->getRows());
 
@@ -80,7 +80,7 @@ class ListCommand extends Command
      *
      * @return array
      */
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['only', 'o', InputOption::VALUE_OPTIONAL, 'Types of modules will be displayed.', null],

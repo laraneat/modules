@@ -18,7 +18,7 @@ class ControllerMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $argumentName = 'controller';
+    protected string $argumentName = 'controller';
 
     /**
      * The console command name.
@@ -51,7 +51,7 @@ class ControllerMakeCommand extends GeneratorCommand
     /**
      * @return string
      */
-    protected function getTemplateContents()
+    protected function getTemplateContents(): string
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
 
@@ -74,7 +74,7 @@ class ControllerMakeCommand extends GeneratorCommand
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['controller', InputArgument::REQUIRED, 'The name of the controller class.'],
@@ -85,7 +85,7 @@ class ControllerMakeCommand extends GeneratorCommand
     /**
      * @return array
      */
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['plain', 'p', InputOption::VALUE_NONE, 'Generate a plain controller', null],
@@ -115,7 +115,7 @@ class ControllerMakeCommand extends GeneratorCommand
         return class_basename($this->getControllerName());
     }
 
-    public function getDefaultNamespace() : string
+    public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
 

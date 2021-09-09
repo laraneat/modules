@@ -26,7 +26,7 @@ class PublishConfigurationCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         if ($module = $this->argument('module')) {
             $this->publishConfiguration($module);
@@ -42,24 +42,24 @@ class PublishConfigurationCommand extends Command
     }
 
     /**
-     * @param string $module
+     * @param string $moduleName
      * @return string
      */
-    private function getServiceProviderForModule($module)
+    private function getServiceProviderForModule(string $moduleName): string
     {
         $namespace = $this->laravel['config']->get('modules.namespace');
-        $studlyName = Str::studly($module);
+        $studlyName = Str::studly($moduleName);
 
         return "$namespace\\$studlyName\\Providers\\{$studlyName}ServiceProvider";
     }
 
     /**
-     * @param string $module
+     * @param string $moduleName
      */
-    private function publishConfiguration($module)
+    private function publishConfiguration(string $moduleName): void
     {
         $this->call('vendor:publish', [
-            '--provider' => $this->getServiceProviderForModule($module),
+            '--provider' => $this->getServiceProviderForModule($moduleName),
             '--force' => $this->option('force'),
             '--tag' => ['config'],
         ]);
@@ -70,7 +70,7 @@ class PublishConfigurationCommand extends Command
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['module', InputArgument::OPTIONAL, 'The name of module being used.'],
@@ -80,7 +80,7 @@ class PublishConfigurationCommand extends Command
     /**
      * @return array
      */
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['--force', '-f', InputOption::VALUE_NONE, 'Force the publishing of config files'],

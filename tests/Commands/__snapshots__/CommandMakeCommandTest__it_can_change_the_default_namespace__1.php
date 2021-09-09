@@ -47,7 +47,7 @@ class AwesomeCommand extends Command
      *
      * @return array
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             [\'example\', InputArgument::REQUIRED, \'An example argument.\'],
@@ -59,7 +59,7 @@ class AwesomeCommand extends Command
      *
      * @return array
      */
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             [\'example\', null, InputOption::VALUE_OPTIONAL, \'An example option.\', null],

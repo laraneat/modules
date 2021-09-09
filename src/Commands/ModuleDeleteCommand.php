@@ -10,7 +10,7 @@ class ModuleDeleteCommand extends Command
     protected $name = 'module:delete';
     protected $description = 'Delete a module from the application';
 
-    public function handle() : int
+    public function handle(): int
     {
         $this->laravel['modules']->delete($this->argument('module'));
 
@@ -19,7 +19,7 @@ class ModuleDeleteCommand extends Command
         return 0;
     }
 
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['module', InputArgument::REQUIRED, 'The name of module to delete.'],
