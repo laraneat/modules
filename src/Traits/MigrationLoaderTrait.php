@@ -7,11 +7,11 @@ trait MigrationLoaderTrait
     /**
      * Include all migrations files from the specified module.
      *
-     * @param string $module
+     * @param string $moduleName
      */
-    protected function loadMigrationFiles($module): void
+    protected function loadMigrationFiles(string $moduleName): void
     {
-        $path = $this->laravel['modules']->getModulePath($module) . $this->getMigrationGeneratorPath();
+        $path = $this->laravel['modules']->getModulePath($moduleName) . $this->getMigrationGeneratorPath();
 
         $files = $this->laravel['files']->glob($path . '/*_*.php');
 
