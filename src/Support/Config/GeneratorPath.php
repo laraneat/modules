@@ -4,25 +4,29 @@ namespace Laraneat\Modules\Support\Config;
 
 class GeneratorPath
 {
-    private $path;
-    private $generate;
-    private $namespace;
+    private string $path;
+    private string $namespace;
+    private bool $generate;
 
+    /**
+     * @param array|bool|string $config
+     */
     public function __construct($config)
     {
         if (is_array($config)) {
-            $this->path = $config['path'];
-            $this->generate = $config['generate'];
-            $this->namespace = $config['namespace'] ?? $this->convertPathToNamespace($config['path']);
+            $this->path = (string) $config['path'];
+            $this->generate = (bool) ($config['generate'] ?? true);
+            $this->namespace = (string) ($config['namespace'] ?? $this->convertPathToNamespace($this->path));
 
             return;
         }
-        $this->path = $config;
+
+        $this->path = (string) $config;
         $this->generate = (bool) $config;
-        $this->namespace = $config;
+        $this->namespace = $this->convertPathToNamespace($this->path);
     }
 
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -32,12 +36,12 @@ class GeneratorPath
         return $this->generate;
     }
 
-    public function getNamespace()
+    public function getNamespace(): string
     {
         return $this->namespace;
     }
 
-    private function convertPathToNamespace($path)
+    private function convertPathToNamespace(string $path): string
     {
         return str_replace('/', '\\', $path);
     }
