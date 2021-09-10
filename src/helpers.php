@@ -1,36 +1,19 @@
 <?php
 
 if (! function_exists('module_path')) {
-    function module_path($name, $path = '')
+    /**
+     * Get the module path
+     *
+     * @param string $moduleName
+     * @param string $path
+     *
+     * @return string
+     */
+    function module_path(string $moduleName, string $path = ''): string
     {
-        $module = app('modules')->find($name);
+        /** @var $module \Laraneat\Modules\Module */
+        $module = app('modules')->find($moduleName);
 
         return $module->getPath() . ($path ? DIRECTORY_SEPARATOR . $path : $path);
-    }
-}
-
-if (! function_exists('config_path')) {
-    /**
-     * Get the configuration path.
-     *
-     * @param  string $path
-     * @return string
-     */
-    function config_path($path = '')
-    {
-        return app()->basePath() . '/config' . ($path ? DIRECTORY_SEPARATOR . $path : $path);
-    }
-}
-
-if (! function_exists('public_path')) {
-    /**
-     * Get the path to the public folder.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    function public_path($path = '')
-    {
-        return app()->make('path.public') . ($path ? DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR) : $path);
     }
 }

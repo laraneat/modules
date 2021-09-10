@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Tests\Commands;
 
 use Laraneat\Modules\Activators\FileActivator;
 use Laraneat\Modules\Tests\BaseTestCase;
@@ -30,10 +30,10 @@ class ModuleDeleteCommandTest extends BaseTestCase
     public function it_can_delete_a_module_from_disk(): void
     {
         $this->artisan('module:make', ['name' => ['WrongModule']]);
-        $this->assertDirectoryExists(base_path('modules/WrongModule'));
+        $this->assertDirectoryExists(base_path('app/Modules/WrongModule'));
 
         $code = $this->artisan('module:delete', ['module' => 'WrongModule']);
-        $this->assertDirectoryDoesNotExist(base_path('modules/WrongModule'));
+        $this->assertDirectoryDoesNotExist(base_path('app/Modules/WrongModule'));
         $this->assertSame(0, $code);
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Tests\Commands;
 
 use Illuminate\Filesystem\Filesystem;
 use Laraneat\Modules\Contracts\RepositoryInterface;
@@ -20,7 +20,7 @@ class ListCommandTest extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->modulePath = base_path('modules/Blog');
+        $this->modulePath = base_path('app/Modules/Blog');
         $this->finder = $this->app['files'];
         $this->artisan('module:make', ['name' => ['Blog']]);
     }

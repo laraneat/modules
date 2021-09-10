@@ -396,7 +396,7 @@ class ModuleGenerator extends Generator
         }
 
         if (GenerateConfigReader::read('controller')->generate() === true) {
-            $options = $this->type=='api'?['--api'=>true]:[];
+            $options = $this->type === 'api' ? ['--api'=>true] : [];
             $this->console->call('module:make-controller', [
                 'controller' => $this->getName() . 'Controller',
                 'module' => $this->getName(),

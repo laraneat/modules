@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
@@ -80,21 +80,27 @@ class MigrationMakeCommand extends GeneratorCommand
                 'table' => $parser->getTableName(),
                 'fields' => $this->getSchemaParser()->render(),
             ]);
-        } elseif ($parser->isAdd()) {
+        }
+
+        if ($parser->isAdd()) {
             return Stub::create('/migration/add.stub', [
                 'class' => $this->getClass(),
                 'table' => $parser->getTableName(),
                 'fields_up' => $this->getSchemaParser()->up(),
                 'fields_down' => $this->getSchemaParser()->down(),
             ]);
-        } elseif ($parser->isDelete()) {
+        }
+
+        if ($parser->isDelete()) {
             return Stub::create('/migration/delete.stub', [
                 'class' => $this->getClass(),
                 'table' => $parser->getTableName(),
                 'fields_down' => $this->getSchemaParser()->up(),
                 'fields_up' => $this->getSchemaParser()->down(),
             ]);
-        } elseif ($parser->isDrop()) {
+        }
+
+        if ($parser->isDrop()) {
             return Stub::create('/migration/drop.stub', [
                 'class' => $this->getClass(),
                 'table' => $parser->getTableName(),

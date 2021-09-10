@@ -11,12 +11,6 @@
         "phpunit/phpunit": "~4.0",
         "orchestra/testbench": "~3.1"
     },
-    "autoload-dev": {
-        "psr-4": {
-            "App\\Modules\\Recipe\\": ".",
-            "App\\Modules\\": "Modules/"
-        }
-    },
     "minimum-stability": "dev",
     "prefer-stable": true,
 	"authors": [

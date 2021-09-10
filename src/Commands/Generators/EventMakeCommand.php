@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;

@@ -64,18 +64,18 @@ abstract class Module
     /**
      * The constructor.
      * @param Container $app
-     * @param $name
-     * @param $path
+     * @param string $name
+     * @param string $path
      */
-    public function __construct(Container $app, string $name, $path)
+    public function __construct(Container $app, string $name, string $path)
     {
+        $this->app = $app;
         $this->name = $name;
         $this->path = $path;
         $this->cache = $app['cache'];
         $this->files = $app['files'];
         $this->translator = $app['translator'];
         $this->activator = $app[ActivatorInterface::class];
-        $this->app = $app;
     }
 
     /**
@@ -175,7 +175,7 @@ abstract class Module
      *
      * @return $this
      */
-    public function setPath(string $path): Module
+    public function setPath(string $path)
     {
         $this->path = $path;
 

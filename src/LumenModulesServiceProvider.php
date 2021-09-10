@@ -30,7 +30,7 @@ class LumenModulesServiceProvider extends ModulesServiceProvider
      */
     public function setupStubPath()
     {
-        Stub::setBasePath(__DIR__ . '/Commands/stubs');
+        Stub::setBasePath(__DIR__ . '/Commands/Generators/stubs');
 
         if (app('modules')->config('stubs.enabled') === true) {
             Stub::setBasePath(app('modules')->config('stubs.path'));

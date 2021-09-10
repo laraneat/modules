@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Str;

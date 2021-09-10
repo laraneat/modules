@@ -194,7 +194,7 @@ class LaravelFileRepositoryTest extends BaseTestCase
     {
         $this->app['config']->set('modules.stubs.enabled', true);
 
-        $this->assertEquals(base_path('vendor/laraneat/modules/src/Commands/stubs'), $this->repository->getStubPath());
+        $this->assertEquals(base_path('vendor/laraneat/modules/src/Commands/Generators/stubs'), $this->repository->getStubPath());
     }
 
     /** @test */
@@ -230,7 +230,7 @@ class LaravelFileRepositoryTest extends BaseTestCase
 
         $this->repository->delete('Blog');
 
-        $this->assertFalse(is_dir(base_path('modules/Blog')));
+        $this->assertFalse(is_dir(base_path('app/Modules/Blog')));
     }
 
     /** @test */

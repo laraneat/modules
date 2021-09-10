@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
@@ -8,7 +8,7 @@ use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 
-class RuleMakeCommand extends GeneratorCommand
+class MiddlewareMakeCommand extends GeneratorCommand
 {
     use ModuleCommandTrait;
 
@@ -24,20 +24,20 @@ class RuleMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make-rule';
+    protected $name = 'module:make-middleware';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new validation rule for the specified module.';
+    protected $description = 'Create a new middleware class for the specified module.';
 
     public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
 
-        return $module->config('paths.generator.rules.namespace') ?: $module->config('paths.generator.rules.path', 'Rules');
+        return $module->config('paths.generator.filter.namespace') ?: $module->config('paths.generator.filter.path', 'Http/Middleware');
     }
 
     /**
@@ -48,7 +48,7 @@ class RuleMakeCommand extends GeneratorCommand
     protected function getArguments(): array
     {
         return [
-            ['name', InputArgument::REQUIRED, 'The name of the rule class.'],
+            ['name', InputArgument::REQUIRED, 'The name of the command.'],
             ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
         ];
     }
@@ -60,9 +60,9 @@ class RuleMakeCommand extends GeneratorCommand
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
 
-        return (new Stub('/rule.stub', [
+        return (new Stub('/middleware.stub', [
             'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS'     => $this->getFileName(),
+            'CLASS'     => $this->getClass(),
         ]))->render();
     }
 
@@ -73,9 +73,9 @@ class RuleMakeCommand extends GeneratorCommand
     {
         $path = $this->laravel['modules']->getModulePath($this->getModuleName());
 
-        $rulePath = GenerateConfigReader::read('rules');
+        $middlewarePath = GenerateConfigReader::read('filter');
 
-        return $path . $rulePath->getPath() . '/' . $this->getFileName() . '.php';
+        return $path . $middlewarePath->getPath() . '/' . $this->getFileName() . '.php';
     }
 
     /**

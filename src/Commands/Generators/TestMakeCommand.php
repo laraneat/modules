@@ -1,43 +1,31 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
-class RequestMakeCommand extends GeneratorCommand
+class TestMakeCommand extends GeneratorCommand
 {
     use ModuleCommandTrait;
 
-    /**
-     * The name of argument name.
-     *
-     * @var string
-     */
     protected string $argumentName = 'name';
-
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'module:make-request';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create a new form request class for the specified module.';
+    protected $name = 'module:make-test';
+    protected $description = 'Create a new test class for the specified module.';
 
     public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
 
-        return $module->config('paths.generator.request.namespace') ?: $module->config('paths.generator.request.path', 'Http/Requests');
+        if ($this->option('feature')) {
+            return $module->config('paths.generator.test-feature.namespace') ?: $module->config('paths.generator.test-feature.path', 'Tests/Feature');
+        }
+
+        return $module->config('paths.generator.test.namespace') ?: $module->config('paths.generator.test.path', 'Tests/Unit');
     }
 
     /**
@@ -54,13 +42,30 @@ class RequestMakeCommand extends GeneratorCommand
     }
 
     /**
+     * Get the console command options.
+     *
+     * @return array
+     */
+    protected function getOptions(): array
+    {
+        return [
+            ['feature', false, InputOption::VALUE_NONE, 'Create a feature test.'],
+        ];
+    }
+
+    /**
      * @return string
      */
     protected function getTemplateContents(): string
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
+        $stub = '/unit-test.stub';
 
-        return (new Stub('/request.stub', [
+        if ($this->option('feature')) {
+            $stub = '/feature-test.stub';
+        }
+
+        return (new Stub($stub, [
             'NAMESPACE' => $this->getClassNamespace($module),
             'CLASS'     => $this->getClass(),
         ]))->render();
@@ -73,9 +78,13 @@ class RequestMakeCommand extends GeneratorCommand
     {
         $path = $this->laravel['modules']->getModulePath($this->getModuleName());
 
-        $requestPath = GenerateConfigReader::read('request');
+        if ($this->option('feature')) {
+            $testPath = GenerateConfigReader::read('test-feature');
+        } else {
+            $testPath = GenerateConfigReader::read('test');
+        }
 
-        return $path . $requestPath->getPath() . '/' . $this->getFileName() . '.php';
+        return $path . $testPath->getPath() . '/' . $this->getFileName() . '.php';
     }
 
     /**

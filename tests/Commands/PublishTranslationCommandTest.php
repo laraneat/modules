@@ -19,7 +19,7 @@ class PublishTranslationCommandTest extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->modulePath = base_path('modules/Blog');
+        $this->modulePath = base_path('app/Modules/Blog');
         $this->finder = $this->app['files'];
         $this->artisan('module:make', ['name' => ['Blog']]);
     }

@@ -1,15 +1,14 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
-class CommandMakeCommand extends GeneratorCommand
+class PolicyMakeCommand extends GeneratorCommand
 {
     use ModuleCommandTrait;
 
@@ -25,20 +24,20 @@ class CommandMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make-command';
+    protected $name = 'module:make-policy';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate new Artisan command for the specified module.';
+    protected $description = 'Create a new policy class for the specified module.';
 
     public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
 
-        return $module->config('paths.generator.command.namespace') ?: $module->config('paths.generator.command.path', 'Console');
+        return $module->config('paths.generator.policies.namespace') ?: $module->config('paths.generator.policies.path', 'Policies');
     }
 
     /**
@@ -49,20 +48,8 @@ class CommandMakeCommand extends GeneratorCommand
     protected function getArguments(): array
     {
         return [
-            ['name', InputArgument::REQUIRED, 'The name of the command.'],
+            ['name', InputArgument::REQUIRED, 'The name of the policy class.'],
             ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['command', null, InputOption::VALUE_OPTIONAL, 'The terminal command that should be assigned.', null],
         ];
     }
 
@@ -73,19 +60,10 @@ class CommandMakeCommand extends GeneratorCommand
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
 
-        return (new Stub('/command.stub', [
-            'COMMAND_NAME' => $this->getCommandName(),
-            'NAMESPACE'    => $this->getClassNamespace($module),
-            'CLASS'        => $this->getClass(),
+        return (new Stub('/policy.plain.stub', [
+            'NAMESPACE' => $this->getClassNamespace($module),
+            'CLASS'     => $this->getClass(),
         ]))->render();
-    }
-
-    /**
-     * @return string
-     */
-    private function getCommandName()
-    {
-        return $this->option('command') ?: 'command:name';
     }
 
     /**
@@ -95,9 +73,9 @@ class CommandMakeCommand extends GeneratorCommand
     {
         $path = $this->laravel['modules']->getModulePath($this->getModuleName());
 
-        $commandPath = GenerateConfigReader::read('command');
+        $policyPath = GenerateConfigReader::read('policies');
 
-        return $path . $commandPath->getPath() . '/' . $this->getFileName() . '.php';
+        return $path . $policyPath->getPath() . '/' . $this->getFileName() . '.php';
     }
 
     /**

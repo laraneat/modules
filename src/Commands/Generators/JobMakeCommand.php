@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
@@ -9,23 +9,31 @@ use Laraneat\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-class TestMakeCommand extends GeneratorCommand
+class JobMakeCommand extends GeneratorCommand
 {
     use ModuleCommandTrait;
 
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'module:make-job';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Create a new job class for the specified module';
+
     protected string $argumentName = 'name';
-    protected $name = 'module:make-test';
-    protected $description = 'Create a new test class for the specified module.';
 
     public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
 
-        if ($this->option('feature')) {
-            return $module->config('paths.generator.test-feature.namespace') ?: $module->config('paths.generator.test-feature.path', 'Tests/Feature');
-        }
-
-        return $module->config('paths.generator.test.namespace') ?: $module->config('paths.generator.test.path', 'Tests/Unit');
+        return $module->config('paths.generator.jobs.namespace') ?: $module->config('paths.generator.jobs.path', 'Jobs');
     }
 
     /**
@@ -36,7 +44,7 @@ class TestMakeCommand extends GeneratorCommand
     protected function getArguments(): array
     {
         return [
-            ['name', InputArgument::REQUIRED, 'The name of the form request class.'],
+            ['name', InputArgument::REQUIRED, 'The name of the job.'],
             ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
         ];
     }
@@ -49,42 +57,37 @@ class TestMakeCommand extends GeneratorCommand
     protected function getOptions(): array
     {
         return [
-            ['feature', false, InputOption::VALUE_NONE, 'Create a feature test.'],
+            ['sync', null, InputOption::VALUE_NONE, 'Indicates that job should be synchronous.'],
         ];
     }
 
     /**
+     * Get template contents.
+     *
      * @return string
      */
     protected function getTemplateContents(): string
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-        $stub = '/unit-test.stub';
 
-        if ($this->option('feature')) {
-            $stub = '/feature-test.stub';
-        }
-
-        return (new Stub($stub, [
+        return (new Stub($this->getStubName(), [
             'NAMESPACE' => $this->getClassNamespace($module),
             'CLASS'     => $this->getClass(),
         ]))->render();
     }
 
     /**
+     * Get the destination file path.
+     *
      * @return string
      */
-    protected function getDestinationFilePath(): string
+    protected function getDestinationFilePath()
     {
         $path = $this->laravel['modules']->getModulePath($this->getModuleName());
 
-        if ($this->option('feature')) {
-            $testPath = GenerateConfigReader::read('test-feature');
-        } else {
-            $testPath = GenerateConfigReader::read('test');
-        }
+        $jobPath = GenerateConfigReader::read('jobs');
 
-        return $path . $testPath->getPath() . '/' . $this->getFileName() . '.php';
+        return $path . $jobPath->getPath() . '/' . $this->getFileName() . '.php';
     }
 
     /**
@@ -93,5 +96,17 @@ class TestMakeCommand extends GeneratorCommand
     private function getFileName(): string
     {
         return Str::studly($this->argument('name'));
+    }
+
+    /**
+     * @return string
+     */
+    protected function getStubName(): string
+    {
+        if ($this->option('sync')) {
+            return '/job.stub';
+        }
+
+        return '/job-queued.stub';
     }
 }

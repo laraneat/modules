@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Commands\Generators;
 
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;

@@ -1,39 +1,43 @@
 <?php
 
-namespace Laraneat\Modules\Commands;
+namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
-class JobMakeCommand extends GeneratorCommand
+class RuleMakeCommand extends GeneratorCommand
 {
     use ModuleCommandTrait;
+
+    /**
+     * The name of argument name.
+     *
+     * @var string
+     */
+    protected string $argumentName = 'name';
 
     /**
      * The console command name.
      *
      * @var string
      */
-    protected $name = 'module:make-job';
+    protected $name = 'module:make-rule';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new job class for the specified module';
-
-    protected string $argumentName = 'name';
+    protected $description = 'Create a new validation rule for the specified module.';
 
     public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
 
-        return $module->config('paths.generator.jobs.namespace') ?: $module->config('paths.generator.jobs.path', 'Jobs');
+        return $module->config('paths.generator.rules.namespace') ?: $module->config('paths.generator.rules.path', 'Rules');
     }
 
     /**
@@ -44,50 +48,34 @@ class JobMakeCommand extends GeneratorCommand
     protected function getArguments(): array
     {
         return [
-            ['name', InputArgument::REQUIRED, 'The name of the job.'],
+            ['name', InputArgument::REQUIRED, 'The name of the rule class.'],
             ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
         ];
     }
 
     /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['sync', null, InputOption::VALUE_NONE, 'Indicates that job should be synchronous.'],
-        ];
-    }
-
-    /**
-     * Get template contents.
-     *
      * @return string
      */
     protected function getTemplateContents(): string
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
 
-        return (new Stub($this->getStubName(), [
+        return (new Stub('/rule.stub', [
             'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS'     => $this->getClass(),
+            'CLASS'     => $this->getFileName(),
         ]))->render();
     }
 
     /**
-     * Get the destination file path.
-     *
      * @return string
      */
-    protected function getDestinationFilePath()
+    protected function getDestinationFilePath(): string
     {
         $path = $this->laravel['modules']->getModulePath($this->getModuleName());
 
-        $jobPath = GenerateConfigReader::read('jobs');
+        $rulePath = GenerateConfigReader::read('rules');
 
-        return $path . $jobPath->getPath() . '/' . $this->getFileName() . '.php';
+        return $path . $rulePath->getPath() . '/' . $this->getFileName() . '.php';
     }
 
     /**
@@ -96,17 +84,5 @@ class JobMakeCommand extends GeneratorCommand
     private function getFileName(): string
     {
         return Str::studly($this->argument('name'));
-    }
-
-    /**
-     * @return string
-     */
-    protected function getStubName(): string
-    {
-        if ($this->option('sync')) {
-            return '/job.stub';
-        }
-
-        return '/job-queued.stub';
     }
 }
