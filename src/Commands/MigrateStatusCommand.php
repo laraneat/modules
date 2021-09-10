@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Contracts\RepositoryInterface;
 use Laraneat\Modules\Migrations\Migrator;
 use Laraneat\Modules\Module;
 use Symfony\Component\Console\Input\InputArgument;
@@ -25,9 +26,9 @@ class MigrateStatusCommand extends Command
     protected $description = 'Status for all module migrations';
 
     /**
-     * @var \Laraneat\Modules\Contracts\RepositoryInterface
+     * @var RepositoryInterface
      */
-    protected $module;
+    protected RepositoryInterface $repository;
 
     /**
      * Execute the console command.
@@ -36,19 +37,19 @@ class MigrateStatusCommand extends Command
      */
     public function handle(): int
     {
-        $this->module = $this->laravel['modules'];
+        $this->repository = $this->laravel['modules'];
 
         $name = $this->argument('module');
 
         if ($name) {
-            $module = $this->module->findOrFail($name);
+            $module = $this->repository->findOrFail($name);
 
             $this->migrateStatus($module);
 
             return 0;
         }
 
-        foreach ($this->module->getOrdered($this->option('direction')) as $module) {
+        foreach ($this->repository->getOrdered($this->option('direction')) as $module) {
             $this->line('Running for module: <info>' . $module->getName() . '</info>');
             $this->migrateStatus($module);
         }
@@ -61,7 +62,7 @@ class MigrateStatusCommand extends Command
      *
      * @param Module $module
      */
-    protected function migrateStatus(Module $module)
+    protected function migrateStatus(Module $module): void
     {
         $path = str_replace(base_path(), '', (new Migrator($module, $this->getLaravel()))->getPath());
 

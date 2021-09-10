@@ -42,7 +42,7 @@ class PublishCommand extends Command
     /**
      * Publish assets from all modules.
      */
-    public function publishAll()
+    public function publishAll(): void
     {
         foreach ($this->laravel['modules']->allEnabled() as $module) {
             $this->publish($module);
@@ -52,14 +52,14 @@ class PublishCommand extends Command
     /**
      * Publish assets from the specified module.
      *
-     * @param string $name
+     * @param string $moduleName
      */
-    public function publish($name)
+    public function publish(string $moduleName): void
     {
-        if ($name instanceof Module) {
-            $module = $name;
+        if ($moduleName instanceof Module) {
+            $module = $moduleName;
         } else {
-            $module = $this->laravel['modules']->findOrFail($name);
+            $module = $this->laravel['modules']->findOrFail($moduleName);
         }
 
         with(new AssetPublisher($module))

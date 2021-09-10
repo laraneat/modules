@@ -85,7 +85,7 @@ class MigrateRefreshCommand extends Command
         ];
     }
 
-    public function getModuleName()
+    public function getModuleName(): ?string
     {
         $module = $this->argument('module');
 

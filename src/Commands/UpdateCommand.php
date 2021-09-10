@@ -45,13 +45,13 @@ class UpdateCommand extends Command
         return 0;
     }
 
-    protected function updateModule($name)
+    protected function updateModule(string $moduleName): void
     {
-        $this->line('Running for module: <info>' . $name . '</info>');
+        $this->line('Running for module: <info>' . $moduleName . '</info>');
 
-        $this->laravel['modules']->update($name);
+        $this->laravel['modules']->update($moduleName);
 
-        $this->info("Module [{$name}] updated successfully.");
+        $this->info("Module [{$moduleName}] updated successfully.");
     }
 
     /**
