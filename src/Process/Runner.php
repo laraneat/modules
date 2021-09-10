@@ -11,11 +11,11 @@ class Runner implements RunnableInterface
      * The module instance.
      * @var RepositoryInterface
      */
-    protected RepositoryInterface $module;
+    protected RepositoryInterface $repository;
 
-    public function __construct(RepositoryInterface $module)
+    public function __construct(RepositoryInterface $repository)
     {
-        $this->module = $module;
+        $this->repository = $repository;
     }
 
     /**

@@ -13,7 +13,7 @@ class Updater extends Runner
      */
     public function update(string $moduleName): void
     {
-        $module = $this->module->findOrFail($moduleName);
+        $module = $this->repository->findOrFail($moduleName);
 
         chdir(base_path());
 
