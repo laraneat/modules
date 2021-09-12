@@ -352,7 +352,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * @inheritDoc
      */
-    public function findByAlias(string $alias)
+    public function findByAlias(string $alias): ?Module
     {
         foreach ($this->all() as $module) {
             if ($module->getAlias() === $alias) {
