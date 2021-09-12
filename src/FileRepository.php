@@ -38,7 +38,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * The scanned paths.
      *
-     * @var array
+     * @var string[]
      */
     protected array $paths = [];
 
@@ -98,7 +98,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * Get all additional paths.
      *
-     * @return array
+     * @return string[]
      */
     public function getPaths(): array
     {
@@ -108,7 +108,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * Get scanned modules paths.
      *
-     * @return array
+     * @return string[]
      */
     public function getScanPaths(): array
     {
@@ -129,7 +129,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
      * Creates a new Module instance
      *
      * @param Container $app
-     * @param string $args
+     * @param string $name
      * @param string $path
      *
      * @return Module
@@ -139,7 +139,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * Get & scan all modules.
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function scan(): array
     {
@@ -165,7 +165,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * Get all modules.
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function all(): array
     {
@@ -199,7 +199,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * Get cached modules.
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function getCached(): array
     {
@@ -211,7 +211,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * Get all modules as collection instance.
      *
-     * @return Collection
+     * @return Collection<Module>
      */
     public function toCollection(): Collection
     {
@@ -223,7 +223,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
      *
      * @param bool $status
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function getByStatus(bool $status): array
     {
@@ -254,7 +254,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * Get list of enabled modules.
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function allEnabled(): array
     {
@@ -264,7 +264,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * Get list of disabled modules.
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function allDisabled(): array
     {
@@ -286,7 +286,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
      *
      * @param string $direction
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function getOrdered(string $direction = 'asc'): array
     {
@@ -309,6 +309,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::getPath()
      */
     public function getPath(): string
     {
@@ -317,6 +318,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::register()
      */
     public function register(): void
     {
@@ -327,6 +329,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::boot()
      */
     public function boot(): void
     {
@@ -337,6 +340,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::find()
      */
     public function find(string $name): ?Module
     {
@@ -351,6 +355,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::findByAlias()
      */
     public function findByAlias(string $alias): ?Module
     {
@@ -365,6 +370,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::findRequirements()
      */
     public function findRequirements($name): array
     {
@@ -403,7 +409,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
      *
      * @param bool $status
      *
-     * @return Collection
+     * @return Collection<Module>
      */
     public function collections(bool $status = true): Collection
     {
@@ -428,6 +434,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::assetPath()
      */
     public function assetPath(string $moduleName): string
     {
@@ -436,6 +443,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::config()
      */
     public function config(string $key, $default = null)
     {
@@ -540,6 +548,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::isEnabled()
      */
     public function isEnabled(string $moduleName): bool
     {
@@ -548,6 +557,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::isDisabled()
      */
     public function isDisabled(string $moduleName): bool
     {
@@ -582,6 +592,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @inheritDoc
+     * @see RepositoryInterface::delete()
      */
     public function delete(string $moduleName): bool
     {
@@ -592,6 +603,8 @@ abstract class FileRepository implements RepositoryInterface, Countable
      * Update dependencies for the specified module.
      *
      * @param string $module
+     *
+     * @return void
      */
     public function update(string $module): void
     {

@@ -8,6 +8,8 @@ class LaravelFileRepository extends FileRepository
 {
     /**
      * {@inheritdoc}
+     *
+     * @see FileRepository::createModule()
      */
     protected function createModule(...$args): Module
     {
