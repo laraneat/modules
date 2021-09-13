@@ -36,15 +36,15 @@ class RecipeServiceProvider extends ServiceProvider
     private function registerBindings()
     {
         $this->app->bind(
-            'App\Modules\Recipe\Repositories\RecipeRepository',
+            \App\Modules\Recipe\Repositories\RecipeRepository::class,
             function () {
-                $repository = new \Modules\Recipe\Repositories\Eloquent\EloquentRecipeRepository(new \Modules\Recipe\Entities\Recipe());
+                $repository = new \App\Modules\Recipe\Repositories\Eloquent\EloquentRecipeRepository(new \App\Modules\Recipe\Entities\Recipe());
 
                 if (! config('app.cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Recipe\Repositories\Cache\CacheRecipeDecorator($repository);
+                return new \App\Modules\Recipe\Repositories\Cache\CacheRecipeDecorator($repository);
             }
         );
         // add bindings
