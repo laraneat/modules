@@ -107,14 +107,6 @@ class ControllerMakeCommand extends GeneratorCommand
         return $controller;
     }
 
-    /**
-     * @return array|string
-     */
-    private function getControllerNameWithoutNamespace()
-    {
-        return class_basename($this->getControllerName());
-    }
-
     public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
@@ -122,11 +114,17 @@ class ControllerMakeCommand extends GeneratorCommand
         return $module->config('paths.generator.controller.namespace') ?: $module->config('paths.generator.controller.path', 'Http/Controllers');
     }
 
+    private function getControllerNameWithoutNamespace(): string
+    {
+        return class_basename($this->getControllerName());
+    }
+
     /**
      * Get the stub file name based on the options
+     *
      * @return string
      */
-    protected function getStubName()
+    protected function getStubName(): string
     {
         if ($this->option('plain') === true) {
             $stub = '/controller-plain.stub';
