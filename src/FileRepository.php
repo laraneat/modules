@@ -319,7 +319,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
         $modules = [];
 
-        foreach ($paths as $key => $path) {
+        foreach ($paths as $path) {
             $manifests = $this->getFiles()->glob("{$path}/module.json");
 
             is_array($manifests) || $manifests = [];

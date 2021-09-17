@@ -41,10 +41,10 @@ interface ActivatorInterface
     /**
      * Sets a module status by its name
      *
-     * @param string $name
+     * @param string $moduleName
      * @param bool $active
      */
-    public function setActiveByName(string $name, bool $active): void;
+    public function setActiveByName(string $moduleName, bool $active): void;
 
     /**
      * Deletes a module activation status

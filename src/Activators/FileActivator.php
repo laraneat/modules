@@ -128,9 +128,9 @@ class FileActivator implements ActivatorInterface
     /**
      * @inheritDoc
      */
-    public function setActiveByName(string $name, bool $status): void
+    public function setActiveByName(string $moduleName, bool $active): void
     {
-        $this->modulesStatuses[$name] = $status;
+        $this->modulesStatuses[$moduleName] = $active;
         $this->writeJson();
         $this->flushCache();
     }

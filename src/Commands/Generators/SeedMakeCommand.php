@@ -72,7 +72,6 @@ class SeedMakeCommand extends GeneratorCommand
             'NAME' => $this->getSeederName(),
             'MODULE' => $this->getModuleName(),
             'NAMESPACE' => $this->getClassNamespace($module),
-
         ]))->render();
     }
 
