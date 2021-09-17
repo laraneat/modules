@@ -22,11 +22,11 @@ abstract class FileRepository implements RepositoryInterface, Countable
     use Macroable;
 
     /**
-     * Application instance.
+     * The laravel application instance.
      *
-     * @var \Illuminate\Contracts\Foundation\Application|\Laravel\Lumen\Application
+     * @var Container
      */
-    protected $app;
+    protected Container $app;
 
     /**
      * The module path.

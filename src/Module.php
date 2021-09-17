@@ -16,11 +16,11 @@ abstract class Module
     use Macroable;
 
     /**
-     * The laravel|lumen application instance.
+     * The laravel application instance.
      *
-     * @var \Illuminate\Contracts\Foundation\Application|\Laravel\Lumen\Application
+     * @var Container
      */
-    protected $app;
+    protected Container $app;
 
     /**
      * The module name.
