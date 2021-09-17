@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Facades\Modules;
 
 class UnUseCommand extends Command
 {
@@ -25,7 +26,7 @@ class UnUseCommand extends Command
      */
     public function handle(): int
     {
-        $this->laravel['modules']->forgetUsed();
+        Modules::forgetUsed();
 
         $this->info('Previous module used successfully forgotten.');
 

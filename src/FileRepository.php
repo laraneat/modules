@@ -82,6 +82,58 @@ abstract class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
+     * Creates a new Module instance
+     *
+     * @param Container $app
+     * @param string $name
+     * @param string $path
+     *
+     * @return Module
+     */
+    abstract protected function createModule(...$args);
+
+    /**
+     * @inheritDoc
+     * @see RepositoryInterface::register()
+     */
+    public function register(): void
+    {
+        foreach ($this->getOrdered() as $module) {
+            $module->register();
+        }
+    }
+
+    /**
+     * @inheritDoc
+     * @see RepositoryInterface::boot()
+     */
+    public function boot(): void
+    {
+        foreach ($this->getOrdered() as $module) {
+            $module->boot();
+        }
+    }
+
+    /**
+     * @inheritDoc
+     * @see RepositoryInterface::getPath()
+     */
+    public function getPath(): string
+    {
+        return $this->path ?: $this->config('paths.modules', base_path('app/Modules'));
+    }
+
+    /**
+     * Get all additional paths.
+     *
+     * @return string[]
+     */
+    public function getPaths(): array
+    {
+        return $this->paths;
+    }
+
+    /**
      * Add other module location.
      *
      * @param string $path
@@ -93,16 +145,6 @@ abstract class FileRepository implements RepositoryInterface, Countable
         $this->paths[] = $path;
 
         return $this;
-    }
-
-    /**
-     * Get all additional paths.
-     *
-     * @return string[]
-     */
-    public function getPaths(): array
-    {
-        return $this->paths;
     }
 
     /**
@@ -126,40 +168,51 @@ abstract class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * Creates a new Module instance
+     * Get stub path.
      *
-     * @param Container $app
-     * @param string $name
-     * @param string $path
-     *
-     * @return Module
+     * @return string|null
      */
-    abstract protected function createModule(...$args);
-
-    /**
-     * Get & scan all modules.
-     *
-     * @return array<string, Module>
-     */
-    public function scan(): array
+    public function getStubPath(): ?string
     {
-        $paths = $this->getScanPaths();
-
-        $modules = [];
-
-        foreach ($paths as $key => $path) {
-            $manifests = $this->getFiles()->glob("{$path}/module.json");
-
-            is_array($manifests) || $manifests = [];
-
-            foreach ($manifests as $manifest) {
-                $name = Json::make($manifest)->get('name');
-
-                $modules[$name] = $this->createModule($this->app, $name, dirname($manifest));
-            }
+        if ($this->stubPath !== null) {
+            return $this->stubPath;
         }
 
-        return $modules;
+        if ($this->config('stubs.enabled') === true) {
+            return $this->config('stubs.path');
+        }
+
+        return $this->stubPath;
+    }
+
+    /**
+     * Set stub path.
+     *
+     * @param string $stubPath
+     *
+     * @return $this
+     */
+    public function setStubPath(string $stubPath)
+    {
+        $this->stubPath = $stubPath;
+
+        return $this;
+    }
+
+    /**
+     * Get module path for a specific module.
+     *
+     * @param string $moduleName
+     *
+     * @return string
+     */
+    public function getModulePath(string $moduleName): string
+    {
+        try {
+            return $this->findOrFail($moduleName)->getPath() . '/';
+        } catch (ModuleNotFoundException $e) {
+            return $this->getPath() . '/' . Str::studly($moduleName) . '/';
+        }
     }
 
     /**
@@ -174,81 +227,6 @@ abstract class FileRepository implements RepositoryInterface, Countable
         }
 
         return $this->formatCached($this->getCached());
-    }
-
-    /**
-     * Format the cached data as array of modules.
-     *
-     * @param array $cached
-     *
-     * @return array
-     */
-    protected function formatCached(array $cached): array
-    {
-        $modules = [];
-
-        foreach ($cached as $name => $module) {
-            $path = $module['path'];
-
-            $modules[$name] = $this->createModule($this->app, $name, $path);
-        }
-
-        return $modules;
-    }
-
-    /**
-     * Get cached modules.
-     *
-     * @return array<string, Module>
-     */
-    public function getCached(): array
-    {
-        return $this->cache->remember($this->config('cache.key'), $this->config('cache.lifetime'), function () {
-            return $this->toCollection()->toArray();
-        });
-    }
-
-    /**
-     * Get all modules as collection instance.
-     *
-     * @return Collection<Module>
-     */
-    public function toCollection(): Collection
-    {
-        return new Collection($this->scan());
-    }
-
-    /**
-     * Get modules by status.
-     *
-     * @param bool $status
-     *
-     * @return array<string, Module>
-     */
-    public function getByStatus(bool $status): array
-    {
-        $modules = [];
-
-        /** @var Module $module */
-        foreach ($this->all() as $name => $module) {
-            if ($module->isStatus($status)) {
-                $modules[$name] = $module;
-            }
-        }
-
-        return $modules;
-    }
-
-    /**
-     * Determine whether the given module exist.
-     *
-     * @param $name
-     *
-     * @return bool
-     */
-    public function has($name): bool
-    {
-        return array_key_exists($name, $this->all());
     }
 
     /**
@@ -272,13 +250,15 @@ abstract class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * Get count from all modules.
+     * Get cached modules.
      *
-     * @return int
+     * @return array<string, Module>
      */
-    public function count(): int
+    public function getCached(): array
     {
-        return count($this->all());
+        return $this->cache->remember($this->config('cache.key'), $this->config('cache.lifetime'), function () {
+            return $this->toCollection()->toArray();
+        });
     }
 
     /**
@@ -308,44 +288,92 @@ abstract class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::getPath()
+     * Get modules by status.
+     *
+     * @param bool $status
+     *
+     * @return array<string, Module>
      */
-    public function getPath(): string
+    public function getByStatus(bool $status): array
     {
-        return $this->path ?: $this->config('paths.modules', base_path('app/Modules'));
+        $modules = [];
+
+        /** @var Module $module */
+        foreach ($this->all() as $name => $module) {
+            if ($module->isStatus($status)) {
+                $modules[$name] = $module;
+            }
+        }
+
+        return $modules;
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::register()
+     * Get & scan all modules.
+     *
+     * @return array<string, Module>
      */
-    public function register(): void
+    public function scan(): array
     {
-        foreach ($this->getOrdered() as $module) {
-            $module->register();
+        $paths = $this->getScanPaths();
+
+        $modules = [];
+
+        foreach ($paths as $key => $path) {
+            $manifests = $this->getFiles()->glob("{$path}/module.json");
+
+            is_array($manifests) || $manifests = [];
+
+            foreach ($manifests as $manifest) {
+                $name = Json::make($manifest)->get('name');
+
+                $modules[$name] = $this->createModule($this->app, $name, dirname($manifest));
+            }
         }
+
+        return $modules;
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::boot()
+     * Get all modules as collection instance.
+     *
+     * @return Collection<Module>
      */
-    public function boot(): void
+    public function toCollection(): Collection
     {
-        foreach ($this->getOrdered() as $module) {
-            $module->boot();
-        }
+        return new Collection($this->scan());
+    }
+
+    /**
+     * Determine whether the given module exist.
+     *
+     * @param string $moduleName
+     *
+     * @return bool
+     */
+    public function has(string $moduleName): bool
+    {
+        return array_key_exists($moduleName, $this->all());
+    }
+
+    /**
+     * Get count from all modules.
+     *
+     * @return int
+     */
+    public function count(): int
+    {
+        return count($this->all());
     }
 
     /**
      * @inheritDoc
      * @see RepositoryInterface::find()
      */
-    public function find(string $name): ?Module
+    public function find(string $moduleName): ?Module
     {
         foreach ($this->all() as $module) {
-            if ($module->getLowerName() === strtolower($name)) {
+            if ($module->getLowerName() === strtolower($moduleName)) {
                 return $module;
             }
         }
@@ -369,23 +397,6 @@ abstract class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::findRequirements()
-     */
-    public function findRequirements($name): array
-    {
-        $requirements = [];
-
-        $module = $this->findOrFail($name);
-
-        foreach ($module->getRequires() as $requirementName) {
-            $requirements[] = $this->findByAlias($requirementName);
-        }
-
-        return $requirements;
-    }
-
-    /**
      * Find a specific module, if there return that, otherwise throw exception.
      *
      * @param string $moduleName
@@ -405,6 +416,43 @@ abstract class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
+     * @inheritDoc
+     * @see RepositoryInterface::findRequirements()
+     */
+    public function findRequirements(string $moduleName): array
+    {
+        $requirements = [];
+
+        $module = $this->findOrFail($moduleName);
+
+        foreach ($module->getRequires() as $requirementName) {
+            $requirements[] = $this->findByAlias($requirementName);
+        }
+
+        return $requirements;
+    }
+
+    /**
+     * Format the cached data as array of modules.
+     *
+     * @param array $cached
+     *
+     * @return array
+     */
+    protected function formatCached(array $cached): array
+    {
+        $modules = [];
+
+        foreach ($cached as $name => $module) {
+            $path = $module['path'];
+
+            $modules[$name] = $this->createModule($this->app, $name, $path);
+        }
+
+        return $modules;
+    }
+
+    /**
      * Get all modules as laravel collection instance.
      *
      * @param bool $status
@@ -414,22 +462,6 @@ abstract class FileRepository implements RepositoryInterface, Countable
     public function collections(bool $status = true): Collection
     {
         return new Collection($this->getByStatus($status));
-    }
-
-    /**
-     * Get module path for a specific module.
-     *
-     * @param string $moduleName
-     *
-     * @return string
-     */
-    public function getModulePath(string $moduleName): string
-    {
-        try {
-            return $this->findOrFail($moduleName)->getPath() . '/';
-        } catch (ModuleNotFoundException $e) {
-            return $this->getPath() . '/' . Str::studly($moduleName) . '/';
-        }
     }
 
     /**
@@ -626,37 +658,5 @@ abstract class FileRepository implements RepositoryInterface, Countable
         $installer = new Installer($name, $version, $type, $subtree);
 
         return $installer->run();
-    }
-
-    /**
-     * Get stub path.
-     *
-     * @return string|null
-     */
-    public function getStubPath(): ?string
-    {
-        if ($this->stubPath !== null) {
-            return $this->stubPath;
-        }
-
-        if ($this->config('stubs.enabled') === true) {
-            return $this->config('stubs.path');
-        }
-
-        return $this->stubPath;
-    }
-
-    /**
-     * Set stub path.
-     *
-     * @param string $stubPath
-     *
-     * @return $this
-     */
-    public function setStubPath(string $stubPath)
-    {
-        $this->stubPath = $stubPath;
-
-        return $this;
     }
 }

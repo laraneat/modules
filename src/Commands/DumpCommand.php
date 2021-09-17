@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Facades\Modules;
 use Symfony\Component\Console\Input\InputArgument;
 
 class DumpCommand extends Command
@@ -31,7 +32,7 @@ class DumpCommand extends Command
         if ($module = $this->argument('module')) {
             $this->dump($module);
         } else {
-            foreach ($this->laravel['modules']->all() as $module) {
+            foreach (Modules::all() as $module) {
                 $this->dump($module->getStudlyName());
             }
         }
@@ -41,7 +42,7 @@ class DumpCommand extends Command
 
     public function dump(string $moduleName): void
     {
-        $module = $this->laravel['modules']->findOrFail($moduleName);
+        $module = Modules::findOrFail($moduleName);
 
         $this->line("<comment>Running for module</comment>: {$moduleName}");
 

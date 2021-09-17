@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\CanClearModulesCache;
@@ -65,7 +66,7 @@ class SeedMakeCommand extends GeneratorCommand
      */
     protected function getTemplateContents(): string
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
+        $module = Modules::findOrFail($this->getModuleName());
 
         return (new Stub('/seeder.stub', [
             'NAME' => $this->getSeederName(),
@@ -82,7 +83,7 @@ class SeedMakeCommand extends GeneratorCommand
     {
         $this->clearCache();
 
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = Modules::getModulePath($this->getModuleName());
 
         $seederPath = GenerateConfigReader::read('seeder');
 
@@ -108,8 +109,6 @@ class SeedMakeCommand extends GeneratorCommand
      */
     public function getDefaultNamespace(): string
     {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.seeder.namespace') ?: $module->config('paths.generator.seeder.path', 'Database/Seeders');
+        return Modules::config('paths.generator.seeder.namespace') ?: Modules::config('paths.generator.seeder.path', 'Database/Seeders');
     }
 }

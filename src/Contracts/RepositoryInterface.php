@@ -129,7 +129,7 @@ interface RepositoryInterface
     public function config(string $key, $default = null);
 
     /**
-     * Get a module path.
+     * Get modules path.
      *
      * @return string
      */

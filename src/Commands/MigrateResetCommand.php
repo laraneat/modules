@@ -4,6 +4,7 @@ namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
 use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Migrations\Migrator;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Traits\MigrationLoaderTrait;
@@ -38,8 +39,6 @@ class MigrateResetCommand extends Command
      */
     public function handle(): int
     {
-        $this->repository = $this->laravel['modules'];
-
         $name = $this->argument('module');
 
         if (!empty($name)) {
@@ -48,7 +47,7 @@ class MigrateResetCommand extends Command
             return 0;
         }
 
-        foreach ($this->repository->getOrdered($this->option('direction')) as $module) {
+        foreach (Modules::getOrdered($this->option('direction')) as $module) {
             $this->line('Running for module: <info>' . $module->getName() . '</info>');
 
             $this->reset($module);
@@ -65,7 +64,7 @@ class MigrateResetCommand extends Command
     public function reset($module): void
     {
         if (is_string($module)) {
-            $module = $this->repository->findOrFail($module);
+            $module = Modules::findOrFail($module);
         }
 
         $migrator = new Migrator($module, $this->getLaravel());

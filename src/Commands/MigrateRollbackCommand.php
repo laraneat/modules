@@ -3,7 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
-use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Migrations\Migrator;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Traits\MigrationLoaderTrait;
@@ -29,17 +29,10 @@ class MigrateRollbackCommand extends Command
     protected $description = 'Rollback the modules migrations.';
 
     /**
-     * @var RepositoryInterface
-     */
-    protected RepositoryInterface $repository;
-
-    /**
      * Execute the console command.
      */
     public function handle(): int
     {
-        $this->repository = $this->laravel['modules'];
-
         $name = $this->argument('module');
 
         if (!empty($name)) {
@@ -48,7 +41,7 @@ class MigrateRollbackCommand extends Command
             return 0;
         }
 
-        foreach ($this->repository->getOrdered($this->option('direction')) as $module) {
+        foreach (Modules::getOrdered($this->option('direction')) as $module) {
             $this->line('Running for module: <info>' . $module->getName() . '</info>');
 
             $this->rollback($module);
@@ -65,7 +58,7 @@ class MigrateRollbackCommand extends Command
     public function rollback($module): void
     {
         if (is_string($module)) {
-            $module = $this->repository->findOrFail($module);
+            $module = Modules::findOrFail($module);
         }
 
         $migrator = new Migrator($module, $this->getLaravel());

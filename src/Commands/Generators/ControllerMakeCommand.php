@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
@@ -39,9 +40,9 @@ class ControllerMakeCommand extends GeneratorCommand
      *
      * @return string
      */
-    public function getDestinationFilePath()
+    public function getDestinationFilePath(): string
     {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = Modules::getModulePath($this->getModuleName());
 
         $controllerPath = GenerateConfigReader::read('controller');
 
@@ -53,7 +54,7 @@ class ControllerMakeCommand extends GeneratorCommand
      */
     protected function getTemplateContents(): string
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
+        $module = Modules::findOrFail($this->getModuleName());
 
         return (new Stub($this->getStubName(), [
             'MODULENAME'        => $module->getStudlyName(),
@@ -65,7 +66,7 @@ class ControllerMakeCommand extends GeneratorCommand
             'MODULE'            => $this->getModuleName(),
             'NAME'              => $this->getModuleName(),
             'STUDLY_NAME'       => $module->getStudlyName(),
-            'MODULE_NAMESPACE'  => $this->laravel['modules']->config('namespace'),
+            'MODULE_NAMESPACE'  => Modules::config('namespace'),
         ]))->render();
     }
 
@@ -93,10 +94,7 @@ class ControllerMakeCommand extends GeneratorCommand
         ];
     }
 
-    /**
-     * @return array|string
-     */
-    protected function getControllerName()
+    protected function getControllerName(): string
     {
         $controller = Str::studly($this->argument('controller'));
 
@@ -109,9 +107,7 @@ class ControllerMakeCommand extends GeneratorCommand
 
     public function getDefaultNamespace(): string
     {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.controller.namespace') ?: $module->config('paths.generator.controller.path', 'Http/Controllers');
+        return Modules::config('paths.generator.controller.namespace') ?: Modules::config('paths.generator.controller.path', 'Http/Controllers');
     }
 
     private function getControllerNameWithoutNamespace(): string

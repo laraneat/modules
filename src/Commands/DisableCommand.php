@@ -3,7 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
-use Laraneat\Modules\Module;
+use Laraneat\Modules\Facades\Modules;
 use Symfony\Component\Console\Input\InputArgument;
 
 class DisableCommand extends Command
@@ -28,14 +28,13 @@ class DisableCommand extends Command
     public function handle(): int
     {
         /**
-         * check if user entred an argument
+         * check if user entered an argument
          */
         if ($this->argument('module') === null) {
             $this->disableAll();
         }
 
-        /** @var Module $module */
-        $module = $this->laravel['modules']->findOrFail($this->argument('module'));
+        $module = Modules::findOrFail($this->argument('module'));
 
         if ($module->isEnabled()) {
             $module->disable();
@@ -53,10 +52,9 @@ class DisableCommand extends Command
      *
      * @return void
      */
-    public function disableAll()
+    public function disableAll(): void
     {
-        /** @var Modules $modules */
-        $modules = $this->laravel['modules']->all();
+        $modules = Modules::all();
 
         foreach ($modules as $module) {
             if ($module->isEnabled()) {

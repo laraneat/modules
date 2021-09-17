@@ -4,6 +4,7 @@ namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -34,7 +35,7 @@ class PublishConfigurationCommand extends Command
             return 0;
         }
 
-        foreach ($this->laravel['modules']->allEnabled() as $module) {
+        foreach (Modules::allEnabled() as $module) {
             $this->publishConfiguration($module->getName());
         }
 

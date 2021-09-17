@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
@@ -58,7 +59,7 @@ class ListenerMakeCommand extends GeneratorCommand
 
     protected function getTemplateContents(): string
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
+        $module = Modules::findOrFail($this->getModuleName());
 
         return (new Stub($this->getStubName(), [
             'NAMESPACE' => $this->getClassNamespace($module),
@@ -70,14 +71,17 @@ class ListenerMakeCommand extends GeneratorCommand
 
     public function getDefaultNamespace(): string
     {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.listener.namespace') ?: $module->config('paths.generator.listener.path', 'Listeners');
+        return Modules::config('paths.generator.listener.namespace') ?: Modules::config('paths.generator.listener.path', 'Listeners');
     }
 
-    protected function getEventName(Module $module)
+    /**
+     * @param Module $module
+     *
+     * @return string
+     */
+    protected function getEventName(Module $module): string
     {
-        $namespace = $this->laravel['modules']->config('namespace') . "\\" . $module->getStudlyName();
+        $namespace = Modules::config('namespace') . "\\" . $module->getStudlyName();
         $eventPath = GenerateConfigReader::read('event');
 
         $eventName = $namespace . "\\" . $eventPath->getPath() . "\\" . $this->option('event');
@@ -85,14 +89,20 @@ class ListenerMakeCommand extends GeneratorCommand
         return str_replace('/', '\\', $eventName);
     }
 
-    protected function getShortEventName()
+    /**
+     * @return string
+     */
+    protected function getShortEventName(): string
     {
         return class_basename($this->option('event'));
     }
 
-    protected function getDestinationFilePath()
+    /**
+     * @return string
+     */
+    protected function getDestinationFilePath(): string
     {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = Modules::getModulePath($this->getModuleName());
 
         $listenerPath = GenerateConfigReader::read('listener');
 
@@ -102,7 +112,7 @@ class ListenerMakeCommand extends GeneratorCommand
     /**
      * @return string
      */
-    protected function getFileName()
+    protected function getFileName(): string
     {
         return Str::studly($this->argument('name'));
     }

@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 
@@ -37,8 +38,7 @@ class UpdateCommand extends Command
             return 0;
         }
 
-        /** @var \Laraneat\Modules\Module $module */
-        foreach ($this->laravel['modules']->getOrdered() as $module) {
+        foreach (Modules::getOrdered() as $module) {
             $this->updateModule($module->getName());
         }
 
@@ -49,7 +49,7 @@ class UpdateCommand extends Command
     {
         $this->line('Running for module: <info>' . $moduleName . '</info>');
 
-        $this->laravel['modules']->update($moduleName);
+        Modules::update($moduleName);
 
         $this->info("Module [{$moduleName}] updated successfully.");
     }

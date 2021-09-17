@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -37,11 +38,10 @@ class ListCommand extends Command
      *
      * @return array
      */
-    public function getRows()
+    public function getRows(): array
     {
         $rows = [];
 
-        /** @var Module $module */
         foreach ($this->getModules() as $module) {
             $rows[] = [
                 $module->getName(),
@@ -54,24 +54,23 @@ class ListCommand extends Command
         return $rows;
     }
 
+    /**
+     * @return Module[]
+     */
     public function getModules()
     {
         switch ($this->option('only')) {
             case 'enabled':
-                return $this->laravel['modules']->getByStatus(true);
-                break;
+                return Modules::getByStatus(true);
 
             case 'disabled':
-                return $this->laravel['modules']->getByStatus(false);
-                break;
+                return Modules::getByStatus(false);
 
             case 'priority':
-                return $this->laravel['modules']->getPriority($this->option('direction'));
-                break;
+                return Modules::getOrdered($this->option('direction'));
 
             default:
-                return $this->laravel['modules']->all();
-                break;
+                return Modules::all();
         }
     }
 

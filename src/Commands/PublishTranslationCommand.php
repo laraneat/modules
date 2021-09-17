@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Publishing\LangPublisher;
 use Symfony\Component\Console\Input\InputArgument;
@@ -42,9 +43,9 @@ class PublishTranslationCommand extends Command
     /**
      * Publish assets from all modules.
      */
-    public function publishAll()
+    public function publishAll(): void
     {
-        foreach ($this->laravel['modules']->allEnabled() as $module) {
+        foreach (Modules::allEnabled() as $module) {
             $this->publish($module);
         }
     }
@@ -52,14 +53,12 @@ class PublishTranslationCommand extends Command
     /**
      * Publish assets from the specified module.
      *
-     * @param string $name
+     * @param Module|string $module
      */
-    public function publish($name)
+    public function publish($module): void
     {
-        if ($name instanceof Module) {
-            $module = $name;
-        } else {
-            $module = $this->laravel['modules']->findOrFail($name);
+        if (!($module instanceof Module)) {
+            $module = Modules::findOrFail($module);
         }
 
         with(new LangPublisher($module))

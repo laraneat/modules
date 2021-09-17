@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
@@ -47,16 +48,14 @@ class ComponentClassMakeCommand extends GeneratorCommand
      *
      * @return void
      */
-    protected function writeComponentViewTemplate()
+    protected function writeComponentViewTemplate(): void
     {
         $this->call('module:make-component-view', ['name' => $this->argument('name') , 'module' => $this->argument('module')]);
     }
 
     public function getDefaultNamespace(): string
     {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.component-class.namespace') ?: $module->config('paths.generator.component-class.path', 'View/Component');
+        return Modules::config('paths.generator.component-class.namespace') ?: Modules::config('paths.generator.component-class.path', 'View/Component');
     }
 
     /**
@@ -76,7 +75,7 @@ class ComponentClassMakeCommand extends GeneratorCommand
      */
     protected function getTemplateContents(): string
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
+        $module = Modules::findOrFail($this->getModuleName());
 
         return (new Stub('/component-class.stub', [
             'NAMESPACE'         => $this->getClassNamespace($module),
@@ -91,7 +90,7 @@ class ComponentClassMakeCommand extends GeneratorCommand
      */
     protected function getDestinationFilePath(): string
     {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = Modules::getModulePath($this->getModuleName());
         $factoryPath = GenerateConfigReader::read('component-class');
 
         return $path . $factoryPath->getPath() . '/' . $this->getFileName();

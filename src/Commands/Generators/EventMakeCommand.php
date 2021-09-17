@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
@@ -30,7 +31,7 @@ class EventMakeCommand extends GeneratorCommand
 
     public function getTemplateContents(): string
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
+        $module = Modules::findOrFail($this->getModuleName());
 
         return (new Stub('/event.stub', [
             'NAMESPACE' => $this->getClassNamespace($module),
@@ -38,9 +39,12 @@ class EventMakeCommand extends GeneratorCommand
         ]))->render();
     }
 
-    public function getDestinationFilePath()
+    /**
+     * @return string
+     */
+    public function getDestinationFilePath(): string
     {
-        $path       = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = Modules::getModulePath($this->getModuleName());
 
         $eventPath = GenerateConfigReader::read('event');
 
@@ -50,16 +54,14 @@ class EventMakeCommand extends GeneratorCommand
     /**
      * @return string
      */
-    protected function getFileName()
+    protected function getFileName(): string
     {
         return Str::studly($this->argument('name'));
     }
 
     public function getDefaultNamespace(): string
     {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.event.namespace') ?: $module->config('paths.generator.event.path', 'Events');
+        return Modules::config('paths.generator.event.namespace') ?: Modules::config('paths.generator.event.path', 'Events');
     }
 
     /**

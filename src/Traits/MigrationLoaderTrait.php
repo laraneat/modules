@@ -2,6 +2,8 @@
 
 namespace Laraneat\Modules\Traits;
 
+use Laraneat\Modules\Facades\Modules;
+
 trait MigrationLoaderTrait
 {
     /**
@@ -11,7 +13,7 @@ trait MigrationLoaderTrait
      */
     protected function loadMigrationFiles(string $moduleName): void
     {
-        $path = $this->laravel['modules']->getModulePath($moduleName) . $this->getMigrationGeneratorPath();
+        $path = Modules::getModulePath($moduleName) . $this->getMigrationGeneratorPath();
 
         $files = $this->laravel['files']->glob($path . '/*_*.php');
 
@@ -27,6 +29,6 @@ trait MigrationLoaderTrait
      */
     protected function getMigrationGeneratorPath(): string
     {
-        return $this->laravel['modules']->config('paths.generator.migration');
+        return Modules::config('paths.generator.migration');
     }
 }

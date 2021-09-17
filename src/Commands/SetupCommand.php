@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Facades\Modules;
 
 class SetupCommand extends Command
 {
@@ -36,7 +37,7 @@ class SetupCommand extends Command
     public function generateModulesFolder()
     {
         return $this->generateDirectory(
-            $this->laravel['modules']->config('paths.modules'),
+            Modules::config('paths.modules'),
             'Modules directory created successfully',
             'Modules directory already exist'
         );
@@ -48,7 +49,7 @@ class SetupCommand extends Command
     public function generateAssetsFolder()
     {
         return $this->generateDirectory(
-            $this->laravel['modules']->config('paths.assets'),
+            Modules::config('paths.assets'),
             'Assets directory created successfully',
             'Assets directory already exist'
         );

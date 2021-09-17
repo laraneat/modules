@@ -4,6 +4,7 @@ namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Console\Command;
 use Laraneat\Modules\Exceptions\FileAlreadyExistException;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Generators\FileGenerator;
 use Laraneat\Modules\Module;
 
@@ -62,7 +63,7 @@ abstract class GeneratorCommand extends Command
      *
      * @return string
      */
-    public function getClass()
+    public function getClass(): string
     {
         return class_basename($this->argument($this->argumentName));
     }
@@ -92,7 +93,7 @@ abstract class GeneratorCommand extends Command
             $this->argument($this->argumentName)
         );
 
-        $namespace = $this->laravel['modules']->config('namespace');
+        $namespace = Modules::config('namespace');
 
         $namespace .= '\\' . $module->getStudlyName();
 

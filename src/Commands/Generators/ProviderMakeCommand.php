@@ -3,7 +3,7 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
-use Laraneat\Modules\Module;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
@@ -37,9 +37,7 @@ class ProviderMakeCommand extends GeneratorCommand
 
     public function getDefaultNamespace(): string
     {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.provider.namespace') ?: $module->config('paths.generator.provider.path', 'Providers');
+        return Modules::config('paths.generator.provider.namespace') ?: Modules::config('paths.generator.provider.path', 'Providers');
     }
 
     /**
@@ -74,8 +72,7 @@ class ProviderMakeCommand extends GeneratorCommand
     {
         $stub = $this->option('master') ? 'scaffold/provider' : 'provider';
 
-        /** @var Module $module */
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
+        $module = Modules::findOrFail($this->getModuleName());
 
         return (new Stub('/' . $stub . '.stub', [
             'NAMESPACE'         => $this->getClassNamespace($module),
@@ -84,7 +81,7 @@ class ProviderMakeCommand extends GeneratorCommand
             'MODULE'            => $this->getModuleName(),
             'NAME'              => $this->getFileName(),
             'STUDLY_NAME'       => $module->getStudlyName(),
-            'MODULE_NAMESPACE'  => $this->laravel['modules']->config('namespace'),
+            'MODULE_NAMESPACE'  => Modules::config('namespace'),
             'PATH_VIEWS'        => GenerateConfigReader::read('views')->getPath(),
             'PATH_LANG'         => GenerateConfigReader::read('lang')->getPath(),
             'PATH_CONFIG'       => GenerateConfigReader::read('config')->getPath(),
@@ -98,7 +95,7 @@ class ProviderMakeCommand extends GeneratorCommand
      */
     protected function getDestinationFilePath(): string
     {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = Modules::getModulePath($this->getModuleName());
 
         $generatorPath = GenerateConfigReader::read('provider');
 

@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Migrations\NameParser;
 use Laraneat\Modules\Support\Migrations\SchemaParser;
@@ -60,7 +61,7 @@ class MigrationMakeCommand extends GeneratorCommand
      *
      * @return SchemaParser
      */
-    public function getSchemaParser()
+    public function getSchemaParser(): SchemaParser
     {
         return new SchemaParser($this->option('fields'));
     }
@@ -68,7 +69,7 @@ class MigrationMakeCommand extends GeneratorCommand
     /**
      * @throws \InvalidArgumentException
      *
-     * @return mixed
+     * @return string
      */
     protected function getTemplateContents(): string
     {
@@ -118,7 +119,7 @@ class MigrationMakeCommand extends GeneratorCommand
      */
     protected function getDestinationFilePath(): string
     {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = Modules::getModulePath($this->getModuleName());
 
         $generatorPath = GenerateConfigReader::read('migration');
 
@@ -144,12 +145,15 @@ class MigrationMakeCommand extends GeneratorCommand
     /**
      * @return string
      */
-    private function getClassName()
+    private function getClassName(): string
     {
         return Str::studly($this->argument('name'));
     }
 
-    public function getClass()
+    /**
+     * @return string
+     */
+    public function getClass(): string
     {
         return $this->getClassName();
     }

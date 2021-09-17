@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Publishing\AssetPublisher;
 use Symfony\Component\Console\Input\InputArgument;
@@ -44,7 +45,7 @@ class PublishCommand extends Command
      */
     public function publishAll(): void
     {
-        foreach ($this->laravel['modules']->allEnabled() as $module) {
+        foreach (Modules::allEnabled() as $module) {
             $this->publish($module);
         }
     }
@@ -59,7 +60,7 @@ class PublishCommand extends Command
         if ($moduleName instanceof Module) {
             $module = $moduleName;
         } else {
-            $module = $this->laravel['modules']->findOrFail($moduleName);
+            $module = Modules::findOrFail($moduleName);
         }
 
         with(new AssetPublisher($module))

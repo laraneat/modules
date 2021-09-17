@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
@@ -36,9 +37,7 @@ class CommandMakeCommand extends GeneratorCommand
 
     public function getDefaultNamespace(): string
     {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.command.namespace') ?: $module->config('paths.generator.command.path', 'Console');
+        return Modules::config('paths.generator.command.namespace') ?: Modules::config('paths.generator.command.path', 'Console');
     }
 
     /**
@@ -66,12 +65,9 @@ class CommandMakeCommand extends GeneratorCommand
         ];
     }
 
-    /**
-     * @return string
-     */
     protected function getTemplateContents(): string
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
+        $module = Modules::findOrFail($this->getModuleName());
 
         return (new Stub('/command.stub', [
             'COMMAND_NAME' => $this->getCommandName(),
@@ -80,29 +76,20 @@ class CommandMakeCommand extends GeneratorCommand
         ]))->render();
     }
 
-    /**
-     * @return string
-     */
-    private function getCommandName()
+    private function getCommandName(): string
     {
         return $this->option('command') ?: 'command:name';
     }
 
-    /**
-     * @return string
-     */
     protected function getDestinationFilePath(): string
     {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = Modules::getModulePath($this->getModuleName());
 
         $commandPath = GenerateConfigReader::read('command');
 
         return $path . $commandPath->getPath() . '/' . $this->getFileName() . '.php';
     }
 
-    /**
-     * @return string
-     */
     private function getFileName(): string
     {
         return Str::studly($this->argument('name'));

@@ -3,7 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
-use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Migrations\Migrator;
 use Laraneat\Modules\Module;
 use Symfony\Component\Console\Input\InputArgument;
@@ -26,30 +26,23 @@ class MigrateStatusCommand extends Command
     protected $description = 'Status for all module migrations';
 
     /**
-     * @var RepositoryInterface
-     */
-    protected RepositoryInterface $repository;
-
-    /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return int
      */
     public function handle(): int
     {
-        $this->repository = $this->laravel['modules'];
-
         $name = $this->argument('module');
 
         if ($name) {
-            $module = $this->repository->findOrFail($name);
+            $module = Modules::findOrFail($name);
 
             $this->migrateStatus($module);
 
             return 0;
         }
 
-        foreach ($this->repository->getOrdered($this->option('direction')) as $module) {
+        foreach (Modules::getOrdered($this->option('direction')) as $module) {
             $this->line('Running for module: <info>' . $module->getName() . '</info>');
             $this->migrateStatus($module);
         }

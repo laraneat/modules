@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
@@ -51,7 +52,7 @@ class FactoryMakeCommand extends GeneratorCommand
      */
     protected function getTemplateContents(): string
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
+        $module = Modules::findOrFail($this->getModuleName());
 
         return (new Stub('/factory.stub', [
             'NAMESPACE' => $this->getClassNamespace($module),
@@ -65,25 +66,19 @@ class FactoryMakeCommand extends GeneratorCommand
      */
     protected function getDestinationFilePath(): string
     {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = Modules::getModulePath($this->getModuleName());
 
         $factoryPath = GenerateConfigReader::read('factory');
 
         return $path . $factoryPath->getPath() . '/' . $this->getFileName();
     }
 
-    /**
-     * @return string
-     */
     private function getFileName(): string
     {
         return Str::studly($this->argument('name')) . 'Factory.php';
     }
 
-    /**
-     * @return mixed|string
-     */
-    private function getModelName()
+    private function getModelName(): string
     {
         return Str::studly($this->argument('name'));
     }
@@ -95,9 +90,7 @@ class FactoryMakeCommand extends GeneratorCommand
      */
     public function getDefaultNamespace(): string
     {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.factory.namespace') ?: $module->config('paths.generator.factory.path');
+        return Modules::config('paths.generator.factory.namespace') ?: Modules::config('paths.generator.factory.path');
     }
 
     /**
@@ -107,6 +100,6 @@ class FactoryMakeCommand extends GeneratorCommand
      */
     public function getModelNamespace(): string
     {
-        return $this->laravel['modules']->config('namespace') . '\\' . $this->laravel['modules']->findOrFail($this->getModuleName()) . '\\' . $this->laravel['modules']->config('paths.generator.model.path', 'Entities');
+        return Modules::config('namespace') . '\\' . Modules::findOrFail($this->getModuleName()) . '\\' . Modules::config('paths.generator.model.path', 'Entities');
     }
 }

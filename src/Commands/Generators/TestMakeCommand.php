@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
@@ -19,13 +20,11 @@ class TestMakeCommand extends GeneratorCommand
 
     public function getDefaultNamespace(): string
     {
-        $module = $this->laravel['modules'];
-
         if ($this->option('feature')) {
-            return $module->config('paths.generator.test-feature.namespace') ?: $module->config('paths.generator.test-feature.path', 'Tests/Feature');
+            return Modules::config('paths.generator.test-feature.namespace') ?: Modules::config('paths.generator.test-feature.path', 'Tests/Feature');
         }
 
-        return $module->config('paths.generator.test.namespace') ?: $module->config('paths.generator.test.path', 'Tests/Unit');
+        return Modules::config('paths.generator.test.namespace') ?: Modules::config('paths.generator.test.path', 'Tests/Unit');
     }
 
     /**
@@ -58,7 +57,7 @@ class TestMakeCommand extends GeneratorCommand
      */
     protected function getTemplateContents(): string
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
+        $module = Modules::findOrFail($this->getModuleName());
         $stub = '/unit-test.stub';
 
         if ($this->option('feature')) {
@@ -76,7 +75,7 @@ class TestMakeCommand extends GeneratorCommand
      */
     protected function getDestinationFilePath(): string
     {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = Modules::getModulePath($this->getModuleName());
 
         if ($this->option('feature')) {
             $testPath = GenerateConfigReader::read('test-feature');

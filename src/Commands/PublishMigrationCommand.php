@@ -3,7 +3,9 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Migrations\Migrator;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Publishing\MigrationPublisher;
 use Symfony\Component\Console\Input\InputArgument;
 
@@ -28,15 +30,15 @@ class PublishMigrationCommand extends Command
      */
     public function handle(): int
     {
-        if ($name = $this->argument('module')) {
-            $module = $this->laravel['modules']->findOrFail($name);
+        if ($moduleName = $this->argument('module')) {
+            $module = Modules::findOrFail($moduleName);
 
             $this->publish($module);
 
             return 0;
         }
 
-        foreach ($this->laravel['modules']->allEnabled() as $module) {
+        foreach (Modules::allEnabled() as $module) {
             $this->publish($module);
         }
 
@@ -46,9 +48,9 @@ class PublishMigrationCommand extends Command
     /**
      * Publish migration for the specified module.
      *
-     * @param \Laraneat\Modules\Module $module
+     * @param Module $module
      */
-    public function publish($module)
+    public function publish(Module $module): void
     {
         with(new MigrationPublisher(new Migrator($module, $this->getLaravel())))
             ->setRepository($this->laravel['modules'])

@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Migrations\Migrator;
 use Laraneat\Modules\Module;
 use Symfony\Component\Console\Input\InputArgument;
@@ -25,30 +26,23 @@ class MigrateCommand extends Command
     protected $description = 'Migrate the migrations from the specified module or from all modules.';
 
     /**
-     * @var \Laraneat\Modules\Contracts\RepositoryInterface
-     */
-    protected $module;
-
-    /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return int
      */
     public function handle(): int
     {
-        $this->module = $this->laravel['modules'];
-
         $name = $this->argument('module');
 
         if ($name) {
-            $module = $this->module->findOrFail($name);
+            $module = Modules::findOrFail($name);
 
             $this->migrate($module);
 
             return 0;
         }
 
-        foreach ($this->module->getOrdered($this->option('direction')) as $module) {
+        foreach (Modules::getOrdered($this->option('direction')) as $module) {
             $this->line('Running for module: <info>' . $module->getName() . '</info>');
 
             $this->migrate($module);
@@ -67,7 +61,7 @@ class MigrateCommand extends Command
         $path = str_replace(base_path(), '', (new Migrator($module, $this->getLaravel()))->getPath());
 
         if ($this->option('subpath')) {
-            $path = $path . "/" . $this->option("subpath");
+            $path .= "/" . $this->option("subpath");
         }
 
         $this->call('migrate', [
