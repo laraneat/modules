@@ -2,7 +2,7 @@
     "name": "Article",
     "namespace": "App\\Modules\\Article",
     "alias": "article",
-    "description": "",
+    "description": "Article module",
     "keywords": [],
     "priority": 0,
     "providers": [
