@@ -58,7 +58,7 @@
     "extra": {
         "laravel": {
             "providers": [
-              "ModulesServiceProvider"
+                "Laraneat\\Modules\\ModulesServiceProvider"
             ],
             "aliases": {
                 "Modules": "Laraneat\\Modules\\Facades\\Modules"
