@@ -2,7 +2,7 @@
 
 namespace App\Modules\Article\Providers\Baz\Bat;
 
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use App\Ship\Abstracts\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Laraneat\Modules\Traits\RouteProviderHelpersTrait;
 

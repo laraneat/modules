@@ -2,7 +2,7 @@
 
 namespace App\Modules\Article\Middleware\Foo\Bar;
 
-use App\Ship\Abstracts\Middlewares\Middleware;
+use App\Ship\Abstracts\Middleware\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
