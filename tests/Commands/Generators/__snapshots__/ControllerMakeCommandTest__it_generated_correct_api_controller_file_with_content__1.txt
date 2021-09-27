@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Modules\Article\UI\API\Controllers\Foo\Bar;
+
+use App\Ship\Abstracts\Controllers\ApiController;
+
+class MyAwesomeAPIController extends ApiController
+{
+    //
+}

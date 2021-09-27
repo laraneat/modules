@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Modules\Article\Data\Seeders\Foo\Bar;
+
+use App\Ship\Abstracts\Seeders\Seeder;
+
+class MyAwesomePlainSeeder extends Seeder
+{
+    public function run(): void
+    {
+        //
+    }
+}

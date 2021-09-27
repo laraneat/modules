@@ -1,0 +1,134 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Providers\ServiceProvider;
+use Laraneat\Modules\Traits\ModuleProviderHelpersTrait;
+
+class {{ class }} extends ServiceProvider
+{
+    use ModuleProviderHelpersTrait;
+
+    /**
+     * @var string $moduleName
+     */
+    protected string $moduleName = '{{ name }}';
+
+    /**
+     * @var string $moduleNameLower
+     */
+    protected string $moduleNameLower = '{{ lowerName }}';
+
+    /**
+     * Register services.
+     *
+     * @return void
+     */
+    public function register(): void
+    {
+        $this->app->register(RouteServiceProvider::class);
+    }
+
+    /**
+     * Bootstrap services.
+     *
+     * @return void
+     */
+    public function boot(): void
+    {
+        $this->registerCommands();
+        $this->registerTranslations();
+        $this->registerConfig();
+        $this->registerViews();
+        $this->registerMigrations();
+    }
+
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides(): array
+    {
+        return [];
+    }
+
+    /**
+     * Register artisan commands.
+     *
+     * @return void
+     */
+    public function registerCommands(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->loadCommands(module_path($this->moduleName, '{{ commandsPath }}'));
+        }
+    }
+
+    /**
+     * Register translations.
+     *
+     * @return void
+     */
+    public function registerTranslations(): void
+    {
+        $sourcePath = module_path($this->moduleName, '{{ langPath }}');
+        $langPath = resource_path('lang/modules/' . $this->moduleNameLower);
+
+        $this->loadTranslationsFrom($sourcePath, $this->moduleNameLower);
+    }
+
+    /**
+     * Register config.
+     *
+     * @return void
+     */
+    protected function registerConfig(): void
+    {
+        $sourcePath = module_path($this->moduleName, '{{ configPath }}');
+        $configPath = config_path();
+
+        $this->publishes([
+            $sourcePath => $configPath
+        ], 'config');
+
+        $this->loadConfigs($sourcePath);
+    }
+
+    /**
+     * Register views.
+     *
+     * @return void
+     */
+    public function registerViews(): void
+    {
+        $sourcePath = module_path($this->moduleName, '{{ viewsPath }}');
+        $viewsPath = resource_path('views/modules/' . $this->moduleNameLower);
+
+        $this->publishes([
+            $sourcePath => $viewsPath
+        ], 'views');
+
+        $this->loadViewsFrom(
+            array_merge($this->getPublishableViewPaths($this->moduleNameLower), [$sourcePath]),
+            $this->moduleNameLower
+        );
+    }
+
+    /**
+     * Register migrations.
+     *
+     * @return void
+     */
+    public function registerMigrations(): void
+    {
+        $sourcePath = module_path($this->moduleName, '{{ migrationsPath }}');
+        $migrationsPath = database_path('migrations');
+
+        $this->publishes([
+            $sourcePath => $migrationsPath
+        ], 'migrations');
+
+        $this->loadMigrationsFrom($sourcePath);
+    }
+}

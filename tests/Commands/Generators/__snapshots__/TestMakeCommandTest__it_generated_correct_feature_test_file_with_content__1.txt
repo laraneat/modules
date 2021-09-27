@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Modules\Article\Tests\Feature;
+
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group article
+ * @group feature
+ */
+class MyAwesomeFeatureTest extends TestCase
+{
+    public function test(): void
+    {
+        //
+    }
+}

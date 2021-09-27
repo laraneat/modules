@@ -2,56 +2,60 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-class ProviderMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class ProviderMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
     /**
-     * The name of argument name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected string $argumentName = 'name';
-
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'module:make-provider';
+    protected $name = 'module:make:provider';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new service provider class for the specified module.';
-
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.provider.namespace') ?: Modules::config('paths.generator.provider.path', 'Providers');
-    }
+    protected $description = 'Generate new provider for the specified module.';
 
     /**
-     * Get the console command arguments.
+     * The stub name to load for this generator.
      *
-     * @return array
+     * @var string
      */
-    protected function getArguments(): array
-    {
-        return [
-            ['name', InputArgument::REQUIRED, 'The service provider name.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
+    protected string $stub = 'plain';
+
+    /**
+     * Module instance.
+     *
+     * @var Module
+     */
+    protected Module $module;
+
+    /**
+     * Component type.
+     *
+     * @var string
+     */
+    protected string $componentType;
+
+    /**
+     * Prepared 'name' argument.
+     *
+     * @var string
+     */
+    protected string $nameArgument;
 
     /**
      * Get the console command options.
@@ -61,52 +65,55 @@ class ProviderMakeCommand extends GeneratorCommand
     protected function getOptions(): array
     {
         return [
-            ['master', null, InputOption::VALUE_NONE, 'Indicates the master service provider', null],
+            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
         ];
     }
 
-    /**
-     * @return string
-     */
-    protected function getTemplateContents(): string
+    protected function prepare()
     {
-        $stub = $this->option('master') ? 'scaffold/provider' : 'provider';
-
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub('/' . $stub . '.stub', [
-            'NAMESPACE'         => $this->getClassNamespace($module),
-            'CLASS'             => $this->getClass(),
-            'LOWER_NAME'        => $module->getLowerName(),
-            'MODULE'            => $this->getModuleName(),
-            'NAME'              => $this->getFileName(),
-            'STUDLY_NAME'       => $module->getStudlyName(),
-            'MODULE_NAMESPACE'  => Modules::config('namespace'),
-            'PATH_VIEWS'        => GenerateConfigReader::read('views')->getPath(),
-            'PATH_LANG'         => GenerateConfigReader::read('lang')->getPath(),
-            'PATH_CONFIG'       => GenerateConfigReader::read('config')->getPath(),
-            'MIGRATIONS_PATH'   => GenerateConfigReader::read('migration')->getPath(),
-            'FACTORIES_PATH'    => GenerateConfigReader::read('factory')->getPath(),
-        ]))->render();
+        $this->module = $this->getModule();
+        $this->stub = $this->getOptionOrChoice(
+            'stub',
+            'Select the stub you want to use for generator',
+            ['plain', 'module', 'route'],
+            'plain'
+        );
+        $this->componentType = 'provider';
+        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    /**
-     * @return string
-     */
     protected function getDestinationFilePath(): string
     {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $generatorPath = GenerateConfigReader::read('provider');
-
-        return $path . $generatorPath->getPath() . '/' . $this->getFileName() . '.php';
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
-    /**
-     * @return string
-     */
-    private function getFileName(): string
+    protected function getTemplateContents(): string
     {
-        return Str::studly($this->argument('name'));
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument)
+        ];
+
+        if ($this->stub === 'module') {
+            $stubReplaces = array_merge($stubReplaces, [
+                'name' => $this->module->getStudlyName(),
+                'lowerName' => $this->module->getLowerName(),
+                'commandsPath' => GeneratorHelper::component('cli-command')->getPath(),
+                'langPath' => GeneratorHelper::component('lang')->getPath(),
+                'configPath' => GeneratorHelper::component('config')->getPath(),
+                'viewsPath' => GeneratorHelper::component('view')->getPath(),
+                'migrationsPath' => GeneratorHelper::component('migration')->getPath(),
+            ]);
+        } elseif ($this->stub === 'route') {
+            $stubReplaces = array_merge($stubReplaces, [
+                'name' => $this->module->getStudlyName(),
+                'webControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component('web-controller')->getFullNamespace($this->module)),
+                'apiControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component('api-controller')->getFullNamespace($this->module)),
+                'webRoutesPath' => GeneratorHelper::component('web-route')->getPath(),
+                'apiRoutesPath' => GeneratorHelper::component('api-route')->getPath()
+            ]);
+        }
+
+        return Stub::create("provider/{$this->stub}.stub", $stubReplaces)->render();
     }
 }

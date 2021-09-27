@@ -1,0 +1,10 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Models\Model;
+
+class {{ class }} extends Model
+{
+    //
+}

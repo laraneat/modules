@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Modules\Article\Models\Foo\Bar;
+
+use App\Ship\Abstracts\Models\Model;
+
+class MyAwesomePlainModel extends Model
+{
+    //
+}

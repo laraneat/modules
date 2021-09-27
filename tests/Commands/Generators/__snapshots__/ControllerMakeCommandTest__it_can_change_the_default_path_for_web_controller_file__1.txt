@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Modules\Article\Foo\Bar\Controllers\Baz\Bat;
+
+use App\Ship\Abstracts\Controllers\WebController;
+
+class MyAwesomeWEBController extends WebController
+{
+    //
+}

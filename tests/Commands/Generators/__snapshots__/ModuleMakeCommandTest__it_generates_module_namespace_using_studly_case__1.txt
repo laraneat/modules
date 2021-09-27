@@ -2,91 +2,45 @@
 
 namespace App\Modules\ModuleName\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Database\Eloquent\Factory;
+use App\Ship\Abstracts\Providers\ServiceProvider;
+use Laraneat\Modules\Traits\ModuleProviderHelpersTrait;
 
 class ModuleNameServiceProvider extends ServiceProvider
 {
+    use ModuleProviderHelpersTrait;
+
     /**
      * @var string $moduleName
      */
-    protected $moduleName = 'ModuleName';
+    protected string $moduleName = 'ModuleName';
 
     /**
      * @var string $moduleNameLower
      */
-    protected $moduleNameLower = 'modulename';
+    protected string $moduleNameLower = 'modulename';
 
     /**
-     * Boot the application events.
+     * Register services.
      *
      * @return void
      */
-    public function boot()
-    {
-        $this->registerTranslations();
-        $this->registerConfig();
-        $this->registerViews();
-        $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
-    }
-
-    /**
-     * Register the service provider.
-     *
-     * @return void
-     */
-    public function register()
+    public function register(): void
     {
         $this->app->register(RouteServiceProvider::class);
     }
 
     /**
-     * Register config.
+     * Bootstrap services.
      *
      * @return void
      */
-    protected function registerConfig()
+    public function boot(): void
     {
-        $this->publishes([
-            module_path($this->moduleName, 'Config/config.php') => config_path($this->moduleNameLower . '.php'),
-        ], 'config');
-        $this->mergeConfigFrom(
-            module_path($this->moduleName, 'Config/config.php'), $this->moduleNameLower
-        );
-    }
-
-    /**
-     * Register views.
-     *
-     * @return void
-     */
-    public function registerViews()
-    {
-        $viewPath = resource_path('views/modules/' . $this->moduleNameLower);
-
-        $sourcePath = module_path($this->moduleName, 'Resources/views');
-
-        $this->publishes([
-            $sourcePath => $viewPath
-        ], ['views', $this->moduleNameLower . '-module-views']);
-
-        $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->moduleNameLower);
-    }
-
-    /**
-     * Register translations.
-     *
-     * @return void
-     */
-    public function registerTranslations()
-    {
-        $langPath = resource_path('lang/modules/' . $this->moduleNameLower);
-
-        if (is_dir($langPath)) {
-            $this->loadTranslationsFrom($langPath, $this->moduleNameLower);
-        } else {
-            $this->loadTranslationsFrom(module_path($this->moduleName, 'Resources/lang'), $this->moduleNameLower);
-        }
+        $this->registerCommands();
+        $this->registerTranslations();
+        $this->registerConfig();
+        $this->registerViews();
+        $this->registerMigrations();
     }
 
     /**
@@ -94,19 +48,87 @@ class ModuleNameServiceProvider extends ServiceProvider
      *
      * @return array
      */
-    public function provides()
+    public function provides(): array
     {
         return [];
     }
 
-    private function getPublishableViewPaths(): array
+    /**
+     * Register artisan commands.
+     *
+     * @return void
+     */
+    public function registerCommands(): void
     {
-        $paths = [];
-        foreach (config('view.paths', []) as $path) {
-            if (is_dir($path . '/modules/' . $this->moduleNameLower)) {
-                $paths[] = $path . '/modules/' . $this->moduleNameLower;
-            }
+        if ($this->app->runningInConsole()) {
+            $this->loadCommands(module_path($this->moduleName, 'UI/CLI/Commands'));
         }
-        return $paths;
+    }
+
+    /**
+     * Register translations.
+     *
+     * @return void
+     */
+    public function registerTranslations(): void
+    {
+        $sourcePath = module_path($this->moduleName, 'Resources/lang');
+        $langPath = resource_path('lang/modules/' . $this->moduleNameLower);
+
+        $this->loadTranslationsFrom($sourcePath, $this->moduleNameLower);
+    }
+
+    /**
+     * Register config.
+     *
+     * @return void
+     */
+    protected function registerConfig(): void
+    {
+        $sourcePath = module_path($this->moduleName, 'Config');
+        $configPath = config_path();
+
+        $this->publishes([
+            $sourcePath => $configPath
+        ], 'config');
+
+        $this->loadConfigs($sourcePath);
+    }
+
+    /**
+     * Register views.
+     *
+     * @return void
+     */
+    public function registerViews(): void
+    {
+        $sourcePath = module_path($this->moduleName, 'Resources/views');
+        $viewsPath = resource_path('views/modules/' . $this->moduleNameLower);
+
+        $this->publishes([
+            $sourcePath => $viewsPath
+        ], 'views');
+
+        $this->loadViewsFrom(
+            array_merge($this->getPublishableViewPaths($this->moduleNameLower), [$sourcePath]),
+            $this->moduleNameLower
+        );
+    }
+
+    /**
+     * Register migrations.
+     *
+     * @return void
+     */
+    public function registerMigrations(): void
+    {
+        $sourcePath = module_path($this->moduleName, 'Data/Migrations');
+        $migrationsPath = database_path('migrations');
+
+        $this->publishes([
+            $sourcePath => $migrationsPath
+        ], 'migrations');
+
+        $this->loadMigrationsFrom($sourcePath);
     }
 }

@@ -8,6 +8,9 @@ use Laraneat\Modules\Generators\ModuleGenerator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
+/**
+ * @group generator
+ */
 class ModuleMakeCommand extends Command
 {
     /**
@@ -26,7 +29,8 @@ class ModuleMakeCommand extends Command
 
     /**
      * Execute the console command.
-     * @throws \Laraneat\Modules\Exceptions\ModuleNotFoundException
+     *
+     * @return int
      */
     public function handle(): int
     {
@@ -69,33 +73,24 @@ class ModuleMakeCommand extends Command
     {
         return [
             ['plain', 'p', InputOption::VALUE_NONE, 'Generate a plain module (without some resources).'],
-            ['api', null, InputOption::VALUE_NONE, 'Generate an api module.'],
-            ['web', null, InputOption::VALUE_NONE, 'Generate a web module.'],
             ['disabled', 'd', InputOption::VALUE_NONE, 'Do not enable the module at creation.'],
             ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when the module already exists.'],
         ];
     }
 
     /**
-    * Get module type .
+    * Get module type.
     *
     * @return string
     */
     private function getModuleType(): string
     {
         $isPlain = $this->option('plain');
-        $isApi = $this->option('api');
 
-        if ($isPlain && $isApi) {
-            return 'web';
-        }
         if ($isPlain) {
             return 'plain';
         }
-        if ($isApi) {
-            return 'api';
-        }
 
-        return 'web';
+        return 'full';
     }
 }

@@ -2,184 +2,109 @@
 
 namespace Laraneat\Modules\Tests\Commands\Generators;
 
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Filesystem\Filesystem;
 use Laraneat\Modules\Contracts\RepositoryInterface;
 use Laraneat\Modules\Tests\BaseTestCase;
 use Spatie\Snapshots\MatchesSnapshots;
 
+/**
+ * @group command
+ * @group generator
+ */
 class ModelMakeCommandTest extends BaseTestCase
 {
     use MatchesSnapshots;
-    /**
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    private $finder;
-    /**
-     * @var string
-     */
-    private $modulePath;
+
+    private Filesystem $finder;
+    private string $modulePath;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->modulePath = base_path('app/Modules/Blog');
+        $this->modulePath = base_path('app/Modules/Article');
         $this->finder = $this->app['files'];
-        $this->artisan('module:make', ['name' => ['Blog']]);
+        $this->artisan('module:make', ['name' => ['Article'], '--plain' => true]);
     }
 
     public function tearDown(): void
     {
-        $this->app[RepositoryInterface::class]->delete('Blog');
+        $this->app[RepositoryInterface::class]->delete('Article');
         parent::tearDown();
     }
 
     /** @test */
-    public function it_generates_a_new_model_class()
+    public function it_generates_plain_model_file()
     {
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog']);
+        $code = $this->artisan('module:make:model', [
+            'name' => 'MyAwesomePlainModel',
+            'module' => 'Article',
+            '--stub' => 'plain'
+        ]);
 
-        $this->assertTrue(is_file($this->modulePath . '/Entities/Post.php'));
+        $this->assertTrue(is_file($this->modulePath . '/Models/MyAwesomePlainModel.php'));
         $this->assertSame(0, $code);
     }
 
     /** @test */
-    public function it_generated_correct_file_with_content()
+    public function it_generated_correct_plain_model_file_with_content()
     {
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog']);
+        $code = $this->artisan('module:make:model', [
+            'name' => 'Foo/Bar\\MyAwesomePlainModel',
+            'module' => 'Article',
+            '--stub' => 'plain'
+        ]);
 
-        $file = $this->finder->get($this->modulePath . '/Entities/Post.php');
+        $file = $this->finder->get($this->modulePath . '/Models/Foo/Bar/MyAwesomePlainModel.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);
     }
 
     /** @test */
-    public function it_generates_correct_fillable_fields()
+    public function it_generated_correct_full_model_file_with_content()
     {
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog', '--fillable' => 'title,slug']);
+        $code = $this->artisan('module:make:model', [
+            'name' => 'Foo/Bar\\MyAwesomeFullModel',
+            'module' => 'Article',
+            '--stub' => 'full',
+            '--factory' => 'Bar\\Baz/Bat\\MyAwesomeFactory'
+        ]);
 
-        $file = $this->finder->get($this->modulePath . '/Entities/Post.php');
+        $file = $this->finder->get($this->modulePath . '/Models/Foo/Bar/MyAwesomeFullModel.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);
     }
 
     /** @test */
-    public function it_generates_migration_file_with_model()
+    public function it_can_change_the_default_path_for_plain_model_file()
     {
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog', '--migration' => true]);
+        $this->app['config']->set('modules.generator.components.model.path', 'Foo/Bar\\Models');
 
-        $migrations = $this->finder->allFiles($this->modulePath . '/Database/Migrations');
-        $migrationFile = $migrations[0];
-        $migrationContent = $this->finder->get($this->modulePath . '/Database/Migrations/' . $migrationFile->getFilename());
-        $this->assertCount(1, $migrations);
-        $this->assertMatchesSnapshot($migrationContent);
-        $this->assertSame(0, $code);
-    }
+        $code = $this->artisan('module:make:model', [
+            'name' => 'Baz\\Bat/MyAwesomePlainModel',
+            'module' => 'Article',
+            '--stub' => 'plain'
+        ]);
 
-    /** @test */
-    public function it_generates_migration_file_with_model_using_shortcut_option()
-    {
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog', '-m' => true]);
-
-        $migrations = $this->finder->allFiles($this->modulePath . '/Database/Migrations');
-        $migrationFile = $migrations[0];
-        $migrationContent = $this->finder->get($this->modulePath . '/Database/Migrations/' . $migrationFile->getFilename());
-        $this->assertCount(1, $migrations);
-        $this->assertMatchesSnapshot($migrationContent);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generates_controller_file_with_model()
-    {
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog', '--controller' => true]);
-        $controllers = $this->finder->allFiles($this->modulePath . '/Http/Controllers');
-        $controllerFile = $controllers[1];
-        $controllerContent = $this->finder->get($this->modulePath . '/Http/Controllers/' . $controllerFile->getFilename());
-        $this->assertCount(2, $controllers);
-        $this->assertMatchesSnapshot($controllerContent);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generates_controller_file_with_model_using_shortcut_option()
-    {
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog', '-c' => true]);
-
-        $controllers = $this->finder->allFiles($this->modulePath . '/Http/Controllers');
-        $controllerFile = $controllers[1];
-        $controllerContent = $this->finder->get($this->modulePath . '/Http/Controllers/' . $controllerFile->getFilename());
-        $this->assertCount(2, $controllers);
-        $this->assertMatchesSnapshot($controllerContent);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generates_controller_and_migration_when_both_flags_are_present()
-    {
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog', '-c' => true, '-m' => true]);
-
-        $controllers = $this->finder->allFiles($this->modulePath . '/Http/Controllers');
-        $controllerFile = $controllers[1];
-        $controllerContent = $this->finder->get($this->modulePath . '/Http/Controllers/' . $controllerFile->getFilename());
-        $this->assertCount(2, $controllers);
-        $this->assertMatchesSnapshot($controllerContent);
-
-        $migrations = $this->finder->allFiles($this->modulePath . '/Database/Migrations');
-        $migrationFile = $migrations[0];
-        $migrationContent = $this->finder->get($this->modulePath . '/Database/Migrations/' . $migrationFile->getFilename());
-        $this->assertCount(1, $migrations);
-        $this->assertMatchesSnapshot($migrationContent);
-
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generates_correct_migration_file_name_with_multiple_words_model()
-    {
-        $code = $this->artisan('module:make-model', ['model' => 'ProductDetail', 'module' => 'Blog', '-m' => true]);
-
-        $migrations = $this->finder->allFiles($this->modulePath . '/Database/Migrations');
-        $migrationFile = $migrations[0];
-        $migrationContent = $this->finder->get($this->modulePath . '/Database/Migrations/' . $migrationFile->getFilename());
-
-        $this->assertStringContainsString('create_product_details_table', $migrationFile->getFilename());
-        $this->assertMatchesSnapshot($migrationContent);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_displays_error_if_model_already_exists()
-    {
-        $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog']);
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog']);
-
-        $this->assertStringContainsString('already exists', Artisan::output());
-        $this->assertSame(E_ERROR, $code);
-    }
-
-    /** @test */
-    public function it_can_change_the_default_namespace()
-    {
-        $this->app['config']->set('modules.paths.generator.model.path', 'Models');
-
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog']);
-
-        $file = $this->finder->get($this->modulePath . '/Models/Post.php');
+        $file = $this->finder->get($this->modulePath . '/Foo/Bar/Models/Baz/Bat/MyAwesomePlainModel.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);
     }
 
     /** @test */
-    public function it_can_change_the_default_namespace_specific()
+    public function it_can_change_the_default_namespace_for_plain_model_file()
     {
-        $this->app['config']->set('modules.paths.generator.model.namespace', 'Models');
+        $this->app['config']->set('modules.generator.components.model.namespace', 'Foo/Bar\\Models/');
 
-        $code = $this->artisan('module:make-model', ['model' => 'Post', 'module' => 'Blog']);
+        $code = $this->artisan('module:make:model', [
+            'name' => 'Baz\\Bat/MyAwesomePlainModel',
+            'module' => 'Article',
+            '--stub' => 'plain'
+        ]);
 
-        $file = $this->finder->get($this->modulePath . '/Entities/Post.php');
+        $file = $this->finder->get($this->modulePath . '/Models/Baz/Bat/MyAwesomePlainModel.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);

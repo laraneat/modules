@@ -1,0 +1,7 @@
+<?php
+
+use App\Modules\Article\Actions\SomeDeleteAction;
+use Illuminate\Support\Facades\Route;
+
+Route::delete('some/delete/route', SomeDeleteAction::class)
+    ->name('web.nested.some_delete_route');

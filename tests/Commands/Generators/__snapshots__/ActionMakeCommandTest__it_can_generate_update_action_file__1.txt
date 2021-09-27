@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Modules\Article\Actions\Baz\Bat;
+
+use App\Modules\Article\Models\Bar\TestModel;
+use App\Modules\Article\UI\API\Requests\Bat\TestRequest;
+use App\Modules\Article\UI\API\Resources\Baz\TestResource;
+use App\Ship\Abstracts\Actions\Action;
+use App\Ship\Exceptions\UpdateResourceFailedException;
+
+class MyAwesomeUpdateAction extends Action
+{
+    /**
+     * @param TestModel $testModel
+     * @param array $data
+     *
+     * @return TestModel
+     * @throws UpdateResourceFailedException
+     */
+    public function handle(TestModel $testModel, array $data): TestModel
+    {
+        if (empty($data)) {
+            throw new UpdateResourceFailedException();
+        }
+
+        $testModel->update($data);
+
+        return $testModel;
+    }
+
+    /**
+     * @param TestRequest $request
+     * @param TestModel $testModel
+     *
+     * @return TestResource
+     * @throws UpdateResourceFailedException
+     */
+    public function asController(TestRequest $request, TestModel $testModel): TestResource
+    {
+        $sanitizedData = $request->sanitizeInput([
+            //
+        ]);
+
+        $testModel = $this->handle($testModel, $sanitizedData);
+
+        return new TestResource($testModel);
+    }
+}

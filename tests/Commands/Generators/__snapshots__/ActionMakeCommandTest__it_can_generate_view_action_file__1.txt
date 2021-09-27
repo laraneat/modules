@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Modules\Article\Actions\Baz\Bat;
+
+use App\Modules\Article\Models\Bar\TestModel;
+use App\Modules\Article\UI\API\QueryWizards\Bat\TestQueryWizard;
+use App\Modules\Article\UI\API\Requests\Bat\TestRequest;
+use App\Modules\Article\UI\API\Resources\Baz\TestResource;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Database\Eloquent\Model;
+
+class MyAwesomeViewAction extends Action
+{
+    /**
+     * @param TestRequest $request
+     * @param TestModel $testModel
+     *
+     * @return Model
+     */
+    public function handle(TestRequest $request, TestModel $testModel): Model
+    {
+        return TestQueryWizard::for($testModel, $request)->build();
+    }
+
+    /**
+     * @param TestRequest $request
+     * @param TestModel $testModel
+     *
+     * @return TestResource
+     */
+    public function asController(TestRequest $request, TestModel $testModel): TestResource
+    {
+        return new TestResource($this->handle($request, $testModel));
+    }
+}

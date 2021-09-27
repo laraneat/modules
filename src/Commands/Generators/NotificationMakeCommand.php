@@ -2,85 +2,97 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
-final class NotificationMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class NotificationMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make-notification';
-
-    protected string $argumentName = 'name';
+    protected $name = 'module:make:notification';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new notification class for the specified module.';
-
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.notifications.namespace') ?: Modules::config('paths.generator.notifications.path', 'Notifications');
-    }
+    protected $description = 'Generate new notification for the specified module.';
 
     /**
-     * Get template contents.
+     * The stub name to load for this generator.
      *
-     * @return string
+     * @var string
      */
-    protected function getTemplateContents(): string
-    {
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub('/notification.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS'     => $this->getClass(),
-        ]))->render();
-    }
+    protected string $stub = 'queued';
 
     /**
-     * Get the destination file path.
+     * Module instance.
      *
-     * @return string
+     * @var Module
      */
-    protected function getDestinationFilePath(): string
-    {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $notificationPath = GenerateConfigReader::read('notifications');
-
-        return $path . $notificationPath->getPath() . '/' . $this->getFileName() . '.php';
-    }
+    protected Module $module;
 
     /**
-     * @return string
+     * Component type.
+     *
+     * @var string
      */
-    private function getFileName(): string
-    {
-        return Str::studly($this->argument('name'));
-    }
+    protected string $componentType;
 
     /**
-     * Get the console command arguments.
+     * Prepared 'name' argument.
+     *
+     * @var string
+     */
+    protected string $nameArgument;
+
+    /**
+     * Get the console command options.
      *
      * @return array
      */
-    protected function getArguments(): array
+    protected function getOptions(): array
     {
         return [
-            ['name', InputArgument::REQUIRED, 'The name of the notification class.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
+            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
         ];
+    }
+
+    protected function prepare()
+    {
+        $this->module = $this->getModule();
+        $this->stub = $this->getOptionOrChoice(
+            'stub',
+            'Select the stub you want to use for generator',
+            ['plain', 'queued'],
+            'queued'
+        );
+        $this->componentType = 'notification';
+        $this->nameArgument = $this->getTrimmedArgument('name');
+    }
+
+    protected function getDestinationFilePath(): string
+    {
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
+    }
+
+    protected function getTemplateContents(): string
+    {
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument)
+        ];
+
+        return Stub::create("notification/{$this->stub}.stub", $stubReplaces)->render();
     }
 }

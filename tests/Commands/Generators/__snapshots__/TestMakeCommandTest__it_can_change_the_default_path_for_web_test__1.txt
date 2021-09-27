@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Modules\Article\Foo\Bar\NewTests\Baz\Bat;
+
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group article
+ * @group web
+ */
+class MyAwesomeWebTest extends TestCase
+{
+    public function test(): void
+    {
+        //
+    }
+}

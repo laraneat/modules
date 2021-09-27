@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Modules\Article\Foo\Bar\Notifications\Baz\Bat;
+
+use App\Ship\Abstracts\Notifications\Notification;
+
+class MyAwesomePlainNotification extends Notification
+{
+    /**
+     * Create a new notification instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Get the array representation of the notification.
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
+    public function toArray($notifiable)
+    {
+        return [
+            //
+        ];
+    }
+}

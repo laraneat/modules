@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Modules\Article\Data\Seeders\Foo\Bar;
+
+use App\Modules\Authorization\Actions\CreatePermissionAction;
+use App\Ship\Abstracts\Seeders\Seeder;
+
+class MyAwesomePermissionsSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $createPermissionAction = CreatePermissionAction::make();
+        $createPermissionAction->handle(
+            name: 'view-my-awesome-model',
+            displayName: 'View any my-awesome-models',
+            group: 'my-awesome-models'
+        );
+        $createPermissionAction->handle(
+            name: 'create-my-awesome-model',
+            displayName: 'Create my-awesome-models',
+            group: 'my-awesome-models'
+        );
+        $createPermissionAction->handle(
+            name: 'update-my-awesome-model',
+            displayName: 'Update any my-awesome-models',
+            group: 'my-awesome-models'
+        );
+        $createPermissionAction->handle(
+            name: 'delete-my-awesome-model',
+            displayName: 'Delete any my-awesome-models',
+            group: 'my-awesome-models'
+        );
+        $createPermissionAction->handle(
+            name: 'force-delete-my-awesome-model',
+            displayName: 'Force delete any my-awesome-models',
+            group: 'my-awesome-models'
+        );
+    }
+}

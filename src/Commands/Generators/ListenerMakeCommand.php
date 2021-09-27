@@ -2,47 +2,59 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-class ListenerMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class ListenerMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
-    protected string $argumentName = 'name';
-
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make-listener';
+    protected $name = 'module:make:listener';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new event listener class for the specified module';
+    protected $description = 'Generate new listener for the specified module.';
 
     /**
-     * Get the console command arguments.
+     * The stub name to load for this generator.
      *
-     * @return array
+     * @var string
      */
-    protected function getArguments(): array
-    {
-        return [
-            ['name', InputArgument::REQUIRED, 'The name of the command.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
+    protected string $stub = 'plain';
+
+    /**
+     * Module instance.
+     *
+     * @var Module
+     */
+    protected Module $module;
+
+    /**
+     * Component type.
+     *
+     * @var string
+     */
+    protected string $componentType;
+
+    /**
+     * Prepared 'name' argument
+     *
+     * @var string
+     */
+    protected string $nameArgument;
 
     /**
      * Get the console command options.
@@ -52,88 +64,45 @@ class ListenerMakeCommand extends GeneratorCommand
     protected function getOptions(): array
     {
         return [
-            ['event', 'e', InputOption::VALUE_OPTIONAL, 'The event class being listened for.'],
-            ['queued', null, InputOption::VALUE_NONE, 'Indicates the event listener should be queued.'],
+            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
+            ['event', null, InputOption::VALUE_REQUIRED, 'The class name of the event to listen to.'],
         ];
+    }
+
+    protected function prepare()
+    {
+        $this->module = $this->getModule();
+        $this->stub = $this->getOptionOrChoice(
+            'stub',
+            'Select the stub you want to use for generator',
+            ['plain', 'queued'],
+            'plain'
+        );
+        $this->componentType = 'listener';
+        $this->nameArgument = $this->getTrimmedArgument('name');
+    }
+
+    protected function getDestinationFilePath(): string
+    {
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
     protected function getTemplateContents(): string
     {
-        $module = Modules::findOrFail($this->getModuleName());
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument),
+        ];
 
-        return (new Stub($this->getStubName(), [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'EVENTNAME' => $this->getEventName($module),
-            'SHORTEVENTNAME' => $this->getShortEventName(),
-            'CLASS' => $this->getClass(),
-        ]))->render();
-    }
+        $event = $this->getOptionOrAsk(
+            'event',
+            'Enter the class name of the event that will be listened to',
+            '',
+            true
+        );
+        $stubReplaces['event'] = $this->getClass($event);
+        $stubReplaces['eventNamespace'] = $this->getComponentNamespace($this->module, $event, 'event');
 
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.listener.namespace') ?: Modules::config('paths.generator.listener.path', 'Listeners');
-    }
-
-    /**
-     * @param Module $module
-     *
-     * @return string
-     */
-    protected function getEventName(Module $module): string
-    {
-        $namespace = Modules::config('namespace') . "\\" . $module->getStudlyName();
-        $eventPath = GenerateConfigReader::read('event');
-
-        $eventName = $namespace . "\\" . $eventPath->getPath() . "\\" . $this->option('event');
-
-        return str_replace('/', '\\', $eventName);
-    }
-
-    /**
-     * @return string
-     */
-    protected function getShortEventName(): string
-    {
-        return class_basename($this->option('event'));
-    }
-
-    /**
-     * @return string
-     */
-    protected function getDestinationFilePath(): string
-    {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $listenerPath = GenerateConfigReader::read('listener');
-
-        return $path . $listenerPath->getPath() . '/' . $this->getFileName() . '.php';
-    }
-
-    /**
-     * @return string
-     */
-    protected function getFileName(): string
-    {
-        return Str::studly($this->argument('name'));
-    }
-
-    /**
-     * @return string
-     */
-    protected function getStubName(): string
-    {
-        if ($this->option('queued')) {
-            if ($this->option('event')) {
-                return '/listener-queued.stub';
-            }
-
-            return '/listener-queued-duck.stub';
-        }
-
-        if ($this->option('event')) {
-            return '/listener.stub';
-        }
-
-        return '/listener-duck.stub';
+        return Stub::create("listener/{$this->stub}.stub", $stubReplaces)->render();
     }
 }

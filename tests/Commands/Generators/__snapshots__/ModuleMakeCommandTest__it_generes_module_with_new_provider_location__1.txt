@@ -1,11 +1,12 @@
 {
-    "name": "Blog",
-    "alias": "blog",
+    "name": "Article",
+    "namespace": "App\\Modules\\Article",
+    "alias": "article",
     "description": "",
     "keywords": [],
     "priority": 0,
     "providers": [
-        "App\\Modules\\Blog\\Base\\Providers\\BlogServiceProvider"
+        "App\\Modules\\Article\\Base\\Providers\\ArticleServiceProvider"
     ],
     "aliases": {},
     "files": [],

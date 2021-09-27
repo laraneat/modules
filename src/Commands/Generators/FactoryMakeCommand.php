@@ -3,103 +3,93 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
-class FactoryMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class FactoryMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
     /**
-     * The name of argument name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected string $argumentName = 'name';
-
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'module:make-factory';
+    protected $name = 'module:make:factory';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new model factory for the specified module.';
+    protected $description = 'Generate new factory for the specified module.';
 
     /**
-     * Get the console command arguments.
+     * Module instance.
+     *
+     * @var Module
+     */
+    protected Module $module;
+
+    /**
+     * Component type.
+     *
+     * @var string
+     */
+    protected string $componentType = 'factory';
+
+    /**
+     * Prepared 'name' argument.
+     *
+     * @var string
+     */
+    protected string $nameArgument;
+
+    /**
+     * Get the console command options.
      *
      * @return array
      */
-    protected function getArguments(): array
+    protected function getOptions(): array
     {
         return [
-            ['name', InputArgument::REQUIRED, 'The name of the model.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
+            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the factory.'],
         ];
     }
 
-    /**
-     * @return string
-     */
-    protected function getTemplateContents(): string
+    protected function prepare()
     {
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub('/factory.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'NAME' => $this->getModelName(),
-            'MODEL_NAMESPACE' => $this->getModelNamespace(),
-        ]))->render();
+        $this->module = $this->getModule();
+        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    /**
-     * @return string
-     */
     protected function getDestinationFilePath(): string
     {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $factoryPath = GenerateConfigReader::read('factory');
-
-        return $path . $factoryPath->getPath() . '/' . $this->getFileName();
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
-    private function getFileName(): string
+    protected function getTemplateContents(): string
     {
-        return Str::studly($this->argument('name')) . 'Factory.php';
-    }
+        $model = $this->getOptionOrAsk(
+            'model',
+            'Enter the class name of the model to be used in the factory',
+            '',
+            true
+        );
+        $modelClass = $this->getClass($model);
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument),
+            'model' => $modelClass,
+            'modelEntity' => Str::camel($modelClass),
+            'modelNamespace' => $this->getComponentNamespace($this->module, $model, 'model')
+        ];
 
-    private function getModelName(): string
-    {
-        return Str::studly($this->argument('name'));
-    }
-
-    /**
-     * Get default namespace.
-     *
-     * @return string
-     */
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.factory.namespace') ?: Modules::config('paths.generator.factory.path');
-    }
-
-    /**
-     * Get model namespace.
-     *
-     * @return string
-     */
-    public function getModelNamespace(): string
-    {
-        return Modules::config('namespace') . '\\' . Modules::findOrFail($this->getModuleName()) . '\\' . Modules::config('paths.generator.model.path', 'Entities');
+        return Stub::create("factory.stub", $stubReplaces)->render();
     }
 }

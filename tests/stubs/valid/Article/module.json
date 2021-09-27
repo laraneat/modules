@@ -1,0 +1,18 @@
+{
+    "name": "Article",
+    "namespace": "App\\Modules\\Article",
+    "version": "0.1",
+    "alias": "article",
+    "description": "article module",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "App\\Modules\\Article\\Providers\\ArticleServiceProvider",
+        "App\\Modules\\Article\\Providers\\DeferredServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [
+        "required_module"
+    ]
+}

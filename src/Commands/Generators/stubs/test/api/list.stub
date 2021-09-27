@@ -1,0 +1,50 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Tests\TestCase;
+use {{ modelNamespace }}\{{ model }};
+
+/**
+ * @group {{ moduleNameLower }}
+ * @group api
+ */
+class {{ class }} extends TestCase
+{
+    protected string $url = '{{ url }}';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'view-{{ modelPermissionEntity }}',
+        'roles'       => '',
+    ];
+
+    public function testList{{ models }}(): void
+    {
+        $this->getTestingUser();
+
+        {{ model }}::factory()->count(2)->create();
+
+        $this->getJson($this->buildUrl())
+            ->assertOk()
+            ->assertJsonStructure([
+                '_profiler',
+                'links',
+                'meta',
+                'data'
+            ])
+            ->assertJsonCount({{ model }}::query()->count(), 'data');
+    }
+
+    public function testList{{ models }}WithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        {{ model }}::factory()->count(2)->create();
+
+        $this->getJson($this->buildUrl())
+            ->assertForbidden();
+    }
+}

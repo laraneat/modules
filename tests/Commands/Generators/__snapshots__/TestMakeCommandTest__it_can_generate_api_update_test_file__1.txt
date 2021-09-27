@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Modules\Article\UI\API\Tests\Baz\Bat;
+
+use App\Modules\Article\Models\Some\Nested\SomeTestModel;
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * @group article
+ * @group api
+ */
+class MyAwesomeApiUpdateTest extends TestCase
+{
+    protected string $url = '/some/api/url';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'update-some-test-model',
+        'roles'       => '',
+    ];
+
+   public function testUpdateSomeTestModel(): void
+       {
+           $this->getTestingUser();
+
+           $someTestModel = SomeTestModel::factory()->create();
+
+           $url = $this->buildUrl(
+               replaces: ['{id}' => $someTestModel->getKey()]
+           );
+
+           $data = [
+               //
+           ];
+           $expectedData = array_merge($data, [
+               'id' => $someTestModel->getKey(),
+           ]);
+
+           $this->patchJson($url, $data)
+               ->assertOk()
+               ->assertJson(fn (AssertableJson $json) =>
+                   $json->has('_profiler')
+                       ->has('data', fn (AssertableJson $json) =>
+                           $json->whereAll($expectedData)
+                               ->etc()
+                       )
+               );
+
+           $this->assertExistsModelWithAttributes(SomeTestModel::class, $expectedData);
+       }
+
+       public function testUpdateSomeTestModelWithoutAccess(): void
+       {
+           $this->getTestingUserWithoutAccess();
+
+           $someTestModel = SomeTestModel::factory()->create();
+
+           $url = $this->buildUrl(
+               replaces: ['{id}' => $someTestModel->getKey()]
+           );
+           $data = [
+               //
+           ];
+
+           $this->patchJson($url, $data)
+               ->assertForbidden();
+       }
+
+       public function testUpdateNonExistingSomeTestModel(): void
+       {
+           $this->getTestingUser();
+
+           $fakeSomeTestModelId = 7777;
+           $url = $this->buildUrl(
+               replaces: ['{id}' => $fakeSomeTestModelId]
+           );
+           $data = [
+               //
+           ];
+
+           $this->patchJson($url, $data)
+               ->assertNotFound();
+       }
+}

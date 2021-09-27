@@ -1,0 +1,72 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\QueryWizards\ScoutQueryWizard;
+
+class {{ class }} extends ScoutQueryWizard
+{
+    /**
+     * @return string[]
+     */
+    protected function allowedAppends(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function allowedFields(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return \Jackardios\QueryWizard\Handlers\Scout\Filters\AbstractScoutFilter[]|string[]
+     */
+    protected function allowedFilters(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return \Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude[]|string[]
+     */
+    protected function allowedIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return \Jackardios\QueryWizard\Handlers\Scout\Sorts\AbstractScoutSort[]|string[]
+     */
+    protected function allowedSorts(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function defaultAppends(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return \Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude[]|string[]
+     */
+    protected function defaultIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return \Jackardios\QueryWizard\Handlers\Scout\Sorts\AbstractScoutSort[]|string[]
+     */
+    protected function defaultSorts(): array
+    {
+        return [];
+    }
+}

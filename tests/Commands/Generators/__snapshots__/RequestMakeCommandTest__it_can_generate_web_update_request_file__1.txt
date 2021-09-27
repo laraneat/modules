@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Modules\Article\UI\WEB\Requests\Baz\Bat;
+
+use App\Ship\Abstracts\Requests\Request;
+
+class MyAwesomeWebUpdateRequest extends Request
+{
+    public function rules(): array
+    {
+        return [];
+    }
+
+    public function authorize(): bool
+    {
+        $model = $this->route('model');
+        return $model && $this->user()->can('update', $model);
+    }
+}

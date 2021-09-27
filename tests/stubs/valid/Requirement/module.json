@@ -1,7 +1,8 @@
 {
     "name": "Requirement",
     "alias": "required_module",
-    "description": "module that Recipe requires",
+    "namespace": "App\\Modules\\Requirement",
+    "description": "module that Article requires",
     "version": "0.1",
     "keywords": [],
     "order": 1,

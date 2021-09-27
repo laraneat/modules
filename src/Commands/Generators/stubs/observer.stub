@@ -1,0 +1,69 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Observers\Observer;
+use {{ modelNamespace }}\{{ model }};
+
+class {{ class }} extends Observer
+{
+    /**
+     * Handle the {{ model }} "created" event.
+     *
+     * @param {{ model }} ${{ modelEntity }}
+     *
+     * @return void
+     */
+    public function created({{ model }} ${{ modelEntity }})
+    {
+        //
+    }
+
+    /**
+     * Handle the {{ model }} "updated" event.
+     *
+     * @param {{ model }} ${{ modelEntity }}
+     *
+     * @return void
+     */
+    public function updated({{ model }} ${{ modelEntity }})
+    {
+        //
+    }
+
+    /**
+     * Handle the {{ model }} "deleted" event.
+     *
+     * @param {{ model }} ${{ modelEntity }}
+     *
+     * @return void
+     */
+    public function deleted({{ model }} ${{ modelEntity }})
+    {
+        //
+    }
+
+    /**
+     * Handle the {{ model }} "restored" event.
+     *
+     * @param {{ model }} ${{ modelEntity }}
+     *
+     * @return void
+     */
+    public function restored({{ model }} ${{ modelEntity }})
+    {
+        //
+    }
+
+    /**
+     * Handle the {{ model }} "force deleted" event.
+     *
+     * @param {{ model }} ${{ modelEntity }}
+     *
+     * @return void
+     */
+    public function forceDeleted({{ model }} ${{ modelEntity }})
+    {
+        //
+    }
+}

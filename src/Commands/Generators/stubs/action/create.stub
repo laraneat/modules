@@ -1,0 +1,37 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\JsonResponse;
+use {{ modelNamespace }}\{{ model }};
+use {{ requestNamespace }}\{{ request }};
+use {{ resourceNamespace }}\{{ resource }};
+
+class {{ class }} extends Action
+{
+    /**
+     * @return {{ model }}
+     */
+    public function handle(
+        //
+    ): {{ model }} {
+        return {{ model }}::create([
+            //
+        ]);
+    }
+
+    /**
+     * @param {{ request }} $request
+     *
+     * @return JsonResponse
+     */
+    public function asController({{ request }} $request): JsonResponse
+    {
+        ${{ modelEntity }} = $this->handle(
+            //
+        );
+
+        return (new {{ resource }}(${{ modelEntity }}))->created();
+    }
+}

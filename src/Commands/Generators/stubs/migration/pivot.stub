@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class {{ class }} extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('{{ table }}', function (Blueprint $table) {
+            $table->unsignedBigInteger('{{ columnOne }}')->index();
+            $table->foreign('{{ columnOne }}')->references('id')->on('{{ tableOne }}')->onDelete('cascade');
+            $table->unsignedBigInteger('{{ columnTwo }}')->index();
+            $table->foreign('{{ columnTwo }}')->references('id')->on('{{ tableTwo }}')->onDelete('cascade');
+            $table->primary(['{{ columnOne }}', '{{ columnTwo }}']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('{{ table }}');
+    }
+}

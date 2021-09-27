@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Modules\Article\UI\WEB\Tests\Baz\Bat;
+
+use App\Modules\Article\Models\Some\Nested\SomeTestModel;
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * @group article
+ * @group web
+ */
+class MyAwesomeWebCreateTest extends TestCase
+{
+    protected string $url = '/some/web/url';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'create-some-test-model',
+        'roles'       => '',
+    ];
+
+    protected function getTestData(): array
+    {
+        return [
+           // 'key' => 'value'
+        ];
+    }
+
+    public function testCreateSomeTestModel(): void
+    {
+        $this->getTestingUser();
+        $data = $this->getTestData();
+
+        $this->postJson($this->buildUrl(), $data)
+            ->assertCreated();
+
+        $this->assertExistsModelWithAttributes(SomeTestModel::class, $data);
+    }
+
+    public function testCreateSomeTestModelWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+        $data = $this->getTestData();
+
+        $this->postJson($this->buildUrl(), $data)
+            ->assertForbidden();
+    }
+}

@@ -3,42 +3,66 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-class TestMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class TestMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
-    protected string $argumentName = 'name';
-    protected $name = 'module:make-test';
-    protected $description = 'Create a new test class for the specified module.';
-
-    public function getDefaultNamespace(): string
-    {
-        if ($this->option('feature')) {
-            return Modules::config('paths.generator.test-feature.namespace') ?: Modules::config('paths.generator.test-feature.path', 'Tests/Feature');
-        }
-
-        return Modules::config('paths.generator.test.namespace') ?: Modules::config('paths.generator.test.path', 'Tests/Unit');
-    }
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $name = 'module:make:test';
 
     /**
-     * Get the console command arguments.
+     * The console command description.
      *
-     * @return array
+     * @var string
      */
-    protected function getArguments(): array
-    {
-        return [
-            ['name', InputArgument::REQUIRED, 'The name of the form request class.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
+    protected $description = 'Generate new test for the specified module.';
+
+    /**
+     * The type of test to be created.
+     *
+     * @var string
+     */
+    protected string $type = 'unit';
+
+    /**
+     * The stub name to load for this generator
+     *
+     * @var string
+     */
+    protected string $stub = 'plain';
+
+    /**
+     * Module instance.
+     *
+     * @var Module
+     */
+    protected Module $module;
+
+    /**
+     * Component type.
+     *
+     * @var string
+     */
+    protected string $componentType;
+
+    /**
+     * Prepared 'name' argument.
+     *
+     * @var string
+     */
+    protected string $nameArgument;
 
     /**
      * Get the console command options.
@@ -48,49 +72,82 @@ class TestMakeCommand extends GeneratorCommand
     protected function getOptions(): array
     {
         return [
-            ['feature', false, InputOption::VALUE_NONE, 'Create a feature test.'],
+            ['type', 't', InputOption::VALUE_REQUIRED, 'The type of test to be created.'],
+            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
+            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the test.'],
+            ['url', null, InputOption::VALUE_REQUIRED, 'URL for HTTP tests.'],
         ];
     }
 
-    /**
-     * @return string
-     */
-    protected function getTemplateContents(): string
+    protected function prepare()
     {
-        $module = Modules::findOrFail($this->getModuleName());
-        $stub = '/unit-test.stub';
+        $this->module = $this->getModule();
+        $this->type = $this->getOptionOrChoice(
+            'type',
+            'Select the type of test to be created',
+            ['unit', 'feature', 'api', 'web', 'cli'],
+            'unit'
+        );
 
-        if ($this->option('feature')) {
-            $stub = '/feature-test.stub';
+        $stubsMap = [
+            'api' => ['plain', 'create', 'delete', 'list', 'update', 'view'],
+            'web' => ['plain', 'create', 'delete', 'update'],
+            'cli' => ['plain'],
+            'unit' => ['plain'],
+            'feature' => ['plain']
+        ];
+        $stubChoices = $stubsMap[$this->type];
+        if (count($stubChoices) === 1) {
+            $this->stub = $stubChoices[0];
+        } else {
+            $this->stub = $this->getOptionOrChoice(
+                'stub',
+                'Select the stub you want to use for generator',
+                $stubChoices,
+                'plain'
+            );
         }
 
-        return (new Stub($stub, [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS'     => $this->getClass(),
-        ]))->render();
+        $this->componentType = "{$this->type}-test";
+        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    /**
-     * @return string
-     */
     protected function getDestinationFilePath(): string
     {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        if ($this->option('feature')) {
-            $testPath = GenerateConfigReader::read('test-feature');
-        } else {
-            $testPath = GenerateConfigReader::read('test');
-        }
-
-        return $path . $testPath->getPath() . '/' . $this->getFileName() . '.php';
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
-    /**
-     * @return string
-     */
-    private function getFileName(): string
+    protected function getTemplateContents(): string
     {
-        return Str::studly($this->argument('name'));
+        $stubReplaces = [
+            'moduleNameLower' => $this->module->getLowerName(),
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument)
+        ];
+
+        if ($this->stub !== 'plain') {
+            $model = $this->getOptionOrAsk(
+                'model',
+                'Enter the class name of the model to be used in the test',
+                '',
+                true
+            );
+            $stubReplaces['model'] = $this->getClass($model);
+            $stubReplaces['modelEntity'] = Str::camel($stubReplaces['model']);
+            $stubReplaces['modelNamespace'] = $this->getComponentNamespace($this->module, $model, 'model');
+            $stubReplaces['modelPermissionEntity'] = Str::snake($stubReplaces['model'], '-');
+            $stubReplaces['modelPermissionEntities'] = Str::plural($stubReplaces['modelPermissionEntity']);
+        }
+
+        if (in_array($this->type, ['api', 'web'])) {
+            $stubReplaces['url'] = $this->getOptionOrAsk(
+                'url',
+                'Enter URL for HTTP tests',
+                '',
+                true
+            );
+        }
+
+        return Stub::create("test/{$this->type}/{$this->stub}.stub", $stubReplaces)->render();
     }
 }

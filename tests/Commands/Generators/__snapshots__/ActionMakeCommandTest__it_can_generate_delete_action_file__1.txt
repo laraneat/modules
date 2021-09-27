@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Modules\Article\Actions\Baz\Bat;
+
+use App\Modules\Article\Models\Bar\TestModel;
+use App\Modules\Article\UI\API\Requests\Bat\TestRequest;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\JsonResponse;
+
+class MyAwesomeDeleteAction extends Action
+{
+    /**
+     * @param TestModel $testModel
+     *
+     * @return bool
+     */
+    public function handle(TestModel $testModel): bool
+    {
+        return $testModel->delete();
+    }
+
+    /**
+     * @param TestRequest $request
+     * @param TestModel $testModel
+     *
+     * @return JsonResponse
+     */
+    public function asController(TestRequest $request, TestModel $testModel): JsonResponse
+    {
+        $this->handle($testModel);
+
+        return $this->noContent();
+    }
+}

@@ -2,86 +2,70 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
 
-class RuleMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class RuleMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
     /**
-     * The name of argument name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected string $argumentName = 'name';
-
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'module:make-rule';
+    protected $name = 'module:make:rule';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new validation rule for the specified module.';
-
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.rules.namespace') ?: Modules::config('paths.generator.rules.path', 'Rules');
-    }
+    protected $description = 'Generate new rule for the specified module.';
 
     /**
-     * Get the console command arguments.
+     * Module instance.
      *
-     * @return array
+     * @var Module
      */
-    protected function getArguments(): array
-    {
-        return [
-            ['name', InputArgument::REQUIRED, 'The name of the rule class.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
+    protected Module $module;
 
     /**
-     * @return string
+     * Component type.
+     *
+     * @var string
      */
-    protected function getTemplateContents(): string
-    {
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub('/rule.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS'     => $this->getFileName(),
-        ]))->render();
-    }
+    protected string $componentType = 'rule';
 
     /**
-     * @return string
+     * Prepared 'name' argument.
+     *
+     * @var string
      */
+    protected string $nameArgument;
+
+    protected function prepare()
+    {
+        $this->module = $this->getModule();
+        $this->nameArgument = $this->getTrimmedArgument('name');
+    }
+
     protected function getDestinationFilePath(): string
     {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $rulePath = GenerateConfigReader::read('rules');
-
-        return $path . $rulePath->getPath() . '/' . $this->getFileName() . '.php';
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
-    /**
-     * @return string
-     */
-    private function getFileName(): string
+    protected function getTemplateContents(): string
     {
-        return Str::studly($this->argument('name'));
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument),
+        ];
+
+        return Stub::create("rule.stub", $stubReplaces)->render();
     }
 }

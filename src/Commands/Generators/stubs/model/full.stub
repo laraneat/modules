@@ -1,0 +1,23 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Models\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use {{ factoryNamespace }}\{{ factory }};
+
+class {{ class }} extends Model
+{
+    use HasFactory;
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return Factory
+     */
+    protected static function newFactory(): Factory
+    {
+        return {{ factory }}::new();
+    }
+}

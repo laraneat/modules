@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class $CLASS$ extends Migration
+class {{ class }} extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class $CLASS$ extends Migration
      */
     public function up()
     {
-        Schema::table('$TABLE$', function (Blueprint $table) {
-$FIELDS_UP$
+        Schema::table('{{ table }}', function (Blueprint $table) {
+{{ fieldsUp }}
         });
     }
 
@@ -25,8 +25,8 @@ $FIELDS_UP$
      */
     public function down()
     {
-        Schema::table('$TABLE$', function (Blueprint $table) {
-$FIELDS_DOWN$
+        Schema::table('{{ table }}', function (Blueprint $table) {
+{{ fieldsDown }}
         });
     }
 }

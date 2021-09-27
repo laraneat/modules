@@ -1,0 +1,7 @@
+<?php
+
+use App\Modules\Article\Actions\ListRoutesAction;
+use Illuminate\Support\Facades\Route;
+
+Route::get('some/route', ListRoutesAction::class)
+    ->name('api.route.list');

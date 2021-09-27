@@ -1,0 +1,61 @@
+<?php
+
+namespace App\Modules\Article\UI\WEB\Tests\Baz\Bat;
+
+use App\Modules\Article\Models\Some\Nested\SomeTestModel;
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group article
+ * @group web
+ */
+class MyAwesomeWebDeleteTest extends TestCase
+{
+    protected string $url = '/some/web/url';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'delete-some-test-model',
+        'roles'       => '',
+    ];
+
+    public function testDeleteSomeTestModel(): void
+    {
+        $this->getTestingUser();
+
+        $someTestModel = SomeTestModel::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $someTestModel->getKey()]
+        );
+
+        $this->deleteJson($url)->assertNoContent();
+
+        $this->assertNull(SomeTestModel::find($someTestModel->getKey()));
+    }
+
+    public function testDeleteSomeTestModelWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $someTestModel = SomeTestModel::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $someTestModel->getKey()]
+        );
+
+        $this->deleteJson($url)->assertForbidden();
+    }
+
+    public function testDeleteNotExistingSomeTestModel(): void
+    {
+        $this->getTestingUser();
+
+        $url = $this->buildUrl(
+            replaces: ['{id}' => '12345']
+        );
+
+        $this->deleteJson($url)
+            ->assertNotFound();
+    }
+}

@@ -3,77 +3,93 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
-class EventMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class EventMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
-    protected string $argumentName = 'name';
-
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make-event';
+    protected $name = 'module:make:event';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new event class for the specified module';
-
-    public function getTemplateContents(): string
-    {
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub('/event.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS' => $this->getClass(),
-        ]))->render();
-    }
+    protected $description = 'Generate new event for the specified module.';
 
     /**
-     * @return string
+     * Module instance.
+     *
+     * @var Module
      */
-    public function getDestinationFilePath(): string
-    {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $eventPath = GenerateConfigReader::read('event');
-
-        return $path . $eventPath->getPath() . '/' . $this->getFileName() . '.php';
-    }
+    protected Module $module;
 
     /**
-     * @return string
+     * Component type.
+     *
+     * @var string
      */
-    protected function getFileName(): string
-    {
-        return Str::studly($this->argument('name'));
-    }
-
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.event.namespace') ?: Modules::config('paths.generator.event.path', 'Events');
-    }
+    protected string $componentType = 'event';
 
     /**
-     * Get the console command arguments.
+     * Prepared 'name' argument.
+     *
+     * @var string
+     */
+    protected string $nameArgument;
+
+    /**
+     * Get the console command options.
      *
      * @return array
      */
-    protected function getArguments(): array
+    protected function getOptions(): array
     {
         return [
-            ['name', InputArgument::REQUIRED, 'The name of the event.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
+            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the seeder.'],
         ];
+    }
+
+    protected function prepare()
+    {
+        $this->module = $this->getModule();
+        $this->nameArgument = $this->getTrimmedArgument('name');
+    }
+
+    protected function getDestinationFilePath(): string
+    {
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
+    }
+
+    protected function getTemplateContents(): string
+    {
+        $model = $this->getOptionOrAsk(
+            'model',
+            'Enter the class name of the model to be used in the event',
+            '',
+            true
+        );
+        $modelClass = $this->getClass($model);
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument),
+            'model' => $modelClass,
+            'modelEntity' => Str::camel($modelClass),
+            'modelNamespace' => $this->getComponentNamespace($this->module, $model, 'model')
+        ];
+
+        return Stub::create("event.stub", $stubReplaces)->render();
     }
 }

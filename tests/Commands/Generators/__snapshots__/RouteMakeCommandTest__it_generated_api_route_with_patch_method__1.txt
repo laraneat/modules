@@ -1,0 +1,7 @@
+<?php
+
+use App\Modules\Article\Actions\SomePatchAction;
+use Illuminate\Support\Facades\Route;
+
+Route::patch('some/patch/route', SomePatchAction::class)
+    ->name('api.nested.some_patch_route');

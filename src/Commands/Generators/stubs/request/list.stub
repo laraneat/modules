@@ -1,0 +1,19 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Requests\Request;
+use {{ modelNamespace }}\{{ model }};
+
+class {{ class }} extends Request
+{
+    public function rules(): array
+    {
+        return [];
+    }
+
+    public function authorize(): bool
+    {
+        return $this->user()->can('viewAny', {{ model }}::class);
+    }
+}

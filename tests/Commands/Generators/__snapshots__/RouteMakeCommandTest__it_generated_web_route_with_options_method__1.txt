@@ -1,0 +1,7 @@
+<?php
+
+use App\Modules\Article\Actions\SomeOptionsAction;
+use Illuminate\Support\Facades\Route;
+
+Route::options('some/options/route', SomeOptionsAction::class)
+    ->name('web.nested.some_options_route');

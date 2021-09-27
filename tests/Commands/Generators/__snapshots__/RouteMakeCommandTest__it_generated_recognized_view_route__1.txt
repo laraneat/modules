@@ -1,0 +1,7 @@
+<?php
+
+use App\Modules\Article\Actions\ViewPostAction;
+use Illuminate\Support\Facades\Route;
+
+Route::get('posts/{post}', ViewPostAction::class)
+    ->name('api.posts.view');

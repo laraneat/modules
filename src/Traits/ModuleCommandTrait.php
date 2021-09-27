@@ -2,19 +2,23 @@
 
 namespace Laraneat\Modules\Traits;
 
+use Laraneat\Modules\Facades\Modules;
+use Laraneat\Modules\Module;
+
+/**
+ * @mixin \Illuminate\Support\ServiceProvider
+ */
 trait ModuleCommandTrait
 {
     /**
-     * Get the module name.
+     * Get the module.
      *
-     * @return string
+     * @return Module
      */
-    public function getModuleName(): string
+    public function getModule(): Module
     {
-        $module = $this->argument('module') ?: app('modules')->getUsedNow();
+        $moduleName = $this->argument('module');
 
-        $module = app('modules')->findOrFail($module);
-
-        return $module->getStudlyName();
+        return $moduleName ? Modules::findOrFail($moduleName) : Modules::getUsedNow();
     }
 }

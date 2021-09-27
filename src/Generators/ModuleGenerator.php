@@ -7,9 +7,8 @@ use Illuminate\Console\Command as Console;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Contracts\ActivatorInterface;
-use Laraneat\Modules\Exceptions\ModuleNotFoundException;
 use Laraneat\Modules\FileRepository;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use Laraneat\Modules\Support\Stub;
 
 class ModuleGenerator extends Generator
@@ -251,23 +250,13 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get the list of folders will created.
+     * Get the list of folders to be created.
      *
      * @return array
      */
-    public function getFolders()
+    public function getFolders(): array
     {
-        return $this->repository->config('paths.generator');
-    }
-
-    /**
-     * Get the list of files will created.
-     *
-     * @return array
-     */
-    public function getFiles(): array
-    {
-        return $this->repository->config('stubs.files');
+        return $this->repository->config('generator.components');
     }
 
     /**
@@ -286,7 +275,8 @@ class ModuleGenerator extends Generator
 
     /**
      * Generate the module.
-     * @throws ModuleNotFoundException
+     *
+     * @return int
      */
     public function generate(): int
     {
@@ -303,19 +293,18 @@ class ModuleGenerator extends Generator
         }
 
         $this->generateFolders();
-
-        $this->generateModuleJsonFile();
-
-        if ($this->type !== 'plain') {
-            $this->generateFiles();
-            $this->generateResources();
-        }
+        $this->generateScaffoldFiles();
 
         if ($this->type === 'plain') {
             $this->cleanModuleJsonFile();
         }
 
         $this->activator->setActiveByName($name, $this->isActive);
+        $this->repository->flushCache();
+
+        if ($this->type !== 'plain') {
+            $this->generateComponents();
+        }
 
         $this->console->info("Module [{$name}] created successfully.");
 
@@ -324,21 +313,239 @@ class ModuleGenerator extends Generator
 
     /**
      * Generate the folders.
+     *
+     * @return void
      */
     public function generateFolders(): void
     {
         foreach ($this->getFolders() as $key => $folder) {
-            $folder = GenerateConfigReader::read($key);
+            $folder = GeneratorHelper::component($key);
 
             if ($folder->generate() === false) {
                 continue;
             }
 
-            $path = $this->repository->getModulePath($this->getName()) . '/' . $folder->getPath();
+            $path = GeneratorHelper::modulePath($this->getName(), $folder->getPath());
 
-            $this->filesystem->makeDirectory($path, 0755, true);
-            if (config('modules.stubs.gitkeep')) {
-                $this->generateGitKeep($path);
+            if (!$this->filesystem->isDirectory($path)) {
+                $this->filesystem->makeDirectory($path, 0755, true);
+                if ($folder->withGitKeep()) {
+                    $this->generateGitKeep($path);
+                }
+            }
+        }
+    }
+
+    public function generateScaffoldFiles(): void
+    {
+        $this->generateComposerJsonFile();
+        $this->generateModuleJsonFile();
+        $this->generateConfig();
+    }
+
+    /**
+     * Generate module components.
+     *
+     * @return void
+     */
+    public function generateComponents(): void
+    {
+        $actionVerbs = [
+            'api' => ['create', 'update', 'delete', 'list', 'view'],
+            'web' => ['create', 'update', 'delete'],
+        ];
+        $studlyName = $this->getName();
+        $studlyPluralName = Str::plural($studlyName);
+        $camelName = Str::camel($studlyName);
+        $snakeName = Str::snake($studlyName);
+        $snakePluralName = Str::plural($snakeName);
+        $dashedPluralName = Str::snake($snakePluralName, '-');
+        $underlinedPluralName = Str::snake($snakePluralName, '_');
+
+        if (GeneratorHelper::component('action')->generate() === true) {
+            foreach ($actionVerbs['api'] as $actionVerb) {
+                $studlyActionVerb = Str::studly($actionVerb);
+                $actionClass = "{$studlyActionVerb}{$studlyName}Action";
+                $requestClass = "{$studlyActionVerb}{$studlyName}Request";
+                $wizardClass = "{$studlyName}QueryWizard";
+
+                if ($actionVerb === "list") {
+                    $actionClass = "{$studlyActionVerb}{$studlyPluralName}Action";
+                    $requestClass = "{$studlyActionVerb}{$studlyPluralName}Request";
+                    $wizardClass = "{$studlyPluralName}QueryWizard";
+                }
+
+                $this->console->call('module:make:action', [
+                    'name' => $actionClass,
+                    'module' => $studlyName,
+                    '--stub' => $actionVerb,
+                    '--model' => $studlyName,
+                    '--request' => $requestClass,
+                    '--resource' => "{$studlyName}Resource",
+                    '--wizard' => $wizardClass
+                ]);
+            }
+        }
+
+        if (GeneratorHelper::component('factory')->generate() === true) {
+            $this->console->call('module:make:factory', [
+                'name' => "{$studlyName}Factory",
+                'module' => $studlyName,
+                '--model' => $studlyName
+            ]);
+        }
+
+        if (GeneratorHelper::component('migration')->generate() === true) {
+            $this->console->call('module:make:migration', [
+                'name' => "create_{$snakePluralName}_table",
+                'module' => $studlyName,
+                '--stub' => 'create'
+            ]);
+        }
+
+        if (GeneratorHelper::component('seeder')->generate() === true) {
+            $this->console->call('module:make:seeder', [
+                'name' => "{$studlyName}PermissionsSeeder",
+                'module' => $studlyName,
+                '--stub' => 'permissions',
+                '--model' => $studlyName
+            ]);
+        }
+
+        if (GeneratorHelper::component('model')->generate() === true) {
+            $this->console->call('module:make:model', [
+                'name' => $studlyName,
+                'module' => $studlyName,
+                '--stub' => 'full',
+                '--factory' => "{$studlyName}Factory"
+            ]);
+        }
+
+        if (GeneratorHelper::component('policy')->generate() === true) {
+            $this->console->call('module:make:policy', [
+                'name' => "{$studlyName}Policy",
+                'module' => $studlyName,
+                '--stub' => 'full',
+                '--model' => $studlyName
+            ]);
+        }
+
+        if (GeneratorHelper::component('provider')->generate() === true) {
+            $this->console->call('module:make:provider', [
+                'name' => "{$studlyName}ServiceProvider",
+                'module' => $studlyName,
+                '--stub' => 'module'
+            ]);
+            $this->console->call('module:make:provider', [
+                'name' => "RouteServiceProvider",
+                'module' => $studlyName,
+                '--stub' => 'route'
+            ]);
+        }
+
+        if (GeneratorHelper::component('api-query-wizard')->generate() === true) {
+            $this->console->call('module:make:wizard', [
+                'name' => "{$studlyPluralName}QueryWizard",
+                'module' => $studlyName,
+                '--stub' => 'eloquent',
+            ]);
+            $this->console->call('module:make:wizard', [
+                'name' => "{$studlyName}QueryWizard",
+                'module' => $studlyName,
+                '--stub' => 'model',
+            ]);
+        }
+
+        if (GeneratorHelper::component('api-resource')->generate() === true) {
+            $this->console->call('module:make:resource', [
+                'name' => "{$studlyName}Resource",
+                'module' => $studlyName,
+                '--stub' => 'single'
+            ]);
+        }
+
+        foreach ($actionVerbs as $ui => $uiActionVerbs) {
+            if (GeneratorHelper::component("{$ui}-controller")->generate() === true) {
+                $this->console->call('module:make:controller', [
+                    'name' => 'Controller',
+                    'module' => $studlyName,
+                    '--ui' => $ui
+                ]);
+            }
+
+            if (GeneratorHelper::component("{$ui}-request")->generate() === true) {
+                foreach ($uiActionVerbs as $actionVerb) {
+                    $studlyActionName = Str::studly($actionVerb);
+                    $requestClass = $actionVerb === 'list'
+                        ? "{$studlyActionName}{$studlyPluralName}Request"
+                        : "{$studlyActionName}{$studlyName}Request";
+                    $this->console->call('module:make:request', [
+                        'name' => $requestClass,
+                        'module' => $studlyName,
+                        '--ui' => $ui,
+                        '--stub' => $actionVerb,
+                        '--model' => $studlyName,
+                    ]);
+                }
+            }
+
+            if (GeneratorHelper::component("{$ui}-route")->generate() === true) {
+                $actionMethodsMap = [
+                    'create' => 'post',
+                    'update' => 'patch',
+                    'delete' => 'delete',
+                    'list' => 'get',
+                    'view' => 'get'
+                ];
+                foreach ($uiActionVerbs as $actionVerb) {
+                    $studlyActionName = Str::studly($actionVerb);
+                    $actionClass = $actionVerb === 'list'
+                        ? "{$studlyActionName}{$studlyPluralName}Action"
+                        : "{$studlyActionName}{$studlyName}Action";
+
+                    $url = $dashedPluralName;
+                    if (in_array($actionVerb, ['update', 'delete', 'view'])) {
+                        $url .= '/{' . $camelName . '}';
+                    }
+
+                    $filePath = Str::snake(str_replace('Action', '', $actionClass), '_');
+                    if ($ui === 'api') {
+                        $filePath = 'v1/' . $filePath;
+                    }
+
+                    $this->console->call('module:make:route', [
+                        'name' => $filePath,
+                        'module' => $studlyName,
+                        '--ui' => $ui,
+                        '--action' => $actionClass,
+                        '--method' => $actionMethodsMap[$actionVerb],
+                        '--url' => $url,
+                        '--name' => $ui . '.' . $underlinedPluralName . '.' . $actionVerb
+                    ]);
+                }
+            }
+
+            if (GeneratorHelper::component("{$ui}-test")->generate() === true) {
+                foreach ($uiActionVerbs as $actionVerb) {
+                    $studlyActionName = Str::studly($actionVerb);
+                    $testClass = $actionVerb === 'list'
+                        ? "{$studlyActionName}{$studlyPluralName}Test"
+                        : "{$studlyActionName}{$studlyName}Test";
+
+                    $url = "/api/v1/{$dashedPluralName}";
+                    if (in_array($actionVerb, ['update', 'delete', 'view'])) {
+                        $url .= '/{' . $camelName . '}';
+                    }
+
+                    $this->console->call('module:make:test', [
+                        'name' => $testClass,
+                        'module' => $studlyName,
+                        '--type' => $ui,
+                        '--stub' => $actionVerb,
+                        '--model' => $studlyName,
+                        '--url' => $url
+                    ]);
+                }
             }
         }
     }
@@ -348,150 +555,74 @@ class ModuleGenerator extends Generator
      *
      * @param string $path
      */
-    public function generateGitKeep(string $path): void
+    protected function generateGitKeep(string $path): void
     {
         $this->filesystem->put($path . '/.gitkeep', '');
     }
 
     /**
-     * Generate the files.
+     * Generate config
+     *
+     * @return void
      */
-    public function generateFiles(): void
+    protected function generateConfig(): void
     {
-        foreach ($this->getFiles() as $stub => $file) {
-            $path = $this->repository->getModulePath($this->getName()) . $file;
-
-            if (!$this->filesystem->isDirectory($dir = dirname($path))) {
-                $this->filesystem->makeDirectory($dir, 0775, true);
-            }
-
-            $this->filesystem->put($path, $this->getStubContents($stub));
-
-            $this->console->info("Created : {$path}");
+        if (! GeneratorHelper::component('config')->generate()) {
+            return;
         }
+        $configFileName = Str::snake($this->getName(), '-') . '-module';
+        $subPath = GeneratorHelper::component('config')->getPath() . '/' . $configFileName . '.php';
+        $path = GeneratorHelper::modulePath($this->getName(), $subPath);
+
+        $stubContent = (new Stub('/config.stub', $this->getAllReplacements()))->render();
+
+        $this->createFile($path, $stubContent);
     }
 
     /**
-     * Generate some resources.
-     */
-    public function generateResources(): void
-    {
-        if (GenerateConfigReader::read('seeder')->generate() === true) {
-            $this->console->call('module:make-seed', [
-                'name' => $this->getName(),
-                'module' => $this->getName(),
-                '--master' => true,
-            ]);
-        }
-
-        if (GenerateConfigReader::read('provider')->generate() === true) {
-            $this->console->call('module:make-provider', [
-                'name' => $this->getName() . 'ServiceProvider',
-                'module' => $this->getName(),
-                '--master' => true,
-            ]);
-            $this->console->call('module:route-provider', [
-                'module' => $this->getName(),
-            ]);
-        }
-
-        if (GenerateConfigReader::read('controller')->generate() === true) {
-            $options = $this->type === 'api' ? ['--api'=>true] : [];
-            $this->console->call('module:make-controller', [
-                'controller' => $this->getName() . 'Controller',
-                'module' => $this->getName(),
-            ]+$options);
-        }
-    }
-
-    /**
-     * Get the contents of the specified stub file by given stub name.
+     * Generate config
      *
-     * @param string $stub
-     *
-     * @return string
+     * @return void
      */
-    protected function getStubContents(string $stub): string
+    protected function generateComposerJsonFile(): void
     {
-        return (new Stub(
-            '/' . $stub . '.stub',
-            $this->getReplacement($stub)
-        )
-        )->render();
-    }
+        $path = GeneratorHelper::modulePath($this->getName(), 'composer.json');
 
-    /**
-     * get the list for the replacements.
-     */
-    public function getReplacements()
-    {
-        return $this->repository->config('stubs.replacements');
-    }
+        $stubContent = (new Stub('/composer.json.stub', $this->getAllReplacements()))->render();
 
-    /**
-     * Get array replacement for the specified stub.
-     *
-     * @param string $stub
-     *
-     * @return array
-     */
-    protected function getReplacement(string $stub): array
-    {
-        $replacements = $this->repository->config('stubs.replacements');
-
-        if (!isset($replacements[$stub])) {
-            return [];
-        }
-
-        $keys = $replacements[$stub];
-
-        $replaces = [];
-
-        if ($stub === 'json' || $stub === 'composer') {
-            if (in_array('PROVIDER_NAMESPACE', $keys, true) === false) {
-                $keys[] = 'PROVIDER_NAMESPACE';
-            }
-        }
-        foreach ($keys as $key) {
-            if (method_exists($this, $method = 'get' . ucfirst(Str::studly(strtolower($key))) . 'Replacement')) {
-                $replaces[$key] = $this->$method();
-            } else {
-                $replaces[$key] = null;
-            }
-        }
-
-        return $replaces;
+        $this->createFile($path, $stubContent);
     }
 
     /**
      * Generate the module.json file
+     *
+     * @return void
      */
-    private function generateModuleJsonFile(): void
+    protected function generateModuleJsonFile(): void
     {
-        $path = $this->repository->getModulePath($this->getName()) . 'module.json';
+        $path = GeneratorHelper::modulePath($this->getName(), 'module.json');
 
-        if (!$this->filesystem->isDirectory($dir = dirname($path))) {
-            $this->filesystem->makeDirectory($dir, 0775, true);
-        }
+        $stubContent = (new Stub('/module.json.stub', $this->getAllReplacements()))->render();
 
-        $this->filesystem->put($path, $this->getStubContents('json'));
-
-        $this->console->info("Created : {$path}");
+        $this->createFile($path, $stubContent);
     }
 
     /**
      * Remove the default service provider that was added in the module.json file
      * This is needed when a --plain module was created
+     *
+     * @return void
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
-    private function cleanModuleJsonFile(): void
+    protected function cleanModuleJsonFile(): void
     {
-        $path = $this->repository->getModulePath($this->getName()) . 'module.json';
+        $path = GeneratorHelper::modulePath($this->getName(), 'module.json');
 
         $content = $this->filesystem->get($path);
-        $namespace = $this->getModuleNamespaceReplacement();
+        $providerNamespace = $this->getProviderNamespaceReplacement();
         $studlyName = $this->getStudlyNameReplacement();
 
-        $provider = '"' . $namespace . '\\\\' . $studlyName . '\\\\Providers\\\\' . $studlyName . 'ServiceProvider"';
+        $provider = '"' . $providerNamespace . '\\\\' . $studlyName . 'ServiceProvider"';
 
         $content = str_replace($provider, '', $content);
 
@@ -499,7 +630,41 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get the module name in lower case.
+     * Create a file at the given path, after creating folders if necessary
+     *
+     * @param string $path
+     * @param string $content
+     *
+     * @return void
+     */
+    protected function createFile(string $path, string $content): void
+    {
+        $this->filesystem->ensureDirectoryExists(dirname($path));
+        $this->filesystem->put($path, $content);
+
+        $this->console->info("Created: {$path}");
+    }
+
+    /**
+     * Get replacements
+     *
+     * @return array
+     */
+    protected function getAllReplacements(): array
+    {
+        return [
+            'authorEmail' => $this->getAuthorEmailReplacement(),
+            'authorName' => $this->getAuthorNameReplacement(),
+            'lowerName' => $this->getLowerNameReplacement(),
+            'studlyName' => $this->getStudlyNameReplacement(),
+            'moduleNamespace' => $this->getModuleNamespaceReplacement(),
+            'providerNamespace' => $this->getProviderNamespaceReplacement(),
+            'vendor' => $this->getVendorReplacement()
+        ];
+    }
+
+    /**
+     * Get the module name in lower case (replacement for {{ lowerName }}).
      *
      * @return string
      */
@@ -509,7 +674,7 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get the module name in studly case.
+     * Get the module name in studly case (replacement for {{ studlyName }}).
      *
      * @return string
      */
@@ -519,7 +684,7 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get replacement for $VENDOR$.
+     * Get replacement for {{ vendor }}.
      *
      * @return string
      */
@@ -529,17 +694,7 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get replacement for $MODULE_NAMESPACE$.
-     *
-     * @return string
-     */
-    protected function getModuleNamespaceReplacement(): string
-    {
-        return str_replace('\\', '\\\\', $this->repository->config('namespace', ''));
-    }
-
-    /**
-     * Get replacement for $AUTHOR_NAME$.
+     * Get replacement for {{ authorName }}.
      *
      * @return string
      */
@@ -549,7 +704,7 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get replacement for $AUTHOR_EMAIL$.
+     * Get replacement for {{ authorEmail }}.
      *
      * @return string
      */
@@ -559,12 +714,23 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get replacement for $PROVIDER_NAMESPACE$.
+     * Get replacement for {{ moduleNamespace }}.
+     *
+     * @return string
+     */
+    protected function getModuleNamespaceReplacement(): string
+    {
+        return str_replace('\\', '\\\\', GeneratorHelper::moduleNamespace($this->getName()));
+    }
+
+    /**
+     * Get replacement for {{ providerNamespace }}.
      *
      * @return string
      */
     protected function getProviderNamespaceReplacement(): string
     {
-        return str_replace('\\', '\\\\', GenerateConfigReader::read('provider')->getNamespace());
+        $providerNamespace = GeneratorHelper::component('provider')->getFullNamespace($this->getName());
+        return str_replace('\\', '\\\\', $providerNamespace);
     }
 }

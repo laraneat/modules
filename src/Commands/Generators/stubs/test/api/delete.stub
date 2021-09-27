@@ -1,0 +1,61 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Tests\TestCase;
+use {{ modelNamespace }}\{{ model }};
+
+/**
+ * @group {{ moduleNameLower }}
+ * @group api
+ */
+class {{ class }} extends TestCase
+{
+    protected string $url = '{{ url }}';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'delete-{{ modelPermissionEntity }}',
+        'roles'       => '',
+    ];
+
+    public function testDelete{{ model }}(): void
+    {
+        $this->getTestingUser();
+
+        ${{ modelEntity }} = {{ model }}::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => ${{ modelEntity }}->getKey()]
+        );
+
+        $this->deleteJson($url)->assertNoContent();
+
+        $this->assertNull({{ model }}::find(${{ modelEntity }}->getKey()));
+    }
+
+    public function testDelete{{ model }}WithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        ${{ modelEntity }} = {{ model }}::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => ${{ modelEntity }}->getKey()]
+        );
+
+        $this->deleteJson($url)->assertForbidden();
+    }
+
+    public function testDeleteNotExisting{{ model }}(): void
+    {
+        $this->getTestingUser();
+
+        $url = $this->buildUrl(
+            replaces: ['{id}' => '12345']
+        );
+
+        $this->deleteJson($url)
+            ->assertNotFound();
+    }
+}

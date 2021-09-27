@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Modules\Article\UI\API\Tests;
+
+use App\Modules\Article\Models\Article;
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group article
+ * @group api
+ */
+class ViewArticleTest extends TestCase
+{
+    protected string $url = '/api/v1/articles/{article}';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'view-article',
+        'roles'       => '',
+    ];
+
+    public function testViewArticle(): void
+    {
+        $this->getTestingUser();
+
+        $article = Article::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $article->getKey()]
+        );
+        $expectedData = [
+            'id' => $article->getKey(),
+            // ...
+        ];
+
+        $this->getJson($url)
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('_profiler')
+                    ->has('data', fn (AssertableJson $json) =>
+                        $json->whereAll($expectedData)
+                            ->etc()
+                    )
+            );
+    }
+
+    public function testViewArticleWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $article = Article::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $article->getKey()]
+        );
+
+        $this->getJson($url)
+            ->assertForbidden();
+    }
+
+    public function testViewNotExistingArticle(): void
+    {
+        $this->getTestingUser();
+
+        $fakeArticleId = 7777;
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $fakeArticleId]
+        );
+
+        $this->getJson($url)
+            ->assertNotFound();
+    }
+}

@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Modules\Article\UI\API\Tests\Baz\Bat;
+
+use App\Modules\Article\Models\Some\Nested\SomeTestModel;
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group article
+ * @group api
+ */
+class MyAwesomeApiListTest extends TestCase
+{
+    protected string $url = '/some/api/url';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'view-some-test-model',
+        'roles'       => '',
+    ];
+
+    public function testList{{ models }}(): void
+    {
+        $this->getTestingUser();
+
+        SomeTestModel::factory()->count(2)->create();
+
+        $this->getJson($this->buildUrl())
+            ->assertOk()
+            ->assertJsonStructure([
+                '_profiler',
+                'links',
+                'meta',
+                'data'
+            ])
+            ->assertJsonCount(SomeTestModel::query()->count(), 'data');
+    }
+
+    public function testList{{ models }}WithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        SomeTestModel::factory()->count(2)->create();
+
+        $this->getJson($this->buildUrl())
+            ->assertForbidden();
+    }
+}

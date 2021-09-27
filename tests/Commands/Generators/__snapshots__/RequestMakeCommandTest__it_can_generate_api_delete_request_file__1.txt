@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Modules\Article\UI\API\Requests\Baz\Bat;
+
+use App\Ship\Abstracts\Requests\Request;
+
+class MyAwesomeApiDeleteRequest extends Request
+{
+    public function rules(): array
+    {
+        return [];
+    }
+
+    public function authorize(): bool
+    {
+        $model = $this->route('model');
+        return $model && $this->user()->can('delete', $model);
+    }
+}

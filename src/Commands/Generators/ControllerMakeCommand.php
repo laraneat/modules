@@ -2,134 +2,97 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-class ControllerMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class ControllerMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
     /**
-     * The name of argument being used.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected string $argumentName = 'controller';
-
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'module:make-controller';
+    protected $name = 'module:make:controller';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate new restful controller for the specified module.';
+    protected $description = 'Generate new controller for the specified module.';
 
     /**
-     * Get controller name.
+     * The UI for which the request will be created.
      *
-     * @return string
+     * @var string
      */
-    public function getDestinationFilePath(): string
-    {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $controllerPath = GenerateConfigReader::read('controller');
-
-        return $path . $controllerPath->getPath() . '/' . $this->getControllerName() . '.php';
-    }
+    protected string $ui = 'api';
 
     /**
-     * @return string
-     */
-    protected function getTemplateContents(): string
-    {
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub($this->getStubName(), [
-            'MODULENAME'        => $module->getStudlyName(),
-            'CONTROLLERNAME'    => $this->getControllerName(),
-            'NAMESPACE'         => $module->getStudlyName(),
-            'CLASS_NAMESPACE'   => $this->getClassNamespace($module),
-            'CLASS'             => $this->getControllerNameWithoutNamespace(),
-            'LOWER_NAME'        => $module->getLowerName(),
-            'MODULE'            => $this->getModuleName(),
-            'NAME'              => $this->getModuleName(),
-            'STUDLY_NAME'       => $module->getStudlyName(),
-            'MODULE_NAMESPACE'  => Modules::config('namespace'),
-        ]))->render();
-    }
-
-    /**
-     * Get the console command arguments.
+     * Module instance.
      *
-     * @return array
+     * @var Module
      */
-    protected function getArguments(): array
-    {
-        return [
-            ['controller', InputArgument::REQUIRED, 'The name of the controller class.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
+    protected Module $module;
 
     /**
+     * Component type.
+     *
+     * @var string
+     */
+    protected string $componentType;
+
+    /**
+     * Prepared 'name' argument.
+     *
+     * @var string
+     */
+    protected string $nameArgument;
+
+    /**
+     * Get the console command options.
+     *
      * @return array
      */
     protected function getOptions(): array
     {
         return [
-            ['plain', 'p', InputOption::VALUE_NONE, 'Generate a plain controller', null],
-            ['api', null, InputOption::VALUE_NONE, 'Exclude the create and edit methods from the controller.'],
+            ['ui', null, InputOption::VALUE_REQUIRED, 'The UI for which the request will be created.'],
         ];
     }
 
-    protected function getControllerName(): string
+    protected function prepare()
     {
-        $controller = Str::studly($this->argument('controller'));
-
-        if (Str::contains(strtolower($controller), 'controller') === false) {
-            $controller .= 'Controller';
-        }
-
-        return $controller;
+        $this->module = $this->getModule();
+        $this->ui = $this->getOptionOrChoice(
+            'ui',
+            'Select UI for which the request will be created',
+            ['api', 'web'],
+            'api'
+        );
+        $this->componentType = "{$this->ui}-controller";
+        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    public function getDefaultNamespace(): string
+    protected function getDestinationFilePath(): string
     {
-        return Modules::config('paths.generator.controller.namespace') ?: Modules::config('paths.generator.controller.path', 'Http/Controllers');
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
-    private function getControllerNameWithoutNamespace(): string
+    protected function getTemplateContents(): string
     {
-        return class_basename($this->getControllerName());
-    }
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument)
+        ];
 
-    /**
-     * Get the stub file name based on the options
-     *
-     * @return string
-     */
-    protected function getStubName(): string
-    {
-        if ($this->option('plain') === true) {
-            $stub = '/controller-plain.stub';
-        } elseif ($this->option('api') === true) {
-            $stub = '/controller-api.stub';
-        } else {
-            $stub = '/controller.stub';
-        }
-
-        return $stub;
+        return Stub::create("controller/{$this->ui}.stub", $stubReplaces)->render();
     }
 }

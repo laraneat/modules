@@ -1,0 +1,19 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Requests\Request;
+
+class {{ class }} extends Request
+{
+    public function rules(): array
+    {
+        return [];
+    }
+
+    public function authorize(): bool
+    {
+        ${{ modelEntity }} = $this->route('{{ modelEntity }}');
+        return ${{ modelEntity }} && $this->user()->can('update', ${{ modelEntity }});
+    }
+}

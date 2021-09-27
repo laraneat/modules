@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Modules\Article\Foo\Bar\NewTests\Baz\Bat;
+
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group article
+ * @group api
+ */
+class MyAwesomeApiTest extends TestCase
+{
+    protected string $url = '/some/api/url';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => '',
+        'roles'       => '',
+    ];
+
+    public function test(): void
+    {
+        //
+    }
+}

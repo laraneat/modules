@@ -1,0 +1,7 @@
+<?php
+
+use App\Modules\Article\Actions\SomeGetAction;
+use Illuminate\Support\Facades\Route;
+
+Route::get('some/get/route', SomeGetAction::class)
+    ->name('web.nested.some_get_route');

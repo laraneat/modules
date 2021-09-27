@@ -1,0 +1,51 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+use {{ modelNamespace }}\{{ model }};
+
+/**
+ * @group {{ moduleNameLower }}
+ * @group web
+ */
+class {{ class }} extends TestCase
+{
+    protected string $url = '{{ url }}';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'create-{{ modelPermissionEntity }}',
+        'roles'       => '',
+    ];
+
+    protected function getTestData(): array
+    {
+        return [
+           // 'key' => 'value'
+        ];
+    }
+
+    public function testCreate{{ model }}(): void
+    {
+        $this->getTestingUser();
+        $data = $this->getTestData();
+
+        $this->postJson($this->buildUrl(), $data)
+            ->assertCreated();
+
+        $this->assertExistsModelWithAttributes({{ model }}::class, $data);
+    }
+
+    public function testCreate{{ model }}WithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+        $data = $this->getTestData();
+
+        $this->postJson($this->buildUrl(), $data)
+            ->assertForbidden();
+    }
+}

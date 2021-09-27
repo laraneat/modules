@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Modules\Article\Foo\Bar\NewActions\Baz\Bat;
+
+use App\Ship\Abstracts\Actions\Action;
+
+class MyAwesomeAction extends Action
+{
+    public function handle()
+    {
+        //
+    }
+}

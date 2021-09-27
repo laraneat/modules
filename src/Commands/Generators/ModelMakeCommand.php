@@ -2,85 +2,59 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-class ModelMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class ModelMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
     /**
-     * The name of argument name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected string $argumentName = 'model';
-
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'module:make-model';
+    protected $name = 'module:make:model';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new model for the specified module.';
-
-    public function handle(): int
-    {
-        if (parent::handle() === E_ERROR) {
-            return E_ERROR;
-        }
-
-        $this->handleOptionalMigrationOption();
-        $this->handleOptionalControllerOption();
-
-        return 0;
-    }
+    protected $description = 'Generate new model for the specified module.';
 
     /**
-     * Create a proper migration name:
-     * ProductDetail: product_details
-     * Product: products
-     * @return string
-     */
-    private function createMigrationName()
-    {
-        $pieces = preg_split('/(?=[A-Z])/', $this->argument('model'), -1, PREG_SPLIT_NO_EMPTY);
-
-        $string = '';
-        foreach ($pieces as $i => $piece) {
-            if ($i+1 < count($pieces)) {
-                $string .= strtolower($piece) . '_';
-            } else {
-                $string .= Str::plural(strtolower($piece));
-            }
-        }
-
-        return $string;
-    }
-
-    /**
-     * Get the console command arguments.
+     * The stub name to load for this generator.
      *
-     * @return array
+     * @var string
      */
-    protected function getArguments(): array
-    {
-        return [
-            ['model', InputArgument::REQUIRED, 'The name of model will be created.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
+    protected string $stub = 'full';
+
+    /**
+     * Module instance.
+     *
+     * @var Module
+     */
+    protected Module $module;
+
+    /**
+     * Component type.
+     *
+     * @var string
+     */
+    protected string $componentType;
+
+    /**
+     * Prepared 'name' argument.
+     *
+     * @var string
+     */
+    protected string $nameArgument;
 
     /**
      * Get the console command options.
@@ -90,100 +64,51 @@ class ModelMakeCommand extends GeneratorCommand
     protected function getOptions(): array
     {
         return [
-            ['fillable', null, InputOption::VALUE_OPTIONAL, 'The fillable attributes.', null],
-            ['migration', 'm', InputOption::VALUE_NONE, 'Flag to create associated migrations', null],
-            ['controller', 'c', InputOption::VALUE_NONE, 'Flag to create associated controllers', null],
+            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
+            ['factory', null, InputOption::VALUE_REQUIRED, 'The class name of the model factory.'],
         ];
     }
 
-    /**
-     * Create the migration file with the given model if migration flag was used
-     */
-    private function handleOptionalMigrationOption()
+    protected function prepare()
     {
-        if ($this->option('migration') === true) {
-            $migrationName = 'create_' . $this->createMigrationName() . '_table';
-            $this->call('module:make-migration', ['name' => $migrationName, 'module' => $this->argument('module')]);
-        }
+        $this->module = $this->getModule();
+        $this->stub = $this->getOptionOrChoice(
+            'stub',
+            'Select the stub you want to use for generator',
+            ['plain', 'full'],
+            'full'
+        );
+        $this->componentType = 'model';
+        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    /**
-     * Create the controller file for the given model if controller flag was used
-     */
-    private function handleOptionalControllerOption()
-    {
-        if ($this->option('controller') === true) {
-            $controllerName = "{$this->getModelName()}Controller";
-
-            $this->call('module:make-controller', array_filter([
-                'controller' => $controllerName,
-                'module' => $this->argument('module')
-            ]));
-        }
-    }
-
-    /**
-     * @return string
-     */
-    protected function getTemplateContents(): string
-    {
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub('/model.stub', [
-            'NAME'              => $this->getModelName(),
-            'FILLABLE'          => $this->getFillable(),
-            'NAMESPACE'         => $this->getClassNamespace($module),
-            'CLASS'             => $this->getClass(),
-            'LOWER_NAME'        => $module->getLowerName(),
-            'MODULE'            => $this->getModuleName(),
-            'STUDLY_NAME'       => $module->getStudlyName(),
-            'MODULE_NAMESPACE'  => Modules::config('namespace'),
-        ]))->render();
-    }
-
-    /**
-     * @return string
-     */
     protected function getDestinationFilePath(): string
     {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $modelPath = GenerateConfigReader::read('model');
-
-        return $path . $modelPath->getPath() . '/' . $this->getModelName() . '.php';
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
-    /**
-     * @return mixed|string
-     */
-    private function getModelName()
+    protected function getTemplateContents(): string
     {
-        return Str::studly($this->argument('model'));
-    }
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument)
+        ];
 
-    /**
-     * @return string
-     */
-    private function getFillable()
-    {
-        $fillable = $this->option('fillable');
+        if ($this->stub === 'full') {
+            $factory = $this->getOptionOrAsk(
+                'factory',
+                'Enter the class name of the model factory',
+                ''
+            );
 
-        if (!is_null($fillable)) {
-            $arrays = explode(',', $fillable);
-
-            return json_encode($arrays);
+            if ($factory) {
+                $stubReplaces['factory'] = $this->getClass($factory);
+                $stubReplaces['factoryNamespace'] = $this->getComponentNamespace($this->module, $factory, 'factory');
+            } else {
+                $this->stub = 'plain';
+            }
         }
 
-        return '[]';
-    }
-
-    /**
-     * Get default namespace.
-     *
-     * @return string
-     */
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.model.namespace') ?: Modules::config('paths.generator.model.path', 'Entities');
+        return Stub::create("model/{$this->stub}.stub", $stubReplaces)->render();
     }
 }

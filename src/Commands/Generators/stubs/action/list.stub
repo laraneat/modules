@@ -1,0 +1,36 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Http\Resources\Json\ResourceCollection;
+use {{ modelNamespace }}\{{ model }};
+use {{ queryWizardNamespace }}\{{ queryWizard }};
+use {{ requestNamespace }}\{{ request }};
+use {{ resourceNamespace }}\{{ resource }};
+
+class {{ class }} extends Action
+{
+    /**
+     * @param {{ request }} $request
+     *
+     * @return AbstractPaginator
+     */
+    public function handle({{ request }} $request): AbstractPaginator
+    {
+        return {{ queryWizard }}::for({{ model }}::query(), $request)
+            ->build()
+            ->jsonPaginate();
+    }
+
+    /**
+     * @param {{ request }} $request
+     *
+     * @return ResourceCollection
+     */
+    public function asController({{ request }} $request): ResourceCollection
+    {
+        return {{ resource }}::collection($this->handle($request));
+    }
+}

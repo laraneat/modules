@@ -1,0 +1,14 @@
+{
+    "name": "Article",
+    "namespace": "App\\Modules\\Article",
+    "alias": "article",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "App\\Modules\\Article\\Providers\\ArticleServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

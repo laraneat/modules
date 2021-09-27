@@ -1,0 +1,10 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Controllers\WebController;
+
+class {{ class }} extends WebController
+{
+    //
+}

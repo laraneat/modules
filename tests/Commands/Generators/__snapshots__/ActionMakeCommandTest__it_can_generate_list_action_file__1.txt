@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Modules\Article\Actions\Baz\Bat;
+
+use App\Modules\Article\Models\Bar\TestModel;
+use App\Modules\Article\UI\API\QueryWizards\Bat\TestQueryWizard;
+use App\Modules\Article\UI\API\Requests\Bat\TestRequest;
+use App\Modules\Article\UI\API\Resources\Baz\TestResource;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Pagination\AbstractPaginator;
+
+class MyAwesomeListAction extends Action
+{
+    /**
+     * @param TestRequest $request
+     *
+     * @return AbstractPaginator
+     */
+    public function handle(TestRequest $request): AbstractPaginator
+    {
+        return TestQueryWizard::for(TestModel::query(), $request)
+            ->build()
+            ->jsonPaginate();
+    }
+
+    /**
+     * @param TestRequest $request
+     *
+     * @return ResourceCollection
+     */
+    public function asController(TestRequest $request): ResourceCollection
+    {
+        return TestResource::collection($this->handle($request));
+    }
+}

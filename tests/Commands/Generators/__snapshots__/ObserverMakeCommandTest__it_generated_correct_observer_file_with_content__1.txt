@@ -1,0 +1,69 @@
+<?php
+
+namespace App\Modules\Article\Observers\Foo\Bar;
+
+use App\Modules\Article\Models\Some\Nested\Model;
+use App\Ship\Abstracts\Observers\Observer;
+
+class MyAwesomeObserver extends Observer
+{
+    /**
+     * Handle the Model "created" event.
+     *
+     * @param Model $model
+     *
+     * @return void
+     */
+    public function created(Model $model)
+    {
+        //
+    }
+
+    /**
+     * Handle the Model "updated" event.
+     *
+     * @param Model $model
+     *
+     * @return void
+     */
+    public function updated(Model $model)
+    {
+        //
+    }
+
+    /**
+     * Handle the Model "deleted" event.
+     *
+     * @param Model $model
+     *
+     * @return void
+     */
+    public function deleted(Model $model)
+    {
+        //
+    }
+
+    /**
+     * Handle the Model "restored" event.
+     *
+     * @param Model $model
+     *
+     * @return void
+     */
+    public function restored(Model $model)
+    {
+        //
+    }
+
+    /**
+     * Handle the Model "force deleted" event.
+     *
+     * @param Model $model
+     *
+     * @return void
+     */
+    public function forceDeleted(Model $model)
+    {
+        //
+    }
+}

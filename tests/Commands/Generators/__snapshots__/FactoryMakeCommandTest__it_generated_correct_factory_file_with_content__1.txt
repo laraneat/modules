@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Modules\Article\Data\Factories\Foo\Bar;
+
+use App\Modules\Article\Models\Some\Nested\Model;
+use App\Ship\Abstracts\Factories\Factory;
+
+/**
+ * @method \Illuminate\Support\Collection|Model create($attributes = [], ?Model $parent = null)
+ * @method \Illuminate\Support\Collection createMany(iterable $records)
+ * @method Model createOne($attributes = [])
+ * @method \Illuminate\Support\Collection|Model make($attributes = [], ?Model $parent = null)
+ * @method Model makeOne($attributes = [])
+ */
+class MyAwesomeFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Model::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition(): array
+    {
+        return [
+            //
+        ];
+    }
+}
+

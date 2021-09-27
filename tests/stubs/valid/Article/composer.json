@@ -1,0 +1,22 @@
+{
+    "name": "laraneat/article",
+    "description": "Article module",
+    "authors": [
+        {
+            "name": "Salakhutdinov Salavat",
+            "email": "salahutdinov.salavat@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\Modules\\Article\\": ""
+        }
+    },
+    "require": {
+        "php": "^8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.2",
+        "phpunit/phpunit": "^9.5"
+    }
+}

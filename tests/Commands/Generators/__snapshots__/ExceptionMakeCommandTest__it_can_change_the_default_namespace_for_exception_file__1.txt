@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Modules\Article\Foo\Bar\Exceptions\Baz\Bat;
+
+use App\Ship\Abstracts\Exceptions\Exception;
+
+class MyAwesomeException extends Exception
+{
+    //
+}

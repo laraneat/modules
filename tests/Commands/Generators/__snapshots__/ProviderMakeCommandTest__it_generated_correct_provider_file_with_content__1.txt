@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Modules\Article\Providers;
+
+use App\Ship\Abstracts\Providers\ServiceProvider;
+
+class MyAwesomeProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap services.
+     *
+     * @return void
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap services.
+     *
+     * @return void
+     */
+    public function boot(): void
+    {
+        //
+    }
+}

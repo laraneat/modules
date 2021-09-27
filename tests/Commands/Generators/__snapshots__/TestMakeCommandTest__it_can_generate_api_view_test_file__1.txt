@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Modules\Article\UI\API\Tests\Baz\Bat;
+
+use App\Modules\Article\Models\Some\Nested\SomeTestModel;
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group article
+ * @group api
+ */
+class MyAwesomeApiViewTest extends TestCase
+{
+    protected string $url = '/some/api/url';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'view-some-test-model',
+        'roles'       => '',
+    ];
+
+    public function testViewSomeTestModel(): void
+    {
+        $this->getTestingUser();
+
+        $someTestModel = SomeTestModel::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $someTestModel->getKey()]
+        );
+        $expectedData = [
+            'id' => $someTestModel->getKey(),
+            // ...
+        ];
+
+        $this->getJson($url)
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('_profiler')
+                    ->has('data', fn (AssertableJson $json) =>
+                        $json->whereAll($expectedData)
+                            ->etc()
+                    )
+            );
+    }
+
+    public function testViewSomeTestModelWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $someTestModel = SomeTestModel::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $someTestModel->getKey()]
+        );
+
+        $this->getJson($url)
+            ->assertForbidden();
+    }
+
+    public function testViewNotExistingSomeTestModel(): void
+    {
+        $this->getTestingUser();
+
+        $fakeSomeTestModelId = 7777;
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $fakeSomeTestModelId]
+        );
+
+        $this->getJson($url)
+            ->assertNotFound();
+    }
+}

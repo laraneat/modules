@@ -1,0 +1,48 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Actions\Action;
+use App\Ship\Exceptions\UpdateResourceFailedException;
+use {{ modelNamespace }}\{{ model }};
+use {{ requestNamespace }}\{{ request }};
+use {{ resourceNamespace }}\{{ resource }};
+
+class {{ class }} extends Action
+{
+    /**
+     * @param {{ model }} ${{ modelEntity }}
+     * @param array $data
+     *
+     * @return {{ model }}
+     * @throws UpdateResourceFailedException
+     */
+    public function handle({{ model }} ${{ modelEntity }}, array $data): {{ model }}
+    {
+        if (empty($data)) {
+            throw new UpdateResourceFailedException();
+        }
+
+        ${{ modelEntity }}->update($data);
+
+        return ${{ modelEntity }};
+    }
+
+    /**
+     * @param {{ request }} $request
+     * @param {{ model }} ${{ modelEntity }}
+     *
+     * @return {{ resource }}
+     * @throws UpdateResourceFailedException
+     */
+    public function asController({{ request }} $request, {{ model }} ${{ modelEntity }}): {{ resource }}
+    {
+        $sanitizedData = $request->sanitizeInput([
+            //
+        ]);
+
+        ${{ modelEntity }} = $this->handle(${{ modelEntity }}, $sanitizedData);
+
+        return new {{ resource }}(${{ modelEntity }});
+    }
+}

@@ -1,0 +1,10 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Exceptions\Exception;
+
+class {{ class }} extends Exception
+{
+    //
+}

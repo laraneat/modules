@@ -2,86 +2,70 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
 
-class MiddlewareMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class MiddlewareMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
     /**
-     * The name of argument name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected string $argumentName = 'name';
-
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'module:make-middleware';
+    protected $name = 'module:make:middleware';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new middleware class for the specified module.';
-
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.filter.namespace') ?: Modules::config('paths.generator.filter.path', 'Http/Middleware');
-    }
+    protected $description = 'Generate new middleware for the specified module.';
 
     /**
-     * Get the console command arguments.
+     * Module instance.
      *
-     * @return array
+     * @var Module
      */
-    protected function getArguments(): array
-    {
-        return [
-            ['name', InputArgument::REQUIRED, 'The name of the command.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
+    protected Module $module;
 
     /**
-     * @return string
+     * Component type.
+     *
+     * @var string
      */
-    protected function getTemplateContents(): string
-    {
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub('/middleware.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS'     => $this->getClass(),
-        ]))->render();
-    }
+    protected string $componentType = 'middleware';
 
     /**
-     * @return string
+     * Prepared 'name' argument.
+     *
+     * @var string
      */
+    protected string $nameArgument;
+
+    protected function prepare()
+    {
+        $this->module = $this->getModule();
+        $this->nameArgument = $this->getTrimmedArgument('name');
+    }
+
     protected function getDestinationFilePath(): string
     {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $middlewarePath = GenerateConfigReader::read('filter');
-
-        return $path . $middlewarePath->getPath() . '/' . $this->getFileName() . '.php';
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
-    /**
-     * @return string
-     */
-    private function getFileName(): string
+    protected function getTemplateContents(): string
     {
-        return Str::studly($this->argument('name'));
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument),
+        ];
+
+        return Stub::create("middleware.stub", $stubReplaces)->render();
     }
 }

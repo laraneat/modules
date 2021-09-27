@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Modules\Article\Mails\Foo\Bar;
+
+use App\Ship\Abstracts\Mails\Mail;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\SerializesModels;
+
+class MyAwesomeQueuedMail extends Mail implements ShouldQueue
+{
+    use Queueable, SerializesModels;
+
+    /**
+     * Create a new message instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+        return $this->view('view.name');
+    }
+}

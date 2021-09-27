@@ -1,0 +1,95 @@
+<?php
+
+namespace App\Modules\Article\Policies\Foo\Bar;
+
+use App\Modules\Article\Models\Bar\Bat\Baz\MyAwesomeModel;
+use App\Modules\User\Models\User;
+use App\Ship\Abstracts\Policies\Policy;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class MyAwesomeFullPolicy extends Policy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     *
+     * @param User $user
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function viewAny(User $user)
+    {
+        return $user->can('view-my-awesome-model');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     *
+     * @param User $user
+     * @param MyAwesomeModel $myAwesomeModel
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function view(User $user, MyAwesomeModel $myAwesomeModel)
+    {
+        return $user->can('view-my-awesome-model');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     *
+     * @param User $user
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function create(User $user)
+    {
+        return $user->can('create-my-awesome-model');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     *
+     * @param User $user
+     * @param MyAwesomeModel $myAwesomeModel
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function update(User $user, MyAwesomeModel $myAwesomeModel)
+    {
+        return $user->can('update-my-awesome-model');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     *
+     * @param User $user
+     * @param MyAwesomeModel $myAwesomeModel
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function delete(User $user, MyAwesomeModel $myAwesomeModel)
+    {
+        return $user->can('delete-my-awesome-model');
+    }
+
+    /**
+     * Determine whether the user can restore the model.
+     *
+     * @param User $user
+     * @param MyAwesomeModel $myAwesomeModel
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function restore(User $user, MyAwesomeModel $myAwesomeModel)
+    {
+        return $user->can('delete-my-awesome-model');
+    }
+
+    /**
+     * Determine whether the user can permanently delete the model.
+     *
+     * @param User $user
+     * @param MyAwesomeModel $myAwesomeModel
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function forceDelete(User $user, MyAwesomeModel $myAwesomeModel)
+    {
+        return $user->can('force-delete-my-awesome-model');
+    }
+}

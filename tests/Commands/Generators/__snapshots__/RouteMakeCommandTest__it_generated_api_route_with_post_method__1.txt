@@ -1,0 +1,7 @@
+<?php
+
+use App\Modules\Article\Actions\SomePostAction;
+use Illuminate\Support\Facades\Route;
+
+Route::post('some/post/route', SomePostAction::class)
+    ->name('api.nested.some_post_route');

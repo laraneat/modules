@@ -2,100 +2,97 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-class ResourceMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class ResourceMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
-    protected string $argumentName = 'name';
-    protected $name = 'module:make-resource';
-    protected $description = 'Create a new resource class for the specified module.';
-
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.resource.namespace') ?: Modules::config('paths.generator.resource.path', 'Transformers');
-    }
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $name = 'module:make:resource';
 
     /**
-     * Get the console command arguments.
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Generate new API resource for the specified module.';
+
+    /**
+     * The stub name to load for this generator.
+     *
+     * @var string
+     */
+    protected string $stub = 'single';
+
+    /**
+     * Module instance.
+     *
+     * @var Module
+     */
+    protected Module $module;
+
+    /**
+     * Component type.
+     *
+     * @var string
+     */
+    protected string $componentType;
+
+    /**
+     * Prepared 'name' argument.
+     *
+     * @var string
+     */
+    protected string $nameArgument;
+
+    /**
+     * Get the console command options.
      *
      * @return array
      */
-    protected function getArguments(): array
-    {
-        return [
-            ['name', InputArgument::REQUIRED, 'The name of the resource class.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
-
     protected function getOptions(): array
     {
         return [
-            ['collection', 'c', InputOption::VALUE_NONE, 'Create a resource collection.'],
+            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
         ];
     }
 
-    /**
-     * @return string
-     */
-    protected function getTemplateContents(): string
+    protected function prepare()
     {
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub($this->getStubName(), [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS'     => $this->getClass(),
-        ]))->render();
+        $this->module = $this->getModule();
+        $this->stub = $this->getOptionOrChoice(
+            'stub',
+            'Select the stub you want to use for generator',
+            ['single', 'collection'],
+            'single'
+        );
+        $this->componentType = 'api-resource';
+        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    /**
-     * @return string
-     */
     protected function getDestinationFilePath(): string
     {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $resourcePath = GenerateConfigReader::read('resource');
-
-        return $path . $resourcePath->getPath() . '/' . $this->getFileName() . '.php';
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
-    /**
-     * @return string
-     */
-    private function getFileName(): string
+    protected function getTemplateContents(): string
     {
-        return Str::studly($this->argument('name'));
-    }
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument)
+        ];
 
-    /**
-     * Determine if the command is generating a resource collection.
-     *
-     * @return bool
-     */
-    protected function collection(): bool
-    {
-        return $this->option('collection') ||
-            Str::endsWith($this->argument('name'), 'Collection');
-    }
-
-    /**
-     * @return string
-     */
-    protected function getStubName(): string
-    {
-        if ($this->collection()) {
-            return '/resource-collection.stub';
-        }
-
-        return '/resource.stub';
+        return Stub::create("resource/{$this->stub}.stub", $stubReplaces)->render();
     }
 }

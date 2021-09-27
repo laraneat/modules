@@ -1,0 +1,95 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Policies\Policy;
+use Illuminate\Auth\Access\HandlesAuthorization;
+use {{ modelNamespace }}\{{ model }};
+use {{ userNamespace }}\{{ user }};
+
+class {{ class }} extends Policy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     *
+     * @param {{ user }} $user
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function viewAny({{ user }} $user)
+    {
+        return $user->can('view-{{ modelPermissionEntity }}');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     *
+     * @param {{ user }} $user
+     * @param {{ model }} ${{ modelEntity }}
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function view({{ user }} $user, {{ model }} ${{ modelEntity }})
+    {
+        return $user->can('view-{{ modelPermissionEntity }}');
+    }
+
+    /**
+     * Determine whether the user can create models.
+     *
+     * @param {{ user }} $user
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function create({{ user }} $user)
+    {
+        return $user->can('create-{{ modelPermissionEntity }}');
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     *
+     * @param {{ user }} $user
+     * @param {{ model }} ${{ modelEntity }}
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function update({{ user }} $user, {{ model }} ${{ modelEntity }})
+    {
+        return $user->can('update-{{ modelPermissionEntity }}');
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     *
+     * @param {{ user }} $user
+     * @param {{ model }} ${{ modelEntity }}
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function delete({{ user }} $user, {{ model }} ${{ modelEntity }})
+    {
+        return $user->can('delete-{{ modelPermissionEntity }}');
+    }
+
+    /**
+     * Determine whether the user can restore the model.
+     *
+     * @param {{ user }} $user
+     * @param {{ model }} ${{ modelEntity }}
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function restore({{ user }} $user, {{ model }} ${{ modelEntity }})
+    {
+        return $user->can('delete-{{ modelPermissionEntity }}');
+    }
+
+    /**
+     * Determine whether the user can permanently delete the model.
+     *
+     * @param {{ user }} $user
+     * @param {{ model }} ${{ modelEntity }}
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function forceDelete({{ user }} $user, {{ model }} ${{ modelEntity }})
+    {
+        return $user->can('force-delete-{{ modelPermissionEntity }}');
+    }
+}

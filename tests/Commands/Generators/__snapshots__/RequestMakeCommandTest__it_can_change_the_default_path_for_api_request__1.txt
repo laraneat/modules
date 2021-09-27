@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Modules\Article\Foo\Bar\NewRequests\Baz\Bat;
+
+use App\Ship\Abstracts\Requests\Request;
+
+class MyAwesomeApiRequest extends Request
+{
+    public function rules(): array
+    {
+        return [];
+    }
+
+    public function authorize(): bool
+    {
+        return true;
+    }
+}

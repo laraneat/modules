@@ -1,0 +1,39 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Seeders\Seeder;
+use {{ actionNamespace }}\{{ createPermissionAction }};
+
+class {{ class }} extends Seeder
+{
+    public function run(): void
+    {
+        $createPermissionAction = {{ createPermissionAction }}::make();
+        $createPermissionAction->handle(
+            name: 'view-{{ modelPermissionEntity }}',
+            displayName: 'View any {{ modelPermissionEntities }}',
+            group: '{{ modelPermissionEntities }}'
+        );
+        $createPermissionAction->handle(
+            name: 'create-{{ modelPermissionEntity }}',
+            displayName: 'Create {{ modelPermissionEntities }}',
+            group: '{{ modelPermissionEntities }}'
+        );
+        $createPermissionAction->handle(
+            name: 'update-{{ modelPermissionEntity }}',
+            displayName: 'Update any {{ modelPermissionEntities }}',
+            group: '{{ modelPermissionEntities }}'
+        );
+        $createPermissionAction->handle(
+            name: 'delete-{{ modelPermissionEntity }}',
+            displayName: 'Delete any {{ modelPermissionEntities }}',
+            group: '{{ modelPermissionEntities }}'
+        );
+        $createPermissionAction->handle(
+            name: 'force-delete-{{ modelPermissionEntity }}',
+            displayName: 'Force delete any {{ modelPermissionEntities }}',
+            group: '{{ modelPermissionEntities }}'
+        );
+    }
+}

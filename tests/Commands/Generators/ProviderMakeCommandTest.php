@@ -2,73 +2,76 @@
 
 namespace Laraneat\Modules\Tests\Commands\Generators;
 
+use Illuminate\Filesystem\Filesystem;
 use Laraneat\Modules\Contracts\RepositoryInterface;
 use Laraneat\Modules\Tests\BaseTestCase;
 use Spatie\Snapshots\MatchesSnapshots;
 
+/**
+ * @group command
+ * @group generator
+ */
 class ProviderMakeCommandTest extends BaseTestCase
 {
     use MatchesSnapshots;
-    /**
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    private $finder;
-    /**
-     * @var string
-     */
-    private $modulePath;
+
+    private Filesystem $finder;
+    private string $modulePath;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->modulePath = base_path('app/Modules/Blog');
+        $this->modulePath = base_path('app/Modules/Article');
         $this->finder = $this->app['files'];
-        $this->artisan('module:make', ['name' => ['Blog'], '--plain' => true, ]);
+        $this->artisan('module:make', ['name' => ['Article'], '--plain' => true]);
     }
 
     public function tearDown(): void
     {
-        $this->app[RepositoryInterface::class]->delete('Blog');
+        $this->app[RepositoryInterface::class]->delete('Article');
         parent::tearDown();
     }
 
     /** @test */
-    public function it_generates_a_service_provider()
+    public function it_generates_provider_file()
     {
-        $code = $this->artisan('module:make-provider', ['name' => 'MyBlogServiceProvider', 'module' => 'Blog']);
+        $code = $this->artisan('module:make:provider', [
+            'name' => 'MyAwesomeProvider',
+            'module' => 'Article',
+            '--stub' => 'plain'
+        ]);
 
-        $this->assertTrue(is_file($this->modulePath . '/Providers/MyBlogServiceProvider.php'));
+        $this->assertTrue(is_file($this->modulePath . '/Providers/MyAwesomeProvider.php'));
         $this->assertSame(0, $code);
     }
-    /** @test */
-    public function it_generated_correct_file_with_content()
-    {
-        $code = $this->artisan('module:make-provider', ['name' => 'MyBlogServiceProvider', 'module' => 'Blog']);
 
-        $file = $this->finder->get($this->modulePath . '/Providers/MyBlogServiceProvider.php');
+    /** @test */
+    public function it_generated_correct_provider_file_with_content()
+    {
+        $code = $this->artisan('module:make:provider', [
+            'name' => 'MyAwesomeProvider',
+            'module' => 'Article',
+            '--stub' => 'plain'
+        ]);
+
+        $file = $this->finder->get($this->modulePath . '/Providers/MyAwesomeProvider.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);
     }
 
     /** @test */
-    public function it_generates_a_master_service_provider_with_resource_loading()
+    public function it_can_change_the_default_path()
     {
-        $code = $this->artisan('module:make-provider', ['name' => 'BlogServiceProvider', 'module' => 'Blog', '--master' => true]);
+        $this->app['config']->set('modules.generator.components.provider.path', 'Foo/Bar\\NewProviders');
 
-        $file = $this->finder->get($this->modulePath . '/Providers/BlogServiceProvider.php');
+        $code = $this->artisan('module:make:provider', [
+            'name' => 'Baz\\Bat/MyAwesomeProvider',
+            'module' => 'Article',
+            '--stub' => 'plain'
+        ]);
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_have_custom_migration_resources_location_paths()
-    {
-        $this->app['config']->set('modules.paths.generator.migration', 'migrations');
-        $code = $this->artisan('module:make-provider', ['name' => 'BlogServiceProvider', 'module' => 'Blog', '--master' => true]);
-
-        $file = $this->finder->get($this->modulePath . '/Providers/BlogServiceProvider.php');
+        $file = $this->finder->get($this->modulePath . '/Foo/Bar/NewProviders/Baz/Bat/MyAwesomeProvider.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);
@@ -77,24 +80,45 @@ class ProviderMakeCommandTest extends BaseTestCase
     /** @test */
     public function it_can_change_the_default_namespace()
     {
-        $this->app['config']->set('modules.paths.generator.provider.path', 'SuperProviders');
+        $this->app['config']->set('modules.generator.components.provider.namespace', 'Foo/Bar\\NewProviders/');
 
-        $code = $this->artisan('module:make-provider', ['name' => 'BlogServiceProvider', 'module' => 'Blog', '--master' => true]);
+        $code = $this->artisan('module:make:provider', [
+            'name' => 'Baz\\Bat/MyAwesomeProvider',
+            'module' => 'Article',
+            '--stub' => 'plain'
+        ]);
 
-        $file = $this->finder->get($this->modulePath . '/SuperProviders/BlogServiceProvider.php');
+        $file = $this->finder->get($this->modulePath . '/Providers/Baz/Bat/MyAwesomeProvider.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);
     }
 
     /** @test */
-    public function it_can_change_the_default_namespace_specific()
+    public function it_can_generate_module_provider_file()
     {
-        $this->app['config']->set('modules.paths.generator.provider.namespace', 'SuperProviders');
+        $code = $this->artisan('module:make:provider', [
+            'name' => 'Baz\\Bat/MyAwesomeModuleProvider',
+            'module' => 'Article',
+            '--stub' => 'module',
+        ]);
 
-        $code = $this->artisan('module:make-provider', ['name' => 'BlogServiceProvider', 'module' => 'Blog', '--master' => true]);
+        $file = $this->finder->get($this->modulePath . '/Providers/Baz/Bat/MyAwesomeModuleProvider.php');
 
-        $file = $this->finder->get($this->modulePath . '/Providers/BlogServiceProvider.php');
+        $this->assertMatchesSnapshot($file);
+        $this->assertSame(0, $code);
+    }
+
+    /** @test */
+    public function it_can_generate_route_provider_file()
+    {
+        $code = $this->artisan('module:make:provider', [
+            'name' => 'Baz\\Bat/MyAwesomeRouteProvider',
+            'module' => 'Article',
+            '--stub' => 'route',
+        ]);
+
+        $file = $this->finder->get($this->modulePath . '/Providers/Baz/Bat/MyAwesomeRouteProvider.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);

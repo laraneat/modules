@@ -2,51 +2,59 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-class JobMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class JobMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make-job';
+    protected $name = 'module:make:job';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new job class for the specified module';
-
-    protected string $argumentName = 'name';
-
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.jobs.namespace') ?: Modules::config('paths.generator.jobs.path', 'Jobs');
-    }
+    protected $description = 'Generate new job for the specified module.';
 
     /**
-     * Get the console command arguments.
+     * The stub name to load for this generator.
      *
-     * @return array
+     * @var string
      */
-    protected function getArguments(): array
-    {
-        return [
-            ['name', InputArgument::REQUIRED, 'The name of the job.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
+    protected string $stub = 'plain';
+
+    /**
+     * Module instance.
+     *
+     * @var Module
+     */
+    protected Module $module;
+
+    /**
+     * Component type.
+     *
+     * @var string
+     */
+    protected string $componentType;
+
+    /**
+     * Prepared 'name' argument.
+     *
+     * @var string
+     */
+    protected string $nameArgument;
 
     /**
      * Get the console command options.
@@ -56,56 +64,35 @@ class JobMakeCommand extends GeneratorCommand
     protected function getOptions(): array
     {
         return [
-            ['sync', null, InputOption::VALUE_NONE, 'Indicates that job should be synchronous.'],
+            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
         ];
     }
 
-    /**
-     * Get template contents.
-     *
-     * @return string
-     */
-    protected function getTemplateContents(): string
+    protected function prepare()
     {
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub($this->getStubName(), [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS'     => $this->getClass(),
-        ]))->render();
+        $this->module = $this->getModule();
+        $this->stub = $this->getOptionOrChoice(
+            'stub',
+            'Select the stub you want to use for generator',
+            ['plain', 'queued'],
+            'plain'
+        );
+        $this->componentType = 'job';
+        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    /**
-     * Get the destination file path.
-     *
-     * @return string
-     */
     protected function getDestinationFilePath(): string
     {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $jobPath = GenerateConfigReader::read('jobs');
-
-        return $path . $jobPath->getPath() . '/' . $this->getFileName() . '.php';
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
-    /**
-     * @return string
-     */
-    private function getFileName(): string
+    protected function getTemplateContents(): string
     {
-        return Str::studly($this->argument('name'));
-    }
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument)
+        ];
 
-    /**
-     * @return string
-     */
-    protected function getStubName(): string
-    {
-        if ($this->option('sync')) {
-            return '/job.stub';
-        }
-
-        return '/job-queued.stub';
+        return Stub::create("job/{$this->stub}.stub", $stubReplaces)->render();
     }
 }

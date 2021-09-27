@@ -1,12 +1,18 @@
 <?php
 
-namespace $NAMESPACE$;
+namespace {{ namespace }};
 
+use {{ modelNamespace }}\{{ model }};
+use App\Ship\Abstracts\Events\Event;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Broadcasting\InteractsWithSockets;
 
-class $CLASS$
+class {{ class }} extends Event
 {
-    use SerializesModels;
+    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public {{ model }} ${{ modelEntity }};
 
     /**
      * Create a new event instance.
@@ -23,7 +29,7 @@ class $CLASS$
      *
      * @return array
      */
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
         return [];
     }

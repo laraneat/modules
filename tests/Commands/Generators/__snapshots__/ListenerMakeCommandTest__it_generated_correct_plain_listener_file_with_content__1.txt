@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Modules\Article\Listeners\Foo\Bar;
+
+use App\Modules\Article\Events\Foo\Bar\MyAwesomeEvent;
+use App\Ship\Abstracts\Listeners\Listener;
+
+class MyAwesomePlainListener extends Listener
+{
+    /**
+     * Create the event listener.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Handle the event.
+     *
+     * @param MyAwesomeEvent $event
+     * @return void
+     */
+    public function handle(MyAwesomeEvent $event)
+    {
+        //
+    }
+}

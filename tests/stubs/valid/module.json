@@ -1,6 +1,7 @@
 {
     "name": "Order",
     "alias": "order",
+    "namespace": "App\\Modules",
     "description": "My demo module",
     "version": "0.1",
     "keywords": [

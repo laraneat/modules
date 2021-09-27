@@ -3,85 +3,127 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
-class RequestMakeCommand extends GeneratorCommand
+/**
+ * @group generator
+ */
+class RequestMakeCommand extends ComponentGeneratorCommand
 {
     use ModuleCommandTrait;
 
     /**
-     * The name of argument name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected string $argumentName = 'name';
-
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'module:make-request';
+    protected $name = 'module:make:request';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new form request class for the specified module.';
-
-    public function getDefaultNamespace(): string
-    {
-        return Modules::config('paths.generator.request.namespace') ?: Modules::config('paths.generator.request.path', 'Http/Requests');
-    }
+    protected $description = 'Generate new request for the specified module.';
 
     /**
-     * Get the console command arguments.
+     * The UI for which the request will be created.
+     *
+     * @var string
+     */
+    protected string $ui = 'api';
+
+    /**
+     * The stub name to load for this generator
+     *
+     * @var string
+     */
+    protected string $stub = 'plain';
+
+    /**
+     * Module instance.
+     *
+     * @var Module
+     */
+    protected Module $module;
+
+    /**
+     * Component type.
+     *
+     * @var string
+     */
+    protected string $componentType;
+
+    /**
+     * Prepared 'name' argument.
+     *
+     * @var string
+     */
+    protected string $nameArgument;
+
+    /**
+     * Get the console command options.
      *
      * @return array
      */
-    protected function getArguments(): array
+    protected function getOptions(): array
     {
         return [
-            ['name', InputArgument::REQUIRED, 'The name of the form request class.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
+            ['ui', null, InputOption::VALUE_REQUIRED, 'The UI for which the request will be created.'],
+            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
+            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the request.']
         ];
     }
 
-    /**
-     * @return string
-     */
-    protected function getTemplateContents(): string
+    protected function prepare()
     {
-        $module = Modules::findOrFail($this->getModuleName());
-
-        return (new Stub('/request.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS'     => $this->getClass(),
-        ]))->render();
+        $this->module = $this->getModule();
+        $this->ui = $this->getOptionOrChoice(
+            'ui',
+            'Select the UI for which the request will be created',
+            ['api', 'web'],
+            'api'
+        );
+        $stubChoices = ($this->ui === "web")
+            ? ['plain', 'create', 'delete', 'update']
+            : ['plain', 'create', 'delete', 'list', 'update', 'view'];
+        $this->stub = $this->getOptionOrChoice(
+            'stub',
+            'Select the stub you want to use for generator',
+            $stubChoices,
+            'plain'
+        );
+        $this->componentType = "{$this->ui}-request";
+        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    /**
-     * @return string
-     */
     protected function getDestinationFilePath(): string
     {
-        $path = Modules::getModulePath($this->getModuleName());
-
-        $requestPath = GenerateConfigReader::read('request');
-
-        return $path . $requestPath->getPath() . '/' . $this->getFileName() . '.php';
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
     }
 
-    /**
-     * @return string
-     */
-    private function getFileName(): string
+    protected function getTemplateContents(): string
     {
-        return Str::studly($this->argument('name'));
+        $stubReplaces = [
+            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
+            'class' => $this->getClass($this->nameArgument)
+        ];
+
+        if ($this->stub !== 'plain') {
+            $model = $this->getOptionOrAsk(
+                'model',
+                'Enter the class name of the model to be used in the request',
+                '',
+                true
+            );
+            $stubReplaces['model'] = $this->getClass($model);
+            $stubReplaces['modelEntity'] = Str::camel($stubReplaces['model']);
+            $stubReplaces['modelNamespace'] = $this->getComponentNamespace($this->module, $model, 'model');
+        }
+
+        return Stub::create("request/{$this->stub}.stub", $stubReplaces)->render();
     }
 }

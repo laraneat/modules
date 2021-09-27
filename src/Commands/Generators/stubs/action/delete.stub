@@ -1,0 +1,34 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\JsonResponse;
+use {{ modelNamespace }}\{{ model }};
+use {{ requestNamespace }}\{{ request }};
+
+class {{ class }} extends Action
+{
+    /**
+     * @param {{ model }} ${{ modelEntity }}
+     *
+     * @return bool
+     */
+    public function handle({{ model }} ${{ modelEntity }}): bool
+    {
+        return ${{ modelEntity }}->delete();
+    }
+
+    /**
+     * @param {{ request }} $request
+     * @param {{ model }} ${{ modelEntity }}
+     *
+     * @return JsonResponse
+     */
+    public function asController({{ request }} $request, {{ model }} ${{ modelEntity }}): JsonResponse
+    {
+        $this->handle(${{ modelEntity }});
+
+        return $this->noContent();
+    }
+}
