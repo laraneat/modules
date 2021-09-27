@@ -1,0 +1,14 @@
+{
+    "name": "{{ studlyName }}",
+    "namespace": "{{ moduleNamespace }}",
+    "alias": "{{ lowerName }}",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "{{ providerNamespace }}\\{{ studlyName }}ServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

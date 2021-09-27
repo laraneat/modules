@@ -57,7 +57,7 @@ class ListCommand extends Command
     /**
      * @return Module[]
      */
-    public function getModules()
+    public function getModules(): array
     {
         switch ($this->option('only')) {
             case 'enabled':

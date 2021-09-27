@@ -4,12 +4,12 @@ namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
 use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
+use Laraneat\Modules\Traits\ConsoleHelpersTrait;
 use Symfony\Component\Console\Input\InputArgument;
 
 class UpdateCommand extends Command
 {
-    use ModuleCommandTrait;
+    use ConsoleHelpersTrait;
 
     /**
      * The console command name.

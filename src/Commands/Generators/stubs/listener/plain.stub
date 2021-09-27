@@ -1,0 +1,30 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\Listeners\Listener;
+use {{ eventNamespace }}\{{ event }};
+
+class {{ class }} extends Listener
+{
+    /**
+     * Create the event listener.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Handle the event.
+     *
+     * @param {{ event }} $event
+     * @return void
+     */
+    public function handle({{ event }} $event)
+    {
+        //
+    }
+}

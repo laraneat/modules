@@ -20,7 +20,7 @@ class DumpCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Dump-autoload the specified module or for all module.';
+    protected $description = 'Dump-autoload the specified module or for all modules.';
 
     /**
      * Execute the console command.

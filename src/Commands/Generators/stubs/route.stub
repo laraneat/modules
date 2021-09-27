@@ -1,0 +1,7 @@
+<?php
+
+use {{ actionNamespace }}\{{ action }};
+use Illuminate\Support\Facades\Route;
+
+Route::{{ method }}('{{ url }}', {{ action }}::class)
+    ->name('{{ name }}');

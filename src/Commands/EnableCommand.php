@@ -4,7 +4,6 @@ namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
 use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Module;
 use Symfony\Component\Console\Input\InputArgument;
 
 class EnableCommand extends Command

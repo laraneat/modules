@@ -7,14 +7,11 @@ use Laraneat\Modules\Contracts\RepositoryInterface;
 use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Migrations\Migrator;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Traits\MigrationLoaderTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class MigrateResetCommand extends Command
 {
-    use MigrationLoaderTrait;
-
     /**
      * The console command name.
      *

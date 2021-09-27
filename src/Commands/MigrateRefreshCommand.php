@@ -3,13 +3,14 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Laraneat\Modules\Traits\ConsoleHelpersTrait;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class MigrateRefreshCommand extends Command
 {
-    use ModuleCommandTrait;
+    use ConsoleHelpersTrait, ModuleCommandTrait;
 
     /**
      * The console command name.
@@ -30,29 +31,23 @@ class MigrateRefreshCommand extends Command
      */
     public function handle(): int
     {
-        $module = $this->argument('module');
-
-        if ($module && !$this->getModuleName()) {
-            $this->error("Module [$module] does not exists.");
-
-            return E_ERROR;
-        }
+        $module = $this->getModule();
 
         $this->call('module:migrate-reset', [
-            'module' => $this->getModuleName(),
+            'module' => $module->getStudlyName(),
             '--database' => $this->option('database'),
             '--force' => $this->option('force'),
         ]);
 
         $this->call('module:migrate', [
-            'module' => $this->getModuleName(),
+            'module' => $module->getStudlyName(),
             '--database' => $this->option('database'),
             '--force' => $this->option('force'),
         ]);
 
         if ($this->option('seed')) {
             $this->call('module:seed', [
-                'module' => $this->getModuleName(),
+                'module' => $module->getStudlyName(),
             ]);
         }
 
@@ -83,18 +78,5 @@ class MigrateRefreshCommand extends Command
             ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production.'],
             ['seed', null, InputOption::VALUE_NONE, 'Indicates if the seed task should be re-run.'],
         ];
-    }
-
-    public function getModuleName(): ?string
-    {
-        $module = $this->argument('module');
-
-        if (!$module) {
-            return null;
-        }
-
-        $module = app('modules')->find($module);
-
-        return $module ? $module->getStudlyName() : null;
     }
 }

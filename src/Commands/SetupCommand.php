@@ -26,9 +26,7 @@ class SetupCommand extends Command
      */
     public function handle(): int
     {
-        $code = $this->generateModulesFolder();
-
-        return $this->generateAssetsFolder() | $code;
+        return $this->generateModulesFolder();
     }
 
     /**
@@ -37,21 +35,9 @@ class SetupCommand extends Command
     public function generateModulesFolder()
     {
         return $this->generateDirectory(
-            Modules::config('paths.modules'),
+            Modules::config('paths.generators'),
             'Modules directory created successfully',
             'Modules directory already exist'
-        );
-    }
-
-    /**
-     * Generate the assets folder.
-     */
-    public function generateAssetsFolder()
-    {
-        return $this->generateDirectory(
-            Modules::config('paths.assets'),
-            'Assets directory created successfully',
-            'Assets directory already exist'
         );
     }
 

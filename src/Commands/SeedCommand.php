@@ -8,8 +8,8 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
+use Laraneat\Modules\Traits\ConsoleHelpersTrait;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -17,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SeedCommand extends Command
 {
-    use ModuleCommandTrait;
+    use ConsoleHelpersTrait;
 
     /**
      * The console command name.
@@ -152,7 +152,7 @@ class SeedCommand extends Command
         $name = Str::studly($name);
 
         $namespace = Modules::config('namespace');
-        $config = GenerateConfigReader::read('seeder');
+        $config = GeneratorHelper::component('seeder');
         $seederPath = str_replace('/', '\\', $config->getPath());
 
         return $namespace . '\\' . $name . '\\' . $seederPath . '\\' . $name . 'DatabaseSeeder';
@@ -169,7 +169,7 @@ class SeedCommand extends Command
     {
         $name = Str::studly($name);
 
-        $seederPath = GenerateConfigReader::read('seeder');
+        $seederPath = GeneratorHelper::component('seeder');
         $seederPath = str_replace('/', '\\', $seederPath->getPath());
 
         $foundModules = [];

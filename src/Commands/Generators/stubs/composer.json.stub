@@ -1,0 +1,15 @@
+{
+    "name": "{{ vendor }}/{{ lowerName }}",
+    "description": "",
+    "authors": [
+        {
+            "name": "{{ authorName }}",
+            "email": "{{ authorEmail }}"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "{{ moduleNamespace }}\\": ""
+        }
+    }
+}
