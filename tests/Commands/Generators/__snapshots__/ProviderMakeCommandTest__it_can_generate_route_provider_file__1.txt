@@ -64,7 +64,7 @@ class MyAwesomeRouteProvider extends ServiceProvider
     protected function mapApiRoutes(): void
     {
         Route::prefix('api')
-            ->middleware($this->getApiMiddleware())
+            ->middleware('api')
             ->namespace('App\\Modules\\Article\\UI\\API\\Controllers')
             ->group(function () {
                 $this->loadRoutesFromDirectory(module_path($this->moduleName, 'UI/API/Routes'));
