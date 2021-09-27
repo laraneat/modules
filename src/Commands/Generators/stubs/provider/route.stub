@@ -64,7 +64,7 @@ class {{ class }} extends ServiceProvider
     protected function mapApiRoutes(): void
     {
         Route::prefix('api')
-            ->middleware('api')
+            ->middleware($this->getApiMiddleware())
             ->namespace('{{ apiControllerNamespace }}')
             ->group(function () {
                 $this->loadRoutesFromDirectory(module_path($this->moduleName, '{{ apiRoutesPath }}'));
