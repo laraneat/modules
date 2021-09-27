@@ -2,8 +2,8 @@
 
 namespace {{ namespace }};
 
+use App\Ship\Abstracts\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Laraneat\Modules\Traits\RouteProviderHelpersTrait;
 
 class {{ class }} extends ServiceProvider
