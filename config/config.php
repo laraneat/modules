@@ -4,52 +4,19 @@ use Laraneat\Modules\Activators\FileActivator;
 use Laraneat\Modules\Commands;
 
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Module Namespace
-    |--------------------------------------------------------------------------
-    |
-    | Default module namespace.
-    |
-    */
-    'namespace' => 'App\Modules',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Module Stubs
-    |--------------------------------------------------------------------------
-    |
-    | Default module stubs.
-    |
-    */
-    'stubs' => [
-        'enabled' => false,
-        'path' => base_path('vendor/laraneat/modules/src/Commands/Generators/stubs'),
-        'files' => [
-            'routes/web' => 'Routes/web.php',
-            'routes/api' => 'Routes/api.php',
-            'scaffold/config' => 'Config/config.php',
-            'composer' => 'composer.json',
-        ],
-        'replacements' => [
-            'routes/web' => ['LOWER_NAME', 'STUDLY_NAME'],
-            'routes/api' => ['LOWER_NAME'],
-            'json' => ['LOWER_NAME', 'STUDLY_NAME', 'MODULE_NAMESPACE', 'PROVIDER_NAMESPACE'],
-            'scaffold/config' => ['STUDLY_NAME'],
-            'composer' => [
-                'LOWER_NAME',
-                'STUDLY_NAME',
-                'VENDOR',
-                'AUTHOR_NAME',
-                'AUTHOR_EMAIL',
-                'MODULE_NAMESPACE',
-                'PROVIDER_NAMESPACE',
-            ],
-        ],
-        'gitkeep' => true,
+    'paths' => [
+        /*
+        |--------------------------------------------------------------------------
+        | The path to assets
+        |--------------------------------------------------------------------------
+        |
+        | This path is used to store public assets of modules
+        |
+        */
+        'assets' => public_path('modules'),
     ],
 
-    'paths' => [
+    'generator' => [
         /*
         |--------------------------------------------------------------------------
         | Modules path
@@ -59,66 +26,194 @@ return [
         | automatically to list of scanned folders.
         |
         */
-        'modules' => base_path('app/Modules'),
+        'path' => base_path('app/Modules'),
 
         /*
         |--------------------------------------------------------------------------
-        | Modules assets path
+        | Default Module Namespace
         |--------------------------------------------------------------------------
         |
-        | Here you may update the modules assets path.
+        | Default module namespace.
         |
         */
-        'assets' => public_path('modules'),
+        'namespace' => 'App\\Modules',
 
         /*
         |--------------------------------------------------------------------------
-        | The migrations path
+        | Custom generator stubs path
         |--------------------------------------------------------------------------
         |
-        | Where you run 'module:publish-migration' command, where do you publish the
-        | the migration files?
+        | Place your custom stubs in this folder
         |
         */
-        'migration' => base_path('database/migrations'),
+        'custom_stubs' => base_path('app/Ship/Generators/custom-stubs'),
 
         /*
         |--------------------------------------------------------------------------
-        | Generator path
+        | User model class
         |--------------------------------------------------------------------------
-        | Customise the paths where the folders will be generated.
-        | Set the generate key to false to not generate that folder
+        |
+        | Customize the User model of the application
+        |
         */
-        'generator' => [
-            'config' => ['path' => 'Config', 'generate' => true],
-            'command' => ['path' => 'Console', 'generate' => true],
-            'migration' => ['path' => 'Database/Migrations', 'generate' => true],
-            'seeder' => ['path' => 'Database/Seeders', 'generate' => true],
-            'factory' => ['path' => 'Database/factories', 'generate' => true],
-            'model' => ['path' => 'Entities', 'generate' => true],
-            'routes' => ['path' => 'Routes', 'generate' => true],
-            'controller' => ['path' => 'Http/Controllers', 'generate' => true],
-            'filter' => ['path' => 'Http/Middleware', 'generate' => true],
-            'request' => ['path' => 'Http/Requests', 'generate' => true],
-            'provider' => ['path' => 'Providers', 'generate' => true],
-            'assets' => ['path' => 'Resources/assets', 'generate' => true],
-            'lang' => ['path' => 'Resources/lang', 'generate' => true],
-            'views' => ['path' => 'Resources/views', 'generate' => true],
-            'test' => ['path' => 'Tests/Unit', 'generate' => true],
-            'test-feature' => ['path' => 'Tests/Feature', 'generate' => true],
-            'repository' => ['path' => 'Repositories', 'generate' => false],
-            'event' => ['path' => 'Events', 'generate' => false],
-            'listener' => ['path' => 'Listeners', 'generate' => false],
-            'policies' => ['path' => 'Policies', 'generate' => false],
-            'rules' => ['path' => 'Rules', 'generate' => false],
-            'jobs' => ['path' => 'Jobs', 'generate' => false],
-            'emails' => ['path' => 'Emails', 'generate' => false],
-            'notifications' => ['path' => 'Notifications', 'generate' => false],
-            'resource' => ['path' => 'Transformers', 'generate' => false],
-            'component-view' => ['path' => 'Resources/views/components', 'generate' => false],
-            'component-class' => ['path' => 'View/Components', 'generate' => false],
+        'user_model' => null,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create permission action class
+        |--------------------------------------------------------------------------
+        |
+        | Customize "create permission" action class
+        |
+        */
+        'create_permission_action' => null,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Component paths
+        |--------------------------------------------------------------------------
+        |
+        | Customize the paths where the folders will be generated.
+        | Set the generate key to `false` to not generate that folder when creating
+        | a module
+        |
+        */
+        'components' => [
+            'action' => [
+                'path' => 'Actions',
+                'generate' => true
+            ],
+            'api-controller' => [
+                'path' => 'UI/API/Controllers',
+                'generate' => false
+            ],
+            'api-query-wizard' => [
+                'path' => 'UI/API/QueryWizards',
+                'generate' => true
+            ],
+            'api-request' => [
+                'path' => 'UI/API/Requests',
+                'generate' => true
+            ],
+            'api-resource' => [
+                'path' => 'UI/API/Resources',
+                'generate' => true
+            ],
+            'api-route' => [
+                'path' => 'UI/API/Routes',
+                'generate' => true
+            ],
+            'api-test' => [
+                'path' => 'UI/API/Tests',
+                'generate' => true
+            ],
+            'cli-command' => [
+                'path' => 'UI/CLI/Commands',
+                'generate' => false
+            ],
+            'cli-test' => [
+                'path' => 'UI/CLI/Tests',
+                'generate' => false
+            ],
+            'config' => [
+                'path' => 'Config',
+                'generate' => true
+            ],
+            'event' => [
+                'path' => 'Events',
+                'generate' => false
+            ],
+            'exception' => [
+                'path' => 'Exceptions',
+                'generate' => false
+            ],
+            'factory' => [
+                'path' => 'Data/Factories',
+                'generate' => true
+            ],
+            'feature-test' => [
+                'path' => 'Tests/Feature',
+                'generate' => false
+            ],
+            'job' => [
+                'path' => 'Jobs',
+                'generate' => false
+            ],
+            'lang' => [
+                'path' => 'Resources/lang',
+                'generate' => false
+            ],
+            'listener' => [
+                'path' => 'Listeners',
+                'generate' => false
+            ],
+            'mail' => [
+                'path' => 'Mails',
+                'generate' => false
+            ],
+            'middleware' => [
+                'path' => 'Middleware',
+                'generate' => false
+            ],
+            'migration' => [
+                'path' => 'Data/Migrations',
+                'generate' => true
+            ],
+            'model' => [
+                'path' => 'Models',
+                'generate' => true
+            ],
+            'notification' => [
+                'path' => 'Notifications',
+                'generate' => false
+            ],
+            'observer' => [
+                'path' => 'Observers',
+                'generate' => false
+            ],
+            'policy' => [
+                'path' => 'Policies',
+                'generate' => true
+            ],
+            'provider' => [
+                'path' => 'Providers',
+                'generate' => true
+            ],
+            'rule' => [
+                'path' => 'Rules',
+                'generate' => false
+            ],
+            'seeder' => [
+                'path' => 'Data/Seeders',
+                'generate' => true
+            ],
+            'web-controller' => [
+                'path' => 'UI/WEB/Controllers',
+                'generate' => false
+            ],
+            'web-request' => [
+                'path' => 'UI/WEB/Requests',
+                'generate' => false,
+            ],
+            'web-route' => [
+                'path' => 'UI/WEB/Routes',
+                'generate' => false
+            ],
+            'web-test' => [
+                'path' => 'UI/WEB/Tests',
+                'generate' => false
+            ],
+            'view' => [
+                'path' => 'Resources/views',
+                'generate' => false
+            ],
+            'unit-test' => [
+                'path' => 'Tests/Unit',
+                'generate' => false
+            ],
         ],
     ],
+
 
     /*
     |--------------------------------------------------------------------------
@@ -131,6 +226,7 @@ return [
     |
     */
     'commands' => [
+        Commands\CacheClearCommand::class,
         Commands\DisableCommand::class,
         Commands\DumpCommand::class,
         Commands\EnableCommand::class,
@@ -142,20 +238,16 @@ return [
         Commands\MigrateRollbackCommand::class,
         Commands\MigrateStatusCommand::class,
         Commands\ModuleDeleteCommand::class,
-        Commands\PublishCommand::class,
-        Commands\PublishConfigurationCommand::class,
-        Commands\PublishMigrationCommand::class,
-        Commands\PublishTranslationCommand::class,
         Commands\SeedCommand::class,
         Commands\SetupCommand::class,
         Commands\UnUseCommand::class,
         Commands\UpdateCommand::class,
         Commands\UseCommand::class,
+        Commands\Generators\ActionMakeCommand::class,
         Commands\Generators\CommandMakeCommand::class,
-        Commands\Generators\ComponentClassMakeCommand::class,
-        Commands\Generators\ComponentViewMakeCommand::class,
         Commands\Generators\ControllerMakeCommand::class,
         Commands\Generators\EventMakeCommand::class,
+        Commands\Generators\ExceptionMakeCommand::class,
         Commands\Generators\FactoryMakeCommand::class,
         Commands\Generators\JobMakeCommand::class,
         Commands\Generators\ListenerMakeCommand::class,
@@ -165,13 +257,15 @@ return [
         Commands\Generators\ModelMakeCommand::class,
         Commands\Generators\ModuleMakeCommand::class,
         Commands\Generators\NotificationMakeCommand::class,
+        Commands\Generators\ObserverMakeCommand::class,
         Commands\Generators\PolicyMakeCommand::class,
         Commands\Generators\ProviderMakeCommand::class,
+        Commands\Generators\RouteMakeCommand::class,
+        Commands\Generators\QueryWizardMakeCommand::class,
         Commands\Generators\RequestMakeCommand::class,
         Commands\Generators\ResourceMakeCommand::class,
-        Commands\Generators\RouteProviderMakeCommand::class,
         Commands\Generators\RuleMakeCommand::class,
-        Commands\Generators\SeedMakeCommand::class,
+        Commands\Generators\SeederMakeCommand::class,
         Commands\Generators\TestMakeCommand::class,
     ],
 
@@ -199,7 +293,6 @@ return [
     | Here is the config for composer.json file, generated by this package
     |
     */
-
     'composer' => [
         'vendor' => 'laraneat',
         'author' => [
@@ -218,7 +311,7 @@ return [
     |
     */
     'cache' => [
-        'enabled' => false,
+        'enabled' => env('APP_ENV', 'production') === 'production',
         'key' => 'laraneat-modules',
         'lifetime' => 60,
     ],
@@ -231,8 +324,6 @@ return [
     |--------------------------------------------------------------------------
     */
     'register' => [
-        'translations' => true,
-
         /**
          * load files on boot or register method
          *
