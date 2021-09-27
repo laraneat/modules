@@ -2,6 +2,8 @@
 
 namespace Laraneat\Modules\Support;
 
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
+
 class Stub
 {
     /**
@@ -10,13 +12,6 @@ class Stub
      * @var string
      */
     protected string $path;
-
-    /**
-     * The base path of stub file.
-     *
-     * @var null|string
-     */
-    protected static ?string $basePath = null;
 
     /**
      * The replacements array.
@@ -69,31 +64,14 @@ class Stub
      */
     public function getPath(): string
     {
-        $path = static::getBasePath() . $this->path;
+        $customStubsFolderPath = GeneratorHelper::customStubsPath();
+        $customStubFilePath = $customStubsFolderPath . '/' . ltrim($this->path, '/');
 
-        return file_exists($path) ? $path : __DIR__ . '/../Commands/Generators/stubs' . $this->path;
-    }
+        if (file_exists($customStubFilePath)) {
+            return $customStubFilePath;
+        }
 
-    /**
-     * Set base path.
-     *
-     * @param string $path
-     *
-     * @return void
-     */
-    public static function setBasePath(string $path): void
-    {
-        static::$basePath = $path;
-    }
-
-    /**
-     * Get base path.
-     *
-     * @return string|null
-     */
-    public static function getBasePath(): ?string
-    {
-        return static::$basePath;
+        return __DIR__ . '/../Commands/Generators/stubs/' . ltrim($this->path, '/');
     }
 
     /**
@@ -106,7 +84,11 @@ class Stub
         $contents = file_get_contents($this->getPath());
 
         foreach ($this->replaces as $search => $replace) {
-            $contents = str_replace('$' . strtoupper($search) . '$', $replace, $contents);
+            $contents = str_replace(
+                ['{{' . $search . '}}', '{{ ' . $search . ' }}'],
+                $replace,
+                $contents
+            );
         }
 
         return $contents;

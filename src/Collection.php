@@ -2,8 +2,10 @@
 
 namespace Laraneat\Modules;
 
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection as BaseCollection;
+use Laraneat\Modules\Exceptions\InvalidJsonException;
 
 class Collection extends BaseCollection
 {
@@ -21,6 +23,7 @@ class Collection extends BaseCollection
      * Get the collection of items as a plain array.
      *
      * @return array
+     * @throws InvalidJsonException|FileNotFoundException
      */
     public function toArray(): array
     {

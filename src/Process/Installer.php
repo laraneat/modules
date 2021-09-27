@@ -5,6 +5,7 @@ namespace Laraneat\Modules\Process;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use Symfony\Component\Process\Process;
 
 class Installer
@@ -55,7 +56,7 @@ class Installer
      * @var null|string
      */
     private ?string $type;
-    
+
     /**
      * @var bool
      */
@@ -182,7 +183,7 @@ class Installer
             return $this->path;
         }
 
-        return $this->repository->getModulePath($this->getModuleName());
+        return GeneratorHelper::path() . '/' . $this->getModuleName();
     }
 
     /**

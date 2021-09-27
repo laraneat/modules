@@ -111,12 +111,30 @@ interface RepositoryInterface
      */
     public function findOrFail(string $moduleName): Module;
 
-    public function getModulePath(string $moduleName);
+    /**
+     * Get path for a specific module.
+     *
+     * @param Module|string $module
+     * @param string|null $extraPath
+     *
+     * @return string
+     */
+    public function getModulePath(Module|string $module, ?string $extraPath = null): string;
+
+    /**
+     * Get namespace for a specific module.
+     *
+     * @param Module|string $module
+     * @param string|null $extraNamespace
+     *
+     * @return string
+     */
+    public function getModuleNamespace(Module|string $module, ?string $extraNamespace = null): string;
 
     /**
      * @return Filesystem
      */
-    public function getFiles(): Filesystem;
+    public function getFilesystem(): Filesystem;
 
     /**
      * Get a specific config data from a configuration file.
@@ -129,11 +147,11 @@ interface RepositoryInterface
     public function config(string $key, $default = null);
 
     /**
-     * Get modules path.
+     * Get default modules path.
      *
      * @return string
      */
-    public function getPath(): string;
+    public function getDefaultPath(): string;
 
     /**
      * Find a specific module by its alias.

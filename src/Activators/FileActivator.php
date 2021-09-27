@@ -16,45 +16,45 @@ class FileActivator implements ActivatorInterface
      *
      * @var CacheManager
      */
-    private CacheManager $cache;
+    protected CacheManager $cache;
 
     /**
      * Laravel Filesystem instance
      *
      * @var Filesystem
      */
-    private Filesystem $files;
+    protected Filesystem $files;
 
     /**
      * Laravel config instance
      *
      * @var Config
      */
-    private Config $config;
+    protected Config $config;
 
     /**
      * @var string
      */
-    private string $cacheKey;
+    protected string $cacheKey;
 
     /**
      * @var string
      */
-    private string $cacheLifetime;
+    protected string $cacheLifetime;
 
     /**
      * Array of modules activation statuses
      *
      * @var array
      */
-    private array $modulesStatuses;
+    protected array $modulesStatuses;
 
     /**
      * File used to store activation statuses
      *
      * @var string
      */
-    private string $statusesFile;
+    protected string $statusesFile;
 
     public function __construct(Container $app)
     {
@@ -151,7 +151,7 @@ class FileActivator implements ActivatorInterface
     /**
      * Writes the activation statuses in a file, as json
      */
-    private function writeJson(): void
+    protected function writeJson(): void
     {
         $this->files->put($this->statusesFile, json_encode($this->modulesStatuses, JSON_PRETTY_PRINT));
     }
@@ -161,7 +161,7 @@ class FileActivator implements ActivatorInterface
      *
      * @return array
      */
-    private function readJson(): array
+    protected function readJson(): array
     {
         if (!$this->files->exists($this->statusesFile)) {
             return [];
@@ -176,7 +176,7 @@ class FileActivator implements ActivatorInterface
      *
      * @return array
      */
-    private function getModulesStatuses(): array
+    protected function getModulesStatuses(): array
     {
         if (!$this->config->get('modules.cache.enabled')) {
             return $this->readJson();
@@ -194,15 +194,15 @@ class FileActivator implements ActivatorInterface
      * @param mixed $default
      * @return mixed
      */
-    private function config(string $key, $default = null)
+    protected function config(string $key, $default = null)
     {
         return $this->config->get('modules.activators.file.' . $key, $default);
     }
 
     /**
-     * Flushes the modules activation statuses cache
+     * Flush the modules activation statuses cache
      */
-    private function flushCache(): void
+    public function flushCache(): void
     {
         $this->cache->forget($this->cacheKey);
     }

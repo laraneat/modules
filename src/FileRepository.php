@@ -10,6 +10,7 @@ use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
+use Laraneat\Modules\Contracts\ActivatorInterface;
 use Laraneat\Modules\Contracts\RepositoryInterface;
 use Laraneat\Modules\Exceptions\InvalidAssetPath;
 use Laraneat\Modules\Exceptions\ModuleNotFoundException;
@@ -17,7 +18,7 @@ use Laraneat\Modules\Process\Installer;
 use Laraneat\Modules\Process\Updater;
 use Symfony\Component\Process\Process;
 
-abstract class FileRepository implements RepositoryInterface, Countable
+class FileRepository implements RepositoryInterface, Countable
 {
     use Macroable;
 
@@ -29,11 +30,11 @@ abstract class FileRepository implements RepositoryInterface, Countable
     protected Container $app;
 
     /**
-     * The module path.
+     * Default modules path.
      *
      * @var string|null
      */
-    protected ?string $path;
+    protected ?string $defaultPath;
 
     /**
      * The scanned paths.
@@ -41,11 +42,6 @@ abstract class FileRepository implements RepositoryInterface, Countable
      * @var string[]
      */
     protected array $paths = [];
-
-    /**
-     * @var string|null
-     */
-    protected ?string $stubPath = null;
 
     /**
      * @var UrlGenerator
@@ -60,7 +56,12 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * @var Filesystem
      */
-    private Filesystem $files;
+    private Filesystem $filesystem;
+
+    /**
+     * @var ActivatorInterface
+     */
+    private ActivatorInterface $activator;
 
     /**
      * @var CacheManager
@@ -69,32 +70,23 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
     /**
      * @param Container $app
-     * @param string|null $path
+     * @param string|null $defaultPath
      */
-    public function __construct(Container $app, ?string $path = null)
+    public function __construct(Container $app, ?string $defaultPath = null)
     {
         $this->app = $app;
-        $this->path = $path;
+        $this->defaultPath = $defaultPath ? rtrim($defaultPath, '/') : null;
         $this->url = $app['url'];
         $this->config = $app['config'];
-        $this->files = $app['files'];
+        $this->filesystem = $app['files'];
+        $this->activator = $app[ActivatorInterface::class];
         $this->cache = $app['cache'];
     }
 
     /**
-     * Creates a new Module instance
+     * Register the modules.
      *
-     * @param Container $app
-     * @param string $name
-     * @param string $path
-     *
-     * @return Module
-     */
-    abstract protected function createModule(...$args);
-
-    /**
-     * @inheritDoc
-     * @see RepositoryInterface::register()
+     * @return void
      */
     public function register(): void
     {
@@ -115,12 +107,13 @@ abstract class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::getPath()
+     * Get modules path.
+     *
+     * @return string
      */
-    public function getPath(): string
+    public function getDefaultPath(): string
     {
-        return $this->path ?: $this->config('paths.modules', base_path('app/Modules'));
+        return $this->defaultPath ?: rtrim($this->config('generator.path', base_path('app/Modules')), '/');
     }
 
     /**
@@ -143,6 +136,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     public function addLocation(string $path)
     {
         $this->paths[] = $path;
+        $this->flushCache();
 
         return $this;
     }
@@ -156,7 +150,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     {
         $paths = $this->paths;
 
-        $paths[] = $this->getPath();
+        $paths[] = $this->getDefaultPath();
 
         if ($this->config('scan.enabled')) {
             $paths = array_merge($paths, $this->config('scan.paths'));
@@ -168,51 +162,39 @@ abstract class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * Get stub path.
+     * Get path for a specific module.
      *
-     * @return string|null
-     */
-    public function getStubPath(): ?string
-    {
-        if ($this->stubPath !== null) {
-            return $this->stubPath;
-        }
-
-        if ($this->config('stubs.enabled') === true) {
-            return $this->config('stubs.path');
-        }
-
-        return $this->stubPath;
-    }
-
-    /**
-     * Set stub path.
-     *
-     * @param string $stubPath
-     *
-     * @return $this
-     */
-    public function setStubPath(string $stubPath)
-    {
-        $this->stubPath = $stubPath;
-
-        return $this;
-    }
-
-    /**
-     * Get module path for a specific module.
-     *
-     * @param string $moduleName
+     * @param Module|string $module
+     * @param string|null $extraPath
      *
      * @return string
+     * @throws ModuleNotFoundException
      */
-    public function getModulePath(string $moduleName): string
+    public function getModulePath(Module|string $module, ?string $extraPath = null): string
     {
-        try {
-            return $this->findOrFail($moduleName)->getPath() . '/';
-        } catch (ModuleNotFoundException $e) {
-            return $this->getPath() . '/' . Str::studly($moduleName) . '/';
-        }
+        $modulePath = $module instanceof Module
+            ? $module->getPath()
+            : $this->findOrFail($module)->getPath();
+
+        return $extraPath ? $modulePath . '/' . $extraPath : $modulePath;
+    }
+
+    /**
+     * Get namespace for a specific module.
+     *
+     * @param Module|string $module
+     * @param string|null $extraNamespace
+     *
+     * @return string
+     * @throws ModuleNotFoundException
+     */
+    public function getModuleNamespace(Module|string $module, ?string $extraNamespace = null): string
+    {
+        $moduleNamespace = $module instanceof Module
+            ? $module->getNamespace()
+            : $this->findOrFail($module)->getNamespace();
+
+        return $extraNamespace ? $moduleNamespace . '\\' . $extraNamespace : $moduleNamespace;
     }
 
     /**
@@ -222,7 +204,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
      */
     public function all(): array
     {
-        if (!$this->config('cache.enabled')) {
+        if (! $this->config('cache.enabled')) {
             return $this->scan();
         }
 
@@ -320,18 +302,35 @@ abstract class FileRepository implements RepositoryInterface, Countable
         $modules = [];
 
         foreach ($paths as $path) {
-            $manifests = $this->getFiles()->glob("{$path}/module.json");
+            $manifests = $this->getFilesystem()->glob("$path/module.json");
 
             is_array($manifests) || $manifests = [];
 
             foreach ($manifests as $manifest) {
-                $name = Json::make($manifest)->get('name');
+                $json = Json::make($manifest);
+                $name = (string) $json->get('name');
+                $namespace = (string) $json->get('namespace', '');
 
-                $modules[$name] = $this->createModule($this->app, $name, dirname($manifest));
+                $modules[$name] = $this->createModule($this->app, $name, dirname($manifest), $namespace);
             }
         }
 
         return $modules;
+    }
+
+    /**
+     * Creates a new Module instance
+     *
+     * @param Container $app
+     * @param string $name
+     * @param string $path
+     * @param string $namespace
+     *
+     * @return Module
+     */
+    protected function createModule(Container $app, string $name, string $path, string $namespace): Module
+    {
+        return new Module($app, $name, $path, $namespace);
     }
 
     /**
@@ -412,7 +411,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
             return $module;
         }
 
-        throw new ModuleNotFoundException("Module [{$moduleName}] does not exist!");
+        throw new ModuleNotFoundException("Module [$moduleName] does not exist!");
     }
 
     /**
@@ -445,8 +444,8 @@ abstract class FileRepository implements RepositoryInterface, Countable
 
         foreach ($cached as $name => $module) {
             $path = $module['path'];
-
-            $modules[$name] = $this->createModule($this->app, $name, $path);
+            $namespace = $module['namespace'] ?? "";
+            $modules[$name] = $this->createModule($this->app, $name, $path, $namespace);
         }
 
         return $modules;
@@ -470,7 +469,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
      */
     public function assetPath(string $moduleName): string
     {
-        return $this->config('paths.assets') . '/' . $moduleName;
+        return rtrim($this->config('paths.assets'), '/') . '/' . $moduleName;
     }
 
     /**
@@ -490,13 +489,13 @@ abstract class FileRepository implements RepositoryInterface, Countable
     public function getUsedStoragePath(): string
     {
         $directory = storage_path('app/modules');
-        if ($this->getFiles()->exists($directory) === false) {
-            $this->getFiles()->makeDirectory($directory, 0777, true);
+        if ($this->getFilesystem()->exists($directory) === false) {
+            $this->getFilesystem()->makeDirectory($directory, 0777, true);
         }
 
         $path = storage_path('app/modules/modules.used');
-        if (!$this->getFiles()->exists($path)) {
-            $this->getFiles()->put($path, '');
+        if (!$this->getFilesystem()->exists($path)) {
+            $this->getFilesystem()->put($path, '');
         }
 
         return $path;
@@ -513,7 +512,7 @@ abstract class FileRepository implements RepositoryInterface, Countable
     {
         $module = $this->findOrFail($moduleName);
 
-        $this->getFiles()->put($this->getUsedStoragePath(), $module);
+        $this->getFilesystem()->put($this->getUsedStoragePath(), $module);
     }
 
     /**
@@ -521,19 +520,21 @@ abstract class FileRepository implements RepositoryInterface, Countable
      */
     public function forgetUsed(): void
     {
-        if ($this->getFiles()->exists($this->getUsedStoragePath())) {
-            $this->getFiles()->delete($this->getUsedStoragePath());
+        if ($this->getFilesystem()->exists($this->getUsedStoragePath())) {
+            $this->getFilesystem()->delete($this->getUsedStoragePath());
         }
     }
 
     /**
      * Get module used for cli session.
-     * @return string
-     * @throws ModuleNotFoundException
+     *
+     * @return Module
+     *
+     * @throws ModuleNotFoundException|\Illuminate\Contracts\Filesystem\FileNotFoundException
      */
-    public function getUsedNow(): string
+    public function getUsedNow(): Module
     {
-        return $this->findOrFail($this->getFiles()->get($this->getUsedStoragePath()));
+        return $this->findOrFail($this->getFilesystem()->get($this->getUsedStoragePath()));
     }
 
     /**
@@ -541,13 +542,13 @@ abstract class FileRepository implements RepositoryInterface, Countable
      *
      * @return Filesystem
      */
-    public function getFiles(): Filesystem
+    public function getFilesystem(): Filesystem
     {
-        return $this->files;
+        return $this->filesystem;
     }
 
     /**
-     * Get module assets path.
+     * Get modules assets path.
      *
      * @return string
      */
@@ -569,11 +570,11 @@ abstract class FileRepository implements RepositoryInterface, Countable
         if (Str::contains($asset, ':') === false) {
             throw InvalidAssetPath::missingModuleName($asset);
         }
-        list($name, $url) = explode(':', $asset);
+        [$name, $url] = explode(':', $asset);
 
         $baseUrl = str_replace(public_path() . DIRECTORY_SEPARATOR, '', $this->getAssetsPath());
 
-        $url = $this->url->asset($baseUrl . "/{$name}/" . $url);
+        $url = $this->url->asset($baseUrl . "/$name/" . $url);
 
         return str_replace(['http://', 'https://'], '//', $url);
     }
@@ -634,13 +635,13 @@ abstract class FileRepository implements RepositoryInterface, Countable
     /**
      * Update dependencies for the specified module.
      *
-     * @param string $module
+     * @param string $moduleName
      *
      * @return void
      */
-    public function update(string $module): void
+    public function update(string $moduleName): void
     {
-        (new Updater($this))->update($module);
+        (new Updater($this))->update($moduleName);
     }
 
     /**
@@ -658,5 +659,14 @@ abstract class FileRepository implements RepositoryInterface, Countable
         $installer = new Installer($name, $version, $type, $subtree);
 
         return $installer->run();
+    }
+
+    /**
+     * Flush modules cache
+     */
+    public function flushCache(): void
+    {
+        $this->cache->forget(config('modules.cache.key'));
+        $this->activator->flushCache();
     }
 }

@@ -3,67 +3,77 @@
 namespace Laraneat\Modules;
 
 use Illuminate\Support\ServiceProvider;
+use Laraneat\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\Exceptions\InvalidActivatorClass;
 use Laraneat\Modules\Providers\BootstrapServiceProvider;
 use Laraneat\Modules\Providers\ConsoleServiceProvider;
-use Laraneat\Modules\Providers\ContractsServiceProvider;
 
-abstract class ModulesServiceProvider extends ServiceProvider
+class ModulesServiceProvider extends ServiceProvider
 {
     /**
      * Booting the package.
      */
     public function boot()
     {
-    }
-
-    /**
-     * Register all modules.
-     */
-    public function register()
-    {
-    }
-
-    /**
-     * Register all modules.
-     */
-    protected function registerModules()
-    {
-        $this->app->register(BootstrapServiceProvider::class);
-    }
-
-    /**
-     * Register package's namespaces.
-     */
-    protected function registerNamespaces()
-    {
-        $configPath = __DIR__ . '/../config/config.php';
-
         $this->publishes([
-            $configPath => config_path('modules.php'),
+            __DIR__ . '/../config/config.php' => config_path('modules.php'),
         ], 'config');
+
+        $this->app->register(BootstrapServiceProvider::class);
     }
 
     /**
      * Register the service provider.
      */
-    abstract protected function registerServices();
+    public function register()
+    {
+        $this->registerServices();
+        $this->registerProviders();
+
+        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'modules');
+    }
+
+    /**
+     * Register services.
+     */
+    protected function registerServices(): void
+    {
+        $this->app->singleton(RepositoryInterface::class, function ($app) {
+            $path = $app['config']->get('modules.generator.path');
+
+            return new FileRepository($app, $path);
+        });
+
+        $this->app->singleton(ActivatorInterface::class, function ($app) {
+            $activator = $app['config']->get('modules.activator');
+            $class = $app['config']->get('modules.activators.' . $activator)['class'];
+
+            if ($class === null) {
+                throw InvalidActivatorClass::missingConfig();
+            }
+
+            return new $class($app);
+        });
+
+        $this->app->alias(RepositoryInterface::class, 'modules');
+    }
+
+    /**
+     * Register providers.
+     */
+    protected function registerProviders(): void
+    {
+        $this->app->register(ConsoleServiceProvider::class);
+    }
 
     /**
      * Get the services provided by the provider.
      *
      * @return array
      */
-    public function provides()
+    public function provides(): array
     {
-        return [Contracts\RepositoryInterface::class, 'modules'];
-    }
-
-    /**
-     * Register providers.
-     */
-    protected function registerProviders()
-    {
-        $this->app->register(ConsoleServiceProvider::class);
-        $this->app->register(ContractsServiceProvider::class);
+        return [RepositoryInterface::class, 'modules'];
     }
 }

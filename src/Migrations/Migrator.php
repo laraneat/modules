@@ -7,7 +7,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Config\GenerateConfigReader;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
 
 class Migrator
 {
@@ -75,7 +75,7 @@ class Migrator
     {
         $config = $this->module->get('migration');
 
-        $migrationPath = GenerateConfigReader::read('migration');
+        $migrationPath = GeneratorHelper::component('migration');
         $path = (is_array($config) && array_key_exists('path', $config)) ? $config['path'] : $migrationPath->getPath();
 
         return $this->module->getExtraPath($path);

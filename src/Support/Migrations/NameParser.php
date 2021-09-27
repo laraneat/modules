@@ -38,10 +38,6 @@ class NameParser
             'append',
             'insert',
         ],
-        'drop' => [
-            'destroy',
-            'drop',
-        ],
     ];
 
     /**
@@ -78,9 +74,9 @@ class NameParser
     /**
      * Get the table will be used.
      *
-     * @return string
+     * @return string|null
      */
-    public function getTableName(): string
+    public function getTableName(): ?string
     {
         $matches = array_reverse($this->getMatches());
 
@@ -186,15 +182,5 @@ class NameParser
     public function isCreate(): bool
     {
         return in_array($this->getAction(), $this->actions['create'], true);
-    }
-
-    /**
-     * Determine whether the current schema action is a dropping action.
-     *
-     * @return bool
-     */
-    public function isDrop(): bool
-    {
-        return in_array($this->getAction(), $this->actions['drop'], true);
     }
 }

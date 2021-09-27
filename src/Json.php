@@ -27,15 +27,15 @@ class Json
      *
      * @var \Illuminate\Support\Collection
      */
-    protected Collection|\Illuminate\Support\Collection $attributes;
+    protected \Illuminate\Support\Collection $attributes;
 
     /**
      * The constructor.
      *
      * @param mixed $path
-     * @param Filesystem $filesystem
+     * @param Filesystem|null $filesystem
      */
-    public function __construct($path, Filesystem $filesystem = null)
+    public function __construct($path, ?Filesystem $filesystem = null)
     {
         $this->path = (string) $path;
         $this->filesystem = $filesystem ?: new Filesystem();
@@ -165,10 +165,23 @@ class Json
     }
 
     /**
+     * Handle magic method __set.
+     *
+     * @param mixed $key
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function __set($key, $value)
+    {
+        return $this->set($key, $value);
+    }
+
+    /**
      * Set a specific key & value.
      *
-     * @param string $key
-     * @param mixed  $value
+     * @param mixed $key
+     * @param mixed $value
      *
      * @return $this
      */
@@ -222,7 +235,7 @@ class Json
      *
      * @return mixed
      */
-    public function __call($method, $arguments = [])
+    public function __call(string $method, array $arguments = [])
     {
         if (method_exists($this, $method)) {
             return call_user_func_array([$this, $method], $arguments);
@@ -235,6 +248,7 @@ class Json
      * Handle call to __toString method.
      *
      * @return string
+     * @throws FileNotFoundException
      */
     public function __toString()
     {

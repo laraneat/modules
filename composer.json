@@ -48,13 +48,17 @@
     "autoload-dev": {
         "psr-4": {
             "Laraneat\\Modules\\Tests\\": "tests",
-            "App\\Modules\\Recipe\\": "tests/stubs/valid/Recipe"
+            "App\\": "tests/laravel/app",
+            "App\\Modules\\Article\\": "tests/stubs/valid/Article"
         }
+    },
+    "suggest": {
+        "wikimedia/composer-merge-plugin": "Allows the ability to create and merge composer.json files for your individual modules for module-specific dependency management."
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Laraneat\\Modules\\LaravelModulesServiceProvider"
+              "ModulesServiceProvider"
             ],
             "aliases": {
                 "Modules": "Laraneat\\Modules\\Facades\\Modules"

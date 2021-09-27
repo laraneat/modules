@@ -5,13 +5,15 @@ namespace Laraneat\Modules;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Foundation\AliasLoader;
+use Illuminate\Foundation\ProviderRepository;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use Illuminate\Translation\Translator;
 use Laraneat\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Facades\Modules;
 
-abstract class Module
+class Module
 {
     use Macroable;
 
@@ -37,6 +39,13 @@ abstract class Module
     protected string $path;
 
     /**
+     * The module namespace.
+     *
+     * @var string
+     */
+    protected string $namespace;
+
+    /**
      * @var array of cached Json objects, keyed by filename
      */
     protected array $moduleJson = [];
@@ -49,12 +58,7 @@ abstract class Module
     /**
      * @var Filesystem
      */
-    private Filesystem $files;
-
-    /**
-     * @var Translator
-     */
-    private Translator $translator;
+    private Filesystem $filesystem;
 
     /**
      * @var ActivatorInterface
@@ -62,19 +66,19 @@ abstract class Module
     private ActivatorInterface $activator;
 
     /**
-     * The constructor.
      * @param Container $app
      * @param string $name
      * @param string $path
+     * @param string $namespace
      */
-    public function __construct(Container $app, string $name, string $path)
+    public function __construct(Container $app, string $name, string $path, string $namespace)
     {
         $this->app = $app;
-        $this->name = $name;
-        $this->path = $path;
+        $this->name = trim($name);
+        $this->path = rtrim($path, '/');
+        $this->namespace = trim($namespace, '\\');
         $this->cache = $app['cache'];
-        $this->files = $app['files'];
-        $this->translator = $app['translator'];
+        $this->filesystem = $app['files'];
         $this->activator = $app[ActivatorInterface::class];
     }
 
@@ -169,17 +173,13 @@ abstract class Module
     }
 
     /**
-     * Set path.
+     * Get namespace.
      *
-     * @param string $path
-     *
-     * @return $this
+     * @return string
      */
-    public function setPath(string $path)
+    public function getNamespace(): string
     {
-        $this->path = $path;
-
-        return $this;
+        return $this->namespace;
     }
 
     /**
@@ -187,10 +187,6 @@ abstract class Module
      */
     public function boot(): void
     {
-        if (config('modules.register.translations', true) === true) {
-            $this->registerTranslation();
-        }
-
         if ($this->isLoadFilesOnBoot()) {
             $this->registerFiles();
         }
@@ -199,36 +195,20 @@ abstract class Module
     }
 
     /**
-     * Register module's translation.
-     *
-     * @return void
-     */
-    protected function registerTranslation(): void
-    {
-        $lowerName = $this->getLowerName();
-
-        $langPath = $this->getPath() . '/Resources/lang';
-
-        if (is_dir($langPath)) {
-            $this->loadTranslationsFrom($langPath, $lowerName);
-        }
-    }
-
-    /**
      * Get json contents from the cache, setting as needed.
      *
-     * @param ?string $fileName
+     * @param string|null $fileName
      *
      * @return Json
      */
-    public function json(string $fileName = null): Json
+    public function json(?string $fileName = null): Json
     {
         if ($fileName === null) {
             $fileName = 'module.json';
         }
 
         return Arr::get($this->moduleJson, $fileName, function () use ($fileName) {
-            return $this->moduleJson[$fileName] = new Json($this->getPath() . '/' . $fileName, $this->files);
+            return $this->moduleJson[$fileName] = new Json($this->getExtraPath($fileName), $this->filesystem);
         });
     }
 
@@ -264,7 +244,6 @@ abstract class Module
     public function register(): void
     {
         $this->registerAliases();
-
         $this->registerProviders();
 
         if ($this->isLoadFilesOnBoot() === false) {
@@ -279,26 +258,46 @@ abstract class Module
      *
      * @param string $event
      */
-    protected function fireEvent($event): void
+    protected function fireEvent(string $event): void
     {
         $this->app['events']->dispatch(sprintf('modules.%s.' . $event, $this->getLowerName()), [$this]);
     }
-    /**
-     * Register the aliases from this module.
-     */
-    abstract public function registerAliases(): void;
-
-    /**
-     * Register the service providers from this module.
-     */
-    abstract public function registerProviders(): void;
 
     /**
      * Get the path to the cached *_module.php file.
      *
      * @return string
      */
-    abstract public function getCachedServicesPath(): string;
+    public function getCachedServicesPath(): string
+    {
+        // This checks if we are running on a Laravel Vapor managed instance
+        // and sets the path to a writable one (services path is not on a writable storage in Vapor).
+        if (!is_null(env('VAPOR_MAINTENANCE_MODE', null))) {
+            return Str::replaceLast('config.php', $this->getSnakeName() . '_module.php', $this->app->getCachedConfigPath());
+        }
+
+        return Str::replaceLast('services.php', $this->getSnakeName() . '_module.php', $this->app->getCachedServicesPath());
+    }
+
+    /**
+     * Register the service providers from this module.
+     */
+    public function registerProviders(): void
+    {
+        (new ProviderRepository($this->app, new Filesystem(), $this->getCachedServicesPath()))
+            ->load($this->get('providers', []));
+    }
+
+    /**
+     * Register the aliases from this module.
+     */
+    public function registerAliases(): void
+    {
+        $loader = AliasLoader::getInstance();
+        foreach ($this->get('aliases', []) as $aliasName => $aliasClass) {
+            $loader->alias($aliasName, $aliasClass);
+        }
+    }
 
     /**
      * Register the files from this module.
@@ -397,9 +396,15 @@ abstract class Module
      */
     public function delete(): bool
     {
-        $this->activator->delete($this);
+        $this->fireEvent('deleting');
 
-        return $this->json()->getFilesystem()->deleteDirectory($this->getPath());
+        $this->activator->delete($this);
+        $status = $this->json()->getFilesystem()->deleteDirectory($this->getPath());
+        $this->flushCache();
+
+        $this->fireEvent('deleted');
+
+        return $status;
     }
 
     /**
@@ -411,7 +416,7 @@ abstract class Module
      */
     public function getExtraPath(string $path): string
     {
-        return $this->getPath() . '/' . $path;
+        return $this->getPath() . '/' . ltrim($path, '/');
     }
 
     /**
@@ -421,27 +426,11 @@ abstract class Module
      */
     protected function isLoadFilesOnBoot(): bool
     {
-        return config('modules.register.files', 'register') === 'boot' &&
-            // force register method if option == boot && app is AsgardCms
-            !class_exists('\Modules\Core\Foundation\AsgardCms');
+        return config('modules.register.files', 'register') === 'boot';
     }
 
-    private function flushCache(): void
+    protected function flushCache(): void
     {
-        if (config('modules.cache.enabled')) {
-            $this->cache->store()->flush();
-        }
-    }
-
-    /**
-     * Register a translation file namespace.
-     *
-     * @param  string  $path
-     * @param  string  $namespace
-     * @return void
-     */
-    private function loadTranslationsFrom(string $path, string $namespace): void
-    {
-        $this->translator->addNamespace($namespace, $path);
+        Modules::flushCache();
     }
 }

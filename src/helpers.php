@@ -1,5 +1,7 @@
 <?php
 
+use Laraneat\Modules\Facades\Modules;
+
 if (! function_exists('module_path')) {
     /**
      * Get the module path
@@ -11,9 +13,8 @@ if (! function_exists('module_path')) {
      */
     function module_path(string $moduleName, string $path = ''): string
     {
-        /** @var $module \Laraneat\Modules\Module */
-        $module = app('modules')->find($moduleName);
+        $module = Modules::findOrFail($moduleName);
 
-        return $module->getPath() . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $module->getExtraPath($path);
     }
 }
