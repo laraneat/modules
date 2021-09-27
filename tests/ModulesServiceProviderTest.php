@@ -4,9 +4,8 @@ namespace Laraneat\Modules\Tests;
 
 use Laraneat\Modules\Contracts\ActivatorInterface;
 use Laraneat\Modules\Contracts\RepositoryInterface;
-use Laraneat\Modules\Exceptions\InvalidActivatorClass;
 
-class LaravelModulesServiceProviderTest extends BaseTestCase
+class ModulesServiceProviderTest extends BaseTestCase
 {
     /** @test */
     public function it_binds_modules_key_to_repository_class()
@@ -18,16 +17,6 @@ class LaravelModulesServiceProviderTest extends BaseTestCase
     /** @test */
     public function it_binds_activator_to_activator_class()
     {
-        $this->assertInstanceOf(ActivatorInterface::class, app(ActivatorInterface::class));
-    }
-
-    /** @test */
-    public function it_throws_exception_if_config_is_invalid()
-    {
-        $this->expectException(InvalidActivatorClass::class);
-
-        $this->app['config']->set('modules.activators.file', ['class' => null]);
-
         $this->assertInstanceOf(ActivatorInterface::class, app(ActivatorInterface::class));
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Modules\Blog\SuperRules;
+namespace App\Modules\Article\Foo\Bar\Rules\Baz\Bat;
 
-use Illuminate\Contracts\Validation\Rule;
+use App\Ship\Abstracts\Rules\Rule;
 
-class UniqueRule implements Rule
+class MyAwesomeRule extends Rule
 {
     /**
      * Create a new rule instance.

@@ -2,15 +2,13 @@
 
 namespace Laraneat\Modules\Tests;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Support\Stub;
 
 class StubTest extends BaseTestCase
 {
-    /**
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    private $finder;
+    private Filesystem $finder;
 
     public function setUp(): void
     {
@@ -32,31 +30,39 @@ class StubTest extends BaseTestCase
     public function it_initialises_a_stub_instance()
     {
         $stub = new Stub('/model.stub', [
-            'NAME' => 'Name',
+            'name' => 'Name',
+            'factory' => 'Some\\ModelFactory'
         ]);
 
-        $this->assertTrue(Str::contains($stub->getPath(), 'src/Commands/Generators/stubs/model.stub'));
-        $this->assertEquals(['NAME' => 'Name', ], $stub->getReplaces());
+        $this->assertTrue(Str::contains($stub->getPath(), 'Commands/Generators/stubs/model.stub'));
+        $this->assertEquals([
+            'name' => 'Name',
+            'factory' => 'Some\\ModelFactory'
+        ], $stub->getReplaces());
     }
 
     /** @test */
     public function it_sets_new_replaces_array()
     {
         $stub = new Stub('/model.stub', [
-            'NAME' => 'Name',
+            'name' => 'Name',
         ]);
 
-        $stub->replace(['VENDOR' => 'MyVendor', ]);
-        $this->assertEquals(['VENDOR' => 'MyVendor', ], $stub->getReplaces());
+        $stub->replace([
+            'factory' => 'Some\\New\\ModelFactory'
+        ]);
+        $this->assertEquals([
+            'factory' => 'Some\\New\\ModelFactory'
+        ], $stub->getReplaces());
     }
 
     /** @test */
     public function it_stores_stub_to_specific_path()
     {
         $stub = new Stub('/command.stub', [
-            'COMMAND_NAME' => 'my:command',
-            'NAMESPACE' => 'Blog\Commands',
-            'CLASS' => 'MyCommand',
+            'command' => 'my:command',
+            'namespace' => 'Article\\Commands',
+            'class' => 'MyCommand',
         ]);
 
         $stub->saveTo(base_path(), 'my-command.php');
@@ -68,42 +74,11 @@ class StubTest extends BaseTestCase
     public function it_sets_new_path()
     {
         $stub = new Stub('/model.stub', [
-            'NAME' => 'Name',
+            'name' => 'Name',
         ]);
 
         $stub->setPath('/new-path/');
 
         $this->assertTrue(Str::contains($stub->getPath(), 'Commands/Generators/stubs/new-path/'));
-    }
-
-    /** @test */
-    public function use_default_stub_if_override_not_exists()
-    {
-        $stub = new Stub('/command.stub', [
-            'COMMAND_NAME' => 'my:command',
-            'NAMESPACE' => 'Blog\Commands',
-            'CLASS' => 'MyCommand',
-        ]);
-
-        $stub::setBasePath(__DIR__ . '/stubs');
-
-        $stub->saveTo(base_path(), 'stub-override-not-exists.php');
-
-        $this->assertTrue($this->finder->exists(base_path('stub-override-not-exists.php')));
-    }
-
-    /** @test */
-    public function use_override_stub_if_exists()
-    {
-        $stub = new Stub('/model.stub', [
-            'NAME' => 'Name',
-        ]);
-
-        $stub::setBasePath(__DIR__ . '/stubs');
-
-        $stub->saveTo(base_path(), 'stub-override-exists.php');
-
-        $this->assertTrue($this->finder->exists(base_path('stub-override-exists.php')));
-        $this->assertEquals('stub-override', $this->finder->get(base_path('stub-override-exists.php')));
     }
 }

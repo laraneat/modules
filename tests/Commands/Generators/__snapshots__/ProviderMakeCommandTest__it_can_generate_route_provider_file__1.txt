@@ -1,18 +1,19 @@
 <?php
 
-namespace $NAMESPACE$;
+namespace App\Modules\Article\Providers\Baz\Bat;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Route;
+use Laraneat\Modules\Traits\RouteProviderHelpersTrait;
 
-class $CLASS$ extends ServiceProvider
+class MyAwesomeRouteProvider extends ServiceProvider
 {
+    use RouteProviderHelpersTrait;
+
     /**
-     * The module namespace to assume when generating URLs to actions.
-     *
-     * @var string
+     * @var string $moduleName
      */
-    protected $moduleNamespace = '$MODULE_NAMESPACE$\$MODULE$\$CONTROLLER_NAMESPACE$';
+    protected string $moduleName = 'Article';
 
     /**
      * Called before routes are registered.
@@ -21,7 +22,7 @@ class $CLASS$ extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         parent::boot();
     }
@@ -31,10 +32,9 @@ class $CLASS$ extends ServiceProvider
      *
      * @return void
      */
-    public function map()
+    public function map(): void
     {
         $this->mapApiRoutes();
-
         $this->mapWebRoutes();
     }
 
@@ -45,11 +45,13 @@ class $CLASS$ extends ServiceProvider
      *
      * @return void
      */
-    protected function mapWebRoutes()
+    protected function mapWebRoutes(): void
     {
         Route::middleware('web')
-            ->namespace($this->moduleNamespace)
-            ->group(module_path('$MODULE$', '$WEB_ROUTES_PATH$'));
+            ->namespace('App\\Modules\\Article\\UI\\WEB\\Controllers')
+            ->group(function () {
+                $this->loadRoutesFromDirectory(module_path($this->moduleName, 'UI/WEB/Routes'));
+            });
     }
 
     /**
@@ -59,11 +61,13 @@ class $CLASS$ extends ServiceProvider
      *
      * @return void
      */
-    protected function mapApiRoutes()
+    protected function mapApiRoutes(): void
     {
         Route::prefix('api')
             ->middleware('api')
-            ->namespace($this->moduleNamespace)
-            ->group(module_path('$MODULE$', '$API_ROUTES_PATH$'));
+            ->namespace('App\\Modules\\Article\\UI\\API\\Controllers')
+            ->group(function () {
+                $this->loadRoutesFromDirectory(module_path($this->moduleName, 'UI/API/Routes'));
+            });
     }
 }

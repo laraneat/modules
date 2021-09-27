@@ -91,12 +91,6 @@ class NameParserTest extends \PHPUnit\Framework\TestCase
     }
 
     /** @test */
-    public function it_can_check_if_current_migration_is_about_dropping()
-    {
-        self::assertTrue((new NameParser('drop_users_table'))->isDrop());
-    }
-
-    /** @test */
     public function it_makes_a_regex_pattern()
     {
         self::assertEquals('/create_(.*)_table/', (new NameParser('create_users_table'))->getPattern());

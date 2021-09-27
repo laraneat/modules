@@ -7,10 +7,7 @@ use Laraneat\Modules\Json;
 
 class JsonTest extends BaseTestCase
 {
-    /**
-     * @var Json
-     */
-    private $json;
+    private Json $json;
 
     public function setUp(): void
     {
@@ -63,15 +60,6 @@ class JsonTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_makes_json_class()
-    {
-        $path = __DIR__ . '/stubs/valid/module.json';
-        $json = Json::make($path, $this->app['files']);
-
-        $this->assertInstanceOf(Json::class, $json);
-    }
-
-    /** @test */
     public function it_sets_a_path()
     {
         $path = __DIR__ . '/stubs/valid/module.json';
@@ -87,6 +75,7 @@ class JsonTest extends BaseTestCase
         $expected = '{
     "name": "Order",
     "alias": "order",
+    "namespace": "App\\\\Modules",
     "description": "My demo module",
     "version": "0.1",
     "keywords": [
@@ -97,9 +86,9 @@ class JsonTest extends BaseTestCase
     "active": 1,
     "order": 1,
     "providers": [
-        "App\\\Modules\\\Order\\\Providers\\\OrderServiceProvider",
-        "App\\\Modules\\\Order\\\Providers\\\EventServiceProvider",
-        "App\\\Modules\\\Order\\\Providers\\\RouteServiceProvider"
+        "App\\\\Modules\\\\Order\\\\Providers\\\\OrderServiceProvider",
+        "App\\\\Modules\\\\Order\\\\Providers\\\\EventServiceProvider",
+        "App\\\\Modules\\\\Order\\\\Providers\\\\RouteServiceProvider"
     ],
     "aliases": [],
     "files": []
@@ -121,6 +110,7 @@ class JsonTest extends BaseTestCase
         $expected = '{
     "name": "Order",
     "alias": "order",
+    "namespace": "App\\\\Modules",
     "description": "My demo module",
     "version": "0.1",
     "keywords": [
@@ -131,9 +121,9 @@ class JsonTest extends BaseTestCase
     "active": 1,
     "order": 1,
     "providers": [
-        "App\\\Modules\\\Order\\\Providers\\\OrderServiceProvider",
-        "App\\\Modules\\\Order\\\Providers\\\EventServiceProvider",
-        "App\\\Modules\\\Order\\\Providers\\\RouteServiceProvider"
+        "App\\\\Modules\\\\Order\\\\Providers\\\\OrderServiceProvider",
+        "App\\\\Modules\\\\Order\\\\Providers\\\\EventServiceProvider",
+        "App\\\\Modules\\\\Order\\\\Providers\\\\RouteServiceProvider"
     ],
     "aliases":{},
     "files": [

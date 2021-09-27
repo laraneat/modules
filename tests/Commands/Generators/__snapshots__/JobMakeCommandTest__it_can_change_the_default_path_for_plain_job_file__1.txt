@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Modules\Article\Foo\Bar\Jobs\Baz\Bat;
+
+use App\Ship\Abstracts\Jobs\Job;
+use Illuminate\Foundation\Bus\Dispatchable;
+
+class MyAwesomePlainJob extends Job
+{
+    use Dispatchable;
+
+    /**
+     * Create a new job instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        //
+    }
+}

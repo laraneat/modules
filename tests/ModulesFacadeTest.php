@@ -4,14 +4,14 @@ namespace Laraneat\Modules\Tests;
 
 use Laraneat\Modules\Facades\Modules;
 
-class ModuleFacadeTest extends BaseTestCase
+class ModulesFacadeTest extends BaseTestCase
 {
     /** @test */
     public function it_resolves_the_module_facade()
     {
         $modules = Modules::all();
 
-        $this->assertTrue(is_array($modules));
+        $this->assertIsArray($modules);
     }
 
     /** @test */

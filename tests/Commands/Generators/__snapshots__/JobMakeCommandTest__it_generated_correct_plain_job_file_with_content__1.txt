@@ -1,16 +1,13 @@
 <?php
 
-namespace App\Modules\Blog\Jobs;
+namespace App\Modules\Article\Jobs\Foo\Bar;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Ship\Abstracts\Jobs\Job;
 use Illuminate\Foundation\Bus\Dispatchable;
 
-class SomeJob implements ShouldQueue
+class MyAwesomePlainJob extends Job
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
 
     /**
      * Create a new job instance.

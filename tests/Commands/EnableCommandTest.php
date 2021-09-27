@@ -6,18 +6,21 @@ use Laraneat\Modules\Contracts\RepositoryInterface;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Tests\BaseTestCase;
 
+/**
+ * @group command
+ */
 class EnableCommandTest extends BaseTestCase
 {
     public function setUp(): void
     {
         parent::setUp();
-        $this->artisan('module:make', ['name' => ['Blog']]);
+        $this->artisan('module:make', ['name' => ['Article']]);
         $this->artisan('module:make', ['name' => ['Taxonomy']]);
     }
 
     public function tearDown(): void
     {
-        $this->app[RepositoryInterface::class]->delete('Blog');
+        $this->app[RepositoryInterface::class]->delete('Article');
         $this->app[RepositoryInterface::class]->delete('Taxonomy');
         parent::tearDown();
     }
@@ -26,10 +29,10 @@ class EnableCommandTest extends BaseTestCase
     public function it_enables_a_module()
     {
         /** @var Module $blogModule */
-        $blogModule = $this->app[RepositoryInterface::class]->find('Blog');
+        $blogModule = $this->app[RepositoryInterface::class]->find('Article');
         $blogModule->disable();
 
-        $code = $this->artisan('module:enable', ['module' => 'Blog']);
+        $code = $this->artisan('module:enable', ['module' => 'Article']);
 
         $this->assertTrue($blogModule->isEnabled());
         $this->assertSame(0, $code);
@@ -39,7 +42,7 @@ class EnableCommandTest extends BaseTestCase
     public function it_enables_all_modules()
     {
         /** @var Module $blogModule */
-        $blogModule = $this->app[RepositoryInterface::class]->find('Blog');
+        $blogModule = $this->app[RepositoryInterface::class]->find('Article');
         $blogModule->disable();
 
         /** @var Module $taxonomyModule */

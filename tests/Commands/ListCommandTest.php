@@ -2,32 +2,23 @@
 
 namespace Laraneat\Modules\Tests\Commands;
 
-use Illuminate\Filesystem\Filesystem;
 use Laraneat\Modules\Contracts\RepositoryInterface;
 use Laraneat\Modules\Tests\BaseTestCase;
 
+/**
+ * @group command
+ */
 class ListCommandTest extends BaseTestCase
 {
-    /**
-     * @var Filesystem
-     */
-    private $finder;
-    /**
-     * @var string
-     */
-    private $modulePath;
-
     public function setUp(): void
     {
         parent::setUp();
-        $this->modulePath = base_path('app/Modules/Blog');
-        $this->finder = $this->app['files'];
-        $this->artisan('module:make', ['name' => ['Blog']]);
+        $this->artisan('module:make', ['name' => ['Article']]);
     }
 
     public function tearDown(): void
     {
-        $this->app[RepositoryInterface::class]->delete('Blog');
+        $this->app[RepositoryInterface::class]->delete('Article');
         parent::tearDown();
     }
 

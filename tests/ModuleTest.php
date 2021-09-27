@@ -2,27 +2,24 @@
 
 namespace Laraneat\Modules\Tests;
 
-use App\Modules\Recipe\Providers\DeferredServiceProvider;
-use App\Modules\Recipe\Providers\RecipeServiceProvider;
+use App\Modules\Article\Providers\DeferredServiceProvider;
+use App\Modules\Article\Providers\ArticleServiceProvider;
 use Laraneat\Modules\Contracts\ActivatorInterface;
-use Laraneat\Modules\Json;
 
-class LaravelModuleTest extends BaseTestCase
+class ModuleTest extends BaseTestCase
 {
-    /**
-     * @var TestingModule
-     */
-    private $module;
-
-    /**
-     * @var ActivatorInterface
-     */
-    private $activator;
+    private TestingModule $module;
+    private ActivatorInterface $activator;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->module = new TestingModule($this->app, 'Recipe Name', __DIR__ . '/stubs/valid/Recipe');
+        $this->module = new TestingModule(
+            $this->app,
+            'Article Name',
+            __DIR__ . '/stubs/valid/Article',
+            'App\\Modules\\Article'
+        );
         $this->activator = $this->app[ActivatorInterface::class];
     }
 
@@ -47,43 +44,43 @@ class LaravelModuleTest extends BaseTestCase
     /** @test */
     public function it_gets_module_name()
     {
-        $this->assertEquals('Recipe Name', $this->module->getName());
+        $this->assertEquals('Article Name', $this->module->getName());
     }
 
     /** @test */
     public function it_gets_lowercase_module_name()
     {
-        $this->assertEquals('recipe name', $this->module->getLowerName());
+        $this->assertEquals('article name', $this->module->getLowerName());
     }
 
     /** @test */
     public function it_gets_studly_name()
     {
-        $this->assertEquals('RecipeName', $this->module->getStudlyName());
+        $this->assertEquals('ArticleName', $this->module->getStudlyName());
     }
 
     /** @test */
     public function it_gets_snake_name()
     {
-        $this->assertEquals('recipe_name', $this->module->getSnakeName());
+        $this->assertEquals('article_name', $this->module->getSnakeName());
     }
 
     /** @test */
     public function it_gets_module_description()
     {
-        $this->assertEquals('recipe module', $this->module->getDescription());
+        $this->assertEquals('article module', $this->module->getDescription());
     }
 
     /** @test */
     public function it_gets_module_alias()
     {
-        $this->assertEquals('recipe', $this->module->getAlias());
+        $this->assertEquals('article', $this->module->getAlias());
     }
 
     /** @test */
     public function it_gets_module_path()
     {
-        $this->assertEquals(__DIR__ . '/stubs/valid/Recipe', $this->module->getPath());
+        $this->assertEquals(__DIR__ . '/stubs/valid/Article', $this->module->getPath());
     }
 
     /** @test */
@@ -91,9 +88,14 @@ class LaravelModuleTest extends BaseTestCase
     {
         // symlink created in setUpBeforeClass
 
-        $this->module = new TestingModule($this->app, 'Recipe Name', __DIR__ . '/stubs/valid_symlink/Recipe');
+        $this->module = new TestingModule(
+            $this->app,
+            'Article Name',
+            __DIR__ . '/stubs/valid_symlink/Article',
+            'App\\Module\\Article'
+        );
 
-        $this->assertEquals(__DIR__ . '/stubs/valid_symlink/Recipe', $this->module->getPath());
+        $this->assertEquals(__DIR__ . '/stubs/valid_symlink/Article', $this->module->getPath());
 
         // symlink deleted in tearDownAfterClass
     }
@@ -103,30 +105,21 @@ class LaravelModuleTest extends BaseTestCase
     {
         $this->assertEquals(['required_module'], $this->module->getRequires());
     }
-
-    /** @test */
-    public function it_loads_module_translations()
-    {
-        (new TestingModule($this->app, 'Recipe', __DIR__ . '/stubs/valid/Recipe'))->boot();
-        $this->assertEquals('Recipe', trans('recipe::recipes.title.recipes'));
-    }
-
+    
     /** @test */
     public function it_reads_module_json_files()
     {
         $jsonModule = $this->module->json();
         $composerJson = $this->module->json('composer.json');
 
-        $this->assertInstanceOf(Json::class, $jsonModule);
         $this->assertEquals('0.1', $jsonModule->get('version'));
-        $this->assertInstanceOf(Json::class, $composerJson);
-        $this->assertEquals('asgard-module', $composerJson->get('type'));
+        $this->assertEquals('laraneat/article', $composerJson->get('name'));
     }
 
     /** @test */
     public function it_reads_key_from_module_json_file_via_helper_method()
     {
-        $this->assertEquals('Recipe', $this->module->get('name'));
+        $this->assertEquals('Article', $this->module->get('name'));
         $this->assertEquals('0.1', $this->module->get('version'));
         $this->assertEquals('my default', $this->module->get('some-thing-non-there', 'my default'));
         $this->assertEquals(['required_module'], $this->module->get('requires'));
@@ -135,13 +128,13 @@ class LaravelModuleTest extends BaseTestCase
     /** @test */
     public function it_reads_key_from_composer_json_file_via_helper_method()
     {
-        $this->assertEquals('laraneat/recipe', $this->module->getComposerAttr('name'));
+        $this->assertEquals('laraneat/article', $this->module->getComposerAttr('name'));
     }
 
     /** @test */
     public function it_casts_module_to_string()
     {
-        $this->assertEquals('RecipeName', (string) $this->module);
+        $this->assertEquals('ArticleName', (string) $this->module);
     }
 
     /** @test */
@@ -213,10 +206,10 @@ class LaravelModuleTest extends BaseTestCase
 
         $this->assertEquals([
             'providers' => [
-                RecipeServiceProvider::class,
+                ArticleServiceProvider::class,
                 DeferredServiceProvider::class,
             ],
-            'eager'     => [RecipeServiceProvider::class],
+            'eager'     => [ArticleServiceProvider::class],
             'deferred'  => ['deferred' => DeferredServiceProvider::class],
             'when'      =>
                 [DeferredServiceProvider::class => []],
@@ -232,7 +225,7 @@ class LaravelModuleTest extends BaseTestCase
 
         try {
             app('foo');
-            $this->assertTrue(false, "app('foo') should throw an exception.");
+            $this->fail("app('foo') should throw an exception.");
         } catch (\Exception $e) {
             $this->assertEquals('Target class [foo] does not exist.', $e->getMessage());
         }
@@ -243,7 +236,7 @@ class LaravelModuleTest extends BaseTestCase
     }
 }
 
-class TestingModule extends \Laraneat\Modules\Laravel\Module
+class TestingModule extends \Laraneat\Modules\Module
 {
     public function registerProviders(): void
     {

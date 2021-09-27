@@ -3,18 +3,17 @@
 namespace Laraneat\Modules\Tests;
 
 use Laraneat\Modules\Collection;
-use Laraneat\Modules\Laravel\Module;
+use Laraneat\Modules\Module;
 
 class CollectionTest extends BaseTestCase
 {
-    /** @test */
-    public function toArraySetsPathAttribute()
+    public function testToArraySetsPathAttribute(): void
     {
-        $moduleOnePath = __DIR__ . '/stubs/valid/Recipe';
+        $moduleOnePath = __DIR__ . '/stubs/valid/Article';
         $moduleTwoPath = __DIR__ . '/stubs/valid/Requirement';
         $modules = [
-            new Module($this->app, 'module-one', $moduleOnePath),
-            new Module($this->app, 'module-two', $moduleTwoPath),
+            new Module($this->app, 'module-one', $moduleOnePath, 'App\\Module\\Article'),
+            new Module($this->app, 'module-two', $moduleTwoPath, 'App\\Module\\Requirement'),
         ];
         $collection = new Collection($modules);
         $collectionArray = $collection->toArray();
@@ -25,12 +24,11 @@ class CollectionTest extends BaseTestCase
         $this->assertEquals($moduleTwoPath, $collectionArray[1]['path']);
     }
 
-    /** @test */
-    public function getItemsReturnsTheCollectionItems()
+    public function testGetItemsReturnsTheCollectionItems(): void
     {
         $modules = [
-            new Module($this->app, 'module-one', __DIR__ . '/stubs/valid/Recipe'),
-            new Module($this->app, 'module-two', __DIR__ . '/stubs/valid/Requirement'),
+            new Module($this->app, 'module-one', __DIR__ . '/stubs/valid/Article', 'App\\Module\\Article'),
+            new Module($this->app, 'module-two', __DIR__ . '/stubs/valid/Requirement', 'App\\Module\\Requirement'),
         ];
         $collection = new Collection($modules);
         $items = $collection->getItems();

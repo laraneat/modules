@@ -2,22 +2,20 @@
 
 namespace Laraneat\Modules\Tests\Commands;
 
+use Illuminate\Filesystem\Filesystem;
 use Laraneat\Modules\Activators\FileActivator;
 use Laraneat\Modules\Tests\BaseTestCase;
 use Spatie\Snapshots\MatchesSnapshots;
 
+/**
+ * @group command
+ */
 class ModuleDeleteCommandTest extends BaseTestCase
 {
     use MatchesSnapshots;
 
-    /**
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    private $finder;
-    /**
-     * @var FileActivator
-     */
-    private $activator;
+    private Filesystem $finder;
+    private FileActivator $activator;
 
     public function setUp(): void
     {

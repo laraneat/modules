@@ -2,6 +2,7 @@
 
 namespace Laraneat\Modules\Tests\Activators;
 
+use Illuminate\Filesystem\Filesystem;
 use Laraneat\Modules\Activators\FileActivator;
 use Laraneat\Modules\Tests\BaseTestCase;
 use Spatie\Snapshots\MatchesSnapshots;
@@ -10,26 +11,15 @@ class FileActivatorTest extends BaseTestCase
 {
     use MatchesSnapshots;
 
-    /**
-     * @var TestModule
-     */
-    private $module;
-
-    /**
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    private $finder;
-
-    /**
-     * @var FileActivator
-     */
-    private $activator;
+    private TestModule $module;
+    private Filesystem $finder;
+    private FileActivator $activator;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->module = new TestModule($this->app, 'Recipe', __DIR__ . '/../stubs/valid/Recipe');
 
+        $this->module = new TestModule($this->app, 'Article', __DIR__ . '/../stubs/valid/Article', 'App\\Module\\Article');
         $this->finder = $this->app['files'];
         $this->activator = new FileActivator($this->app);
     }
@@ -87,7 +77,7 @@ class FileActivatorTest extends BaseTestCase
     }
 }
 
-class TestModule extends \Laraneat\Modules\Laravel\Module
+class TestModule extends \Laraneat\Modules\Module
 {
     public function registerProviders(): void
     {
