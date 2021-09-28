@@ -11,7 +11,7 @@ use App\Ship\Abstracts\Tests\TestCase;
  */
 class ViewArticleTest extends TestCase
 {
-    protected string $url = '/api/v1/articles/{article}';
+    protected string $url = '/api/v1/articles/{id}';
 
     /**
      * Roles and permissions, to be attached on the user by default

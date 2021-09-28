@@ -12,7 +12,7 @@ use Illuminate\Testing\Fluent\AssertableJson;
  */
 class UpdateArticleTest extends TestCase
 {
-    protected string $url = '/api/v1/articles/{article}';
+    protected string $url = '/api/v1/articles/{id}';
 
     /**
      * Roles and permissions, to be attached on the user by default
