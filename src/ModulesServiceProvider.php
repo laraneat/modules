@@ -14,24 +14,28 @@ class ModulesServiceProvider extends ServiceProvider
     /**
      * Booting the package.
      */
-    public function boot()
+    public function boot(): void
     {
-        $this->publishes([
-            __DIR__ . '/../config/config.php' => config_path('modules.php'),
-        ], 'config');
-
+        $this->loadConfigs();
         $this->app->register(BootstrapServiceProvider::class);
     }
 
     /**
      * Register the service provider.
      */
-    public function register()
+    public function register(): void
     {
         $this->registerServices();
         $this->registerProviders();
+    }
 
+    protected function loadConfigs(): void
+    {
         $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'modules');
+
+        $this->publishes([
+            __DIR__ . '/../config/config.php' => config_path('modules.php'),
+        ], 'config');
     }
 
     /**
