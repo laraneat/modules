@@ -405,7 +405,7 @@ class ModuleGenerator extends Generator
 
         if (GeneratorHelper::component('seeder')->generate() === true) {
             $this->console->call('module:make:seeder', [
-                'name' => "{$studlyName}PermissionsSeeder",
+                'name' => "{$studlyName}PermissionsSeeder_1",
                 'module' => $studlyName,
                 '--stub' => 'permissions',
                 '--model' => $studlyName
