@@ -48,7 +48,7 @@ class MyAwesomeRouteProvider extends ServiceProvider
     protected function mapWebRoutes(): void
     {
         Route::middleware('web')
-            ->namespace('App\\Modules\\Article\\UI\\WEB\\Controllers')
+//            ->namespace('App\\Modules\\Article\\UI\\WEB\\Controllers')
             ->group(function () {
                 $this->loadRoutesFromDirectory(module_path($this->moduleName, 'UI/WEB/Routes'));
             });
@@ -65,7 +65,7 @@ class MyAwesomeRouteProvider extends ServiceProvider
     {
         Route::prefix('api')
             ->middleware('api')
-            ->namespace('App\\Modules\\Article\\UI\\API\\Controllers')
+//            ->namespace('App\\Modules\\Article\\UI\\API\\Controllers')
             ->group(function () {
                 $this->loadRoutesFromDirectory(module_path($this->moduleName, 'UI/API/Routes'));
             });

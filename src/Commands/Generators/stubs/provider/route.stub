@@ -48,7 +48,7 @@ class {{ class }} extends ServiceProvider
     protected function mapWebRoutes(): void
     {
         Route::middleware('web')
-            ->namespace('{{ webControllerNamespace }}')
+//            ->namespace('{{ webControllerNamespace }}')
             ->group(function () {
                 $this->loadRoutesFromDirectory(module_path($this->moduleName, '{{ webRoutesPath }}'));
             });
@@ -65,7 +65,7 @@ class {{ class }} extends ServiceProvider
     {
         Route::prefix('api')
             ->middleware('api')
-            ->namespace('{{ apiControllerNamespace }}')
+//            ->namespace('{{ apiControllerNamespace }}')
             ->group(function () {
                 $this->loadRoutesFromDirectory(module_path($this->moduleName, '{{ apiRoutesPath }}'));
             });
