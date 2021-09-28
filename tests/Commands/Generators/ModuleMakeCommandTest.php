@@ -38,7 +38,7 @@ class ModuleMakeCommandTest extends BaseTestCase
             'Actions/ViewArticleAction.php',
             'Actions/ListArticlesAction.php',
             'Data/Factories/ArticleFactory.php',
-            'Data/Seeders/ArticlePermissionsSeeder.php',
+            'Data/Seeders/ArticlePermissionsSeeder_1.php',
             'Models/Article.php',
             'Policies/ArticlePolicy.php',
             'Providers/ArticleServiceProvider.php',
