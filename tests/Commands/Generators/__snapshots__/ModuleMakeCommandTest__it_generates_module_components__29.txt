@@ -21,7 +21,7 @@ class ListArticlesTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testList{{ models }}(): void
+    public function testListArticles(): void
     {
         $this->getTestingUser();
 
@@ -38,7 +38,7 @@ class ListArticlesTest extends TestCase
             ->assertJsonCount(Article::query()->count(), 'data');
     }
 
-    public function testList{{ models }}WithoutAccess(): void
+    public function testListArticlesWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
 

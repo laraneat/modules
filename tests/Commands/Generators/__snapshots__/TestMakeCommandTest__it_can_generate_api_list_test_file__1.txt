@@ -21,7 +21,7 @@ class MyAwesomeApiListTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testList{{ models }}(): void
+    public function testListSomeTestModels(): void
     {
         $this->getTestingUser();
 
@@ -38,7 +38,7 @@ class MyAwesomeApiListTest extends TestCase
             ->assertJsonCount(SomeTestModel::query()->count(), 'data');
     }
 
-    public function testList{{ models }}WithoutAccess(): void
+    public function testListSomeTestModelsWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
 
