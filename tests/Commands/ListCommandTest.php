@@ -13,7 +13,7 @@ class ListCommandTest extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->artisan('module:make', ['name' => ['Article']]);
+        $this->artisan('module:make', ['name' => 'Article']);
     }
 
     public function tearDown(): void

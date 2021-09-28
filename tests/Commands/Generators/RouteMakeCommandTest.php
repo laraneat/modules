@@ -23,7 +23,7 @@ class RouteMakeCommandTest extends BaseTestCase
         parent::setUp();
         $this->modulePath = base_path('app/Modules/Article');
         $this->finder = $this->app['files'];
-        $this->artisan('module:make', ['name' => ['Article'], '--plain' => true]);
+        $this->artisan('module:make', ['name' => 'Article', '--plain' => true]);
     }
 
     public function tearDown(): void

@@ -14,11 +14,18 @@ use Laraneat\Modules\Support\Stub;
 class ModuleGenerator extends Generator
 {
     /**
-     * The module name will created.
+     * The name of the module to be created.
      *
      * @var string
      */
     protected string $name;
+
+    /**
+     * The class name of the model.
+     *
+     * @var string
+     */
+    protected string $modelName;
 
     /**
      * The repository instance.
@@ -63,11 +70,11 @@ class ModuleGenerator extends Generator
     protected bool $force = false;
 
     /**
-     * set default module type.
+     * Set default module type.
      *
      * @var string
      */
-    protected string $type = 'web';
+    protected string $type = 'api';
 
     /**
      * Enables the module.
@@ -77,8 +84,7 @@ class ModuleGenerator extends Generator
     protected bool $isActive = false;
 
     /**
-     * The constructor.
-     * @param $name
+     * @param string $name
      * @param FileRepository|null $repository
      * @param Config|null $config
      * @param Filesystem|null $filesystem
@@ -86,7 +92,8 @@ class ModuleGenerator extends Generator
      * @param ActivatorInterface|null $activator
      */
     public function __construct(
-        $name,
+        string $name,
+        ?string $modelName = null,
         ?FileRepository $repository = null,
         ?Config $config = null,
         ?Filesystem $filesystem = null,
@@ -94,11 +101,26 @@ class ModuleGenerator extends Generator
         ?ActivatorInterface $activator = null
     ) {
         $this->name = $name;
+        $this->setModelName($modelName ?: $name);
         $this->repository = $repository;
         $this->config = $config;
         $this->filesystem = $filesystem;
         $this->console = $console;
         $this->activator = $activator;
+    }
+
+    /**
+     * Set model name.
+     *
+     * @param string $modelName
+     *
+     * @return $this
+     */
+    public function setModelName(string $modelName)
+    {
+        $this->modelName = Str::studly($modelName);
+
+        return $this;
     }
 
     /**
@@ -137,6 +159,16 @@ class ModuleGenerator extends Generator
     public function getName(): string
     {
         return Str::studly($this->name);
+    }
+
+    /**
+     * Get the model name.
+     *
+     * @return string
+     */
+    public function getModelName(): string
+    {
+        return $this->modelName ?: $this->getName();
     }
 
     /**
@@ -354,34 +386,35 @@ class ModuleGenerator extends Generator
             'api' => ['create', 'update', 'delete', 'list', 'view'],
             'web' => ['create', 'update', 'delete'],
         ];
-        $studlyName = $this->getName();
-        $studlyPluralName = Str::plural($studlyName);
-        $camelName = Str::camel($studlyName);
-        $snakeName = Str::snake($studlyName);
-        $snakePluralName = Str::plural($snakeName);
-        $dashedPluralName = Str::snake($snakePluralName, '-');
-        $underlinedPluralName = Str::snake($snakePluralName, '_');
+        $moduleName = $this->getName();
+        $modelName = $this->getModelName();
+        $pluralModelName = Str::plural($modelName);
+        $camelModelName = Str::camel($modelName);
+        $snakeModelName = Str::snake($modelName);
+        $snakePluralModelName = Str::plural($snakeModelName);
+        $dashedPluralModelName = Str::snake($snakePluralModelName, '-');
+        $underlinedPluralModelName = Str::snake($snakePluralModelName, '_');
 
         if (GeneratorHelper::component('action')->generate() === true) {
             foreach ($actionVerbs['api'] as $actionVerb) {
                 $studlyActionVerb = Str::studly($actionVerb);
-                $actionClass = "{$studlyActionVerb}{$studlyName}Action";
-                $requestClass = "{$studlyActionVerb}{$studlyName}Request";
-                $wizardClass = "{$studlyName}QueryWizard";
+                $actionClass = "{$studlyActionVerb}{$modelName}Action";
+                $requestClass = "{$studlyActionVerb}{$modelName}Request";
+                $wizardClass = "{$modelName}QueryWizard";
 
                 if ($actionVerb === "list") {
-                    $actionClass = "{$studlyActionVerb}{$studlyPluralName}Action";
-                    $requestClass = "{$studlyActionVerb}{$studlyPluralName}Request";
-                    $wizardClass = "{$studlyPluralName}QueryWizard";
+                    $actionClass = "{$studlyActionVerb}{$pluralModelName}Action";
+                    $requestClass = "{$studlyActionVerb}{$pluralModelName}Request";
+                    $wizardClass = "{$pluralModelName}QueryWizard";
                 }
 
                 $this->console->call('module:make:action', [
                     'name' => $actionClass,
-                    'module' => $studlyName,
+                    'module' => $moduleName,
                     '--stub' => $actionVerb,
-                    '--model' => $studlyName,
+                    '--model' => $modelName,
                     '--request' => $requestClass,
-                    '--resource' => "{$studlyName}Resource",
+                    '--resource' => "{$modelName}Resource",
                     '--wizard' => $wizardClass
                 ]);
             }
@@ -389,77 +422,77 @@ class ModuleGenerator extends Generator
 
         if (GeneratorHelper::component('factory')->generate() === true) {
             $this->console->call('module:make:factory', [
-                'name' => "{$studlyName}Factory",
-                'module' => $studlyName,
-                '--model' => $studlyName
+                'name' => "{$modelName}Factory",
+                'module' => $moduleName,
+                '--model' => $modelName
             ]);
         }
 
         if (GeneratorHelper::component('migration')->generate() === true) {
             $this->console->call('module:make:migration', [
-                'name' => "create_{$snakePluralName}_table",
-                'module' => $studlyName,
+                'name' => "create_{$snakePluralModelName}_table",
+                'module' => $moduleName,
                 '--stub' => 'create'
             ]);
         }
 
         if (GeneratorHelper::component('seeder')->generate() === true) {
             $this->console->call('module:make:seeder', [
-                'name' => "{$studlyName}PermissionsSeeder_1",
-                'module' => $studlyName,
+                'name' => "{$modelName}PermissionsSeeder_1",
+                'module' => $moduleName,
                 '--stub' => 'permissions',
-                '--model' => $studlyName
+                '--model' => $modelName
             ]);
         }
 
         if (GeneratorHelper::component('model')->generate() === true) {
             $this->console->call('module:make:model', [
-                'name' => $studlyName,
-                'module' => $studlyName,
+                'name' => $modelName,
+                'module' => $moduleName,
                 '--stub' => 'full',
-                '--factory' => "{$studlyName}Factory"
+                '--factory' => "{$modelName}Factory"
             ]);
         }
 
         if (GeneratorHelper::component('policy')->generate() === true) {
             $this->console->call('module:make:policy', [
-                'name' => "{$studlyName}Policy",
-                'module' => $studlyName,
+                'name' => "{$modelName}Policy",
+                'module' => $moduleName,
                 '--stub' => 'full',
-                '--model' => $studlyName
+                '--model' => $modelName
             ]);
         }
 
         if (GeneratorHelper::component('provider')->generate() === true) {
             $this->console->call('module:make:provider', [
-                'name' => "{$studlyName}ServiceProvider",
-                'module' => $studlyName,
+                'name' => "{$moduleName}ServiceProvider",
+                'module' => $moduleName,
                 '--stub' => 'module'
             ]);
             $this->console->call('module:make:provider', [
                 'name' => "RouteServiceProvider",
-                'module' => $studlyName,
+                'module' => $moduleName,
                 '--stub' => 'route'
             ]);
         }
 
         if (GeneratorHelper::component('api-query-wizard')->generate() === true) {
             $this->console->call('module:make:wizard', [
-                'name' => "{$studlyPluralName}QueryWizard",
-                'module' => $studlyName,
+                'name' => "{$pluralModelName}QueryWizard",
+                'module' => $moduleName,
                 '--stub' => 'eloquent',
             ]);
             $this->console->call('module:make:wizard', [
-                'name' => "{$studlyName}QueryWizard",
-                'module' => $studlyName,
+                'name' => "{$modelName}QueryWizard",
+                'module' => $moduleName,
                 '--stub' => 'model',
             ]);
         }
 
         if (GeneratorHelper::component('api-resource')->generate() === true) {
             $this->console->call('module:make:resource', [
-                'name' => "{$studlyName}Resource",
-                'module' => $studlyName,
+                'name' => "{$modelName}Resource",
+                'module' => $moduleName,
                 '--stub' => 'single'
             ]);
         }
@@ -468,7 +501,7 @@ class ModuleGenerator extends Generator
             if (GeneratorHelper::component("{$ui}-controller")->generate() === true) {
                 $this->console->call('module:make:controller', [
                     'name' => 'Controller',
-                    'module' => $studlyName,
+                    'module' => $moduleName,
                     '--ui' => $ui
                 ]);
             }
@@ -477,14 +510,14 @@ class ModuleGenerator extends Generator
                 foreach ($uiActionVerbs as $actionVerb) {
                     $studlyActionName = Str::studly($actionVerb);
                     $requestClass = $actionVerb === 'list'
-                        ? "{$studlyActionName}{$studlyPluralName}Request"
-                        : "{$studlyActionName}{$studlyName}Request";
+                        ? "{$studlyActionName}{$pluralModelName}Request"
+                        : "{$studlyActionName}{$modelName}Request";
                     $this->console->call('module:make:request', [
                         'name' => $requestClass,
-                        'module' => $studlyName,
+                        'module' => $moduleName,
                         '--ui' => $ui,
                         '--stub' => $actionVerb,
-                        '--model' => $studlyName,
+                        '--model' => $modelName,
                     ]);
                 }
             }
@@ -500,12 +533,12 @@ class ModuleGenerator extends Generator
                 foreach ($uiActionVerbs as $actionVerb) {
                     $studlyActionName = Str::studly($actionVerb);
                     $actionClass = $actionVerb === 'list'
-                        ? "{$studlyActionName}{$studlyPluralName}Action"
-                        : "{$studlyActionName}{$studlyName}Action";
+                        ? "{$studlyActionName}{$pluralModelName}Action"
+                        : "{$studlyActionName}{$modelName}Action";
 
-                    $url = $dashedPluralName;
+                    $url = $dashedPluralModelName;
                     if (in_array($actionVerb, ['update', 'delete', 'view'])) {
-                        $url .= '/{' . $camelName . '}';
+                        $url .= '/{' . $camelModelName . '}';
                     }
 
                     $filePath = Str::snake(str_replace('Action', '', $actionClass), '_');
@@ -515,12 +548,12 @@ class ModuleGenerator extends Generator
 
                     $this->console->call('module:make:route', [
                         'name' => $filePath,
-                        'module' => $studlyName,
+                        'module' => $moduleName,
                         '--ui' => $ui,
                         '--action' => $actionClass,
                         '--method' => $actionMethodsMap[$actionVerb],
                         '--url' => $url,
-                        '--name' => $ui . '.' . $underlinedPluralName . '.' . $actionVerb
+                        '--name' => $ui . '.' . $underlinedPluralModelName . '.' . $actionVerb
                     ]);
                 }
             }
@@ -529,20 +562,20 @@ class ModuleGenerator extends Generator
                 foreach ($uiActionVerbs as $actionVerb) {
                     $studlyActionName = Str::studly($actionVerb);
                     $testClass = $actionVerb === 'list'
-                        ? "{$studlyActionName}{$studlyPluralName}Test"
-                        : "{$studlyActionName}{$studlyName}Test";
+                        ? "{$studlyActionName}{$pluralModelName}Test"
+                        : "{$studlyActionName}{$modelName}Test";
 
-                    $url = "/api/v1/{$dashedPluralName}";
+                    $url = "/api/v1/{$dashedPluralModelName}";
                     if (in_array($actionVerb, ['update', 'delete', 'view'])) {
                         $url .= '/{id}';
                     }
 
                     $this->console->call('module:make:test', [
                         'name' => $testClass,
-                        'module' => $studlyName,
+                        'module' => $moduleName,
                         '--type' => $ui,
                         '--stub' => $actionVerb,
-                        '--model' => $studlyName,
+                        '--model' => $modelName,
                         '--url' => $url
                     ]);
                 }

@@ -5,7 +5,7 @@ namespace App\Modules\Article\Data\Seeders;
 use App\Modules\Authorization\Actions\CreatePermissionAction;
 use App\Ship\Abstracts\Seeders\Seeder;
 
-class ArticlePermissionsSeeder1 extends Seeder
+class ArticlePermissionsSeeder_1 extends Seeder
 {
     public function run(): void
     {

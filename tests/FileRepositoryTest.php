@@ -180,7 +180,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_can_delete_a_module()
     {
-        $this->artisan('module:make', ['name' => ['Article']]);
+        $this->artisan('module:make', ['name' => 'Article']);
 
         $this->repository->delete('Article');
 

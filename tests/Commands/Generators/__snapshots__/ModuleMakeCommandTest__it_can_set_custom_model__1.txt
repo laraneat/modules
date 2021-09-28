@@ -1,0 +1,14 @@
+{
+    "name": "Blog",
+    "namespace": "App\\Modules\\Blog",
+    "alias": "blog",
+    "description": "Blog module",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "App\\Modules\\Blog\\Providers\\BlogServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

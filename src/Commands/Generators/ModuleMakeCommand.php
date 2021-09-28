@@ -34,33 +34,26 @@ class ModuleMakeCommand extends Command
      */
     public function handle(): int
     {
-        $names = $this->argument('name');
-        $success = true;
+        $name = $this->argument('name');
+        $modelName = $this->option('model');
 
-        if (empty($names)) {
-            $this->error("No `name` argument was specified!");
+        $code = (new ModuleGenerator($name))
+            ->setModelName($modelName ?: $name)
+            ->setFilesystem($this->laravel['files'])
+            ->setRepository($this->laravel['modules'])
+            ->setConfig($this->laravel['config'])
+            ->setActivator($this->laravel[ActivatorInterface::class])
+            ->setConsole($this)
+            ->setForce($this->option('force'))
+            ->setType($this->getModuleType())
+            ->setActive(!$this->option('disabled'))
+            ->generate();
 
+        if ($code === E_ERROR) {
             return E_ERROR;
         }
 
-        foreach ($names as $name) {
-            $code = (new ModuleGenerator($name))
-                ->setFilesystem($this->laravel['files'])
-                ->setRepository($this->laravel['modules'])
-                ->setConfig($this->laravel['config'])
-                ->setActivator($this->laravel[ActivatorInterface::class])
-                ->setConsole($this)
-                ->setForce($this->option('force'))
-                ->setType($this->getModuleType())
-                ->setActive(!$this->option('disabled'))
-                ->generate();
-
-            if ($code === E_ERROR) {
-                $success = false;
-            }
-        }
-
-        return $success ? 0 : E_ERROR;
+        return 0;
     }
 
     /**
@@ -71,16 +64,17 @@ class ModuleMakeCommand extends Command
     protected function getArguments(): array
     {
         return [
-            ['name', InputArgument::IS_ARRAY, 'The names of modules will be created.'],
+            ['name', InputArgument::REQUIRED, 'The name of the module to be created.'],
         ];
     }
 
     protected function getOptions(): array
     {
         return [
-            ['plain', 'p', InputOption::VALUE_NONE, 'Generate a plain module (without some resources).'],
+            ['plain', 'p', InputOption::VALUE_NONE, 'Generate a plain module (without some components).'],
             ['disabled', 'd', InputOption::VALUE_NONE, 'Do not enable the module at creation.'],
             ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when the module already exists.'],
+            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model.'],
         ];
     }
 

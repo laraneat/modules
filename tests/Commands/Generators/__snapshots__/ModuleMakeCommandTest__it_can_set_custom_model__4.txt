@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Modules\Blog\Actions;
+
+use App\Modules\Blog\Models\Post;
+use App\Modules\Blog\UI\API\Requests\CreatePostRequest;
+use App\Modules\Blog\UI\API\Resources\PostResource;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\JsonResponse;
+
+class CreatePostAction extends Action
+{
+    /**
+     * @return Post
+     */
+    public function handle(
+        //
+    ): Post {
+        return Post::create([
+            //
+        ]);
+    }
+
+    /**
+     * @param CreatePostRequest $request
+     *
+     * @return JsonResponse
+     */
+    public function asController(CreatePostRequest $request): JsonResponse
+    {
+        $post = $this->handle(
+            //
+        );
+
+        return (new PostResource($post))->created();
+    }
+}

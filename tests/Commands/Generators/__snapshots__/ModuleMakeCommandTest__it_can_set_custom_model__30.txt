@@ -1,0 +1,61 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\Tests;
+
+use App\Modules\Blog\Models\Post;
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group blog
+ * @group api
+ */
+class DeletePostTest extends TestCase
+{
+    protected string $url = '/api/v1/posts/{id}';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'delete-post',
+        'roles'       => '',
+    ];
+
+    public function testDeletePost(): void
+    {
+        $this->getTestingUser();
+
+        $post = Post::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $post->getKey()]
+        );
+
+        $this->deleteJson($url)->assertNoContent();
+
+        $this->assertNull(Post::find($post->getKey()));
+    }
+
+    public function testDeletePostWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $post = Post::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $post->getKey()]
+        );
+
+        $this->deleteJson($url)->assertForbidden();
+    }
+
+    public function testDeleteNotExistingPost(): void
+    {
+        $this->getTestingUser();
+
+        $url = $this->buildUrl(
+            replaces: ['{id}' => '12345']
+        );
+
+        $this->deleteJson($url)
+            ->assertNotFound();
+    }
+}

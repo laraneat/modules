@@ -14,8 +14,8 @@ class EnableCommandTest extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->artisan('module:make', ['name' => ['Article']]);
-        $this->artisan('module:make', ['name' => ['Taxonomy']]);
+        $this->artisan('module:make', ['name' => 'Article']);
+        $this->artisan('module:make', ['name' => 'Taxonomy']);
     }
 
     public function tearDown(): void

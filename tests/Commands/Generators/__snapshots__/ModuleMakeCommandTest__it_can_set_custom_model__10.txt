@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Modules\Blog\Data\Seeders;
+
+use App\Modules\Authorization\Actions\CreatePermissionAction;
+use App\Ship\Abstracts\Seeders\Seeder;
+
+class PostPermissionsSeeder_1 extends Seeder
+{
+    public function run(): void
+    {
+        $createPermissionAction = CreatePermissionAction::make();
+        $createPermissionAction->handle(
+            name: 'view-post',
+            displayName: 'View any posts',
+            group: 'posts'
+        );
+        $createPermissionAction->handle(
+            name: 'create-post',
+            displayName: 'Create posts',
+            group: 'posts'
+        );
+        $createPermissionAction->handle(
+            name: 'update-post',
+            displayName: 'Update any posts',
+            group: 'posts'
+        );
+        $createPermissionAction->handle(
+            name: 'delete-post',
+            displayName: 'Delete any posts',
+            group: 'posts'
+        );
+        $createPermissionAction->handle(
+            name: 'force-delete-post',
+            displayName: 'Force delete any posts',
+            group: 'posts'
+        );
+    }
+}

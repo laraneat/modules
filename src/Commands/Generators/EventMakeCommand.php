@@ -58,7 +58,7 @@ class EventMakeCommand extends ComponentGeneratorCommand
     protected function getOptions(): array
     {
         return [
-            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the seeder.'],
+            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the event.'],
         ];
     }
 

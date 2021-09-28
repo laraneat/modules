@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Modules\Blog\Actions;
+
+use App\Modules\Blog\Models\Post;
+use App\Modules\Blog\UI\API\QueryWizards\PostQueryWizard;
+use App\Modules\Blog\UI\API\Requests\ViewPostRequest;
+use App\Modules\Blog\UI\API\Resources\PostResource;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Database\Eloquent\Model;
+
+class ViewPostAction extends Action
+{
+    /**
+     * @param ViewPostRequest $request
+     * @param Post $post
+     *
+     * @return Model
+     */
+    public function handle(ViewPostRequest $request, Post $post): Model
+    {
+        return PostQueryWizard::for($post, $request)->build();
+    }
+
+    /**
+     * @param ViewPostRequest $request
+     * @param Post $post
+     *
+     * @return PostResource
+     */
+    public function asController(ViewPostRequest $request, Post $post): PostResource
+    {
+        return new PostResource($this->handle($request, $post));
+    }
+}

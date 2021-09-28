@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Modules\Blog\Actions;
+
+use App\Modules\Blog\Models\Post;
+use App\Modules\Blog\UI\API\Requests\UpdatePostRequest;
+use App\Modules\Blog\UI\API\Resources\PostResource;
+use App\Ship\Abstracts\Actions\Action;
+use App\Ship\Exceptions\UpdateResourceFailedException;
+
+class UpdatePostAction extends Action
+{
+    /**
+     * @param Post $post
+     * @param array $data
+     *
+     * @return Post
+     * @throws UpdateResourceFailedException
+     */
+    public function handle(Post $post, array $data): Post
+    {
+        if (empty($data)) {
+            throw new UpdateResourceFailedException();
+        }
+
+        $post->update($data);
+
+        return $post;
+    }
+
+    /**
+     * @param UpdatePostRequest $request
+     * @param Post $post
+     *
+     * @return PostResource
+     * @throws UpdateResourceFailedException
+     */
+    public function asController(UpdatePostRequest $request, Post $post): PostResource
+    {
+        $sanitizedData = $request->sanitizeInput([
+            //
+        ]);
+
+        $post = $this->handle($post, $sanitizedData);
+
+        return new PostResource($post);
+    }
+}

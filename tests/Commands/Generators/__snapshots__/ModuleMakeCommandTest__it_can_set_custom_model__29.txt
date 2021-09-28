@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\Tests;
+
+use App\Modules\Blog\Models\Post;
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * @group blog
+ * @group api
+ */
+class UpdatePostTest extends TestCase
+{
+    protected string $url = '/api/v1/posts/{id}';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'update-post',
+        'roles'       => '',
+    ];
+
+   public function testUpdatePost(): void
+       {
+           $this->getTestingUser();
+
+           $post = Post::factory()->create();
+
+           $url = $this->buildUrl(
+               replaces: ['{id}' => $post->getKey()]
+           );
+
+           $data = [
+               //
+           ];
+           $expectedData = array_merge($data, [
+               'id' => $post->getKey(),
+           ]);
+
+           $this->patchJson($url, $data)
+               ->assertOk()
+               ->assertJson(fn (AssertableJson $json) =>
+                   $json->has('_profiler')
+                       ->has('data', fn (AssertableJson $json) =>
+                           $json->whereAll($expectedData)
+                               ->etc()
+                       )
+               );
+
+           $this->assertExistsModelWithAttributes(Post::class, $expectedData);
+       }
+
+       public function testUpdatePostWithoutAccess(): void
+       {
+           $this->getTestingUserWithoutAccess();
+
+           $post = Post::factory()->create();
+
+           $url = $this->buildUrl(
+               replaces: ['{id}' => $post->getKey()]
+           );
+           $data = [
+               //
+           ];
+
+           $this->patchJson($url, $data)
+               ->assertForbidden();
+       }
+
+       public function testUpdateNonExistingPost(): void
+       {
+           $this->getTestingUser();
+
+           $fakePostId = 7777;
+           $url = $this->buildUrl(
+               replaces: ['{id}' => $fakePostId]
+           );
+           $data = [
+               //
+           ];
+
+           $this->patchJson($url, $data)
+               ->assertNotFound();
+       }
+}

@@ -19,7 +19,7 @@ class GeneratorHelperReaderTest extends BaseTestCase
 
     private function makeModule(): void
     {
-        $this->artisan('module:make', ['name' => ['Article']]);
+        $this->artisan('module:make', ['name' => 'Article']);
     }
 
     private function removeModule(): void

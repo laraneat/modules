@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\Requests;
+
+use App\Ship\Abstracts\Requests\Request;
+
+class DeletePostRequest extends Request
+{
+    public function rules(): array
+    {
+        return [];
+    }
+
+    public function authorize(): bool
+    {
+        $post = $this->route('post');
+        return $post && $this->user()->can('delete', $post);
+    }
+}

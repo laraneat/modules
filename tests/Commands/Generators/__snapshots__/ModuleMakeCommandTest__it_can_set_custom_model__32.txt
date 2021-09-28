@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\Tests;
+
+use App\Modules\Blog\Models\Post;
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group blog
+ * @group api
+ */
+class ListPostsTest extends TestCase
+{
+    protected string $url = '/api/v1/posts';
+
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'view-post',
+        'roles'       => '',
+    ];
+
+    public function testListPosts(): void
+    {
+        $this->getTestingUser();
+
+        Post::factory()->count(2)->create();
+
+        $this->getJson($this->buildUrl())
+            ->assertOk()
+            ->assertJsonStructure([
+                '_profiler',
+                'links',
+                'meta',
+                'data'
+            ])
+            ->assertJsonCount(Post::query()->count(), 'data');
+    }
+
+    public function testListPostsWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        Post::factory()->count(2)->create();
+
+        $this->getJson($this->buildUrl())
+            ->assertForbidden();
+    }
+}

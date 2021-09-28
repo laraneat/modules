@@ -27,7 +27,7 @@ class ModuleDeleteCommandTest extends BaseTestCase
     /** @test */
     public function it_can_delete_a_module_from_disk(): void
     {
-        $this->artisan('module:make', ['name' => ['WrongModule']]);
+        $this->artisan('module:make', ['name' => 'WrongModule']);
         $this->assertDirectoryExists(base_path('app/Modules/WrongModule'));
 
         $code = $this->artisan('module:delete', ['module' => 'WrongModule']);
@@ -38,7 +38,7 @@ class ModuleDeleteCommandTest extends BaseTestCase
     /** @test */
     public function it_deletes_modules_from_status_file(): void
     {
-        $this->artisan('module:make', ['name' => ['WrongModule']]);
+        $this->artisan('module:make', ['name' => 'WrongModule']);
         $this->assertMatchesSnapshot($this->finder->get($this->activator->getStatusesFilePath()));
 
         $code = $this->artisan('module:delete', ['module' => 'WrongModule']);

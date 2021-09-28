@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Modules\Blog\Actions;
+
+use App\Modules\Blog\Models\Post;
+use App\Modules\Blog\UI\API\QueryWizards\PostsQueryWizard;
+use App\Modules\Blog\UI\API\Requests\ListPostsRequest;
+use App\Modules\Blog\UI\API\Resources\PostResource;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Pagination\AbstractPaginator;
+
+class ListPostsAction extends Action
+{
+    /**
+     * @param ListPostsRequest $request
+     *
+     * @return AbstractPaginator
+     */
+    public function handle(ListPostsRequest $request): AbstractPaginator
+    {
+        return PostsQueryWizard::for(Post::query(), $request)
+            ->build()
+            ->jsonPaginate();
+    }
+
+    /**
+     * @param ListPostsRequest $request
+     *
+     * @return ResourceCollection
+     */
+    public function asController(ListPostsRequest $request): ResourceCollection
+    {
+        return PostResource::collection($this->handle($request));
+    }
+}
