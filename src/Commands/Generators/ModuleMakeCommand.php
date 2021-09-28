@@ -37,6 +37,12 @@ class ModuleMakeCommand extends Command
         $names = $this->argument('name');
         $success = true;
 
+        if (empty($names)) {
+            $this->error("No `name` argument was specified!");
+
+            return E_ERROR;
+        }
+
         foreach ($names as $name) {
             $code = (new ModuleGenerator($name))
                 ->setFilesystem($this->laravel['files'])
