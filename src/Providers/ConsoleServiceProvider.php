@@ -13,6 +13,7 @@ class ConsoleServiceProvider extends ServiceProvider
      */
     protected array $commands = [
         Commands\CacheClearCommand::class,
+        Commands\CacheCommand::class,
         Commands\DisableCommand::class,
         Commands\DumpCommand::class,
         Commands\EnableCommand::class,

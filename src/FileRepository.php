@@ -69,6 +69,11 @@ class FileRepository implements RepositoryInterface, Countable
     private CacheManager $cache;
 
     /**
+     * @var array|null
+     */
+    private ?array $cachedModules = null;
+
+    /**
      * @param Container $app
      * @param string|null $defaultPath
      */
@@ -208,7 +213,7 @@ class FileRepository implements RepositoryInterface, Countable
             return $this->scan();
         }
 
-        return $this->formatCached($this->getCached());
+        return $this->getCached();
     }
 
     /**
@@ -238,9 +243,14 @@ class FileRepository implements RepositoryInterface, Countable
      */
     public function getCached(): array
     {
-        return $this->cache->remember($this->config('cache.key'), $this->config('cache.lifetime'), function () {
-            return $this->toCollection()->toArray();
-        });
+        if (! is_array($this->cachedModules)) {
+            $cachedRaw = $this->cache->remember($this->config('cache.key'), $this->config('cache.lifetime'), function () {
+                return $this->toCollection()->toArray();
+            });
+            $this->cachedModules = $this->formatCached($cachedRaw);
+        }
+
+        return $this->cachedModules;
     }
 
     /**
@@ -280,10 +290,9 @@ class FileRepository implements RepositoryInterface, Countable
     {
         $modules = [];
 
-        /** @var Module $module */
-        foreach ($this->all() as $name => $module) {
+        foreach ($this->all() as $moduleKey => $module) {
             if ($module->isStatus($status)) {
-                $modules[$name] = $module;
+                $modules[$moduleKey] = $module;
             }
         }
 
@@ -308,10 +317,12 @@ class FileRepository implements RepositoryInterface, Countable
 
             foreach ($manifests as $manifest) {
                 $json = Json::make($manifest);
+                $path = dirname($manifest);
                 $name = (string) $json->get('name');
+                $moduleKey = mb_strtolower($name);
                 $namespace = (string) $json->get('namespace', '');
 
-                $modules[$name] = $this->createModule($this->app, $name, dirname($manifest), $namespace);
+                $modules[$moduleKey] = $this->createModule($this->app, $name, $path, $namespace);
             }
         }
 
@@ -336,7 +347,7 @@ class FileRepository implements RepositoryInterface, Countable
     /**
      * Get all modules as collection instance.
      *
-     * @return Collection<Module>
+     * @return Collection<string, Module>
      */
     public function toCollection(): Collection
     {
@@ -352,7 +363,8 @@ class FileRepository implements RepositoryInterface, Countable
      */
     public function has(string $moduleName): bool
     {
-        return array_key_exists($moduleName, $this->all());
+        $moduleKey = mb_strtolower($moduleName);
+        return array_key_exists($moduleKey, $this->all());
     }
 
     /**
@@ -366,23 +378,26 @@ class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::find()
+     * Find a specific module.
+     *
+     * @param string $moduleName
+     *
+     * @return Module|null
      */
     public function find(string $moduleName): ?Module
     {
-        foreach ($this->all() as $module) {
-            if ($module->getLowerName() === strtolower($moduleName)) {
-                return $module;
-            }
-        }
+        $allModules = $this->all();
+        $moduleKey = mb_strtolower($moduleName);
 
-        return null;
+        return $allModules[$moduleKey] ?? null;
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::findByAlias()
+     * Find a specific module by its alias.
+     *
+     * @param string $alias
+     *
+     * @return Module|null
      */
     public function findByAlias(string $alias): ?Module
     {
@@ -415,8 +430,12 @@ class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::findRequirements()
+     * Find all modules that are required by a module. If the module cannot be found, throw an exception.
+     *
+     * @param string $moduleName
+     *
+     * @return array<int, Module>
+     * @throws ModuleNotFoundException
      */
     public function findRequirements(string $moduleName): array
     {
@@ -436,16 +455,17 @@ class FileRepository implements RepositoryInterface, Countable
      *
      * @param array $cached
      *
-     * @return array
+     * @return array<string, Module>
      */
     protected function formatCached(array $cached): array
     {
         $modules = [];
 
-        foreach ($cached as $name => $module) {
+        foreach ($cached as $moduleKey => $module) {
             $path = $module['path'];
+            $name = $module['name'];
             $namespace = $module['namespace'] ?? "";
-            $modules[$name] = $this->createModule($this->app, $name, $path, $namespace);
+            $modules[$moduleKey] = $this->createModule($this->app, $name, $path, $namespace);
         }
 
         return $modules;
@@ -456,7 +476,7 @@ class FileRepository implements RepositoryInterface, Countable
      *
      * @param bool $status
      *
-     * @return Collection<Module>
+     * @return Collection<string, Module>
      */
     public function collections(bool $status = true): Collection
     {
@@ -666,6 +686,7 @@ class FileRepository implements RepositoryInterface, Countable
      */
     public function flushCache(): void
     {
+        $this->cachedModules = null;
         $this->cache->forget(config('modules.cache.key'));
         $this->activator->flushCache();
     }

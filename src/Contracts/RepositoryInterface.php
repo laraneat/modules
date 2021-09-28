@@ -12,49 +12,49 @@ interface RepositoryInterface
     /**
      * Get all modules.
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function all(): array;
 
     /**
      * Get cached modules.
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function getCached(): array;
 
     /**
      * Scan & get all available modules.
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function scan(): array;
 
     /**
      * Get modules as modules collection instance.
      *
-     * @return Collection
+     * @return Collection<string, Module>
      */
     public function toCollection(): Collection;
 
     /**
      * Get scanned paths.
      *
-     * @return array
+     * @return string[]
      */
     public function getScanPaths(): array;
 
     /**
      * Get list of enabled modules.
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function allEnabled(): array;
 
     /**
      * Get list of disabled modules.
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function allDisabled(): array;
 
@@ -70,7 +70,7 @@ interface RepositoryInterface
      *
      * @param string $direction
      *
-     * @return array
+     * @return array<string, Module>
      */
     public function getOrdered(string $direction = 'asc'): array;
 
@@ -79,7 +79,7 @@ interface RepositoryInterface
      *
      * @param bool $status
      *
-     * @return mixed
+     * @return array<string, Module>
      */
     public function getByStatus(bool $status): array;
 
@@ -97,7 +97,7 @@ interface RepositoryInterface
      *
      * @param string $moduleName
      *
-     * @return array
+     * @return array<int, Module>
      * @throws ModuleNotFoundException
      */
     public function findRequirements(string $moduleName): array;
@@ -108,6 +108,7 @@ interface RepositoryInterface
      * @param string $moduleName
      *
      * @return Module
+     * @throws ModuleNotFoundException
      */
     public function findOrFail(string $moduleName): Module;
 
@@ -158,9 +159,9 @@ interface RepositoryInterface
      *
      * @param string $alias
      *
-     * @return Module|void
+     * @return Module|null
      */
-    public function findByAlias(string $alias);
+    public function findByAlias(string $alias): ?Module;
 
     /**
      * Boot the modules.

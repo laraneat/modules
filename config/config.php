@@ -227,6 +227,7 @@ return [
     */
     'commands' => [
         Commands\CacheClearCommand::class,
+        Commands\CacheCommand::class,
         Commands\DisableCommand::class,
         Commands\DumpCommand::class,
         Commands\EnableCommand::class,
@@ -307,13 +308,13 @@ return [
     | Caching
     |--------------------------------------------------------------------------
     |
-    | Here is the config for setting up caching feature.
+    | Here is the config for setting up caching feature for scanned modules.
     |
     */
     'cache' => [
         'enabled' => env('APP_ENV', 'production') === 'production',
-        'key' => 'laraneat-modules',
-        'lifetime' => 60,
+        'key' => 'laraneat.modules',
+        'lifetime' => 86400, // 24 hours
     ],
 
     /*
@@ -345,8 +346,8 @@ return [
         'file' => [
             'class' => FileActivator::class,
             'statuses-file' => base_path('modules_statuses.json'),
-            'cache-key' => 'activator.installed',
-            'cache-lifetime' => 604800,
+            'cache-key' => 'laraneat.activator.installed',
+            'cache-lifetime' => 604800, // 7 days
         ],
     ],
 
