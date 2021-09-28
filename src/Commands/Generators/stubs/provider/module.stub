@@ -76,6 +76,10 @@ class {{ class }} extends ServiceProvider
         $langPath = resource_path('lang/modules/' . $this->moduleNameLower);
 
         $this->loadTranslationsFrom($sourcePath, $this->moduleNameLower);
+
+        $this->publishes([
+            $sourcePath => $langPath,
+        ], 'translations');
     }
 
     /**
@@ -88,11 +92,11 @@ class {{ class }} extends ServiceProvider
         $sourcePath = module_path($this->moduleName, '{{ configPath }}');
         $configPath = config_path();
 
+        $this->loadConfigs($sourcePath);
+
         $this->publishes([
             $sourcePath => $configPath
         ], 'config');
-
-        $this->loadConfigs($sourcePath);
     }
 
     /**
@@ -105,14 +109,14 @@ class {{ class }} extends ServiceProvider
         $sourcePath = module_path($this->moduleName, '{{ viewsPath }}');
         $viewsPath = resource_path('views/modules/' . $this->moduleNameLower);
 
-        $this->publishes([
-            $sourcePath => $viewsPath
-        ], 'views');
-
         $this->loadViewsFrom(
             array_merge($this->getPublishableViewPaths($this->moduleNameLower), [$sourcePath]),
             $this->moduleNameLower
         );
+
+        $this->publishes([
+            $sourcePath => $viewsPath
+        ], 'views');
     }
 
     /**
@@ -125,10 +129,10 @@ class {{ class }} extends ServiceProvider
         $sourcePath = module_path($this->moduleName, '{{ migrationsPath }}');
         $migrationsPath = database_path('migrations');
 
+        $this->loadMigrationsFrom($sourcePath);
+
         $this->publishes([
             $sourcePath => $migrationsPath
         ], 'migrations');
-
-        $this->loadMigrationsFrom($sourcePath);
     }
 }
