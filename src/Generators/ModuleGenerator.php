@@ -642,7 +642,7 @@ class ModuleGenerator extends Generator
         $this->filesystem->ensureDirectoryExists(dirname($path));
         $this->filesystem->put($path, $content);
 
-        $this->console->info("Created: {$path}");
+        $this->console->info("Created: `$path`");
     }
 
     /**
