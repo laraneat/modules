@@ -54,18 +54,6 @@ class MyAwesomeModuleProvider extends ServiceProvider
     }
 
     /**
-     * Register artisan commands.
-     *
-     * @return void
-     */
-    public function registerCommands(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->loadCommands(module_path($this->moduleName, 'UI/CLI/Commands'));
-        }
-    }
-
-    /**
      * Register translations.
      *
      * @return void
@@ -134,5 +122,17 @@ class MyAwesomeModuleProvider extends ServiceProvider
         $this->publishes([
             $sourcePath => $migrationsPath
         ], 'migrations');
+    }
+
+    /**
+     * Register artisan commands.
+     *
+     * @return void
+     */
+    public function registerCommands(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->loadCommands(module_path($this->moduleName, 'UI/CLI/Commands'));
+        }
     }
 }
