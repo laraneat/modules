@@ -36,11 +36,11 @@ class {{ class }} extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->registerCommands();
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
         $this->registerMigrations();
+        $this->registerCommands();
     }
 
     /**
