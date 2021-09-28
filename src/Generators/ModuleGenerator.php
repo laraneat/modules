@@ -534,7 +534,7 @@ class ModuleGenerator extends Generator
 
                     $url = "/api/v1/{$dashedPluralName}";
                     if (in_array($actionVerb, ['update', 'delete', 'view'])) {
-                        $url .= '/{' . $camelName . '}';
+                        $url .= '/{id}';
                     }
 
                     $this->console->call('module:make:test', [
