@@ -185,10 +185,12 @@ abstract class BaseTestCase extends OrchestraTestCase
             ],
         ]);
 
+        $app['config']->set('modules.cache.enabled', true);
         $app['config']->set('modules.composer.composer-output', true);
 
         $app['config']->set('modules.commands', [
             Commands\CacheClearCommand::class,
+            Commands\CacheCommand::class,
             Commands\DisableCommand::class,
             Commands\DumpCommand::class,
             Commands\EnableCommand::class,
