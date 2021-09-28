@@ -51,8 +51,8 @@ trait TestsUrlHelperTrait
             return $this->addQueryParametersToUrl($path, $queryParameters);
         }
 
-        $apiDomain = $this->trimSlashes(config('app.url'));
-        $url = $apiDomain.'/'.$this->trimSlashes($path);
+        $appUrl = $this->trimSlashes(config('app.url'));
+        $url = $appUrl.'/'.$this->trimSlashes($path);
 
         if ($replaces) {
             $url = $this->replaceByKeyValues($url, $replaces);
