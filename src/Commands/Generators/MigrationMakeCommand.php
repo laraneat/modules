@@ -74,11 +74,6 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
         return new SchemaParser($this->option('fields'));
     }
 
-    protected function getClassName(): string
-    {
-        return Str::studly($this->getTrimmedArgument('name'));
-    }
-
     protected function getFileName(): string
     {
         return date('Y_m_d_His_') . Str::snake($this->getTrimmedArgument('name'));
@@ -111,7 +106,6 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
 
         if ($this->stub === 'add' || (empty($this->stub) && $parser->isAdd())) {
             return Stub::create('/migration/add.stub', [
-                'class' => $this->getClassName(),
                 'table' => $this->getTableName($parser),
                 'fieldsUp' => $this->getSchemaParser()->up(),
                 'fieldsDown' => $this->getSchemaParser()->down(),
@@ -120,7 +114,6 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
 
         if ($this->stub === 'create' || (empty($this->stub) && $parser->isCreate())) {
             return Stub::create('/migration/create.stub', [
-                'class' => $this->getClassName(),
                 'table' => $this->getTableName($parser),
                 'fields' => $this->getSchemaParser()->render(),
             ])->render();
@@ -128,16 +121,13 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
 
         if ($this->stub === 'delete' || (empty($this->stub) && $parser->isDelete())) {
             return Stub::create('/migration/delete.stub', [
-                'class' => $this->getClassName(),
                 'table' => $this->getTableName($parser),
                 'fieldsDown' => $this->getSchemaParser()->up(),
                 'fieldsUp' => $this->getSchemaParser()->down(),
             ])->render();
         }
 
-        return Stub::create('/migration/plain.stub', [
-            'class' => $this->getClassName(),
-        ])->render();
+        return Stub::create('/migration/plain.stub')->render();
     }
 
     protected function getTableName(NameParser $parser): string
@@ -179,7 +169,6 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
         );
 
         return Stub::create('/migration/pivot.stub', [
-            'class' => $this->getClassName(),
             'table' => $table,
             'tableOne' => $tableOne,
             'tableTwo' => $tableTwo,
