@@ -4,6 +4,7 @@ namespace App\Modules\Article\UI\API\Tests\Baz\Bat;
 
 use App\Modules\Article\Models\Some\Nested\SomeTestModel;
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group article

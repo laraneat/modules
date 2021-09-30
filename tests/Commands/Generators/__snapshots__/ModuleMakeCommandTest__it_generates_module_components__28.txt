@@ -4,6 +4,7 @@ namespace App\Modules\Article\UI\API\Tests;
 
 use App\Modules\Article\Models\Article;
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group article

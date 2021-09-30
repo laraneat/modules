@@ -4,6 +4,7 @@ namespace App\Modules\Blog\UI\API\Tests;
 
 use App\Modules\Blog\Models\Post;
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group blog
