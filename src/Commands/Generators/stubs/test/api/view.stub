@@ -3,6 +3,7 @@
 namespace {{ namespace }};
 
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 use {{ modelNamespace }}\{{ model }};
 
 /**
