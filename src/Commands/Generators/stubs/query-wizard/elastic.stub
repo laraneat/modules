@@ -1,0 +1,76 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Ship\Abstracts\QueryWizards\ElasticQueryWizard;
+use Jackardios\QueryWizard\Handlers\Eloquent\Filters\AbstractEloquentFilter;
+use Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude;
+use Jackardios\ElasticQueryWizard\Handlers\Filters\AbstractElasticFilter;
+use Jackardios\ElasticQueryWizard\Handlers\Sorts\AbstractElasticSort;
+
+class {{ class }} extends ElasticQueryWizard
+{
+    /**
+     * @return string[]
+     */
+    protected function allowedAppends(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function defaultAppends(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function allowedFields(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]|AbstractElasticFilter[]|AbstractEloquentFilter[]
+     */
+    protected function allowedFilters(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]|AbstractEloquentInclude[]
+     */
+    protected function allowedIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]|AbstractEloquentInclude[]
+     */
+    protected function defaultIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]|AbstractElasticSort[]
+     */
+    protected function allowedSorts(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]|AbstractElasticSort[]
+     */
+    protected function defaultSorts(): array
+    {
+        return [];
+    }
+}
