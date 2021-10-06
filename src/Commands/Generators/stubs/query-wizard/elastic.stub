@@ -11,7 +11,7 @@ use Jackardios\ElasticQueryWizard\Handlers\Sorts\AbstractElasticSort;
 class {{ class }} extends ElasticQueryWizard
 {
     /**
-     * @return string[]
+     * @return array<string>
      */
     protected function allowedAppends(): array
     {
@@ -19,7 +19,7 @@ class {{ class }} extends ElasticQueryWizard
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     protected function defaultAppends(): array
     {
@@ -27,7 +27,7 @@ class {{ class }} extends ElasticQueryWizard
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     protected function allowedFields(): array
     {
@@ -35,7 +35,7 @@ class {{ class }} extends ElasticQueryWizard
     }
 
     /**
-     * @return string[]|AbstractElasticFilter[]|AbstractEloquentFilter[]
+     * @return array<string|AbstractElasticFilter|AbstractEloquentFilter>
      */
     protected function allowedFilters(): array
     {
@@ -43,7 +43,7 @@ class {{ class }} extends ElasticQueryWizard
     }
 
     /**
-     * @return string[]|AbstractEloquentInclude[]
+     * @return array<string|AbstractEloquentInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -51,7 +51,7 @@ class {{ class }} extends ElasticQueryWizard
     }
 
     /**
-     * @return string[]|AbstractEloquentInclude[]
+     * @return array<string|AbstractEloquentInclude>
      */
     protected function defaultIncludes(): array
     {
@@ -59,7 +59,7 @@ class {{ class }} extends ElasticQueryWizard
     }
 
     /**
-     * @return string[]|AbstractElasticSort[]
+     * @return array<string|AbstractElasticSort>
      */
     protected function allowedSorts(): array
     {
@@ -67,7 +67,7 @@ class {{ class }} extends ElasticQueryWizard
     }
 
     /**
-     * @return string[]|AbstractElasticSort[]
+     * @return array<string|AbstractElasticSort>
      */
     protected function defaultSorts(): array
     {

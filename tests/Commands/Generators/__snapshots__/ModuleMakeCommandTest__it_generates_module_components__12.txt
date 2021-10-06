@@ -8,7 +8,7 @@ use Jackardios\QueryWizard\Handlers\Model\Includes\AbstractModelInclude;
 class ArticleQueryWizard extends ModelQueryWizard
 {
     /**
-     * @return string[]
+     * @return array<string>
      */
     protected function allowedAppends(): array
     {
@@ -16,7 +16,7 @@ class ArticleQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     protected function defaultAppends(): array
     {
@@ -24,7 +24,7 @@ class ArticleQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     protected function allowedFields(): array
     {
@@ -32,7 +32,7 @@ class ArticleQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return string[]|AbstractModelInclude[]
+     * @return array<string|AbstractModelInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -40,7 +40,7 @@ class ArticleQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return string[]|AbstractModelInclude[]
+     * @return array<string|AbstractModelInclude>
      */
     protected function defaultIncludes(): array
     {

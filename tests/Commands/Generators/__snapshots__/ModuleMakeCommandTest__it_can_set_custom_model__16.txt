@@ -10,7 +10,7 @@ use Jackardios\QueryWizard\Handlers\Eloquent\Sorts\AbstractEloquentSort;
 class PostsQueryWizard extends EloquentQueryWizard
 {
     /**
-     * @return string[]
+     * @return array<string>
      */
     protected function allowedAppends(): array
     {
@@ -18,7 +18,7 @@ class PostsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     protected function defaultAppends(): array
     {
@@ -26,7 +26,7 @@ class PostsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     protected function allowedFields(): array
     {
@@ -34,7 +34,7 @@ class PostsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return string[]|AbstractEloquentFilter[]
+     * @return array<string|AbstractEloquentFilter>
      */
     protected function allowedFilters(): array
     {
@@ -42,7 +42,7 @@ class PostsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return string[]|AbstractEloquentInclude[]
+     * @return array<string|AbstractEloquentInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -50,7 +50,7 @@ class PostsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return string[]|AbstractEloquentInclude[]
+     * @return array<string|AbstractEloquentInclude>
      */
     protected function defaultIncludes(): array
     {
@@ -58,7 +58,7 @@ class PostsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return string[]|AbstractEloquentSort[]
+     * @return array<string|AbstractEloquentSort>
      */
     protected function allowedSorts(): array
     {
@@ -66,7 +66,7 @@ class PostsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return string[]|AbstractEloquentSort[]
+     * @return array<string|AbstractEloquentSort>
      */
     protected function defaultSorts(): array
     {
