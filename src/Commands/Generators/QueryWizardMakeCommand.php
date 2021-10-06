@@ -74,7 +74,7 @@ class QueryWizardMakeCommand extends ComponentGeneratorCommand
         $this->stub = $this->getOptionOrChoice(
             'stub',
             'Select the stub you want to use for generator',
-            ['eloquent', 'model', 'scout'],
+            ['eloquent', 'model', 'scout', 'elastic'],
             'eloquent'
         );
         $this->componentType = 'api-query-wizard';

@@ -91,6 +91,21 @@ class QueryWizardMakeCommandTest extends BaseTestCase
     }
 
     /** @test */
+    public function it_generated_correct_elastic_query_wizard_file_with_content()
+    {
+        $code = $this->artisan('module:make:wizard', [
+            'name' => 'Foo/Bar\\MyAwesomeElasticQueryWizard',
+            'module' => 'Article',
+            '--stub' => 'elastic'
+        ]);
+
+        $file = $this->finder->get($this->modulePath . '/UI/API/QueryWizards/Foo/Bar/MyAwesomeElasticQueryWizard.php');
+
+        $this->assertMatchesSnapshot($file);
+        $this->assertSame(0, $code);
+    }
+
+    /** @test */
     public function it_can_change_the_default_path_for_query_wizard_file()
     {
         $this->app['config']->set('modules.generator.components.api-query-wizard.path', 'Foo/Bar\\QueryWizards');

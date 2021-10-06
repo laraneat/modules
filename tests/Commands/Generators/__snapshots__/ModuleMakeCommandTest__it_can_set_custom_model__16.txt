@@ -3,6 +3,9 @@
 namespace App\Modules\Blog\UI\API\QueryWizards;
 
 use App\Ship\Abstracts\QueryWizards\EloquentQueryWizard;
+use Jackardios\QueryWizard\Handlers\Eloquent\Filters\AbstractEloquentFilter;
+use Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude;
+use Jackardios\QueryWizard\Handlers\Eloquent\Sorts\AbstractEloquentSort;
 
 class PostsQueryWizard extends EloquentQueryWizard
 {
@@ -17,31 +20,7 @@ class PostsQueryWizard extends EloquentQueryWizard
     /**
      * @return string[]
      */
-    protected function allowedFields(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return \Jackardios\QueryWizard\Handlers\Eloquent\Filters\AbstractEloquentFilter[]|string[]
-     */
-    protected function allowedFilters(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return \Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude[]|string[]
-     */
-    protected function allowedIncludes(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return \Jackardios\QueryWizard\Handlers\Eloquent\Sorts\AbstractEloquentSort[]|string[]
-     */
-    protected function allowedSorts(): array
+    protected function defaultAppends(): array
     {
         return [];
     }
@@ -49,13 +28,29 @@ class PostsQueryWizard extends EloquentQueryWizard
     /**
      * @return string[]
      */
-    protected function defaultAppends(): array
+    protected function allowedFields(): array
     {
         return [];
     }
 
     /**
-     * @return \Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude[]|string[]
+     * @return string[]|AbstractEloquentFilter[]
+     */
+    protected function allowedFilters(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]|AbstractEloquentInclude[]
+     */
+    protected function allowedIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]|AbstractEloquentInclude[]
      */
     protected function defaultIncludes(): array
     {
@@ -63,7 +58,15 @@ class PostsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return \Jackardios\QueryWizard\Handlers\Eloquent\Sorts\AbstractEloquentSort[]|string[]
+     * @return string[]|AbstractEloquentSort[]
+     */
+    protected function allowedSorts(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]|AbstractEloquentSort[]
      */
     protected function defaultSorts(): array
     {

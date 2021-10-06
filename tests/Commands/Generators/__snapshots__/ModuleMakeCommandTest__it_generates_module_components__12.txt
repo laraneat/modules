@@ -3,6 +3,7 @@
 namespace App\Modules\Article\UI\API\QueryWizards;
 
 use App\Ship\Abstracts\QueryWizards\ModelQueryWizard;
+use Jackardios\QueryWizard\Handlers\Model\Includes\AbstractModelInclude;
 
 class ArticleQueryWizard extends ModelQueryWizard
 {
@@ -17,15 +18,7 @@ class ArticleQueryWizard extends ModelQueryWizard
     /**
      * @return string[]
      */
-    protected function allowedFields(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return \Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude[]|string[]
-     */
-    protected function allowedIncludes(): array
+    protected function defaultAppends(): array
     {
         return [];
     }
@@ -33,13 +26,21 @@ class ArticleQueryWizard extends ModelQueryWizard
     /**
      * @return string[]
      */
-    protected function defaultAppends(): array
+    protected function allowedFields(): array
     {
         return [];
     }
 
     /**
-     * @return \Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude[]|string[]
+     * @return string[]|AbstractModelInclude[]
+     */
+    protected function allowedIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[]|AbstractModelInclude[]
      */
     protected function defaultIncludes(): array
     {
