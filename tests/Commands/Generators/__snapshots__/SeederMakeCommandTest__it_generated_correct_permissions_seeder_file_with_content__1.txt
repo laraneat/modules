@@ -3,6 +3,7 @@
 namespace App\Modules\Article\Data\Seeders\Foo\Bar;
 
 use App\Modules\Authorization\Actions\CreatePermissionAction;
+use App\Modules\Authorization\DTO\CreatePermissionDTO;
 use App\Ship\Abstracts\Seeders\Seeder;
 
 class MyAwesomePermissionsSeeder extends Seeder
@@ -10,30 +11,30 @@ class MyAwesomePermissionsSeeder extends Seeder
     public function run(): void
     {
         $createPermissionAction = CreatePermissionAction::make();
-        $createPermissionAction->handle(
+        $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'view-my-awesome-model',
             displayName: 'View any my-awesome-models',
             group: 'my-awesome-models'
-        );
-        $createPermissionAction->handle(
+        ));
+        $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'create-my-awesome-model',
             displayName: 'Create my-awesome-models',
             group: 'my-awesome-models'
-        );
-        $createPermissionAction->handle(
+        ));
+        $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'update-my-awesome-model',
             displayName: 'Update any my-awesome-models',
             group: 'my-awesome-models'
-        );
-        $createPermissionAction->handle(
+        ));
+        $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'delete-my-awesome-model',
             displayName: 'Delete any my-awesome-models',
             group: 'my-awesome-models'
-        );
-        $createPermissionAction->handle(
+        ));
+        $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'force-delete-my-awesome-model',
             displayName: 'Force delete any my-awesome-models',
             group: 'my-awesome-models'
-        );
+        ));
     }
 }

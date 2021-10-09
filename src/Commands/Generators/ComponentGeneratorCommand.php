@@ -273,6 +273,24 @@ abstract class ComponentGeneratorCommand extends Command
     }
 
     /**
+     * @return string
+     */
+    protected function getCreatePermissionDTOClass(): string
+    {
+        $createPermissionAction = GeneratorHelper::createPermissionDTO();
+
+        if (!$createPermissionAction) {
+            $createPermissionAction = $this->ask('Enter the class name of the "Create permission DTO"');
+
+            if (empty($createPermissionAction)) {
+                throw new LogicException('The "Create permission DTO" option is required');
+            }
+        }
+
+        return $createPermissionAction;
+    }
+
+    /**
      * Convert namespace to path
      *
      * @param string $namespace

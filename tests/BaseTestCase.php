@@ -48,7 +48,10 @@ abstract class BaseTestCase extends OrchestraTestCase
             'namespace' => 'App\\Modules',
             'custom_stubs' => base_path('app/Ship/Generators/custom-stubs'),
             'user_model' => 'App\\Modules\\User\\Models\\User',
-            'create_permission_action' => "App\\Modules\\Authorization\\Actions\\CreatePermissionAction",
+            'create_permission' => [
+                'action' => "App\\Modules\\Authorization\\Actions\\CreatePermissionAction",
+                'dto' => "App\\Modules\\Authorization\\DTO\\CreatePermissionDTO"
+            ],
             'components' => [
                 'action' => [
                     'path' => 'Actions',

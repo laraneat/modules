@@ -55,7 +55,17 @@ class GeneratorHelper
      */
     public static function createPermissionAction(): string
     {
-        return self::formatNamespace(config("modules.generator.create_permission_action"));
+        return self::formatNamespace(config("modules.generator.create_permission.action"));
+    }
+
+    /**
+     * Get "create permission" DTO
+     *
+     * @return string
+     */
+    public static function createPermissionDTO(): string
+    {
+        return self::formatNamespace(config("modules.generator.create_permission.dto"));
     }
 
     /**

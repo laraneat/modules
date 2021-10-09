@@ -100,6 +100,10 @@ class SeederMakeCommand extends ComponentGeneratorCommand
             $stubReplaces['createPermissionAction'] = $this->getClass($createPermissionAction);
             $stubReplaces['actionNamespace'] = $this->getNamespaceOfClass($createPermissionAction);
 
+            $createPermissionDTO = $this->getCreatePermissionDTOClass();
+            $stubReplaces['createPermissionDTO'] = $this->getClass($createPermissionDTO);
+            $stubReplaces['dtoNamespace'] = $this->getNamespaceOfClass($createPermissionDTO);
+
             $model = $this->getOptionOrAsk(
                 'model',
                 'Enter the class name of the model to be used in the seeder',

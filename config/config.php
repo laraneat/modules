@@ -60,13 +60,16 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | Create permission action class
+        | "Create permission" classes
         |--------------------------------------------------------------------------
         |
-        | Customize "create permission" action class
+        | Customize "create permission" classes
         |
         */
-        'create_permission_action' => null,
+        'create_permission' => [
+            'action' => null,
+            'dto' => null
+        ],
 
         /*
         |--------------------------------------------------------------------------
