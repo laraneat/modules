@@ -90,6 +90,10 @@ abstract class BaseTestCase extends OrchestraTestCase
                     'path' => 'Config',
                     'generate' => true
                 ],
+                'dto' => [
+                    'path' => 'DTO',
+                    'generate' => true
+                ],
                 'event' => [
                     'path' => 'Events',
                     'generate' => false
@@ -210,6 +214,7 @@ abstract class BaseTestCase extends OrchestraTestCase
             Commands\Generators\ActionMakeCommand::class,
             Commands\Generators\CommandMakeCommand::class,
             Commands\Generators\ControllerMakeCommand::class,
+            Commands\Generators\DTOMakeCommand::class,
             Commands\Generators\EventMakeCommand::class,
             Commands\Generators\ExceptionMakeCommand::class,
             Commands\Generators\FactoryMakeCommand::class,

@@ -33,6 +33,7 @@ class ConsoleServiceProvider extends ServiceProvider
         Commands\Generators\ActionMakeCommand::class,
         Commands\Generators\CommandMakeCommand::class,
         Commands\Generators\ControllerMakeCommand::class,
+        Commands\Generators\DTOMakeCommand::class,
         Commands\Generators\EventMakeCommand::class,
         Commands\Generators\ExceptionMakeCommand::class,
         Commands\Generators\FactoryMakeCommand::class,

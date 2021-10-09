@@ -1,0 +1,11 @@
+<?php
+
+namespace App\Modules\Article\Foo\Bar\DTO\Baz\Bat;
+
+use App\Ship\Abstracts\DTO\DataTransferObject;
+use Spatie\DataTransferObject\Attributes\Strict;
+
+class MyAwesomeDTO extends DataTransferObject
+{
+    //
+}
