@@ -9,14 +9,7 @@ class {{ class }} extends ServiceProvider
 {
     use ModuleProviderHelpersTrait;
 
-    /**
-     * @var string $moduleName
-     */
     protected string $moduleName = '{{ name }}';
-
-    /**
-     * @var string $moduleNameLower
-     */
     protected string $moduleNameLower = '{{ lowerName }}';
 
     /**

@@ -10,13 +10,6 @@ use {{ resourceNamespace }}\{{ resource }};
 
 class {{ class }} extends Action
 {
-    /**
-     * @param {{ model }} ${{ modelEntity }}
-     * @param array $data
-     *
-     * @return {{ model }}
-     * @throws UpdateResourceFailedException
-     */
     public function handle({{ model }} ${{ modelEntity }}, array $data): {{ model }}
     {
         if (empty($data)) {
@@ -28,13 +21,6 @@ class {{ class }} extends Action
         return ${{ modelEntity }};
     }
 
-    /**
-     * @param {{ request }} $request
-     * @param {{ model }} ${{ modelEntity }}
-     *
-     * @return {{ resource }}
-     * @throws UpdateResourceFailedException
-     */
     public function asController({{ request }} $request, {{ model }} ${{ modelEntity }}): {{ resource }}
     {
         $sanitizedData = $request->sanitizeInput([

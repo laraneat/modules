@@ -12,11 +12,6 @@ use {{ resourceNamespace }}\{{ resource }};
 
 class {{ class }} extends Action
 {
-    /**
-     * @param {{ request }} $request
-     *
-     * @return AbstractPaginator
-     */
     public function handle({{ request }} $request): AbstractPaginator
     {
         return {{ queryWizard }}::for({{ model }}::query(), $request)
@@ -24,11 +19,6 @@ class {{ class }} extends Action
             ->jsonPaginate();
     }
 
-    /**
-     * @param {{ request }} $request
-     *
-     * @return ResourceCollection
-     */
     public function asController({{ request }} $request): ResourceCollection
     {
         return {{ resource }}::collection($this->handle($request));

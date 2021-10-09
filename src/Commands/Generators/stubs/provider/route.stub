@@ -10,9 +10,6 @@ class {{ class }} extends ServiceProvider
 {
     use RouteProviderHelpersTrait;
 
-    /**
-     * @var string $moduleName
-     */
     protected string $moduleName = '{{ name }}';
 
     /**

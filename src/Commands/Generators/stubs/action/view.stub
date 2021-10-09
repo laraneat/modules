@@ -11,23 +11,11 @@ use {{ resourceNamespace }}\{{ resource }};
 
 class {{ class }} extends Action
 {
-    /**
-     * @param {{ request }} $request
-     * @param {{ model }} ${{ modelEntity }}
-     *
-     * @return Model
-     */
     public function handle({{ request }} $request, {{ model }} ${{ modelEntity }}): Model
     {
         return {{ queryWizard }}::for(${{ modelEntity }}, $request)->build();
     }
 
-    /**
-     * @param {{ request }} $request
-     * @param {{ model }} ${{ modelEntity }}
-     *
-     * @return {{ resource }}
-     */
     public function asController({{ request }} $request, {{ model }} ${{ modelEntity }}): {{ resource }}
     {
         return new {{ resource }}($this->handle($request, ${{ modelEntity }}));

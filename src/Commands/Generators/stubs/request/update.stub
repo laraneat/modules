@@ -8,7 +8,9 @@ class {{ class }} extends Request
 {
     public function rules(): array
     {
-        return [];
+        return [
+            // TODO: add fields here
+        ];
     }
 
     public function authorize(): bool
