@@ -4,7 +4,7 @@ namespace App\Modules\Article\UI\API\Requests;
 
 use App\Ship\Abstracts\Requests\Request;
 
-class DeleteArticleRequest extends Request
+class UpdateArticleRequest extends Request
 {
     public function rules(): array
     {
@@ -14,6 +14,6 @@ class DeleteArticleRequest extends Request
     public function authorize(): bool
     {
         $article = $this->route('article');
-        return $article && $this->user()->can('delete', $article);
+        return $article && $this->user()->can('update', $article);
     }
 }

@@ -10,77 +10,49 @@ use Illuminate\Testing\Fluent\AssertableJson;
  * @group article
  * @group api
  */
-class UpdateArticleTest extends TestCase
+class CreateArticleTest extends TestCase
 {
-    protected string $url = '/api/v1/articles/{id}';
+    protected string $url = '/api/v1/articles';
 
     /**
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'update-article',
+        'permissions' => 'create-article',
         'roles'       => '',
     ];
 
-    public function testUpdateArticle(): void
+    protected function getTestData(): array
     {
-        $this->getTestingUser();
-
-        $article = Article::factory()->create();
-
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $article->getKey()]
-        );
-
-        $data = [
-           //
+        return [
+           // 'key' => 'value'
         ];
-        $expectedData = array_merge($data, [
-           'id' => $article->getKey(),
-        ]);
-
-        $this->patchJson($url, $data)
-           ->assertOk()
-           ->assertJson(fn (AssertableJson $json) =>
-               $json->has('data', fn (AssertableJson $json) =>
-                   $json->whereAll($expectedData)
-                       ->etc()
-               )
-           );
-
-        $this->assertExistsModelWithAttributes(Article::class, $expectedData);
     }
 
-    public function testUpdateArticleWithoutAccess(): void
+    public function testCreateArticle(): void
+    {
+        $this->getTestingUser();
+        $data = $this->getTestData();
+
+        $this->postJson($this->buildUrl(), $data)
+            ->assertCreated()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->has('id')
+                        ->whereAll($data)
+                        ->etc()
+                    )
+            );
+
+        $this->assertExistsModelWithAttributes(Article::class, $data);
+    }
+
+    public function testCreateArticleWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
+        $data = $this->getTestData();
 
-        $article = Article::factory()->create();
-
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $article->getKey()]
-        );
-        $data = [
-           //
-        ];
-
-        $this->patchJson($url, $data)
-           ->assertForbidden();
-    }
-
-    public function testUpdateNonExistingArticle(): void
-    {
-        $this->getTestingUser();
-
-        $fakeArticleId = 7777;
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $fakeArticleId]
-        );
-        $data = [
-           //
-        ];
-
-        $this->patchJson($url, $data)
-           ->assertNotFound();
+        $this->postJson($this->buildUrl(), $data)
+            ->assertForbidden();
     }
 }

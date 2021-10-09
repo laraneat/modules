@@ -400,6 +400,7 @@ class ModuleGenerator extends Generator
                 $studlyActionVerb = Str::studly($actionVerb);
                 $actionClass = "{$studlyActionVerb}{$modelName}Action";
                 $requestClass = "{$studlyActionVerb}{$modelName}Request";
+                $dtoClass = "{$studlyActionVerb}{$modelName}DTO";
                 $wizardClass = "{$modelName}QueryWizard";
 
                 if ($actionVerb === "list") {
@@ -412,6 +413,7 @@ class ModuleGenerator extends Generator
                     'name' => $actionClass,
                     'module' => $moduleName,
                     '--stub' => $actionVerb,
+                    '--dto' => $dtoClass,
                     '--model' => $modelName,
                     '--request' => $requestClass,
                     '--resource' => "{$modelName}Resource",
@@ -442,6 +444,14 @@ class ModuleGenerator extends Generator
                 'module' => $moduleName,
                 '--stub' => 'permissions',
                 '--model' => $modelName
+            ]);
+        }
+
+        if (GeneratorHelper::component('dto')->generate() === true) {
+            $this->console->call('module:make:dto', [
+                'name' => "Create{$modelName}DTO",
+                'module' => $moduleName,
+                '--strict' => true,
             ]);
         }
 
@@ -508,14 +518,17 @@ class ModuleGenerator extends Generator
 
             if (GeneratorHelper::component("{$ui}-request")->generate() === true) {
                 foreach ($uiActionVerbs as $actionVerb) {
-                    $studlyActionName = Str::studly($actionVerb);
+                    $studlyActionVerb = Str::studly($actionVerb);
                     $requestClass = $actionVerb === 'list'
-                        ? "{$studlyActionName}{$pluralModelName}Request"
-                        : "{$studlyActionName}{$modelName}Request";
+                        ? "{$studlyActionVerb}{$pluralModelName}Request"
+                        : "{$studlyActionVerb}{$modelName}Request";
+                    $dtoClass = "{$studlyActionVerb}{$modelName}DTO";
+
                     $this->console->call('module:make:request', [
                         'name' => $requestClass,
                         'module' => $moduleName,
                         '--ui' => $ui,
+                        '--dto' => $dtoClass,
                         '--stub' => $actionVerb,
                         '--model' => $modelName,
                     ]);
@@ -531,10 +544,10 @@ class ModuleGenerator extends Generator
                     'view' => 'get'
                 ];
                 foreach ($uiActionVerbs as $actionVerb) {
-                    $studlyActionName = Str::studly($actionVerb);
+                    $studlyActionVerb = Str::studly($actionVerb);
                     $actionClass = $actionVerb === 'list'
-                        ? "{$studlyActionName}{$pluralModelName}Action"
-                        : "{$studlyActionName}{$modelName}Action";
+                        ? "{$studlyActionVerb}{$pluralModelName}Action"
+                        : "{$studlyActionVerb}{$modelName}Action";
 
                     $url = $dashedPluralModelName;
                     if (in_array($actionVerb, ['update', 'delete', 'view'])) {
@@ -560,10 +573,10 @@ class ModuleGenerator extends Generator
 
             if (GeneratorHelper::component("{$ui}-test")->generate() === true) {
                 foreach ($uiActionVerbs as $actionVerb) {
-                    $studlyActionName = Str::studly($actionVerb);
+                    $studlyActionVerb = Str::studly($actionVerb);
                     $testClass = $actionVerb === 'list'
-                        ? "{$studlyActionName}{$pluralModelName}Test"
-                        : "{$studlyActionName}{$modelName}Test";
+                        ? "{$studlyActionVerb}{$pluralModelName}Test"
+                        : "{$studlyActionVerb}{$modelName}Test";
 
                     $url = "/api/v1/{$dashedPluralModelName}";
                     if (in_array($actionVerb, ['update', 'delete', 'view'])) {

@@ -1,95 +1,23 @@
 <?php
 
-namespace App\Modules\Blog\Policies;
+namespace App\Modules\Blog\Models;
 
-use App\Modules\Blog\Models\Post;
-use App\Modules\User\Models\User;
-use App\Ship\Abstracts\Policies\Policy;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Modules\Blog\Data\Factories\PostFactory;
+use App\Ship\Abstracts\Models\Model;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class PostPolicy extends Policy
+class Post extends Model
 {
-    use HandlesAuthorization;
+    use HasFactory;
 
     /**
-     * Determine whether the user can view any models.
+     * Create a new factory instance for the model.
      *
-     * @param User $user
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @return Factory
      */
-    public function viewAny(User $user)
+    protected static function newFactory(): Factory
     {
-        return $user->can('view-post');
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     *
-     * @param User $user
-     * @param Post $post
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function view(User $user, Post $post)
-    {
-        return $user->can('view-post');
-    }
-
-    /**
-     * Determine whether the user can create models.
-     *
-     * @param User $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function create(User $user)
-    {
-        return $user->can('create-post');
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     *
-     * @param User $user
-     * @param Post $post
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function update(User $user, Post $post)
-    {
-        return $user->can('update-post');
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     *
-     * @param User $user
-     * @param Post $post
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function delete(User $user, Post $post)
-    {
-        return $user->can('delete-post');
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     *
-     * @param User $user
-     * @param Post $post
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function restore(User $user, Post $post)
-    {
-        return $user->can('delete-post');
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     *
-     * @param User $user
-     * @param Post $post
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function forceDelete(User $user, Post $post)
-    {
-        return $user->can('force-delete-post');
+        return PostFactory::new();
     }
 }

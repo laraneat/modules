@@ -10,77 +10,49 @@ use Illuminate\Testing\Fluent\AssertableJson;
  * @group blog
  * @group api
  */
-class UpdatePostTest extends TestCase
+class CreatePostTest extends TestCase
 {
-    protected string $url = '/api/v1/posts/{id}';
+    protected string $url = '/api/v1/posts';
 
     /**
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'update-post',
+        'permissions' => 'create-post',
         'roles'       => '',
     ];
 
-    public function testUpdatePost(): void
+    protected function getTestData(): array
     {
-        $this->getTestingUser();
-
-        $post = Post::factory()->create();
-
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $post->getKey()]
-        );
-
-        $data = [
-           //
+        return [
+           // 'key' => 'value'
         ];
-        $expectedData = array_merge($data, [
-           'id' => $post->getKey(),
-        ]);
-
-        $this->patchJson($url, $data)
-           ->assertOk()
-           ->assertJson(fn (AssertableJson $json) =>
-               $json->has('data', fn (AssertableJson $json) =>
-                   $json->whereAll($expectedData)
-                       ->etc()
-               )
-           );
-
-        $this->assertExistsModelWithAttributes(Post::class, $expectedData);
     }
 
-    public function testUpdatePostWithoutAccess(): void
+    public function testCreatePost(): void
+    {
+        $this->getTestingUser();
+        $data = $this->getTestData();
+
+        $this->postJson($this->buildUrl(), $data)
+            ->assertCreated()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->has('id')
+                        ->whereAll($data)
+                        ->etc()
+                    )
+            );
+
+        $this->assertExistsModelWithAttributes(Post::class, $data);
+    }
+
+    public function testCreatePostWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
+        $data = $this->getTestData();
 
-        $post = Post::factory()->create();
-
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $post->getKey()]
-        );
-        $data = [
-           //
-        ];
-
-        $this->patchJson($url, $data)
-           ->assertForbidden();
-    }
-
-    public function testUpdateNonExistingPost(): void
-    {
-        $this->getTestingUser();
-
-        $fakePostId = 7777;
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $fakePostId]
-        );
-        $data = [
-           //
-        ];
-
-        $this->patchJson($url, $data)
-           ->assertNotFound();
+        $this->postJson($this->buildUrl(), $data)
+            ->assertForbidden();
     }
 }

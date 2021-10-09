@@ -4,12 +4,13 @@ namespace App\Modules\Blog\UI\API\Tests;
 
 use App\Modules\Blog\Models\Post;
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group blog
  * @group api
  */
-class DeletePostTest extends TestCase
+class UpdatePostTest extends TestCase
 {
     protected string $url = '/api/v1/posts/{id}';
 
@@ -17,45 +18,69 @@ class DeletePostTest extends TestCase
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'delete-post',
+        'permissions' => 'update-post',
         'roles'       => '',
     ];
 
-    public function testDeletePost(): void
+    public function testUpdatePost(): void
     {
         $this->getTestingUser();
 
         $post = Post::factory()->create();
+
         $url = $this->buildUrl(
-            replaces: ['{id}' => $post->getKey()]
+           replaces: ['{id}' => $post->getKey()]
         );
 
-        $this->deleteJson($url)->assertNoContent();
+        $data = [
+           //
+        ];
+        $expectedData = array_merge($data, [
+           'id' => $post->getKey(),
+        ]);
 
-        $this->assertNull(Post::find($post->getKey()));
+        $this->patchJson($url, $data)
+           ->assertOk()
+           ->assertJson(fn (AssertableJson $json) =>
+               $json->has('data', fn (AssertableJson $json) =>
+                   $json->whereAll($expectedData)
+                       ->etc()
+               )
+           );
+
+        $this->assertExistsModelWithAttributes(Post::class, $expectedData);
     }
 
-    public function testDeletePostWithoutAccess(): void
+    public function testUpdatePostWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
 
         $post = Post::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $post->getKey()]
-        );
 
-        $this->deleteJson($url)->assertForbidden();
+        $url = $this->buildUrl(
+           replaces: ['{id}' => $post->getKey()]
+        );
+        $data = [
+           //
+        ];
+
+        $this->patchJson($url, $data)
+           ->assertForbidden();
     }
 
-    public function testDeleteNotExistingPost(): void
+    public function testUpdateNonExistingPost(): void
     {
         $this->getTestingUser();
 
+        $fakePostId = 7777;
         $url = $this->buildUrl(
-            replaces: ['{id}' => '12345']
+           replaces: ['{id}' => $fakePostId]
         );
+        $data = [
+           //
+        ];
 
-        $this->deleteJson($url)
-            ->assertNotFound();
+        $this->patchJson($url, $data)
+           ->assertNotFound();
     }
 }

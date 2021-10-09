@@ -1,23 +1,12 @@
 <?php
 
-namespace App\Modules\Article\Models;
+namespace App\Modules\Article\DTO;
 
-use App\Modules\Article\Data\Factories\ArticleFactory;
-use App\Ship\Abstracts\Models\Model;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Ship\Abstracts\DTO\DataTransferObject;
+use Spatie\DataTransferObject\Attributes\Strict;
 
-class Article extends Model
+#[Strict]
+class CreateArticleDTO extends DataTransferObject
 {
-    use HasFactory;
-
-    /**
-     * Create a new factory instance for the model.
-     *
-     * @return Factory
-     */
-    protected static function newFactory(): Factory
-    {
-        return ArticleFactory::new();
-    }
+    //
 }

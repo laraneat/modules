@@ -2,6 +2,7 @@
 
 namespace App\Modules\Article\UI\WEB\Requests\Baz\Bat;
 
+use App\Modules\Article\DTO\Foo\Bar\TestDTO;
 use App\Modules\Article\Models\Some\Nested\Model;
 use App\Ship\Abstracts\Requests\Request;
 
@@ -9,11 +10,20 @@ class MyAwesomeWebCreateRequest extends Request
 {
     public function rules(): array
     {
-        return [];
+        return [
+            // TODO: add fields here
+        ];
     }
 
     public function authorize(): bool
     {
         return $this->user()->can('create', Model::class);
+    }
+
+    public function toDTO(): TestDTO
+    {
+        return new TestDTO(
+            // TODO: add fields here
+        );
     }
 }

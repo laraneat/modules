@@ -4,13 +4,12 @@ namespace App\Modules\Article\UI\API\Tests;
 
 use App\Modules\Article\Models\Article;
 use App\Ship\Abstracts\Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group article
  * @group api
  */
-class ViewArticleTest extends TestCase
+class DeleteArticleTest extends TestCase
 {
     protected string $url = '/api/v1/articles/{id}';
 
@@ -18,11 +17,11 @@ class ViewArticleTest extends TestCase
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'view-article',
+        'permissions' => 'delete-article',
         'roles'       => '',
     ];
 
-    public function testViewArticle(): void
+    public function testDeleteArticle(): void
     {
         $this->getTestingUser();
 
@@ -30,22 +29,13 @@ class ViewArticleTest extends TestCase
         $url = $this->buildUrl(
             replaces: ['{id}' => $article->getKey()]
         );
-        $expectedData = [
-            'id' => $article->getKey(),
-            // ...
-        ];
 
-        $this->getJson($url)
-            ->assertOk()
-            ->assertJson(fn (AssertableJson $json) =>
-                $json->has('data', fn (AssertableJson $json) =>
-                    $json->whereAll($expectedData)
-                        ->etc()
-                )
-            );
+        $this->deleteJson($url)->assertNoContent();
+
+        $this->assertNull(Article::find($article->getKey()));
     }
 
-    public function testViewArticleWithoutAccess(): void
+    public function testDeleteArticleWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -54,20 +44,18 @@ class ViewArticleTest extends TestCase
             replaces: ['{id}' => $article->getKey()]
         );
 
-        $this->getJson($url)
-            ->assertForbidden();
+        $this->deleteJson($url)->assertForbidden();
     }
 
-    public function testViewNotExistingArticle(): void
+    public function testDeleteNotExistingArticle(): void
     {
         $this->getTestingUser();
 
-        $fakeArticleId = 7777;
         $url = $this->buildUrl(
-            replaces: ['{id}' => $fakeArticleId]
+            replaces: ['{id}' => '12345']
         );
 
-        $this->getJson($url)
+        $this->deleteJson($url)
             ->assertNotFound();
     }
 }

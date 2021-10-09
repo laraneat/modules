@@ -1,7 +1,19 @@
 <?php
 
-use App\Modules\Blog\Actions\CreatePostAction;
-use Illuminate\Support\Facades\Route;
+namespace App\Modules\Blog\UI\API\Requests;
 
-Route::post('posts', CreatePostAction::class)
-    ->name('api.posts.create');
+use App\Modules\Blog\Models\Post;
+use App\Ship\Abstracts\Requests\Request;
+
+class ListPostsRequest extends Request
+{
+    public function rules(): array
+    {
+        return [];
+    }
+
+    public function authorize(): bool
+    {
+        return $this->user()->can('viewAny', Post::class);
+    }
+}

@@ -2,10 +2,9 @@
 
 namespace App\Modules\Blog\UI\API\Requests;
 
-use App\Modules\Blog\Models\Post;
 use App\Ship\Abstracts\Requests\Request;
 
-class ListPostsRequest extends Request
+class ViewPostRequest extends Request
 {
     public function rules(): array
     {
@@ -14,6 +13,7 @@ class ListPostsRequest extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('viewAny', Post::class);
+        $post = $this->route('post');
+        return $post && $this->user()->can('view', $post);
     }
 }

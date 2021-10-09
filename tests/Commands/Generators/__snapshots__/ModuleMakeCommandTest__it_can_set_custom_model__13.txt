@@ -1,138 +1,95 @@
 <?php
 
-namespace App\Modules\Blog\Providers;
+namespace App\Modules\Blog\Policies;
 
-use App\Ship\Abstracts\Providers\ServiceProvider;
-use Laraneat\Modules\Traits\ModuleProviderHelpersTrait;
+use App\Modules\Blog\Models\Post;
+use App\Modules\User\Models\User;
+use App\Ship\Abstracts\Policies\Policy;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
-class BlogServiceProvider extends ServiceProvider
+class PostPolicy extends Policy
 {
-    use ModuleProviderHelpersTrait;
+    use HandlesAuthorization;
 
     /**
-     * @var string $moduleName
-     */
-    protected string $moduleName = 'Blog';
-
-    /**
-     * @var string $moduleNameLower
-     */
-    protected string $moduleNameLower = 'blog';
-
-    /**
-     * Register services.
+     * Determine whether the user can view any models.
      *
-     * @return void
+     * @param User $user
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function register(): void
+    public function viewAny(User $user)
     {
-        $this->app->register(RouteServiceProvider::class);
+        return $user->can('view-post');
     }
 
     /**
-     * Bootstrap services.
+     * Determine whether the user can view the model.
      *
-     * @return void
+     * @param User $user
+     * @param Post $post
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function boot(): void
+    public function view(User $user, Post $post)
     {
-        $this->registerTranslations();
-        $this->registerConfig();
-        $this->registerViews();
-        $this->registerMigrations();
-        $this->registerCommands();
+        return $user->can('view-post');
     }
 
     /**
-     * Get the services provided by the provider.
+     * Determine whether the user can create models.
      *
-     * @return array
+     * @param User $user
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function provides(): array
+    public function create(User $user)
     {
-        return [];
+        return $user->can('create-post');
     }
 
     /**
-     * Register translations.
+     * Determine whether the user can update the model.
      *
-     * @return void
+     * @param User $user
+     * @param Post $post
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function registerTranslations(): void
+    public function update(User $user, Post $post)
     {
-        $sourcePath = module_path($this->moduleName, 'Resources/lang');
-        $langPath = resource_path('lang/modules/' . $this->moduleNameLower);
-
-        $this->loadTranslationsFrom($sourcePath, $this->moduleNameLower);
-
-        $this->publishes([
-            $sourcePath => $langPath,
-        ], 'translations');
+        return $user->can('update-post');
     }
 
     /**
-     * Register config.
+     * Determine whether the user can delete the model.
      *
-     * @return void
+     * @param User $user
+     * @param Post $post
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    protected function registerConfig(): void
+    public function delete(User $user, Post $post)
     {
-        $sourcePath = module_path($this->moduleName, 'Config');
-        $configPath = config_path();
-
-        $this->loadConfigs($sourcePath);
-
-        $this->publishes([
-            $sourcePath => $configPath
-        ], 'config');
+        return $user->can('delete-post');
     }
 
     /**
-     * Register views.
+     * Determine whether the user can restore the model.
      *
-     * @return void
+     * @param User $user
+     * @param Post $post
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function registerViews(): void
+    public function restore(User $user, Post $post)
     {
-        $sourcePath = module_path($this->moduleName, 'Resources/views');
-        $viewsPath = resource_path('views/modules/' . $this->moduleNameLower);
-
-        $this->loadViewsFrom(
-            array_merge($this->getPublishableViewPaths($this->moduleNameLower), [$sourcePath]),
-            $this->moduleNameLower
-        );
-
-        $this->publishes([
-            $sourcePath => $viewsPath
-        ], 'views');
+        return $user->can('delete-post');
     }
 
     /**
-     * Register migrations.
+     * Determine whether the user can permanently delete the model.
      *
-     * @return void
+     * @param User $user
+     * @param Post $post
+     * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function registerMigrations(): void
+    public function forceDelete(User $user, Post $post)
     {
-        $sourcePath = module_path($this->moduleName, 'Data/Migrations');
-        $migrationsPath = database_path('migrations');
-
-        $this->loadMigrationsFrom($sourcePath);
-
-        $this->publishes([
-            $sourcePath => $migrationsPath
-        ], 'migrations');
-    }
-
-    /**
-     * Register artisan commands.
-     *
-     * @return void
-     */
-    public function registerCommands(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->loadCommands(module_path($this->moduleName, 'UI/CLI/Commands'));
-        }
+        return $user->can('force-delete-post');
     }
 }

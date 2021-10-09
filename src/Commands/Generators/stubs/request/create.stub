@@ -3,17 +3,27 @@
 namespace {{ namespace }};
 
 use App\Ship\Abstracts\Requests\Request;
+use {{ dtoNamespace }}\{{ dto }};
 use {{ modelNamespace }}\{{ model }};
 
 class {{ class }} extends Request
 {
     public function rules(): array
     {
-        return [];
+        return [
+            // TODO: add fields here
+        ];
     }
 
     public function authorize(): bool
     {
         return $this->user()->can('create', {{ model }}::class);
+    }
+
+    public function toDTO(): {{ dto }}
+    {
+        return new {{ dto }}(
+            // TODO: add fields here
+        );
     }
 }

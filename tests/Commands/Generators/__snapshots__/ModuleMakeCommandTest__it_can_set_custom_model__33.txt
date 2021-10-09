@@ -1,32 +1,49 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Modules\Blog\UI\API\Tests;
 
-return new class extends Migration
+use App\Modules\Blog\Models\Post;
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group blog
+ * @group api
+ */
+class ListPostsTest extends TestCase
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up(): void
-    {
-        Schema::create('posts', function (Blueprint $table) {
-            $table->id();
-
-            $table->timestamps();
-        });
-    }
+    protected string $url = '/api/v1/posts';
 
     /**
-     * Reverse the migrations.
-     *
-     * @return void
+     * Roles and permissions, to be attached on the user by default
      */
-    public function down(): void
+    protected array $access = [
+        'permissions' => 'view-post',
+        'roles'       => '',
+    ];
+
+    public function testListPosts(): void
     {
-        Schema::dropIfExists('posts');
+        $this->getTestingUser();
+
+        Post::factory()->count(2)->create();
+
+        $this->getJson($this->buildUrl())
+            ->assertOk()
+            ->assertJsonStructure([
+                'links',
+                'meta',
+                'data'
+            ])
+            ->assertJsonCount(Post::query()->count(), 'data');
     }
-};
+
+    public function testListPostsWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        Post::factory()->count(2)->create();
+
+        $this->getJson($this->buildUrl())
+            ->assertForbidden();
+    }
+}

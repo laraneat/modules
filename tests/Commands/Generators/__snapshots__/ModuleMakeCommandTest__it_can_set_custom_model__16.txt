@@ -2,12 +2,10 @@
 
 namespace App\Modules\Blog\UI\API\QueryWizards;
 
-use App\Ship\Abstracts\QueryWizards\EloquentQueryWizard;
-use Jackardios\QueryWizard\Handlers\Eloquent\Filters\AbstractEloquentFilter;
-use Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude;
-use Jackardios\QueryWizard\Handlers\Eloquent\Sorts\AbstractEloquentSort;
+use App\Ship\Abstracts\QueryWizards\ModelQueryWizard;
+use Jackardios\QueryWizard\Handlers\Model\Includes\AbstractModelInclude;
 
-class PostsQueryWizard extends EloquentQueryWizard
+class PostQueryWizard extends ModelQueryWizard
 {
     /**
      * @return array<string>
@@ -34,15 +32,7 @@ class PostsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return array<string|AbstractEloquentFilter>
-     */
-    protected function allowedFilters(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<string|AbstractEloquentInclude>
+     * @return array<string|AbstractModelInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -50,25 +40,9 @@ class PostsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return array<string|AbstractEloquentInclude>
+     * @return array<string|AbstractModelInclude>
      */
     protected function defaultIncludes(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<string|AbstractEloquentSort>
-     */
-    protected function allowedSorts(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<string|AbstractEloquentSort>
-     */
-    protected function defaultSorts(): array
     {
         return [];
     }

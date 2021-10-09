@@ -2,6 +2,7 @@
 
 namespace App\Modules\Article\Actions\Baz\Bat;
 
+use App\Modules\Article\DTO\Foo\Bar\TestDTO;
 use App\Modules\Article\Models\Bar\TestModel;
 use App\Modules\Article\UI\API\Requests\Bat\TestRequest;
 use App\Modules\Article\UI\API\Resources\Baz\TestResource;
@@ -10,27 +11,15 @@ use Illuminate\Http\JsonResponse;
 
 class MyAwesomeCreateAction extends Action
 {
-    /**
-     * @return TestModel
-     */
-    public function handle(
-        //
-    ): TestModel {
+    public function handle(TestDTO $testDTO): TestModel {
         return TestModel::create([
-            //
+            // TODO: add fields here
         ]);
     }
 
-    /**
-     * @param TestRequest $request
-     *
-     * @return JsonResponse
-     */
     public function asController(TestRequest $request): JsonResponse
     {
-        $testModel = $this->handle(
-            //
-        );
+        $testModel = $this->handle($request->toDTO());
 
         return (new TestResource($testModel))->created();
     }

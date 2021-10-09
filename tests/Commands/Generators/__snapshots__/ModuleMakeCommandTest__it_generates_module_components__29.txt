@@ -4,14 +4,15 @@ namespace App\Modules\Article\UI\API\Tests;
 
 use App\Modules\Article\Models\Article;
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group article
  * @group api
  */
-class ListArticlesTest extends TestCase
+class ViewArticleTest extends TestCase
 {
-    protected string $url = '/api/v1/articles';
+    protected string $url = '/api/v1/articles/{id}';
 
     /**
      * Roles and permissions, to be attached on the user by default
@@ -21,29 +22,52 @@ class ListArticlesTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testListArticles(): void
+    public function testViewArticle(): void
     {
         $this->getTestingUser();
 
-        Article::factory()->count(2)->create();
+        $article = Article::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $article->getKey()]
+        );
+        $expectedData = [
+            'id' => $article->getKey(),
+            // ...
+        ];
 
-        $this->getJson($this->buildUrl())
+        $this->getJson($url)
             ->assertOk()
-            ->assertJsonStructure([
-                'links',
-                'meta',
-                'data'
-            ])
-            ->assertJsonCount(Article::query()->count(), 'data');
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
     }
 
-    public function testListArticlesWithoutAccess(): void
+    public function testViewArticleWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
 
-        Article::factory()->count(2)->create();
+        $article = Article::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $article->getKey()]
+        );
 
-        $this->getJson($this->buildUrl())
+        $this->getJson($url)
             ->assertForbidden();
+    }
+
+    public function testViewNotExistingArticle(): void
+    {
+        $this->getTestingUser();
+
+        $fakeArticleId = 7777;
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $fakeArticleId]
+        );
+
+        $this->getJson($url)
+            ->assertNotFound();
     }
 }

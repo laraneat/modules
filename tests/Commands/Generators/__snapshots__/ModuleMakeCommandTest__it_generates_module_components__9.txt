@@ -1,95 +1,23 @@
 <?php
 
-namespace App\Modules\Article\Policies;
+namespace App\Modules\Article\Models;
 
-use App\Modules\Article\Models\Article;
-use App\Modules\User\Models\User;
-use App\Ship\Abstracts\Policies\Policy;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Modules\Article\Data\Factories\ArticleFactory;
+use App\Ship\Abstracts\Models\Model;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class ArticlePolicy extends Policy
+class Article extends Model
 {
-    use HandlesAuthorization;
+    use HasFactory;
 
     /**
-     * Determine whether the user can view any models.
+     * Create a new factory instance for the model.
      *
-     * @param User $user
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @return Factory
      */
-    public function viewAny(User $user)
+    protected static function newFactory(): Factory
     {
-        return $user->can('view-article');
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     *
-     * @param User $user
-     * @param Article $article
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function view(User $user, Article $article)
-    {
-        return $user->can('view-article');
-    }
-
-    /**
-     * Determine whether the user can create models.
-     *
-     * @param User $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function create(User $user)
-    {
-        return $user->can('create-article');
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     *
-     * @param User $user
-     * @param Article $article
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function update(User $user, Article $article)
-    {
-        return $user->can('update-article');
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     *
-     * @param User $user
-     * @param Article $article
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function delete(User $user, Article $article)
-    {
-        return $user->can('delete-article');
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     *
-     * @param User $user
-     * @param Article $article
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function restore(User $user, Article $article)
-    {
-        return $user->can('delete-article');
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     *
-     * @param User $user
-     * @param Article $article
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function forceDelete(User $user, Article $article)
-    {
-        return $user->can('force-delete-article');
+        return ArticleFactory::new();
     }
 }

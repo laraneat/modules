@@ -2,6 +2,7 @@
 
 namespace App\Modules\Article\Actions;
 
+use App\Modules\Article\DTO\CreateArticleDTO;
 use App\Modules\Article\Models\Article;
 use App\Modules\Article\UI\API\Requests\CreateArticleRequest;
 use App\Modules\Article\UI\API\Resources\ArticleResource;
@@ -10,27 +11,15 @@ use Illuminate\Http\JsonResponse;
 
 class CreateArticleAction extends Action
 {
-    /**
-     * @return Article
-     */
-    public function handle(
-        //
-    ): Article {
+    public function handle(CreateArticleDTO $createArticleDTO): Article {
         return Article::create([
-            //
+            // TODO: add fields here
         ]);
     }
 
-    /**
-     * @param CreateArticleRequest $request
-     *
-     * @return JsonResponse
-     */
     public function asController(CreateArticleRequest $request): JsonResponse
     {
-        $article = $this->handle(
-            //
-        );
+        $article = $this->handle($request->toDTO());
 
         return (new ArticleResource($article))->created();
     }

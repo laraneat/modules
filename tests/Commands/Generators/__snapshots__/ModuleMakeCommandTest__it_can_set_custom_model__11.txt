@@ -1,23 +1,12 @@
 <?php
 
-namespace App\Modules\Blog\Models;
+namespace App\Modules\Blog\DTO;
 
-use App\Modules\Blog\Data\Factories\PostFactory;
-use App\Ship\Abstracts\Models\Model;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Ship\Abstracts\DTO\DataTransferObject;
+use Spatie\DataTransferObject\Attributes\Strict;
 
-class Post extends Model
+#[Strict]
+class CreatePostDTO extends DataTransferObject
 {
-    use HasFactory;
-
-    /**
-     * Create a new factory instance for the model.
-     *
-     * @return Factory
-     */
-    protected static function newFactory(): Factory
-    {
-        return PostFactory::new();
-    }
+    //
 }

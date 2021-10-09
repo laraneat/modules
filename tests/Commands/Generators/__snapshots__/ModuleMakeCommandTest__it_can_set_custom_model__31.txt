@@ -4,13 +4,12 @@ namespace App\Modules\Blog\UI\API\Tests;
 
 use App\Modules\Blog\Models\Post;
 use App\Ship\Abstracts\Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group blog
  * @group api
  */
-class ViewPostTest extends TestCase
+class DeletePostTest extends TestCase
 {
     protected string $url = '/api/v1/posts/{id}';
 
@@ -18,11 +17,11 @@ class ViewPostTest extends TestCase
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'view-post',
+        'permissions' => 'delete-post',
         'roles'       => '',
     ];
 
-    public function testViewPost(): void
+    public function testDeletePost(): void
     {
         $this->getTestingUser();
 
@@ -30,22 +29,13 @@ class ViewPostTest extends TestCase
         $url = $this->buildUrl(
             replaces: ['{id}' => $post->getKey()]
         );
-        $expectedData = [
-            'id' => $post->getKey(),
-            // ...
-        ];
 
-        $this->getJson($url)
-            ->assertOk()
-            ->assertJson(fn (AssertableJson $json) =>
-                $json->has('data', fn (AssertableJson $json) =>
-                    $json->whereAll($expectedData)
-                        ->etc()
-                )
-            );
+        $this->deleteJson($url)->assertNoContent();
+
+        $this->assertNull(Post::find($post->getKey()));
     }
 
-    public function testViewPostWithoutAccess(): void
+    public function testDeletePostWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -54,20 +44,18 @@ class ViewPostTest extends TestCase
             replaces: ['{id}' => $post->getKey()]
         );
 
-        $this->getJson($url)
-            ->assertForbidden();
+        $this->deleteJson($url)->assertForbidden();
     }
 
-    public function testViewNotExistingPost(): void
+    public function testDeleteNotExistingPost(): void
     {
         $this->getTestingUser();
 
-        $fakePostId = 7777;
         $url = $this->buildUrl(
-            replaces: ['{id}' => $fakePostId]
+            replaces: ['{id}' => '12345']
         );
 
-        $this->getJson($url)
+        $this->deleteJson($url)
             ->assertNotFound();
     }
 }

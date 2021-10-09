@@ -66,6 +66,7 @@ class ActionMakeCommand extends ComponentGeneratorCommand
     {
         return [
             ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
+            ['dto', null, InputOption::VALUE_REQUIRED, 'The class name of the DTO to be used in the action.'],
             ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the action.'],
             ['request', null, InputOption::VALUE_REQUIRED, 'The class name of the request to be used in the action.'],
             ['resource', null, InputOption::VALUE_REQUIRED, 'The class name of the resource to be used in the action.'],
@@ -99,6 +100,18 @@ class ActionMakeCommand extends ComponentGeneratorCommand
         ];
 
         if ($this->stub !== 'plain') {
+            if ($this->stub === 'create') {
+                $dto = $this->getOptionOrAsk(
+                    'dto',
+                    'Enter the class name of the DTO to be used in the request',
+                    '',
+                    true
+                );
+                $stubReplaces['dto'] = $this->getClass($dto);
+                $stubReplaces['dtoEntity'] = Str::camel($stubReplaces['dto']);
+                $stubReplaces['dtoNamespace'] = $this->getComponentNamespace($this->module, $dto, 'dto');
+            }
+
             if ($this->stub !== 'delete') {
                 $resource = $this->getOptionOrAsk(
                     'resource',

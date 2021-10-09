@@ -2,6 +2,7 @@
 
 namespace App\Modules\Blog\Actions;
 
+use App\Modules\Blog\DTO\CreatePostDTO;
 use App\Modules\Blog\Models\Post;
 use App\Modules\Blog\UI\API\Requests\CreatePostRequest;
 use App\Modules\Blog\UI\API\Resources\PostResource;
@@ -10,27 +11,15 @@ use Illuminate\Http\JsonResponse;
 
 class CreatePostAction extends Action
 {
-    /**
-     * @return Post
-     */
-    public function handle(
-        //
-    ): Post {
+    public function handle(CreatePostDTO $createPostDTO): Post {
         return Post::create([
-            //
+            // TODO: add fields here
         ]);
     }
 
-    /**
-     * @param CreatePostRequest $request
-     *
-     * @return JsonResponse
-     */
     public function asController(CreatePostRequest $request): JsonResponse
     {
-        $post = $this->handle(
-            //
-        );
+        $post = $this->handle($request->toDTO());
 
         return (new PostResource($post))->created();
     }

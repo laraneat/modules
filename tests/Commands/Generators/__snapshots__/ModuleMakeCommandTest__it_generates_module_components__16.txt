@@ -2,18 +2,28 @@
 
 namespace App\Modules\Article\UI\API\Requests;
 
+use App\Modules\Article\DTO\CreateArticleDTO;
+use App\Modules\Article\Models\Article;
 use App\Ship\Abstracts\Requests\Request;
 
-class UpdateArticleRequest extends Request
+class CreateArticleRequest extends Request
 {
     public function rules(): array
     {
-        return [];
+        return [
+            // TODO: add fields here
+        ];
     }
 
     public function authorize(): bool
     {
-        $article = $this->route('article');
-        return $article && $this->user()->can('update', $article);
+        return $this->user()->can('create', Article::class);
+    }
+
+    public function toDTO(): CreateArticleDTO
+    {
+        return new CreateArticleDTO(
+            // TODO: add fields here
+        );
     }
 }

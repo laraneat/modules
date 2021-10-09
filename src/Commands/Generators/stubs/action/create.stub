@@ -4,33 +4,22 @@ namespace {{ namespace }};
 
 use App\Ship\Abstracts\Actions\Action;
 use Illuminate\Http\JsonResponse;
+use {{ dtoNamespace }}\{{ dto }};
 use {{ modelNamespace }}\{{ model }};
 use {{ requestNamespace }}\{{ request }};
 use {{ resourceNamespace }}\{{ resource }};
 
 class {{ class }} extends Action
 {
-    /**
-     * @return {{ model }}
-     */
-    public function handle(
-        //
-    ): {{ model }} {
+    public function handle({{ dto }} ${{ dtoEntity }}): {{ model }} {
         return {{ model }}::create([
-            //
+            // TODO: add fields here
         ]);
     }
 
-    /**
-     * @param {{ request }} $request
-     *
-     * @return JsonResponse
-     */
     public function asController({{ request }} $request): JsonResponse
     {
-        ${{ modelEntity }} = $this->handle(
-            //
-        );
+        ${{ modelEntity }} = $this->handle($request->toDTO());
 
         return (new {{ resource }}(${{ modelEntity }}))->created();
     }

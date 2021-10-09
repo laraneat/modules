@@ -4,12 +4,13 @@ namespace App\Modules\Article\UI\API\Tests;
 
 use App\Modules\Article\Models\Article;
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group article
  * @group api
  */
-class DeleteArticleTest extends TestCase
+class UpdateArticleTest extends TestCase
 {
     protected string $url = '/api/v1/articles/{id}';
 
@@ -17,45 +18,69 @@ class DeleteArticleTest extends TestCase
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'delete-article',
+        'permissions' => 'update-article',
         'roles'       => '',
     ];
 
-    public function testDeleteArticle(): void
+    public function testUpdateArticle(): void
     {
         $this->getTestingUser();
 
         $article = Article::factory()->create();
+
         $url = $this->buildUrl(
-            replaces: ['{id}' => $article->getKey()]
+           replaces: ['{id}' => $article->getKey()]
         );
 
-        $this->deleteJson($url)->assertNoContent();
+        $data = [
+           //
+        ];
+        $expectedData = array_merge($data, [
+           'id' => $article->getKey(),
+        ]);
 
-        $this->assertNull(Article::find($article->getKey()));
+        $this->patchJson($url, $data)
+           ->assertOk()
+           ->assertJson(fn (AssertableJson $json) =>
+               $json->has('data', fn (AssertableJson $json) =>
+                   $json->whereAll($expectedData)
+                       ->etc()
+               )
+           );
+
+        $this->assertExistsModelWithAttributes(Article::class, $expectedData);
     }
 
-    public function testDeleteArticleWithoutAccess(): void
+    public function testUpdateArticleWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
 
         $article = Article::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $article->getKey()]
-        );
 
-        $this->deleteJson($url)->assertForbidden();
+        $url = $this->buildUrl(
+           replaces: ['{id}' => $article->getKey()]
+        );
+        $data = [
+           //
+        ];
+
+        $this->patchJson($url, $data)
+           ->assertForbidden();
     }
 
-    public function testDeleteNotExistingArticle(): void
+    public function testUpdateNonExistingArticle(): void
     {
         $this->getTestingUser();
 
+        $fakeArticleId = 7777;
         $url = $this->buildUrl(
-            replaces: ['{id}' => '12345']
+           replaces: ['{id}' => $fakeArticleId]
         );
+        $data = [
+           //
+        ];
 
-        $this->deleteJson($url)
-            ->assertNotFound();
+        $this->patchJson($url, $data)
+           ->assertNotFound();
     }
 }

@@ -4,14 +4,15 @@ namespace App\Modules\Blog\UI\API\Tests;
 
 use App\Modules\Blog\Models\Post;
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group blog
  * @group api
  */
-class ListPostsTest extends TestCase
+class ViewPostTest extends TestCase
 {
-    protected string $url = '/api/v1/posts';
+    protected string $url = '/api/v1/posts/{id}';
 
     /**
      * Roles and permissions, to be attached on the user by default
@@ -21,29 +22,52 @@ class ListPostsTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testListPosts(): void
+    public function testViewPost(): void
     {
         $this->getTestingUser();
 
-        Post::factory()->count(2)->create();
+        $post = Post::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $post->getKey()]
+        );
+        $expectedData = [
+            'id' => $post->getKey(),
+            // ...
+        ];
 
-        $this->getJson($this->buildUrl())
+        $this->getJson($url)
             ->assertOk()
-            ->assertJsonStructure([
-                'links',
-                'meta',
-                'data'
-            ])
-            ->assertJsonCount(Post::query()->count(), 'data');
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
     }
 
-    public function testListPostsWithoutAccess(): void
+    public function testViewPostWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
 
-        Post::factory()->count(2)->create();
+        $post = Post::factory()->create();
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $post->getKey()]
+        );
 
-        $this->getJson($this->buildUrl())
+        $this->getJson($url)
             ->assertForbidden();
+    }
+
+    public function testViewNotExistingPost(): void
+    {
+        $this->getTestingUser();
+
+        $fakePostId = 7777;
+        $url = $this->buildUrl(
+            replaces: ['{id}' => $fakePostId]
+        );
+
+        $this->getJson($url)
+            ->assertNotFound();
     }
 }

@@ -108,6 +108,7 @@ class RequestMakeCommandTest extends BaseTestCase
             '--ui' => 'api',
             '--stub' => 'create',
             '--model' => 'Some/Nested\\Model',
+            '--dto' => 'Foo/Bar\\TestDTO',
         ]);
 
         $file = $this->finder->get($this->modulePath . '/UI/API/Requests/Baz/Bat/MyAwesomeApiCreateRequest.php');
@@ -273,6 +274,7 @@ class RequestMakeCommandTest extends BaseTestCase
             '--ui' => 'web',
             '--stub' => 'create',
             '--model' => 'Some/Nested\\Model',
+            '--dto' => 'Foo/Bar\\TestDTO',
         ]);
 
         $file = $this->finder->get($this->modulePath . '/UI/WEB/Requests/Baz/Bat/MyAwesomeWebCreateRequest.php');

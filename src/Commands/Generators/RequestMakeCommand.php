@@ -74,7 +74,8 @@ class RequestMakeCommand extends ComponentGeneratorCommand
         return [
             ['ui', null, InputOption::VALUE_REQUIRED, 'The UI for which the request will be created.'],
             ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
-            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the request.']
+            ['dto', null, InputOption::VALUE_REQUIRED, 'The class name of the DTO to be used in the request.'],
+            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the request.'],
         ];
     }
 
@@ -113,6 +114,17 @@ class RequestMakeCommand extends ComponentGeneratorCommand
         ];
 
         if ($this->stub !== 'plain') {
+            if ($this->stub === 'create') {
+                $dto = $this->getOptionOrAsk(
+                    'dto',
+                    'Enter the class name of the DTO to be used in the request',
+                    '',
+                    true
+                );
+                $stubReplaces['dto'] = $this->getClass($dto);
+                $stubReplaces['dtoNamespace'] = $this->getComponentNamespace($this->module, $dto, 'dto');
+            }
+
             $model = $this->getOptionOrAsk(
                 'model',
                 'Enter the class name of the model to be used in the request',

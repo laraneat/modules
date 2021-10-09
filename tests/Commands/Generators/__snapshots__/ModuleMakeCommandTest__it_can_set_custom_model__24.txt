@@ -1,7 +1,7 @@
 <?php
 
-use App\Modules\Blog\Actions\UpdatePostAction;
+use App\Modules\Blog\Actions\CreatePostAction;
 use Illuminate\Support\Facades\Route;
 
-Route::patch('posts/{post}', UpdatePostAction::class)
-    ->name('api.posts.update');
+Route::post('posts', CreatePostAction::class)
+    ->name('api.posts.create');

@@ -1,49 +1,73 @@
 <?php
 
-namespace App\Modules\Blog\UI\API\QueryWizards;
+namespace App\Modules\Blog\Providers;
 
-use App\Ship\Abstracts\QueryWizards\ModelQueryWizard;
-use Jackardios\QueryWizard\Handlers\Model\Includes\AbstractModelInclude;
+use App\Ship\Abstracts\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Route;
+use Laraneat\Modules\Traits\RouteProviderHelpersTrait;
 
-class PostQueryWizard extends ModelQueryWizard
+class RouteServiceProvider extends ServiceProvider
 {
+    use RouteProviderHelpersTrait;
+
     /**
-     * @return array<string>
+     * @var string $moduleName
      */
-    protected function allowedAppends(): array
+    protected string $moduleName = 'Blog';
+
+    /**
+     * Called before routes are registered.
+     *
+     * Register any model bindings or pattern based filters.
+     *
+     * @return void
+     */
+    public function boot(): void
     {
-        return [];
+        parent::boot();
     }
 
     /**
-     * @return array<string>
+     * Define the routes for the application.
+     *
+     * @return void
      */
-    protected function defaultAppends(): array
+    public function map(): void
     {
-        return [];
+        $this->mapApiRoutes();
+        $this->mapWebRoutes();
     }
 
     /**
-     * @return array<string>
+     * Define the "web" routes for the application.
+     *
+     * These routes all receive session state, CSRF protection, etc.
+     *
+     * @return void
      */
-    protected function allowedFields(): array
+    protected function mapWebRoutes(): void
     {
-        return [];
+        Route::middleware('web')
+//            ->namespace('App\\Modules\\Blog\\UI\\WEB\\Controllers')
+            ->group(function () {
+                $this->loadRoutesFromDirectory(module_path($this->moduleName, 'UI/WEB/Routes'));
+            });
     }
 
     /**
-     * @return array<string|AbstractModelInclude>
+     * Define the "api" routes for the application.
+     *
+     * These routes are typically stateless.
+     *
+     * @return void
      */
-    protected function allowedIncludes(): array
+    protected function mapApiRoutes(): void
     {
-        return [];
-    }
-
-    /**
-     * @return array<string|AbstractModelInclude>
-     */
-    protected function defaultIncludes(): array
-    {
-        return [];
+        Route::prefix('api')
+            ->middleware('api')
+//            ->namespace('App\\Modules\\Blog\\UI\\API\\Controllers')
+            ->group(function () {
+                $this->loadRoutesFromDirectory(module_path($this->moduleName, 'UI/API/Routes'));
+            });
     }
 }

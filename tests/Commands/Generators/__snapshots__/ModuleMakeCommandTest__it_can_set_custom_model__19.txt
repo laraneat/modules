@@ -2,18 +2,28 @@
 
 namespace App\Modules\Blog\UI\API\Requests;
 
+use App\Modules\Blog\DTO\CreatePostDTO;
+use App\Modules\Blog\Models\Post;
 use App\Ship\Abstracts\Requests\Request;
 
-class UpdatePostRequest extends Request
+class CreatePostRequest extends Request
 {
     public function rules(): array
     {
-        return [];
+        return [
+            // TODO: add fields here
+        ];
     }
 
     public function authorize(): bool
     {
-        $post = $this->route('post');
-        return $post && $this->user()->can('update', $post);
+        return $this->user()->can('create', Post::class);
+    }
+
+    public function toDTO(): CreatePostDTO
+    {
+        return new CreatePostDTO(
+            // TODO: add fields here
+        );
     }
 }
