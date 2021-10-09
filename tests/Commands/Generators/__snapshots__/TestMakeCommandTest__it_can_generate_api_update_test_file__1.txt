@@ -22,65 +22,65 @@ class MyAwesomeApiUpdateTest extends TestCase
         'roles'       => '',
     ];
 
-   public function testUpdateSomeTestModel(): void
-       {
-           $this->getTestingUser();
+    public function testUpdateSomeTestModel(): void
+    {
+        $this->getTestingUser();
 
-           $someTestModel = SomeTestModel::factory()->create();
+        $someTestModel = SomeTestModel::factory()->create();
 
-           $url = $this->buildUrl(
-               replaces: ['{id}' => $someTestModel->getKey()]
+        $url = $this->buildUrl(
+           replaces: ['{id}' => $someTestModel->getKey()]
+        );
+
+        $data = [
+           //
+        ];
+        $expectedData = array_merge($data, [
+           'id' => $someTestModel->getKey(),
+        ]);
+
+        $this->patchJson($url, $data)
+           ->assertOk()
+           ->assertJson(fn (AssertableJson $json) =>
+               $json->has('data', fn (AssertableJson $json) =>
+                   $json->whereAll($expectedData)
+                       ->etc()
+               )
            );
 
-           $data = [
-               //
-           ];
-           $expectedData = array_merge($data, [
-               'id' => $someTestModel->getKey(),
-           ]);
+        $this->assertExistsModelWithAttributes(SomeTestModel::class, $expectedData);
+    }
 
-           $this->patchJson($url, $data)
-               ->assertOk()
-               ->assertJson(fn (AssertableJson $json) =>
-                   $json->has('data', fn (AssertableJson $json) =>
-                       $json->whereAll($expectedData)
-                           ->etc()
-                   )
-               );
+    public function testUpdateSomeTestModelWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
 
-           $this->assertExistsModelWithAttributes(SomeTestModel::class, $expectedData);
-       }
+        $someTestModel = SomeTestModel::factory()->create();
 
-       public function testUpdateSomeTestModelWithoutAccess(): void
-       {
-           $this->getTestingUserWithoutAccess();
+        $url = $this->buildUrl(
+           replaces: ['{id}' => $someTestModel->getKey()]
+        );
+        $data = [
+           //
+        ];
 
-           $someTestModel = SomeTestModel::factory()->create();
+        $this->patchJson($url, $data)
+           ->assertForbidden();
+    }
 
-           $url = $this->buildUrl(
-               replaces: ['{id}' => $someTestModel->getKey()]
-           );
-           $data = [
-               //
-           ];
+    public function testUpdateNonExistingSomeTestModel(): void
+    {
+        $this->getTestingUser();
 
-           $this->patchJson($url, $data)
-               ->assertForbidden();
-       }
+        $fakeSomeTestModelId = 7777;
+        $url = $this->buildUrl(
+           replaces: ['{id}' => $fakeSomeTestModelId]
+        );
+        $data = [
+           //
+        ];
 
-       public function testUpdateNonExistingSomeTestModel(): void
-       {
-           $this->getTestingUser();
-
-           $fakeSomeTestModelId = 7777;
-           $url = $this->buildUrl(
-               replaces: ['{id}' => $fakeSomeTestModelId]
-           );
-           $data = [
-               //
-           ];
-
-           $this->patchJson($url, $data)
-               ->assertNotFound();
-       }
+        $this->patchJson($url, $data)
+           ->assertNotFound();
+    }
 }

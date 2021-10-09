@@ -22,65 +22,65 @@ class UpdateArticleTest extends TestCase
         'roles'       => '',
     ];
 
-   public function testUpdateArticle(): void
-       {
-           $this->getTestingUser();
+    public function testUpdateArticle(): void
+    {
+        $this->getTestingUser();
 
-           $article = Article::factory()->create();
+        $article = Article::factory()->create();
 
-           $url = $this->buildUrl(
-               replaces: ['{id}' => $article->getKey()]
+        $url = $this->buildUrl(
+           replaces: ['{id}' => $article->getKey()]
+        );
+
+        $data = [
+           //
+        ];
+        $expectedData = array_merge($data, [
+           'id' => $article->getKey(),
+        ]);
+
+        $this->patchJson($url, $data)
+           ->assertOk()
+           ->assertJson(fn (AssertableJson $json) =>
+               $json->has('data', fn (AssertableJson $json) =>
+                   $json->whereAll($expectedData)
+                       ->etc()
+               )
            );
 
-           $data = [
-               //
-           ];
-           $expectedData = array_merge($data, [
-               'id' => $article->getKey(),
-           ]);
+        $this->assertExistsModelWithAttributes(Article::class, $expectedData);
+    }
 
-           $this->patchJson($url, $data)
-               ->assertOk()
-               ->assertJson(fn (AssertableJson $json) =>
-                   $json->has('data', fn (AssertableJson $json) =>
-                       $json->whereAll($expectedData)
-                           ->etc()
-                   )
-               );
+    public function testUpdateArticleWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
 
-           $this->assertExistsModelWithAttributes(Article::class, $expectedData);
-       }
+        $article = Article::factory()->create();
 
-       public function testUpdateArticleWithoutAccess(): void
-       {
-           $this->getTestingUserWithoutAccess();
+        $url = $this->buildUrl(
+           replaces: ['{id}' => $article->getKey()]
+        );
+        $data = [
+           //
+        ];
 
-           $article = Article::factory()->create();
+        $this->patchJson($url, $data)
+           ->assertForbidden();
+    }
 
-           $url = $this->buildUrl(
-               replaces: ['{id}' => $article->getKey()]
-           );
-           $data = [
-               //
-           ];
+    public function testUpdateNonExistingArticle(): void
+    {
+        $this->getTestingUser();
 
-           $this->patchJson($url, $data)
-               ->assertForbidden();
-       }
+        $fakeArticleId = 7777;
+        $url = $this->buildUrl(
+           replaces: ['{id}' => $fakeArticleId]
+        );
+        $data = [
+           //
+        ];
 
-       public function testUpdateNonExistingArticle(): void
-       {
-           $this->getTestingUser();
-
-           $fakeArticleId = 7777;
-           $url = $this->buildUrl(
-               replaces: ['{id}' => $fakeArticleId]
-           );
-           $data = [
-               //
-           ];
-
-           $this->patchJson($url, $data)
-               ->assertNotFound();
-       }
+        $this->patchJson($url, $data)
+           ->assertNotFound();
+    }
 }
