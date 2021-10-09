@@ -9,14 +9,7 @@ class MyAwesomeModuleProvider extends ServiceProvider
 {
     use ModuleProviderHelpersTrait;
 
-    /**
-     * @var string $moduleName
-     */
     protected string $moduleName = 'Article';
-
-    /**
-     * @var string $moduleNameLower
-     */
     protected string $moduleNameLower = 'article';
 
     /**

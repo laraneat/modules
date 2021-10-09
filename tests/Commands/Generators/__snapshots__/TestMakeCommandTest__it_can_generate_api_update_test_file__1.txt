@@ -33,7 +33,7 @@ class MyAwesomeApiUpdateTest extends TestCase
         );
 
         $data = [
-           //
+            // TODO: add fields here
         ];
         $expectedData = array_merge($data, [
            'id' => $someTestModel->getKey(),
@@ -61,7 +61,7 @@ class MyAwesomeApiUpdateTest extends TestCase
            replaces: ['{id}' => $someTestModel->getKey()]
         );
         $data = [
-           //
+            // TODO: add fields here
         ];
 
         $this->patchJson($url, $data)
@@ -77,7 +77,7 @@ class MyAwesomeApiUpdateTest extends TestCase
            replaces: ['{id}' => $fakeSomeTestModelId]
         );
         $data = [
-           //
+            // TODO: add fields here
         ];
 
         $this->patchJson($url, $data)

@@ -9,22 +9,11 @@ use Illuminate\Http\JsonResponse;
 
 class DeleteArticleAction extends Action
 {
-    /**
-     * @param Article $article
-     *
-     * @return bool
-     */
     public function handle(Article $article): bool
     {
         return $article->delete();
     }
 
-    /**
-     * @param DeleteArticleRequest $request
-     * @param Article $article
-     *
-     * @return JsonResponse
-     */
     public function asController(DeleteArticleRequest $request, Article $article): JsonResponse
     {
         $this->handle($article);

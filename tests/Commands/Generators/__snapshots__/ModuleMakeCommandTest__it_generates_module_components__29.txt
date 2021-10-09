@@ -32,7 +32,7 @@ class ViewArticleTest extends TestCase
         );
         $expectedData = [
             'id' => $article->getKey(),
-            // ...
+            // TODO: add fields here
         ];
 
         $this->getJson($url)

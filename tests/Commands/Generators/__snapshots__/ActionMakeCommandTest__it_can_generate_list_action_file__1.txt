@@ -12,11 +12,6 @@ use Illuminate\Pagination\AbstractPaginator;
 
 class MyAwesomeListAction extends Action
 {
-    /**
-     * @param TestRequest $request
-     *
-     * @return AbstractPaginator
-     */
     public function handle(TestRequest $request): AbstractPaginator
     {
         return TestQueryWizard::for(TestModel::query(), $request)
@@ -24,11 +19,6 @@ class MyAwesomeListAction extends Action
             ->jsonPaginate();
     }
 
-    /**
-     * @param TestRequest $request
-     *
-     * @return ResourceCollection
-     */
     public function asController(TestRequest $request): ResourceCollection
     {
         return TestResource::collection($this->handle($request));

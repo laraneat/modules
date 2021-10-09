@@ -11,6 +11,18 @@ class Article extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        // TODO: add fields here
+    ];
+
+    protected $hidden = [
+        // TODO: add fields here
+    ];
+
+    protected $casts = [
+        // TODO: add fields here
+    ];
+
     /**
      * Create a new factory instance for the model.
      *

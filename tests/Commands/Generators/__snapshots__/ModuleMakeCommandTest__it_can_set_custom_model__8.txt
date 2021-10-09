@@ -12,11 +12,6 @@ use Illuminate\Pagination\AbstractPaginator;
 
 class ListPostsAction extends Action
 {
-    /**
-     * @param ListPostsRequest $request
-     *
-     * @return AbstractPaginator
-     */
     public function handle(ListPostsRequest $request): AbstractPaginator
     {
         return PostsQueryWizard::for(Post::query(), $request)
@@ -24,11 +19,6 @@ class ListPostsAction extends Action
             ->jsonPaginate();
     }
 
-    /**
-     * @param ListPostsRequest $request
-     *
-     * @return ResourceCollection
-     */
     public function asController(ListPostsRequest $request): ResourceCollection
     {
         return PostResource::collection($this->handle($request));

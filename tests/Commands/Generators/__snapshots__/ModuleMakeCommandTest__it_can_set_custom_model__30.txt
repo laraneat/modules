@@ -33,7 +33,7 @@ class UpdatePostTest extends TestCase
         );
 
         $data = [
-           //
+            // TODO: add fields here
         ];
         $expectedData = array_merge($data, [
            'id' => $post->getKey(),
@@ -61,7 +61,7 @@ class UpdatePostTest extends TestCase
            replaces: ['{id}' => $post->getKey()]
         );
         $data = [
-           //
+            // TODO: add fields here
         ];
 
         $this->patchJson($url, $data)
@@ -77,7 +77,7 @@ class UpdatePostTest extends TestCase
            replaces: ['{id}' => $fakePostId]
         );
         $data = [
-           //
+            // TODO: add fields here
         ];
 
         $this->patchJson($url, $data)

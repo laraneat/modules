@@ -10,13 +10,6 @@ use App\Ship\Exceptions\UpdateResourceFailedException;
 
 class MyAwesomeUpdateAction extends Action
 {
-    /**
-     * @param TestModel $testModel
-     * @param array $data
-     *
-     * @return TestModel
-     * @throws UpdateResourceFailedException
-     */
     public function handle(TestModel $testModel, array $data): TestModel
     {
         if (empty($data)) {
@@ -28,13 +21,6 @@ class MyAwesomeUpdateAction extends Action
         return $testModel;
     }
 
-    /**
-     * @param TestRequest $request
-     * @param TestModel $testModel
-     *
-     * @return TestResource
-     * @throws UpdateResourceFailedException
-     */
     public function asController(TestRequest $request, TestModel $testModel): TestResource
     {
         $sanitizedData = $request->sanitizeInput([

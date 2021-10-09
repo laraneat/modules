@@ -11,23 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class MyAwesomeViewAction extends Action
 {
-    /**
-     * @param TestRequest $request
-     * @param TestModel $testModel
-     *
-     * @return Model
-     */
     public function handle(TestRequest $request, TestModel $testModel): Model
     {
         return TestQueryWizard::for($testModel, $request)->build();
     }
 
-    /**
-     * @param TestRequest $request
-     * @param TestModel $testModel
-     *
-     * @return TestResource
-     */
     public function asController(TestRequest $request, TestModel $testModel): TestResource
     {
         return new TestResource($this->handle($request, $testModel));
