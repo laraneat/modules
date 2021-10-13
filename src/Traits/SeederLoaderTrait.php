@@ -16,13 +16,13 @@ use Laraneat\Modules\Support\Generator\GeneratorHelper;
  */
 trait SeederLoaderTrait
 {
-    public function runSeedersFromModules(): void
+    public function runSeedersFromModules(?string $subdirectory = null): void
     {
         $modules = Modules::allEnabled();
 
         $seederClasses = [];
         foreach ($modules as $module) {
-            $seederClasses[] = $this->getSeederClassesFromModule($module);
+            $seederClasses[] = $this->getSeederClassesFromModule($module, $subdirectory);
         }
 
         $seederClasses = $this->sortSeederClasses(Arr::flatten($seederClasses));
@@ -44,13 +44,17 @@ trait SeederLoaderTrait
         });
     }
 
-    protected function getSeederClassesFromModule(Module $module): array
+    protected function getSeederClassesFromModule(Module $module, ?string $subdirectory = null): array
     {
         $moduleSeedersPath = GeneratorHelper::component('seeder')->getFullPath($module);
 
+        if ($subdirectory) {
+            $moduleSeedersPath = rtrim($moduleSeedersPath, '/') . '/' . ltrim($subdirectory, '/');
+        }
+
         $seederClasses = [];
         if (File::isDirectory($moduleSeedersPath)) {
-            $allFiles = File::allFiles($moduleSeedersPath);
+            $allFiles = File::files($moduleSeedersPath);
 
             foreach ($allFiles as $file) {
                 $seederClasses[] = $this->getClassFullNameFromFile($file->getPathname());
