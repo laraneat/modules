@@ -16,13 +16,14 @@ use Laraneat\Modules\Support\Generator\GeneratorHelper;
  */
 trait SeederLoaderTrait
 {
-    public function runSeedersFromModules(?string $subdirectory = null): void
+    public function runSeedersFromModules(array|string $subdirectories = []): void
     {
+        $subdirectories = Arr::wrap($subdirectories);
         $modules = Modules::allEnabled();
 
         $seederClasses = [];
         foreach ($modules as $module) {
-            $seederClasses[] = $this->getSeederClassesFromModule($module, $subdirectory);
+            $seederClasses[] = $this->getSeederClassesFromModule($module, $subdirectories);
         }
 
         $seederClasses = $this->sortSeederClasses(Arr::flatten($seederClasses));
@@ -44,20 +45,27 @@ trait SeederLoaderTrait
         });
     }
 
-    protected function getSeederClassesFromModule(Module $module, ?string $subdirectory = null): array
+    protected function getSeederClassesFromModule(Module $module, array $subdirectories = []): array
     {
         $moduleSeedersPath = GeneratorHelper::component('seeder')->getFullPath($module);
+        $paths = [$moduleSeedersPath];
 
-        if ($subdirectory) {
-            $moduleSeedersPath = rtrim($moduleSeedersPath, '/') . '/' . ltrim($subdirectory, '/');
+        if (!empty($subdirectories)) {
+            $paths += array_map(
+                static fn ($subdirectory)
+                    => rtrim($moduleSeedersPath, '/') . '/' . ltrim($subdirectory, '/'),
+                $subdirectories
+            );
         }
 
         $seederClasses = [];
-        if (File::isDirectory($moduleSeedersPath)) {
-            $allFiles = File::files($moduleSeedersPath);
+        foreach ($paths as $path) {
+            if (File::isDirectory($path)) {
+                $allFiles = File::files($path);
 
-            foreach ($allFiles as $file) {
-                $seederClasses[] = $this->getClassFullNameFromFile($file->getPathname());
+                foreach ($allFiles as $file) {
+                    $seederClasses[] = $this->getClassFullNameFromFile($file->getPathname());
+                }
             }
         }
 
