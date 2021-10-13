@@ -37,8 +37,7 @@ class EventMakeCommandTest extends BaseTestCase
     {
         $code = $this->artisan('module:make:event', [
             'name' => 'MyAwesomeEvent',
-            'module' => 'Article',
-            '--model' => 'Some\\Nested/Model'
+            'module' => 'Article'
         ]);
 
         $this->assertTrue(is_file($this->modulePath . '/Events/MyAwesomeEvent.php'));
@@ -50,8 +49,7 @@ class EventMakeCommandTest extends BaseTestCase
     {
         $code = $this->artisan('module:make:event', [
             'name' => 'Foo/Bar\\MyAwesomeEvent',
-            'module' => 'Article',
-            '--model' => 'Some\\Nested/Model'
+            'module' => 'Article'
         ]);
 
         $file = $this->finder->get($this->modulePath . '/Events/Foo/Bar/MyAwesomeEvent.php');
@@ -67,8 +65,7 @@ class EventMakeCommandTest extends BaseTestCase
 
         $code = $this->artisan('module:make:event', [
             'name' => 'Baz\\Bat/MyAwesomeEvent',
-            'module' => 'Article',
-            '--model' => 'Some\\Nested/Model'
+            'module' => 'Article'
         ]);
 
         $file = $this->finder->get($this->modulePath . '/Foo/Bar/Events/Baz/Bat/MyAwesomeEvent.php');
@@ -84,8 +81,7 @@ class EventMakeCommandTest extends BaseTestCase
 
         $code = $this->artisan('module:make:event', [
             'name' => 'Baz\\Bat/MyAwesomeEvent',
-            'module' => 'Article',
-            '--model' => 'Some\\Nested/Model'
+            'module' => 'Article'
         ]);
 
         $file = $this->finder->get($this->modulePath . '/Events/Baz/Bat/MyAwesomeEvent.php');
