@@ -11,8 +11,6 @@ use App\Ship\Abstracts\Tests\TestCase;
  */
 class DeleteArticleTest extends TestCase
 {
-    protected string $url = '/api/v1/articles/{id}';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -26,11 +24,9 @@ class DeleteArticleTest extends TestCase
         $this->getTestingUser();
 
         $article = Article::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $article->getKey()]
-        );
 
-        $this->deleteJson($url)->assertNoContent();
+        $this->deleteJson(route('api.articles.delete', ['article' => $article->getKey()]))
+            ->assertNoContent();
 
         $this->assertNull(Article::find($article->getKey()));
     }
@@ -40,22 +36,16 @@ class DeleteArticleTest extends TestCase
         $this->getTestingUserWithoutAccess();
 
         $article = Article::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $article->getKey()]
-        );
 
-        $this->deleteJson($url)->assertForbidden();
+        $this->deleteJson(route('api.articles.delete', ['article' => $article->getKey()]))
+            ->assertForbidden();
     }
 
     public function testDeleteNotExistingArticle(): void
     {
         $this->getTestingUser();
 
-        $url = $this->buildUrl(
-            replaces: ['{id}' => '12345']
-        );
-
-        $this->deleteJson($url)
+        $this->deleteJson(route('api.articles.delete', ['article' => 7777]))
             ->assertNotFound();
     }
 }

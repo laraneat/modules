@@ -12,8 +12,6 @@ use Illuminate\Testing\Fluent\AssertableJson;
  */
 class MyAwesomeApiViewTest extends TestCase
 {
-    protected string $url = '/some/api/url';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -27,15 +25,12 @@ class MyAwesomeApiViewTest extends TestCase
         $this->getTestingUser();
 
         $someTestModel = SomeTestModel::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $someTestModel->getKey()]
-        );
         $expectedData = [
             'id' => $someTestModel->getKey(),
             // TODO: add fields here
         ];
 
-        $this->getJson($url)
+        $this->getJson(route('some.api.url', ['someTestModel' => $someTestModel->getKey()]))
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) =>
                 $json->has('data', fn (AssertableJson $json) =>
@@ -50,11 +45,8 @@ class MyAwesomeApiViewTest extends TestCase
         $this->getTestingUserWithoutAccess();
 
         $someTestModel = SomeTestModel::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $someTestModel->getKey()]
-        );
 
-        $this->getJson($url)
+        $this->getJson(route('some.api.url', ['someTestModel' => $someTestModel->getKey()]))
             ->assertForbidden();
     }
 
@@ -62,12 +54,7 @@ class MyAwesomeApiViewTest extends TestCase
     {
         $this->getTestingUser();
 
-        $fakeSomeTestModelId = 7777;
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $fakeSomeTestModelId]
-        );
-
-        $this->getJson($url)
+        $this->getJson(route('some.api.url', ['someTestModel' => 7777]))
             ->assertNotFound();
     }
 }

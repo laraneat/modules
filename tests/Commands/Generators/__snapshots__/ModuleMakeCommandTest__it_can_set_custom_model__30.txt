@@ -12,8 +12,6 @@ use Illuminate\Testing\Fluent\AssertableJson;
  */
 class UpdatePostTest extends TestCase
 {
-    protected string $url = '/api/v1/posts/{id}';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -28,10 +26,6 @@ class UpdatePostTest extends TestCase
 
         $post = Post::factory()->create();
 
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $post->getKey()]
-        );
-
         $data = [
             // TODO: add fields here
         ];
@@ -39,14 +33,14 @@ class UpdatePostTest extends TestCase
            'id' => $post->getKey(),
         ]);
 
-        $this->patchJson($url, $data)
-           ->assertOk()
-           ->assertJson(fn (AssertableJson $json) =>
-               $json->has('data', fn (AssertableJson $json) =>
-                   $json->whereAll($expectedData)
-                       ->etc()
-               )
-           );
+        $this->patchJson(route('api.posts.update', ['post' => $post->getKey()]), $data)
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
 
         $this->assertExistsModelWithAttributes(Post::class, $expectedData);
     }
@@ -57,30 +51,23 @@ class UpdatePostTest extends TestCase
 
         $post = Post::factory()->create();
 
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $post->getKey()]
-        );
         $data = [
             // TODO: add fields here
         ];
 
-        $this->patchJson($url, $data)
-           ->assertForbidden();
+        $this->patchJson(route('api.posts.update', ['post' => $post->getKey()]), $data)
+            ->assertForbidden();
     }
 
     public function testUpdateNonExistingPost(): void
     {
         $this->getTestingUser();
 
-        $fakePostId = 7777;
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $fakePostId]
-        );
         $data = [
             // TODO: add fields here
         ];
 
-        $this->patchJson($url, $data)
-           ->assertNotFound();
+        $this->patchJson(route('api.posts.update', ['post' => 7777]), $data)
+            ->assertNotFound();
     }
 }

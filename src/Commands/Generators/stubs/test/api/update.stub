@@ -12,8 +12,6 @@ use {{ modelNamespace }}\{{ model }};
  */
 class {{ class }} extends TestCase
 {
-    protected string $url = '{{ url }}';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -28,10 +26,6 @@ class {{ class }} extends TestCase
 
         ${{ modelEntity }} = {{ model }}::factory()->create();
 
-        $url = $this->buildUrl(
-           replaces: ['{id}' => ${{ modelEntity }}->getKey()]
-        );
-
         $data = [
             // TODO: add fields here
         ];
@@ -39,14 +33,14 @@ class {{ class }} extends TestCase
            'id' => ${{ modelEntity }}->getKey(),
         ]);
 
-        $this->patchJson($url, $data)
-           ->assertOk()
-           ->assertJson(fn (AssertableJson $json) =>
-               $json->has('data', fn (AssertableJson $json) =>
-                   $json->whereAll($expectedData)
-                       ->etc()
-               )
-           );
+        $this->patchJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
 
         $this->assertExistsModelWithAttributes({{ model }}::class, $expectedData);
     }
@@ -57,30 +51,23 @@ class {{ class }} extends TestCase
 
         ${{ modelEntity }} = {{ model }}::factory()->create();
 
-        $url = $this->buildUrl(
-           replaces: ['{id}' => ${{ modelEntity }}->getKey()]
-        );
         $data = [
             // TODO: add fields here
         ];
 
-        $this->patchJson($url, $data)
-           ->assertForbidden();
+        $this->patchJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)
+            ->assertForbidden();
     }
 
     public function testUpdateNonExisting{{ model }}(): void
     {
         $this->getTestingUser();
 
-        $fake{{ model }}Id = 7777;
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $fake{{ model }}Id]
-        );
         $data = [
             // TODO: add fields here
         ];
 
-        $this->patchJson($url, $data)
-           ->assertNotFound();
+        $this->patchJson(route('{{ routeName }}', ['{{ modelEntity }}' => 7777]), $data)
+            ->assertNotFound();
     }
 }

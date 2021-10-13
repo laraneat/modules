@@ -12,8 +12,6 @@ use {{ modelNamespace }}\{{ model }};
  */
 class {{ class }} extends TestCase
 {
-    protected string $url = '{{ url }}';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -27,15 +25,12 @@ class {{ class }} extends TestCase
         $this->getTestingUser();
 
         ${{ modelEntity }} = {{ model }}::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => ${{ modelEntity }}->getKey()]
-        );
         $expectedData = [
             'id' => ${{ modelEntity }}->getKey(),
             // TODO: add fields here
         ];
 
-        $this->getJson($url)
+        $this->getJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]))
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) =>
                 $json->has('data', fn (AssertableJson $json) =>
@@ -50,11 +45,8 @@ class {{ class }} extends TestCase
         $this->getTestingUserWithoutAccess();
 
         ${{ modelEntity }} = {{ model }}::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => ${{ modelEntity }}->getKey()]
-        );
 
-        $this->getJson($url)
+        $this->getJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]))
             ->assertForbidden();
     }
 
@@ -62,12 +54,7 @@ class {{ class }} extends TestCase
     {
         $this->getTestingUser();
 
-        $fake{{ model }}Id = 7777;
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $fake{{ model }}Id]
-        );
-
-        $this->getJson($url)
+        $this->getJson(route('{{ routeName }}', ['{{ modelEntity }}' => 7777]))
             ->assertNotFound();
     }
 }

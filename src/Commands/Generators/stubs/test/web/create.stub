@@ -3,7 +3,6 @@
 namespace {{ namespace }};
 
 use App\Ship\Abstracts\Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 use {{ modelNamespace }}\{{ model }};
 
 /**
@@ -12,8 +11,6 @@ use {{ modelNamespace }}\{{ model }};
  */
 class {{ class }} extends TestCase
 {
-    protected string $url = '{{ url }}';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -34,7 +31,7 @@ class {{ class }} extends TestCase
         $this->getTestingUser();
         $data = $this->getTestData();
 
-        $this->postJson($this->buildUrl(), $data)
+        $this->post(route('{{ routeName }}'), $data)
             ->assertCreated();
 
         $this->assertExistsModelWithAttributes({{ model }}::class, $data);
@@ -45,7 +42,7 @@ class {{ class }} extends TestCase
         $this->getTestingUserWithoutAccess();
         $data = $this->getTestData();
 
-        $this->postJson($this->buildUrl(), $data)
+        $this->post(route('{{ routeName }}'), $data)
             ->assertForbidden();
     }
 }

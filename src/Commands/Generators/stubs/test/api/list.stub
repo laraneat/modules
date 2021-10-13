@@ -11,8 +11,6 @@ use {{ modelNamespace }}\{{ model }};
  */
 class {{ class }} extends TestCase
 {
-    protected string $url = '{{ url }}';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -27,7 +25,7 @@ class {{ class }} extends TestCase
 
         {{ model }}::factory()->count(2)->create();
 
-        $this->getJson($this->buildUrl())
+        $this->getJson(route('{{ routeName }}'))
             ->assertOk()
             ->assertJsonStructure([
                 'links',
@@ -43,7 +41,7 @@ class {{ class }} extends TestCase
 
         {{ model }}::factory()->count(2)->create();
 
-        $this->getJson($this->buildUrl())
+        $this->getJson(route('{{ routeName }}'))
             ->assertForbidden();
     }
 }

@@ -75,7 +75,7 @@ class TestMakeCommand extends ComponentGeneratorCommand
             ['type', 't', InputOption::VALUE_REQUIRED, 'The type of test to be created.'],
             ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
             ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the test.'],
-            ['url', null, InputOption::VALUE_REQUIRED, 'URL for HTTP tests.'],
+            ['route', null, InputOption::VALUE_REQUIRED, 'The route name for HTTP tests.'],
         ];
     }
 
@@ -141,9 +141,9 @@ class TestMakeCommand extends ComponentGeneratorCommand
         }
 
         if (in_array($this->type, ['api', 'web'])) {
-            $stubReplaces['url'] = $this->getOptionOrAsk(
-                'url',
-                'Enter URL for HTTP tests',
+            $stubReplaces['routeName'] = $this->getOptionOrAsk(
+                'route',
+                'Enter the route name for HTTP tests',
                 '',
                 true
             );

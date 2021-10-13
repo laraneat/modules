@@ -12,8 +12,6 @@ use Illuminate\Testing\Fluent\AssertableJson;
  */
 class ViewArticleTest extends TestCase
 {
-    protected string $url = '/api/v1/articles/{id}';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -27,15 +25,12 @@ class ViewArticleTest extends TestCase
         $this->getTestingUser();
 
         $article = Article::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $article->getKey()]
-        );
         $expectedData = [
             'id' => $article->getKey(),
             // TODO: add fields here
         ];
 
-        $this->getJson($url)
+        $this->getJson(route('api.articles.view', ['article' => $article->getKey()]))
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) =>
                 $json->has('data', fn (AssertableJson $json) =>
@@ -50,11 +45,8 @@ class ViewArticleTest extends TestCase
         $this->getTestingUserWithoutAccess();
 
         $article = Article::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $article->getKey()]
-        );
 
-        $this->getJson($url)
+        $this->getJson(route('api.articles.view', ['article' => $article->getKey()]))
             ->assertForbidden();
     }
 
@@ -62,12 +54,7 @@ class ViewArticleTest extends TestCase
     {
         $this->getTestingUser();
 
-        $fakeArticleId = 7777;
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $fakeArticleId]
-        );
-
-        $this->getJson($url)
+        $this->getJson(route('api.articles.view', ['article' => 7777]))
             ->assertNotFound();
     }
 }

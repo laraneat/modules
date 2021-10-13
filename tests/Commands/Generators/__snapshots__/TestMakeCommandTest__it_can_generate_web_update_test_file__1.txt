@@ -4,7 +4,6 @@ namespace App\Modules\Article\UI\WEB\Tests\Baz\Bat;
 
 use App\Modules\Article\Models\Some\Nested\SomeTestModel;
 use App\Ship\Abstracts\Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group article
@@ -12,8 +11,6 @@ use Illuminate\Testing\Fluent\AssertableJson;
  */
 class MyAwesomeWebUpdateTest extends TestCase
 {
-    protected string $url = '/some/web/url';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -28,25 +25,15 @@ class MyAwesomeWebUpdateTest extends TestCase
 
         $someTestModel = SomeTestModel::factory()->create();
 
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $someTestModel->getKey()]
-        );
-
         $data = [
             // TODO: add fields here
         ];
         $expectedData = array_merge($data, [
-           'id' => $someTestModel->getKey(),
+            'id' => $someTestModel->getKey(),
         ]);
 
-        $this->patchJson($url, $data)
-           ->assertOk()
-           ->assertJson(fn (AssertableJson $json) =>
-               $json->has('data', fn (AssertableJson $json) =>
-                   $json->whereAll($expectedData)
-                       ->etc()
-               )
-           );
+        $this->patch(route('some.web.url', ['someTestModel' => $someTestModel->getKey()]), $data)
+           ->assertOk();
 
         $this->assertExistsModelWithAttributes(SomeTestModel::class, $expectedData);
     }
@@ -57,30 +44,23 @@ class MyAwesomeWebUpdateTest extends TestCase
 
         $someTestModel = SomeTestModel::factory()->create();
 
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $someTestModel->getKey()]
-        );
         $data = [
             // TODO: add fields here
         ];
 
-        $this->patchJson($url, $data)
-           ->assertForbidden();
+        $this->patch(route('some.web.url', ['someTestModel' => $someTestModel->getKey()]), $data)
+            ->assertForbidden();
     }
 
     public function testUpdateNonExistingSomeTestModel(): void
     {
         $this->getTestingUser();
 
-        $fakeSomeTestModelId = 7777;
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $fakeSomeTestModelId]
-        );
         $data = [
             // TODO: add fields here
         ];
 
-        $this->patchJson($url, $data)
-           ->assertNotFound();
+        $this->patch(route('some.web.url', ['someTestModel' => 7777]), $data)
+            ->assertNotFound();
     }
 }

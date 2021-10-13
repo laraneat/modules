@@ -10,8 +10,6 @@ use App\Ship\Abstracts\Tests\TestCase;
  */
 class {{ class }} extends TestCase
 {
-    protected string $url = '{{ url }}';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */

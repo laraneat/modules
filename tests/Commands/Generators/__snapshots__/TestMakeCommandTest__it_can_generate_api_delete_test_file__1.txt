@@ -11,8 +11,6 @@ use App\Ship\Abstracts\Tests\TestCase;
  */
 class MyAwesomeApiDeleteTest extends TestCase
 {
-    protected string $url = '/some/api/url';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -26,11 +24,9 @@ class MyAwesomeApiDeleteTest extends TestCase
         $this->getTestingUser();
 
         $someTestModel = SomeTestModel::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $someTestModel->getKey()]
-        );
 
-        $this->deleteJson($url)->assertNoContent();
+        $this->deleteJson(route('some.api.url', ['someTestModel' => $someTestModel->getKey()]))
+            ->assertNoContent();
 
         $this->assertNull(SomeTestModel::find($someTestModel->getKey()));
     }
@@ -40,22 +36,16 @@ class MyAwesomeApiDeleteTest extends TestCase
         $this->getTestingUserWithoutAccess();
 
         $someTestModel = SomeTestModel::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $someTestModel->getKey()]
-        );
 
-        $this->deleteJson($url)->assertForbidden();
+        $this->deleteJson(route('some.api.url', ['someTestModel' => $someTestModel->getKey()]))
+            ->assertForbidden();
     }
 
     public function testDeleteNotExistingSomeTestModel(): void
     {
         $this->getTestingUser();
 
-        $url = $this->buildUrl(
-            replaces: ['{id}' => '12345']
-        );
-
-        $this->deleteJson($url)
+        $this->deleteJson(route('some.api.url', ['someTestModel' => 7777]))
             ->assertNotFound();
     }
 }

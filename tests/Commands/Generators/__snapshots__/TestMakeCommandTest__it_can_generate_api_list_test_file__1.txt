@@ -11,8 +11,6 @@ use App\Ship\Abstracts\Tests\TestCase;
  */
 class MyAwesomeApiListTest extends TestCase
 {
-    protected string $url = '/some/api/url';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -27,7 +25,7 @@ class MyAwesomeApiListTest extends TestCase
 
         SomeTestModel::factory()->count(2)->create();
 
-        $this->getJson($this->buildUrl())
+        $this->getJson(route('some.api.url'))
             ->assertOk()
             ->assertJsonStructure([
                 'links',
@@ -43,7 +41,7 @@ class MyAwesomeApiListTest extends TestCase
 
         SomeTestModel::factory()->count(2)->create();
 
-        $this->getJson($this->buildUrl())
+        $this->getJson(route('some.api.url'))
             ->assertForbidden();
     }
 }

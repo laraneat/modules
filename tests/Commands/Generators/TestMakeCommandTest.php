@@ -247,7 +247,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'api',
             '--stub' => 'plain',
-            '--url' => '/some/api/url'
+            '--route' => 'some.api.url'
         ]);
 
         $this->assertTrue(is_file($this->modulePath . '/UI/API/Tests/MyAwesomeApiTest.php'));
@@ -262,7 +262,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'api',
             '--stub' => 'plain',
-            '--url' => '/some/api/url'
+            '--route' => 'some.api.url'
         ]);
 
         $file = $this->finder->get($this->modulePath . '/UI/API/Tests/MyAwesomeApiTest.php');
@@ -281,7 +281,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'api',
             '--stub' => 'plain',
-            '--url' => '/some/api/url'
+            '--route' => 'some.api.url'
         ]);
 
         $file = $this->finder->get($this->modulePath . '/Foo/Bar/NewTests/Baz/Bat/MyAwesomeApiTest.php');
@@ -300,7 +300,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'api',
             '--stub' => 'plain',
-            '--url' => '/some/api/url'
+            '--route' => 'some.api.url'
         ]);
 
         $file = $this->finder->get($this->modulePath . '/UI/API/Tests/Baz/Bat/MyAwesomeApiTest.php');
@@ -317,7 +317,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'api',
             '--stub' => 'create',
-            '--url' => '/some/api/url',
+            '--route' => 'some.api.url',
             '--model' => 'Some/Nested\\SomeTestModel',
         ]);
 
@@ -337,7 +337,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'api',
             '--stub' => 'create',
-            '--url' => '/some/api/url',
+            '--route' => 'some.api.url',
             '-n' => true,
         ]);
     }
@@ -350,7 +350,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'api',
             '--stub' => 'delete',
-            '--url' => '/some/api/url',
+            '--route' => 'some.api.url',
             '--model' => 'Some/Nested\\SomeTestModel',
         ]);
 
@@ -368,7 +368,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'api',
             '--stub' => 'list',
-            '--url' => '/some/api/url',
+            '--route' => 'some.api.url',
             '--model' => 'Some/Nested\\SomeTestModel',
         ]);
 
@@ -386,7 +386,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'api',
             '--stub' => 'update',
-            '--url' => '/some/api/url',
+            '--route' => 'some.api.url',
             '--model' => 'Some/Nested\\SomeTestModel',
         ]);
 
@@ -404,7 +404,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'api',
             '--stub' => 'view',
-            '--url' => '/some/api/url',
+            '--route' => 'some.api.url',
             '--model' => 'Some/Nested\\SomeTestModel',
         ]);
 
@@ -424,7 +424,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'web',
             '--stub' => 'plain',
-            '--url' => '/some/web/url',
+            '--route' => 'some.web.url',
         ]);
 
         $this->assertTrue(is_file($this->modulePath . '/UI/WEB/Tests/MyAwesomeWebTest.php'));
@@ -439,7 +439,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'web',
             '--stub' => 'plain',
-            '--url' => '/some/web/url',
+            '--route' => 'some.web.url',
         ]);
 
         $file = $this->finder->get($this->modulePath . '/UI/WEB/Tests/MyAwesomeWebTest.php');
@@ -458,7 +458,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'web',
             '--stub' => 'plain',
-            '--url' => '/some/web/url',
+            '--route' => 'some.web.url',
         ]);
 
         $file = $this->finder->get($this->modulePath . '/Foo/Bar/NewTests/Baz/Bat/MyAwesomeWebTest.php');
@@ -477,7 +477,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'web',
             '--stub' => 'plain',
-            '--url' => '/some/web/url',
+            '--route' => 'some.web.url',
         ]);
 
         $file = $this->finder->get($this->modulePath . '/UI/WEB/Tests/Baz/Bat/MyAwesomeWebTest.php');
@@ -494,7 +494,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'web',
             '--stub' => 'create',
-            '--url' => '/some/web/url',
+            '--route' => 'some.web.url',
             '--model' => 'Some/Nested\\SomeTestModel',
         ]);
 
@@ -514,7 +514,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'web',
             '--stub' => 'create',
-            '--url' => '/some/web/url',
+            '--route' => 'some.web.url',
             '-n' => true,
         ]);
     }
@@ -527,7 +527,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'web',
             '--stub' => 'delete',
-            '--url' => '/some/web/url',
+            '--route' => 'some.web.url',
             '--model' => 'Some/Nested\\SomeTestModel',
         ]);
 
@@ -545,7 +545,7 @@ class TestMakeCommandTest extends BaseTestCase
             'module' => 'Article',
             '--type' => 'web',
             '--stub' => 'update',
-            '--url' => '/some/web/url',
+            '--route' => 'some.web.url',
             '--model' => 'Some/Nested\\SomeTestModel',
         ]);
 

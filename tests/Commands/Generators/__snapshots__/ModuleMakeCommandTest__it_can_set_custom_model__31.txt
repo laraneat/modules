@@ -11,8 +11,6 @@ use App\Ship\Abstracts\Tests\TestCase;
  */
 class DeletePostTest extends TestCase
 {
-    protected string $url = '/api/v1/posts/{id}';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -26,11 +24,9 @@ class DeletePostTest extends TestCase
         $this->getTestingUser();
 
         $post = Post::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $post->getKey()]
-        );
 
-        $this->deleteJson($url)->assertNoContent();
+        $this->deleteJson(route('api.posts.delete', ['post' => $post->getKey()]))
+            ->assertNoContent();
 
         $this->assertNull(Post::find($post->getKey()));
     }
@@ -40,22 +36,16 @@ class DeletePostTest extends TestCase
         $this->getTestingUserWithoutAccess();
 
         $post = Post::factory()->create();
-        $url = $this->buildUrl(
-            replaces: ['{id}' => $post->getKey()]
-        );
 
-        $this->deleteJson($url)->assertForbidden();
+        $this->deleteJson(route('api.posts.delete', ['post' => $post->getKey()]))
+            ->assertForbidden();
     }
 
     public function testDeleteNotExistingPost(): void
     {
         $this->getTestingUser();
 
-        $url = $this->buildUrl(
-            replaces: ['{id}' => '12345']
-        );
-
-        $this->deleteJson($url)
+        $this->deleteJson(route('api.posts.delete', ['post' => 7777]))
             ->assertNotFound();
     }
 }

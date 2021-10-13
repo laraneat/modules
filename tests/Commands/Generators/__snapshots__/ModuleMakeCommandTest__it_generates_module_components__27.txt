@@ -12,8 +12,6 @@ use Illuminate\Testing\Fluent\AssertableJson;
  */
 class UpdateArticleTest extends TestCase
 {
-    protected string $url = '/api/v1/articles/{id}';
-
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -28,10 +26,6 @@ class UpdateArticleTest extends TestCase
 
         $article = Article::factory()->create();
 
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $article->getKey()]
-        );
-
         $data = [
             // TODO: add fields here
         ];
@@ -39,14 +33,14 @@ class UpdateArticleTest extends TestCase
            'id' => $article->getKey(),
         ]);
 
-        $this->patchJson($url, $data)
-           ->assertOk()
-           ->assertJson(fn (AssertableJson $json) =>
-               $json->has('data', fn (AssertableJson $json) =>
-                   $json->whereAll($expectedData)
-                       ->etc()
-               )
-           );
+        $this->patchJson(route('api.articles.update', ['article' => $article->getKey()]), $data)
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
 
         $this->assertExistsModelWithAttributes(Article::class, $expectedData);
     }
@@ -57,30 +51,23 @@ class UpdateArticleTest extends TestCase
 
         $article = Article::factory()->create();
 
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $article->getKey()]
-        );
         $data = [
             // TODO: add fields here
         ];
 
-        $this->patchJson($url, $data)
-           ->assertForbidden();
+        $this->patchJson(route('api.articles.update', ['article' => $article->getKey()]), $data)
+            ->assertForbidden();
     }
 
     public function testUpdateNonExistingArticle(): void
     {
         $this->getTestingUser();
 
-        $fakeArticleId = 7777;
-        $url = $this->buildUrl(
-           replaces: ['{id}' => $fakeArticleId]
-        );
         $data = [
             // TODO: add fields here
         ];
 
-        $this->patchJson($url, $data)
-           ->assertNotFound();
+        $this->patchJson(route('api.articles.update', ['article' => 7777]), $data)
+            ->assertNotFound();
     }
 }

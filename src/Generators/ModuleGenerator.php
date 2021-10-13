@@ -578,18 +578,13 @@ class ModuleGenerator extends Generator
                         ? "{$studlyActionVerb}{$pluralModelName}Test"
                         : "{$studlyActionVerb}{$modelName}Test";
 
-                    $url = "/api/v1/{$dashedPluralModelName}";
-                    if (in_array($actionVerb, ['update', 'delete', 'view'])) {
-                        $url .= '/{id}';
-                    }
-
                     $this->console->call('module:make:test', [
                         'name' => $testClass,
                         'module' => $moduleName,
                         '--type' => $ui,
                         '--stub' => $actionVerb,
                         '--model' => $modelName,
-                        '--url' => $url
+                        '--route' => $ui . '.' . $underlinedPluralModelName . '.' . $actionVerb
                     ]);
                 }
             }
