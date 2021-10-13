@@ -11,7 +11,7 @@ abstract class BaseTestCase extends OrchestraTestCase
 {
     protected function getBasePath(): string
     {
-        return __DIR__ . '/laravel';
+        return __DIR__ . '/fixtures/laravel';
     }
 
     public function setUp(): void

@@ -25,7 +25,7 @@ abstract class MigrateCommandTest extends BaseTestCase
     /** @test */
     public function it_migrates_a_module()
     {
-        $this->repository->addLocation(__DIR__ . '/../stubs/Article');
+        $this->repository->addLocation(__DIR__ . '/../fixtures/stubs/Article');
 
         $this->artisan('module:migrate', ['module' => 'Article']);
 

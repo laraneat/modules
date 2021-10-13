@@ -17,7 +17,7 @@ class ModuleTest extends BaseTestCase
         $this->module = new TestingModule(
             $this->app,
             'Article Name',
-            __DIR__ . '/stubs/valid/Article',
+            __DIR__ . '/fixtures/stubs/valid/Article',
             'App\\Modules\\Article'
         );
         $this->activator = $this->app[ActivatorInterface::class];
@@ -32,13 +32,13 @@ class ModuleTest extends BaseTestCase
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
-        symlink(__DIR__ . '/stubs/valid', __DIR__ . '/stubs/valid_symlink');
+        symlink(__DIR__ . '/fixtures/stubs/valid', __DIR__ . '/fixtures/stubs/valid_symlink');
     }
 
     public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
-        unlink(__DIR__ . '/stubs/valid_symlink');
+        unlink(__DIR__ . '/fixtures/stubs/valid_symlink');
     }
 
     /** @test */
@@ -80,7 +80,7 @@ class ModuleTest extends BaseTestCase
     /** @test */
     public function it_gets_module_path()
     {
-        $this->assertEquals(__DIR__ . '/stubs/valid/Article', $this->module->getPath());
+        $this->assertEquals(__DIR__ . '/fixtures/stubs/valid/Article', $this->module->getPath());
     }
 
     /** @test */
@@ -91,11 +91,11 @@ class ModuleTest extends BaseTestCase
         $this->module = new TestingModule(
             $this->app,
             'Article Name',
-            __DIR__ . '/stubs/valid_symlink/Article',
+            __DIR__ . '/fixtures/stubs/valid_symlink/Article',
             'App\\Module\\Article'
         );
 
-        $this->assertEquals(__DIR__ . '/stubs/valid_symlink/Article', $this->module->getPath());
+        $this->assertEquals(__DIR__ . '/fixtures/stubs/valid_symlink/Article', $this->module->getPath());
 
         // symlink deleted in tearDownAfterClass
     }
@@ -105,7 +105,7 @@ class ModuleTest extends BaseTestCase
     {
         $this->assertEquals(['required_module'], $this->module->getRequires());
     }
-    
+
     /** @test */
     public function it_reads_module_json_files()
     {

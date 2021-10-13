@@ -49,7 +49,7 @@
         "psr-4": {
             "Laraneat\\Modules\\Tests\\": "tests",
             "App\\": "tests/laravel/app",
-            "App\\Modules\\Article\\": "tests/stubs/valid/Article"
+            "App\\Modules\\Article\\": "tests/fixtures/stubs/valid/Article"
         }
     },
     "suggest": {

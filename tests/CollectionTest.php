@@ -9,8 +9,8 @@ class CollectionTest extends BaseTestCase
 {
     public function testToArraySetsPathAttribute(): void
     {
-        $moduleOnePath = __DIR__ . '/stubs/valid/Article';
-        $moduleTwoPath = __DIR__ . '/stubs/valid/Requirement';
+        $moduleOnePath = __DIR__ . '/fixtures/stubs/valid/Article';
+        $moduleTwoPath = __DIR__ . '/fixtures/stubs/valid/Requirement';
         $modules = [
             new Module($this->app, 'module-one', $moduleOnePath, 'App\\Module\\Article'),
             new Module($this->app, 'module-two', $moduleTwoPath, 'App\\Module\\Requirement'),
@@ -27,8 +27,8 @@ class CollectionTest extends BaseTestCase
     public function testGetItemsReturnsTheCollectionItems(): void
     {
         $modules = [
-            new Module($this->app, 'module-one', __DIR__ . '/stubs/valid/Article', 'App\\Module\\Article'),
-            new Module($this->app, 'module-two', __DIR__ . '/stubs/valid/Requirement', 'App\\Module\\Requirement'),
+            new Module($this->app, 'module-one', __DIR__ . '/fixtures/stubs/valid/Article', 'App\\Module\\Article'),
+            new Module($this->app, 'module-two', __DIR__ . '/fixtures/stubs/valid/Requirement', 'App\\Module\\Requirement'),
         ];
         $collection = new Collection($modules);
         $items = $collection->getItems();

@@ -12,14 +12,14 @@ class JsonTest extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $path = __DIR__ . '/stubs/valid/module.json';
+        $path = __DIR__ . '/fixtures/stubs/valid/module.json';
         $this->json = new Json($path, $this->app['files']);
     }
 
     /** @test */
     public function it_gets_the_file_path()
     {
-        $path = __DIR__ . '/stubs/valid/module.json';
+        $path = __DIR__ . '/fixtures/stubs/valid/module.json';
 
         $this->assertEquals($path, $this->json->getPath());
     }
@@ -27,7 +27,7 @@ class JsonTest extends BaseTestCase
     /** @test */
     public function it_throws_an_exception_with_invalid_json()
     {
-        $path = __DIR__ . '/stubs/InvalidJsonModule/module.json';
+        $path = __DIR__ . '/fixtures/stubs/InvalidJsonModule/module.json';
 
         $this->expectException(InvalidJsonException::class);
         $this->expectExceptionMessage('Error processing file: ' . $path . '. Error: Syntax error');
@@ -62,7 +62,7 @@ class JsonTest extends BaseTestCase
     /** @test */
     public function it_sets_a_path()
     {
-        $path = __DIR__ . '/stubs/valid/module.json';
+        $path = __DIR__ . '/fixtures/stubs/valid/module.json';
         $this->assertEquals($path, $this->json->getPath());
 
         $this->json->setPath('some/path.json');
