@@ -56,11 +56,11 @@ class SetupCommand extends Command
 
             $this->info($success);
 
-            return 0;
+            return self::SUCCESS;
         }
 
         $this->error($error);
 
-        return E_ERROR;
+        return self::FAILURE;
     }
 }

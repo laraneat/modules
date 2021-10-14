@@ -17,7 +17,7 @@ class ModuleDeleteCommand extends Command
 
         $this->info("Module {$this->argument('module')} has been deleted.");
 
-        return 0;
+        return self::SUCCESS;
     }
 
     protected function getArguments(): array

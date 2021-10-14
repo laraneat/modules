@@ -37,7 +37,7 @@ class DumpCommand extends Command
             }
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     public function dump(string $moduleName): void

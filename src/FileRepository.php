@@ -4,8 +4,8 @@ namespace Laraneat\Modules;
 
 use Countable;
 use Illuminate\Cache\CacheManager;
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
@@ -24,10 +24,8 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * The laravel application instance.
-     *
-     * @var Container
      */
-    protected Container $app;
+    protected Application $app;
 
     /**
      * Default modules path.
@@ -73,11 +71,7 @@ class FileRepository implements RepositoryInterface, Countable
      */
     private ?array $cachedModules = null;
 
-    /**
-     * @param Container $app
-     * @param string|null $defaultPath
-     */
-    public function __construct(Container $app, ?string $defaultPath = null)
+    public function __construct(Application $app, ?string $defaultPath = null)
     {
         $this->app = $app;
         $this->defaultPath = $defaultPath ? rtrim($defaultPath, '/') : null;
@@ -90,8 +84,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Register the modules.
-     *
-     * @return void
      */
     public function register(): void
     {
@@ -113,8 +105,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Get modules path.
-     *
-     * @return string
      */
     public function getDefaultPath(): string
     {
@@ -133,12 +123,8 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Add other module location.
-     *
-     * @param string $path
-     *
-     * @return $this
      */
-    public function addLocation(string $path)
+    public function addLocation(string $path): static
     {
         $this->paths[] = $path;
         $this->flushCache();
@@ -169,10 +155,6 @@ class FileRepository implements RepositoryInterface, Countable
     /**
      * Get path for a specific module.
      *
-     * @param Module|string $module
-     * @param string|null $extraPath
-     *
-     * @return string
      * @throws ModuleNotFoundException
      */
     public function getModulePath(Module|string $module, ?string $extraPath = null): string
@@ -187,10 +169,6 @@ class FileRepository implements RepositoryInterface, Countable
     /**
      * Get namespace for a specific module.
      *
-     * @param Module|string $module
-     * @param string|null $extraNamespace
-     *
-     * @return string
      * @throws ModuleNotFoundException
      */
     public function getModuleNamespace(Module|string $module, ?string $extraNamespace = null): string
@@ -256,8 +234,6 @@ class FileRepository implements RepositoryInterface, Countable
     /**
      * Get all ordered modules.
      *
-     * @param string $direction
-     *
      * @return array<string, Module>
      */
     public function getOrdered(string $direction = 'asc'): array
@@ -281,8 +257,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Get modules by status.
-     *
-     * @param bool $status
      *
      * @return array<string, Module>
      */
@@ -331,15 +305,8 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Creates a new Module instance
-     *
-     * @param Container $app
-     * @param string $name
-     * @param string $path
-     * @param string $namespace
-     *
-     * @return Module
      */
-    protected function createModule(Container $app, string $name, string $path, string $namespace): Module
+    protected function createModule(Application $app, string $name, string $path, string $namespace): Module
     {
         return new Module($app, $name, $path, $namespace);
     }
@@ -356,10 +323,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Determine whether the given module exist.
-     *
-     * @param string $moduleName
-     *
-     * @return bool
      */
     public function has(string $moduleName): bool
     {
@@ -369,8 +332,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Get count from all modules.
-     *
-     * @return int
      */
     public function count(): int
     {
@@ -379,10 +340,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Find a specific module.
-     *
-     * @param string $moduleName
-     *
-     * @return Module|null
      */
     public function find(string $moduleName): ?Module
     {
@@ -394,10 +351,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Find a specific module by its alias.
-     *
-     * @param string $alias
-     *
-     * @return Module|null
      */
     public function findByAlias(string $alias): ?Module
     {
@@ -413,9 +366,6 @@ class FileRepository implements RepositoryInterface, Countable
     /**
      * Find a specific module, if there return that, otherwise throw exception.
      *
-     * @param string $moduleName
-     *
-     * @return Module
      * @throws ModuleNotFoundException
      */
     public function findOrFail(string $moduleName): Module
@@ -431,8 +381,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Find all modules that are required by a module. If the module cannot be found, throw an exception.
-     *
-     * @param string $moduleName
      *
      * @return array<int, Module>
      * @throws ModuleNotFoundException
@@ -452,8 +400,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Format the cached data as array of modules.
-     *
-     * @param array $cached
      *
      * @return array<string, Module>
      */
@@ -503,8 +449,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Get storage path for module used.
-     *
-     * @return string
      */
     public function getUsedStoragePath(): string
     {
@@ -523,8 +467,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Set module used for cli session.
-     *
-     * @param string $moduleName
      *
      * @throws ModuleNotFoundException
      */
@@ -548,8 +490,6 @@ class FileRepository implements RepositoryInterface, Countable
     /**
      * Get module used for cli session.
      *
-     * @return Module
-     *
      * @throws ModuleNotFoundException|\Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     public function getUsedNow(): Module
@@ -559,8 +499,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Get laravel filesystem instance.
-     *
-     * @return Filesystem
      */
     public function getFilesystem(): Filesystem
     {
@@ -569,8 +507,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Get modules assets path.
-     *
-     * @return string
      */
     public function getAssetsPath(): string
     {
@@ -580,9 +516,6 @@ class FileRepository implements RepositoryInterface, Countable
     /**
      * Get asset url from a specific module.
      *
-     * @param string $asset
-     *
-     * @return string
      * @throws InvalidAssetPath
      */
     public function asset(string $asset): string
@@ -654,10 +587,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Update dependencies for the specified module.
-     *
-     * @param string $moduleName
-     *
-     * @return void
      */
     public function update(string $moduleName): void
     {
@@ -666,13 +595,6 @@ class FileRepository implements RepositoryInterface, Countable
 
     /**
      * Install the specified module.
-     *
-     * @param string $name
-     * @param string|null $version
-     * @param string|null $type
-     * @param bool|null $subtree
-     *
-     * @return Process
      */
     public function install(string $name, ?string $version = 'dev-master', ?string $type = 'composer', bool $subtree = false): Process
     {

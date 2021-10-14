@@ -16,7 +16,6 @@
         "App\\Modules\\Order\\Providers\\EventServiceProvider",
         "App\\Modules\\Order\\Providers\\RouteServiceProvider"
     ],
-    "aliases":{},
-    "files": [
-    ]
+    "aliases": [],
+    "files": []
 }

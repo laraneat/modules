@@ -35,7 +35,7 @@ class MigrateRollbackCommand extends Command
         if (!empty($name)) {
             $this->rollback($name);
 
-            return 0;
+            return self::SUCCESS;
         }
 
         foreach (Modules::getOrdered($this->option('direction')) as $module) {
@@ -44,7 +44,7 @@ class MigrateRollbackCommand extends Command
             $this->rollback($module);
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

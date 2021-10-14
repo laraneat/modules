@@ -4,86 +4,53 @@ namespace Laraneat\Modules;
 
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
-use Laraneat\Modules\Exceptions\InvalidJsonException;
+use JsonException;
 
 class Json
 {
     /**
      * The file path.
-     *
-     * @var string
      */
     protected string $path;
 
     /**
      * The laravel filesystem instance.
-     *
-     * @var Filesystem
      */
     protected Filesystem $filesystem;
 
     /**
-     * The attributes collection.
-     *
-     * @var \Illuminate\Support\Collection
+     * The collection of attributes.
      */
     protected \Illuminate\Support\Collection $attributes;
 
     /**
      * The constructor.
-     *
-     * @param mixed $path
-     * @param Filesystem|null $filesystem
      */
-    public function __construct($path, ?Filesystem $filesystem = null)
+    public function __construct(string $path, ?Filesystem $filesystem = null)
     {
-        $this->path = (string) $path;
+        $this->path = $path;
         $this->filesystem = $filesystem ?: new Filesystem();
         $this->attributes = Collection::make($this->getAttributes());
     }
 
-    /**
-     * Get filesystem.
-     *
-     * @return Filesystem
-     */
     public function getFilesystem(): Filesystem
     {
         return $this->filesystem;
     }
 
-    /**
-     * Set filesystem.
-     *
-     * @param Filesystem $filesystem
-     *
-     * @return $this
-     */
-    public function setFilesystem(Filesystem $filesystem)
+    public function setFilesystem(Filesystem $filesystem): static
     {
         $this->filesystem = $filesystem;
 
         return $this;
     }
 
-    /**
-     * Get path.
-     *
-     * @return string
-     */
     public function getPath(): string
     {
         return $this->path;
     }
 
-    /**
-     * Set path.
-     *
-     * @param mixed $path
-     *
-     * @return $this
-     */
-    public function setPath($path)
+    public function setPath($path): static
     {
         $this->path = (string) $path;
 
@@ -92,11 +59,6 @@ class Json
 
     /**
      * Make new instance.
-     *
-     * @param string $path
-     * @param Filesystem|null $filesystem
-     *
-     * @return static
      */
     public static function make(string $path, ?Filesystem $filesystem = null): static
     {
@@ -117,41 +79,29 @@ class Json
     /**
      * Get file contents as array.
      *
-     * @return array
-     * @throws InvalidJsonException|FileNotFoundException
+     * @throws FileNotFoundException|JsonException
      */
     public function getAttributes(): array
     {
-        $attributes = json_decode($this->getContents(), 1);
-
-        // any JSON parsing errors should throw an exception
-        if (json_last_error() > 0) {
-            throw new InvalidJsonException('Error processing file: ' . $this->getPath() . '. Error: ' . json_last_error_msg());
-        }
-
-        return $attributes;
+        return json_decode($this->getContents(), true, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
      * Convert the given array data to pretty json.
      *
-     * @param array|null $data
-     *
-     * @return string
+     * @throws JsonException
      */
     public function toJsonPretty(?array $data = null): string
     {
-        return json_encode($data ?: $this->attributes, JSON_PRETTY_PRINT);
+        return json_encode($data ?: $this->attributes, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
     }
 
     /**
      * Update json contents from array data.
      *
-     * @param array $data
-     *
-     * @return bool
+     * @throws FileNotFoundException|JsonException
      */
-    public function update(array $data)
+    public function update(array $data): int|false
     {
         $this->attributes = new Collection(array_merge($this->attributes->toArray(), $data));
 
@@ -160,26 +110,21 @@ class Json
 
     /**
      * Handle magic method __set.
-     *
-     * @param mixed $key
-     * @param mixed $value
-     *
-     * @return $this
      */
     public function __set($key, $value)
     {
-        return $this->set($key, $value);
+        $this->set($key, $value);
+    }
+
+    public function __isset(string $name): bool
+    {
+        return $this->attributes->offsetExists($name);
     }
 
     /**
      * Set a specific key & value.
-     *
-     * @param mixed $key
-     * @param mixed $value
-     *
-     * @return $this
      */
-    public function set($key, $value)
+    public function set($key, $value): static
     {
         $this->attributes->offsetSet($key, $value);
 
@@ -189,19 +134,15 @@ class Json
     /**
      * Save the current attributes array to the file storage.
      *
-     * @return bool
+     * @throws JsonException
      */
-    public function save()
+    public function save(): int|false
     {
         return $this->filesystem->put($this->getPath(), $this->toJsonPretty());
     }
 
     /**
      * Handle magic method __get.
-     *
-     * @param string $key
-     *
-     * @return mixed
      */
     public function __get($key)
     {
@@ -210,11 +151,6 @@ class Json
 
     /**
      * Get the specified attribute from json file.
-     *
-     * @param $key
-     * @param mixed $default
-     *
-     * @return mixed
      */
     public function get($key, $default = null)
     {
@@ -223,11 +159,6 @@ class Json
 
     /**
      * Handle call to __call method.
-     *
-     * @param string $method
-     * @param array  $arguments
-     *
-     * @return mixed
      */
     public function __call(string $method, array $arguments = [])
     {

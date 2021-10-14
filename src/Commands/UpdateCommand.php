@@ -35,14 +35,14 @@ class UpdateCommand extends Command
         if ($name) {
             $this->updateModule($name);
 
-            return 0;
+            return self::SUCCESS;
         }
 
         foreach (Modules::getOrdered() as $module) {
             $this->updateModule($module->getName());
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     protected function updateModule(string $moduleName): void

@@ -15,71 +15,51 @@ class ModuleGenerator extends Generator
 {
     /**
      * The name of the module to be created.
-     *
-     * @var string
      */
     protected string $name;
 
     /**
      * Entity name.
-     *
-     * @var string
      */
     protected string $entityName;
 
     /**
      * The repository instance.
-     *
-     * @var FileRepository|null
      */
     protected ?FileRepository $repository;
 
     /**
      * The laravel config instance.
-     *
-     * @var Config|null
      */
     protected ?Config $config;
 
     /**
      * The laravel filesystem instance.
-     *
-     * @var Filesystem|null
      */
     protected ?Filesystem $filesystem;
 
     /**
      * The laravel console instance.
-     *
-     * @var Console|null
      */
     protected ?Console $console;
 
     /**
      * The activator instance
-     *
-     * @var ActivatorInterface|null
      */
     protected ?ActivatorInterface $activator;
 
     /**
      * Force status.
-     *
-     * @var bool
      */
     protected bool $force = false;
 
     /**
-     * Set default module type.
-     *
-     * @var string
+     * The module type.
      */
     protected string $type = 'api';
 
     /**
      * Enables the module.
-     *
-     * @var bool
      */
     protected bool $isActive = false;
 
@@ -103,12 +83,8 @@ class ModuleGenerator extends Generator
 
     /**
      * Set entity name.
-     *
-     * @param string $entityName
-     *
-     * @return $this
      */
-    public function setEntityName(string $entityName)
+    public function setEntityName(string $entityName): static
     {
         $this->entityName = Str::studly($entityName);
 
@@ -117,12 +93,8 @@ class ModuleGenerator extends Generator
 
     /**
      * Set type.
-     *
-     * @param string $type
-     *
-     * @return $this
      */
-    public function setType(string $type)
+    public function setType(string $type): static
     {
         $this->type = $type;
 
@@ -131,12 +103,8 @@ class ModuleGenerator extends Generator
 
     /**
      * Set active flag.
-     *
-     * @param bool $active
-     *
-     * @return $this
      */
-    public function setActive(bool $active)
+    public function setActive(bool $active): static
     {
         $this->isActive = $active;
 
@@ -144,9 +112,7 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get the name of module will created. By default in studly case.
-     *
-     * @return string
+     * Get the name of the module to create. By default, in studly case.
      */
     public function getName(): string
     {
@@ -155,8 +121,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get the entity name.
-     *
-     * @return string
      */
     public function getEntityName(): string
     {
@@ -165,8 +129,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get the laravel config instance.
-     *
-     * @return Config|null
      */
     public function getConfig(): ?Config
     {
@@ -175,12 +137,8 @@ class ModuleGenerator extends Generator
 
     /**
      * Set the laravel config instance.
-     *
-     * @param Config $config
-     *
-     * @return $this
      */
-    public function setConfig(Config $config)
+    public function setConfig(Config $config): static
     {
         $this->config = $config;
 
@@ -189,12 +147,8 @@ class ModuleGenerator extends Generator
 
     /**
      * Set the modules activator
-     *
-     * @param ActivatorInterface $activator
-     *
-     * @return $this
      */
-    public function setActivator(ActivatorInterface $activator)
+    public function setActivator(ActivatorInterface $activator): static
     {
         $this->activator = $activator;
 
@@ -203,8 +157,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get the laravel filesystem instance.
-     *
-     * @return Filesystem|null
      */
     public function getFilesystem(): ?Filesystem
     {
@@ -213,12 +165,8 @@ class ModuleGenerator extends Generator
 
     /**
      * Set the laravel filesystem instance.
-     *
-     * @param Filesystem $filesystem
-     *
-     * @return $this
      */
-    public function setFilesystem(Filesystem $filesystem)
+    public function setFilesystem(Filesystem $filesystem): static
     {
         $this->filesystem = $filesystem;
 
@@ -227,8 +175,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get the laravel console instance.
-     *
-     * @return Console|null
      */
     public function getConsole(): ?Console
     {
@@ -237,12 +183,8 @@ class ModuleGenerator extends Generator
 
     /**
      * Set the laravel console instance.
-     *
-     * @param Console $console
-     *
-     * @return $this
      */
-    public function setConsole(Console $console)
+    public function setConsole(Console $console): static
     {
         $this->console = $console;
 
@@ -251,8 +193,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get the repository instance.
-     *
-     * @return FileRepository|null
      */
     public function getRepository(): ?FileRepository
     {
@@ -261,12 +201,8 @@ class ModuleGenerator extends Generator
 
     /**
      * Set the repository instance.
-     *
-     * @param FileRepository $repository
-     *
-     * @return $this
      */
-    public function setRepository(FileRepository $repository)
+    public function setRepository(FileRepository $repository): static
     {
         $this->repository = $repository;
 
@@ -275,8 +211,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get the list of folders to be created.
-     *
-     * @return array
      */
     public function getFolders(): array
     {
@@ -285,12 +219,8 @@ class ModuleGenerator extends Generator
 
     /**
      * Set force status.
-     *
-     * @param bool|int $force
-     *
-     * @return $this
      */
-    public function setForce($force)
+    public function setForce($force): static
     {
         $this->force = $force;
 
@@ -299,8 +229,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Generate the module.
-     *
-     * @return int
      */
     public function generate(): int
     {
@@ -319,26 +247,28 @@ class ModuleGenerator extends Generator
         $this->generateFolders();
         $this->generateScaffoldFiles();
 
-        if ($this->type === 'plain') {
-            $this->cleanModuleJsonFile();
-        }
-
         $this->activator->setActiveByName($name, $this->isActive);
         $this->repository->flushCache();
 
-        if ($this->type !== 'plain') {
-            $this->generateComponents();
+        if ($this->type && $this->type !== 'plain') {
+            $module = $this->repository->findOrFail($name);
+            $code = (new ModuleComponentsGenerator($module))
+                ->setEntityName($this->entityName)
+                ->setConsole($this->console)
+                ->generate();
+
+            if ($code === $this->console::FAILURE) {
+                return $this->console::FAILURE;
+            }
         }
 
         $this->console->info("Module [{$name}] created successfully.");
 
-        return 0;
+        return $this->console::SUCCESS;
     }
 
     /**
      * Generate the folders.
-     *
-     * @return void
      */
     public function generateFolders(): void
     {
@@ -368,225 +298,7 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Generate module components.
-     *
-     * @return void
-     */
-    public function generateComponents(): void
-    {
-        $actionVerbs = [
-            'api' => ['create', 'update', 'delete', 'list', 'view'],
-            'web' => ['create', 'update', 'delete'],
-        ];
-        $moduleName = $this->getName();
-        $entityName = $this->getEntityName();
-        $pluralEntityName = Str::plural($entityName);
-        $camelEntityName = Str::camel($entityName);
-        $snakeEntityName = Str::snake($entityName);
-        $snakePluralEntityName = Str::plural($snakeEntityName);
-        $dashedPluralEntityName = Str::snake($snakePluralEntityName, '-');
-        $underlinedPluralEntityName = Str::snake($snakePluralEntityName, '_');
-
-        if (GeneratorHelper::component('action')->generate() === true) {
-            foreach ($actionVerbs['api'] as $actionVerb) {
-                $studlyActionVerb = Str::studly($actionVerb);
-                $actionClass = "{$studlyActionVerb}{$entityName}Action";
-                $requestClass = "{$studlyActionVerb}{$entityName}Request";
-                $dtoClass = "{$studlyActionVerb}{$entityName}DTO";
-                $wizardClass = "{$entityName}QueryWizard";
-
-                if ($actionVerb === "list") {
-                    $actionClass = "{$studlyActionVerb}{$pluralEntityName}Action";
-                    $requestClass = "{$studlyActionVerb}{$pluralEntityName}Request";
-                    $wizardClass = "{$pluralEntityName}QueryWizard";
-                }
-
-                $this->console->call('module:make:action', [
-                    'name' => $actionClass,
-                    'module' => $moduleName,
-                    '--stub' => $actionVerb,
-                    '--dto' => $dtoClass,
-                    '--model' => $entityName,
-                    '--request' => $requestClass,
-                    '--resource' => "{$entityName}Resource",
-                    '--wizard' => $wizardClass
-                ]);
-            }
-        }
-
-        if (GeneratorHelper::component('factory')->generate() === true) {
-            $this->console->call('module:make:factory', [
-                'name' => "{$entityName}Factory",
-                'module' => $moduleName,
-                '--model' => $entityName
-            ]);
-        }
-
-        if (GeneratorHelper::component('migration')->generate() === true) {
-            $this->console->call('module:make:migration', [
-                'name' => "create_{$snakePluralEntityName}_table",
-                'module' => $moduleName,
-                '--stub' => 'create'
-            ]);
-        }
-
-        if (GeneratorHelper::component('seeder')->generate() === true) {
-            $this->console->call('module:make:seeder', [
-                'name' => "{$entityName}PermissionsSeeder_1",
-                'module' => $moduleName,
-                '--stub' => 'permissions',
-                '--model' => $entityName
-            ]);
-        }
-
-        if (GeneratorHelper::component('dto')->generate() === true) {
-            $this->console->call('module:make:dto', [
-                'name' => "Create{$entityName}DTO",
-                'module' => $moduleName,
-                '--strict' => true,
-            ]);
-        }
-
-        if (GeneratorHelper::component('model')->generate() === true) {
-            $this->console->call('module:make:model', [
-                'name' => $entityName,
-                'module' => $moduleName,
-                '--stub' => 'full',
-                '--factory' => "{$entityName}Factory"
-            ]);
-        }
-
-        if (GeneratorHelper::component('policy')->generate() === true) {
-            $this->console->call('module:make:policy', [
-                'name' => "{$entityName}Policy",
-                'module' => $moduleName,
-                '--stub' => 'full',
-                '--model' => $entityName
-            ]);
-        }
-
-        if (GeneratorHelper::component('provider')->generate() === true) {
-            $this->console->call('module:make:provider', [
-                'name' => "{$moduleName}ServiceProvider",
-                'module' => $moduleName,
-                '--stub' => 'module'
-            ]);
-            $this->console->call('module:make:provider', [
-                'name' => "RouteServiceProvider",
-                'module' => $moduleName,
-                '--stub' => 'route'
-            ]);
-        }
-
-        if (GeneratorHelper::component('api-query-wizard')->generate() === true) {
-            $this->console->call('module:make:wizard', [
-                'name' => "{$pluralEntityName}QueryWizard",
-                'module' => $moduleName,
-                '--stub' => 'eloquent',
-            ]);
-            $this->console->call('module:make:wizard', [
-                'name' => "{$entityName}QueryWizard",
-                'module' => $moduleName,
-                '--stub' => 'model',
-            ]);
-        }
-
-        if (GeneratorHelper::component('api-resource')->generate() === true) {
-            $this->console->call('module:make:resource', [
-                'name' => "{$entityName}Resource",
-                'module' => $moduleName,
-                '--stub' => 'single'
-            ]);
-        }
-
-        foreach ($actionVerbs as $ui => $uiActionVerbs) {
-            if (GeneratorHelper::component("{$ui}-controller")->generate() === true) {
-                $this->console->call('module:make:controller', [
-                    'name' => 'Controller',
-                    'module' => $moduleName,
-                    '--ui' => $ui
-                ]);
-            }
-
-            if (GeneratorHelper::component("{$ui}-request")->generate() === true) {
-                foreach ($uiActionVerbs as $actionVerb) {
-                    $studlyActionVerb = Str::studly($actionVerb);
-                    $requestClass = $actionVerb === 'list'
-                        ? "{$studlyActionVerb}{$pluralEntityName}Request"
-                        : "{$studlyActionVerb}{$entityName}Request";
-                    $dtoClass = "{$studlyActionVerb}{$entityName}DTO";
-
-                    $this->console->call('module:make:request', [
-                        'name' => $requestClass,
-                        'module' => $moduleName,
-                        '--ui' => $ui,
-                        '--dto' => $dtoClass,
-                        '--stub' => $actionVerb,
-                        '--model' => $entityName,
-                    ]);
-                }
-            }
-
-            if (GeneratorHelper::component("{$ui}-route")->generate() === true) {
-                $actionMethodsMap = [
-                    'create' => 'post',
-                    'update' => 'patch',
-                    'delete' => 'delete',
-                    'list' => 'get',
-                    'view' => 'get'
-                ];
-                foreach ($uiActionVerbs as $actionVerb) {
-                    $studlyActionVerb = Str::studly($actionVerb);
-                    $actionClass = $actionVerb === 'list'
-                        ? "{$studlyActionVerb}{$pluralEntityName}Action"
-                        : "{$studlyActionVerb}{$entityName}Action";
-
-                    $url = $dashedPluralEntityName;
-                    if (in_array($actionVerb, ['update', 'delete', 'view'])) {
-                        $url .= '/{' . $camelEntityName . '}';
-                    }
-
-                    $filePath = Str::snake(str_replace('Action', '', $actionClass), '_');
-                    if ($ui === 'api') {
-                        $filePath = 'v1/' . $filePath;
-                    }
-
-                    $this->console->call('module:make:route', [
-                        'name' => $filePath,
-                        'module' => $moduleName,
-                        '--ui' => $ui,
-                        '--action' => $actionClass,
-                        '--method' => $actionMethodsMap[$actionVerb],
-                        '--url' => $url,
-                        '--name' => $ui . '.' . $underlinedPluralEntityName . '.' . $actionVerb
-                    ]);
-                }
-            }
-
-            if (GeneratorHelper::component("{$ui}-test")->generate() === true) {
-                foreach ($uiActionVerbs as $actionVerb) {
-                    $studlyActionVerb = Str::studly($actionVerb);
-                    $testClass = $actionVerb === 'list'
-                        ? "{$studlyActionVerb}{$pluralEntityName}Test"
-                        : "{$studlyActionVerb}{$entityName}Test";
-
-                    $this->console->call('module:make:test', [
-                        'name' => $testClass,
-                        'module' => $moduleName,
-                        '--type' => $ui,
-                        '--stub' => $actionVerb,
-                        '--model' => $entityName,
-                        '--route' => $ui . '.' . $underlinedPluralEntityName . '.' . $actionVerb
-                    ]);
-                }
-            }
-        }
-    }
-
-    /**
      * Generate git keep to the specified path.
-     *
-     * @param string $path
      */
     protected function generateGitKeep(string $path): void
     {
@@ -595,8 +307,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Generate config
-     *
-     * @return void
      */
     protected function generateConfig(): void
     {
@@ -614,8 +324,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Generate config
-     *
-     * @return void
      */
     protected function generateComposerJsonFile(): void
     {
@@ -628,8 +336,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Generate the module.json file
-     *
-     * @return void
      */
     protected function generateModuleJsonFile(): void
     {
@@ -641,34 +347,7 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Remove the default service provider that was added in the module.json file
-     * This is needed when a --plain module was created
-     *
-     * @return void
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
-    protected function cleanModuleJsonFile(): void
-    {
-        $path = GeneratorHelper::modulePath($this->getName(), 'module.json');
-
-        $content = $this->filesystem->get($path);
-        $providerNamespace = $this->getProviderNamespaceReplacement();
-        $studlyName = $this->getStudlyNameReplacement();
-
-        $provider = '"' . $providerNamespace . '\\\\' . $studlyName . 'ServiceProvider"';
-
-        $content = str_replace($provider, '', $content);
-
-        $this->filesystem->put($path, $content);
-    }
-
-    /**
      * Create a file at the given path, after creating folders if necessary
-     *
-     * @param string $path
-     * @param string $content
-     *
-     * @return void
      */
     protected function createFile(string $path, string $content): void
     {
@@ -680,8 +359,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get replacements
-     *
-     * @return array
      */
     protected function getAllReplacements(): array
     {
@@ -691,15 +368,12 @@ class ModuleGenerator extends Generator
             'lowerName' => $this->getLowerNameReplacement(),
             'studlyName' => $this->getStudlyNameReplacement(),
             'moduleNamespace' => $this->getModuleNamespaceReplacement(),
-            'providerNamespace' => $this->getProviderNamespaceReplacement(),
             'vendor' => $this->getVendorReplacement()
         ];
     }
 
     /**
      * Get the module name in lower case (replacement for {{ lowerName }}).
-     *
-     * @return string
      */
     protected function getLowerNameReplacement(): string
     {
@@ -708,8 +382,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get the module name in studly case (replacement for {{ studlyName }}).
-     *
-     * @return string
      */
     protected function getStudlyNameReplacement(): string
     {
@@ -718,8 +390,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get replacement for {{ vendor }}.
-     *
-     * @return string
      */
     protected function getVendorReplacement(): string
     {
@@ -728,8 +398,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get replacement for {{ authorName }}.
-     *
-     * @return string
      */
     protected function getAuthorNameReplacement(): string
     {
@@ -738,8 +406,6 @@ class ModuleGenerator extends Generator
 
     /**
      * Get replacement for {{ authorEmail }}.
-     *
-     * @return string
      */
     protected function getAuthorEmailReplacement(): string
     {
@@ -748,22 +414,9 @@ class ModuleGenerator extends Generator
 
     /**
      * Get replacement for {{ moduleNamespace }}.
-     *
-     * @return string
      */
     protected function getModuleNamespaceReplacement(): string
     {
         return str_replace('\\', '\\\\', GeneratorHelper::moduleNamespace($this->getName()));
-    }
-
-    /**
-     * Get replacement for {{ providerNamespace }}.
-     *
-     * @return string
-     */
-    protected function getProviderNamespaceReplacement(): string
-    {
-        $providerNamespace = GeneratorHelper::component('provider')->getFullNamespace($this->getName());
-        return str_replace('\\', '\\\\', $providerNamespace);
     }
 }

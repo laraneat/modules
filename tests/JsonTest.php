@@ -2,7 +2,7 @@
 
 namespace Laraneat\Modules\Tests;
 
-use Laraneat\Modules\Exceptions\InvalidJsonException;
+use JsonException;
 use Laraneat\Modules\Json;
 
 class JsonTest extends BaseTestCase
@@ -29,8 +29,7 @@ class JsonTest extends BaseTestCase
     {
         $path = __DIR__ . '/fixtures/stubs/InvalidJsonModule/module.json';
 
-        $this->expectException(InvalidJsonException::class);
-        $this->expectExceptionMessage('Error processing file: ' . $path . '. Error: Syntax error');
+        $this->expectException(JsonException::class);
 
         new Json($path, $this->app['files']);
     }
@@ -125,9 +124,8 @@ class JsonTest extends BaseTestCase
         "App\\\\Modules\\\\Order\\\\Providers\\\\EventServiceProvider",
         "App\\\\Modules\\\\Order\\\\Providers\\\\RouteServiceProvider"
     ],
-    "aliases":{},
-    "files": [
-    ]
+    "aliases": [],
+    "files": []
 }
 ';
         $this->assertEquals($expected, (string)$this->json);

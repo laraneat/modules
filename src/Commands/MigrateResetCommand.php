@@ -41,7 +41,7 @@ class MigrateResetCommand extends Command
         if (!empty($name)) {
             $this->reset($name);
 
-            return 0;
+            return self::SUCCESS;
         }
 
         foreach (Modules::getOrdered($this->option('direction')) as $module) {
@@ -50,7 +50,7 @@ class MigrateResetCommand extends Command
             $this->reset($module);
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

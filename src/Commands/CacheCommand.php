@@ -31,6 +31,6 @@ class CacheCommand extends Command
         Modules::getCached();
         $this->info("Modules cached successfully!");
 
-        return 0;
+        return self::SUCCESS;
     }
 }

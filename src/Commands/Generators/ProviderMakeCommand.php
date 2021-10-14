@@ -2,6 +2,7 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use Laraneat\Modules\Support\Stub;
@@ -31,36 +32,26 @@ class ProviderMakeCommand extends ComponentGeneratorCommand
 
     /**
      * The stub name to load for this generator.
-     *
-     * @var string
      */
     protected string $stub = 'plain';
 
     /**
      * Module instance.
-     *
-     * @var Module
      */
     protected Module $module;
 
     /**
      * Component type.
-     *
-     * @var string
      */
     protected string $componentType;
 
     /**
      * Prepared 'name' argument.
-     *
-     * @var string
      */
     protected string $nameArgument;
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -69,7 +60,7 @@ class ProviderMakeCommand extends ComponentGeneratorCommand
         ];
     }
 
-    protected function prepare()
+    protected function prepare(): void
     {
         $this->module = $this->getModule();
         $this->stub = $this->getOptionOrChoice(
@@ -114,6 +105,22 @@ class ProviderMakeCommand extends ComponentGeneratorCommand
             ]);
         }
 
+        $this->addProviderClassToModuleJson($stubReplaces['namespace'] . '\\' . $stubReplaces['class']);
+
         return Stub::create("provider/{$this->stub}.stub", $stubReplaces)->render();
+    }
+
+    protected function addProviderClassToModuleJson(string $providerClass): void
+    {
+        $json = $this->module->json();
+        $providers = $json->get('providers');
+        if (! is_array($providers)) {
+            $providers = [];
+        }
+        $providers[] = $providerClass;
+        $json->set('providers', $providers)
+            ->save();
+
+        Modules::flushCache();
     }
 }

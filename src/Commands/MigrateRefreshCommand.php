@@ -51,7 +51,7 @@ class MigrateRefreshCommand extends Command
             ]);
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

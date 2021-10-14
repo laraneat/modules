@@ -48,7 +48,7 @@ class InstallCommand extends Command
             $this->option('tree')
         );
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**
@@ -59,7 +59,7 @@ class InstallCommand extends Command
         if (!file_exists($path = base_path('modules.json'))) {
             $this->error("File 'modules.json' does not exist in your project root.");
 
-            return E_ERROR;
+            return self::FAILURE;
         }
 
         $modules = Json::make($path);
@@ -76,7 +76,7 @@ class InstallCommand extends Command
             );
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

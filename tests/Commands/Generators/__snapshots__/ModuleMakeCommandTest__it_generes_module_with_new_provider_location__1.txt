@@ -6,9 +6,10 @@
     "keywords": [],
     "priority": 0,
     "providers": [
-        "App\\Modules\\Article\\Base\\Providers\\ArticleServiceProvider"
+        "App\\Modules\\Article\\Base\\Providers\\ArticleServiceProvider",
+        "App\\Modules\\Article\\Base\\Providers\\RouteServiceProvider"
     ],
-    "aliases": {},
+    "aliases": [],
     "files": [],
     "requires": []
 }

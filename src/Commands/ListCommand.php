@@ -30,7 +30,7 @@ class ListCommand extends Command
     {
         $this->table(['Name', 'Status', 'Priority', 'Path'], $this->getRows());
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

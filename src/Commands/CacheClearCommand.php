@@ -29,6 +29,6 @@ class CacheClearCommand extends Command
         Modules::flushCache();
         $this->info("Modules cache cleared!");
 
-        return 0;
+        return self::SUCCESS;
     }
 }

@@ -44,7 +44,7 @@ class DisableCommand extends Command
             $this->comment("Module [{$module}] has already disabled.");
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

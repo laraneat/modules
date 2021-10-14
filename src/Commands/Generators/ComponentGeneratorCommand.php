@@ -145,7 +145,7 @@ abstract class ComponentGeneratorCommand extends Command
         if ($this->isReservedName($this->getClass($this->getTrimmedArgument('name')))) {
             $this->error('The name "'.$this->getClass($this->getTrimmedArgument('name')).'" is reserved by PHP.');
 
-            return E_ERROR;
+            return self::FAILURE;
         }
 
         $path = str_replace('\\', '/', $this->getDestinationFilePath());
@@ -161,10 +161,10 @@ abstract class ComponentGeneratorCommand extends Command
         } catch (FileAlreadyExistException $e) {
             $this->error("File: `$path` already exists.");
 
-            return E_ERROR;
+            return self::FAILURE;
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

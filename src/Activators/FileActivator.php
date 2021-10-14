@@ -13,46 +13,36 @@ class FileActivator implements ActivatorInterface
 {
     /**
      * Laravel cache instance
-     *
-     * @var CacheManager
      */
     protected CacheManager $cache;
 
     /**
      * Laravel Filesystem instance
-     *
-     * @var Filesystem
      */
     protected Filesystem $files;
 
     /**
      * Laravel config instance
-     *
-     * @var Config
      */
     protected Config $config;
 
     /**
-     * @var string
+     * Modules cache key
      */
     protected string $cacheKey;
 
     /**
-     * @var string
+     * Modules cache lifetime
      */
     protected string $cacheLifetime;
 
     /**
      * Array of modules activation statuses
-     *
-     * @var array
      */
     protected array $modulesStatuses;
 
     /**
      * File used to store activation statuses
-     *
-     * @var string
      */
     protected string $statusesFile;
 
@@ -69,8 +59,6 @@ class FileActivator implements ActivatorInterface
 
     /**
      * Get the path of the file where statuses are stored
-     *
-     * @return string
      */
     public function getStatusesFilePath(): string
     {
@@ -158,8 +146,6 @@ class FileActivator implements ActivatorInterface
 
     /**
      * Reads the json file that contains the activation statuses.
-     *
-     * @return array
      */
     protected function readJson(): array
     {
@@ -173,8 +159,6 @@ class FileActivator implements ActivatorInterface
     /**
      * Get modules statuses, either from the cache or from
      * the json statuses file if the cache is disabled.
-     *
-     * @return array
      */
     protected function getModulesStatuses(): array
     {
@@ -189,10 +173,6 @@ class FileActivator implements ActivatorInterface
 
     /**
      * Reads a config parameter under the 'activators.file' key
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
      */
     protected function config(string $key, $default = null)
     {

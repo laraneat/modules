@@ -71,8 +71,8 @@ class ModuleMakeCommand extends Command
     protected function getOptions(): array
     {
         return [
-            ['api', 'a', InputOption::VALUE_NONE, 'Generate an api module (with api components, enabled by default).'],
-            ['web', 'w', InputOption::VALUE_NONE, 'Generate a web module (with web components).'],
+//            ['api', 'a', InputOption::VALUE_NONE, 'Generate an api module (with api components, enabled by default).'],
+//            ['web', 'w', InputOption::VALUE_NONE, 'Generate a web module (with web components).'],
             ['plain', 'p', InputOption::VALUE_NONE, 'Generate a plain module (without some components).'],
             ['disabled', 'd', InputOption::VALUE_NONE, 'Do not enable the module at creation.'],
             ['force', 'f', InputOption::VALUE_NONE, 'Force the operation to run when the module already exists.'],
@@ -91,9 +91,9 @@ class ModuleMakeCommand extends Command
             return 'plain';
         }
 
-        if ($this->option('web')) {
-            return 'web';
-        }
+//        if ($this->option('web')) {
+//            return 'web';
+//        }
 
         return 'api';
     }

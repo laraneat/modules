@@ -39,7 +39,7 @@ class MigrateCommand extends Command
 
             $this->migrate($module);
 
-            return 0;
+            return self::SUCCESS;
         }
 
         foreach (Modules::getOrdered($this->option('direction')) as $module) {
@@ -48,7 +48,7 @@ class MigrateCommand extends Command
             $this->migrate($module);
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

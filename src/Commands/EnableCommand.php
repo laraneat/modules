@@ -33,7 +33,7 @@ class EnableCommand extends Command
         if ($this->argument('module') === null) {
             $this->enableAll();
 
-            return 0;
+            return self::SUCCESS;
         }
 
         $module = Modules::findOrFail($this->argument('module'));
@@ -46,7 +46,7 @@ class EnableCommand extends Command
             $this->comment("Module [{$module}] has already enabled.");
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

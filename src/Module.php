@@ -2,8 +2,7 @@
 
 namespace Laraneat\Modules;
 
-use Illuminate\Cache\CacheManager;
-use Illuminate\Container\Container;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\ProviderRepository;
@@ -19,29 +18,21 @@ class Module
 
     /**
      * The laravel application instance.
-     *
-     * @var Container
      */
-    protected Container $app;
+    protected Application $app;
 
     /**
      * The module name.
-     *
-     * @var
      */
     protected string $name;
 
     /**
      * The module path.
-     *
-     * @var string
      */
     protected string $path;
 
     /**
      * The module namespace.
-     *
-     * @var string
      */
     protected string $namespace;
 
@@ -51,41 +42,27 @@ class Module
     protected array $moduleJson = [];
 
     /**
-     * @var CacheManager
-     */
-    private CacheManager $cache;
-
-    /**
-     * @var Filesystem
+     * The laravel filesystem instance.
      */
     private Filesystem $filesystem;
 
     /**
-     * @var ActivatorInterface
+     * The activator instance.
      */
     private ActivatorInterface $activator;
 
-    /**
-     * @param Container $app
-     * @param string $name
-     * @param string $path
-     * @param string $namespace
-     */
-    public function __construct(Container $app, string $name, string $path, string $namespace)
+    public function __construct(Application $app, string $name, string $path, string $namespace)
     {
         $this->app = $app;
         $this->name = trim($name);
         $this->path = rtrim($path, '/');
         $this->namespace = trim($namespace, '\\');
-        $this->cache = $app['cache'];
         $this->filesystem = $app['files'];
         $this->activator = $app[ActivatorInterface::class];
     }
 
     /**
      * Get name.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -94,8 +71,6 @@ class Module
 
     /**
      * Get name in lower case.
-     *
-     * @return string
      */
     public function getLowerName(): string
     {
@@ -104,8 +79,6 @@ class Module
 
     /**
      * Get name in studly case.
-     *
-     * @return string
      */
     public function getStudlyName(): string
     {
@@ -114,8 +87,6 @@ class Module
 
     /**
      * Get name in snake case.
-     *
-     * @return string
      */
     public function getSnakeName(): string
     {
@@ -124,8 +95,6 @@ class Module
 
     /**
      * Get description.
-     *
-     * @return string
      */
     public function getDescription(): string
     {
@@ -134,8 +103,6 @@ class Module
 
     /**
      * Get alias.
-     *
-     * @return string
      */
     public function getAlias(): string
     {
@@ -144,8 +111,6 @@ class Module
 
     /**
      * Get priority.
-     *
-     * @return string
      */
     public function getPriority(): string
     {
@@ -154,8 +119,6 @@ class Module
 
     /**
      * Get module requirements.
-     *
-     * @return array
      */
     public function getRequires(): array
     {
@@ -164,8 +127,6 @@ class Module
 
     /**
      * Get path.
-     *
-     * @return string
      */
     public function getPath(): string
     {
@@ -174,8 +135,6 @@ class Module
 
     /**
      * Get namespace.
-     *
-     * @return string
      */
     public function getNamespace(): string
     {
@@ -196,12 +155,8 @@ class Module
 
     /**
      * Get json contents from the cache, setting as needed.
-     *
-     * @param string|null $fileName
-     *
-     * @return Json
      */
-    public function json(?string $fileName = null): Json
+    public function json(?string $fileName = 'module.json'): Json
     {
         if ($fileName === null) {
             $fileName = 'module.json';
@@ -214,11 +169,6 @@ class Module
 
     /**
      * Get a specific data from json file by given the key.
-     *
-     * @param string $key
-     * @param mixed $default
-     *
-     * @return mixed
      */
     public function get(string $key, $default = null)
     {
@@ -227,11 +177,6 @@ class Module
 
     /**
      * Get a specific data from composer.json file by given the key.
-     *
-     * @param string $key
-     * @param mixed $default
-     *
-     * @return mixed
      */
     public function getComposerAttr(string $key, $default = null)
     {
@@ -255,8 +200,6 @@ class Module
 
     /**
      * Register the module event.
-     *
-     * @param string $event
      */
     protected function fireEvent(string $event): void
     {
@@ -265,8 +208,6 @@ class Module
 
     /**
      * Get the path to the cached *_module.php file.
-     *
-     * @return string
      */
     public function getCachedServicesPath(): string
     {
@@ -311,8 +252,6 @@ class Module
 
     /**
      * Handle call __toString.
-     *
-     * @return string
      */
     public function __toString()
     {
@@ -321,10 +260,6 @@ class Module
 
     /**
      * Determine whether the given status same with the current module status.
-     *
-     * @param bool $status
-     *
-     * @return bool
      */
     public function isStatus(bool $status): bool
     {
@@ -333,8 +268,6 @@ class Module
 
     /**
      * Determine whether the current module activated.
-     *
-     * @return bool
      */
     public function isEnabled(): bool
     {
@@ -342,9 +275,7 @@ class Module
     }
 
     /**
-     *  Determine whether the current module not disabled.
-     *
-     * @return bool
+     * Determine whether the current module not disabled.
      */
     public function isDisabled(): bool
     {
@@ -353,10 +284,6 @@ class Module
 
     /**
      * Set active state for current module.
-     *
-     * @param bool $active
-     *
-     * @return void
      */
     public function setActive(bool $active): void
     {
@@ -391,8 +318,6 @@ class Module
 
     /**
      * Delete the current module.
-     *
-     * @return bool
      */
     public function delete(): bool
     {
@@ -409,10 +334,6 @@ class Module
 
     /**
      * Get extra path.
-     *
-     * @param string $path
-     *
-     * @return string
      */
     public function getExtraPath(string $path): string
     {
@@ -420,15 +341,16 @@ class Module
     }
 
     /**
-     * Check if can load files of module on boot method.
-     *
-     * @return bool
+     * Check if the module files can be loaded on boot.
      */
     protected function isLoadFilesOnBoot(): bool
     {
         return config('modules.register.files', 'register') === 'boot';
     }
 
+    /**
+     * Flush modules cache.
+     */
     protected function flushCache(): void
     {
         Modules::flushCache();

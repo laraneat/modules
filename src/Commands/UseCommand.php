@@ -33,14 +33,14 @@ class UseCommand extends Command
         if (!Modules::has($module)) {
             $this->error("Module [{$module}] does not exists.");
 
-            return E_ERROR;
+            return self::FAILURE;
         }
 
         Modules::setUsed($module);
 
         $this->info("Module [{$module}] used successfully.");
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

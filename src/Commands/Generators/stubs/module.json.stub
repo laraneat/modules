@@ -5,9 +5,7 @@
     "description": "{{ studlyName }} module",
     "keywords": [],
     "priority": 0,
-    "providers": [
-        "{{ providerNamespace }}\\{{ studlyName }}ServiceProvider"
-    ],
+    "providers": [],
     "aliases": {},
     "files": [],
     "requires": []

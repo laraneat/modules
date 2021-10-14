@@ -52,15 +52,15 @@ class SeedCommand extends Command
             $this->reportException($e);
             $this->renderException($this->getOutput(), $e);
 
-            return E_ERROR;
+            return self::FAILURE;
         } catch (\Exception $e) {
             $this->reportException($e);
             $this->renderException($this->getOutput(), $e);
 
-            return E_ERROR;
+            return self::FAILURE;
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**

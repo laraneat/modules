@@ -30,6 +30,6 @@ class UnUseCommand extends Command
 
         $this->info('Previous module used successfully forgotten.');
 
-        return 0;
+        return self::SUCCESS;
     }
 }

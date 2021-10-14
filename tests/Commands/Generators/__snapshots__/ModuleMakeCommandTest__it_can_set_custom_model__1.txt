@@ -6,9 +6,10 @@
     "keywords": [],
     "priority": 0,
     "providers": [
-        "App\\Modules\\Blog\\Providers\\BlogServiceProvider"
+        "App\\Modules\\Blog\\Providers\\BlogServiceProvider",
+        "App\\Modules\\Blog\\Providers\\RouteServiceProvider"
     ],
-    "aliases": {},
+    "aliases": [],
     "files": [],
     "requires": []
 }
