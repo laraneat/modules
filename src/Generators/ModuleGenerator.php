@@ -83,14 +83,6 @@ class ModuleGenerator extends Generator
      */
     protected bool $isActive = false;
 
-    /**
-     * @param string $name
-     * @param FileRepository|null $repository
-     * @param Config|null $config
-     * @param Filesystem|null $filesystem
-     * @param Console|null $console
-     * @param ActivatorInterface|null $activator
-     */
     public function __construct(
         string $name,
         ?string $modelName = null,

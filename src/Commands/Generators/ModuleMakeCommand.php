@@ -50,10 +50,10 @@ class ModuleMakeCommand extends Command
             ->generate();
 
         if ($code === E_ERROR) {
-            return E_ERROR;
+            return self::FAILURE;
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**
