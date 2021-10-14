@@ -75,7 +75,7 @@ class ProviderMakeCommand extends ComponentGeneratorCommand
         $this->stub = $this->getOptionOrChoice(
             'stub',
             'Select the stub you want to use for generator',
-            ['plain', 'module', 'route'],
+            ['plain', 'module', 'route', 'event'],
             'plain'
         );
         $this->componentType = 'provider';

@@ -33,7 +33,7 @@ class ProviderMakeCommandTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_generates_provider_file()
+    public function it_generates_provider_file(): void
     {
         $code = $this->artisan('module:make:provider', [
             'name' => 'MyAwesomeProvider',
@@ -46,7 +46,7 @@ class ProviderMakeCommandTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_generated_correct_provider_file_with_content()
+    public function it_generated_correct_provider_file_with_content(): void
     {
         $code = $this->artisan('module:make:provider', [
             'name' => 'MyAwesomeProvider',
@@ -61,7 +61,7 @@ class ProviderMakeCommandTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_can_change_the_default_path()
+    public function it_can_change_the_default_path(): void
     {
         $this->app['config']->set('modules.generator.components.provider.path', 'Foo/Bar\\NewProviders');
 
@@ -78,7 +78,7 @@ class ProviderMakeCommandTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_can_change_the_default_namespace()
+    public function it_can_change_the_default_namespace(): void
     {
         $this->app['config']->set('modules.generator.components.provider.namespace', 'Foo/Bar\\NewProviders/');
 
@@ -95,7 +95,7 @@ class ProviderMakeCommandTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_can_generate_module_provider_file()
+    public function it_can_generate_module_provider_file(): void
     {
         $code = $this->artisan('module:make:provider', [
             'name' => 'Baz\\Bat/MyAwesomeModuleProvider',
@@ -110,7 +110,7 @@ class ProviderMakeCommandTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_can_generate_route_provider_file()
+    public function it_can_generate_route_provider_file(): void
     {
         $code = $this->artisan('module:make:provider', [
             'name' => 'Baz\\Bat/MyAwesomeRouteProvider',
@@ -119,6 +119,21 @@ class ProviderMakeCommandTest extends BaseTestCase
         ]);
 
         $file = $this->finder->get($this->modulePath . '/Providers/Baz/Bat/MyAwesomeRouteProvider.php');
+
+        $this->assertMatchesSnapshot($file);
+        $this->assertSame(0, $code);
+    }
+
+    /** @test */
+    public function it_can_generate_event_provider_file(): void
+    {
+        $code = $this->artisan('module:make:provider', [
+            'name' => 'Baz\\Bat/MyAwesomeEventProvider',
+            'module' => 'Article',
+            '--stub' => 'event',
+        ]);
+
+        $file = $this->finder->get($this->modulePath . '/Providers/Baz/Bat/MyAwesomeEventProvider.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);
