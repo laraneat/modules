@@ -1,0 +1,12 @@
+<?php
+
+namespace App\Modules\Blog\DTO;
+
+use App\Ship\Abstracts\DTO\DataTransferObject;
+use Spatie\DataTransferObject\Attributes\Strict;
+
+#[Strict]
+class CreatePostDTO extends DataTransferObject
+{
+    //
+}

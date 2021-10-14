@@ -1,0 +1,7 @@
+<?php
+
+use App\Modules\Blog\Actions\CreateCommentAction;
+use Illuminate\Support\Facades\Route;
+
+Route::post('comments', CreateCommentAction::class)
+    ->name('api.comments.create');

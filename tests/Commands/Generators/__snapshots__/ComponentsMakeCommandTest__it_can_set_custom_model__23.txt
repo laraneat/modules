@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\Requests;
+
+use App\Modules\Blog\Models\Post;
+use App\Ship\Abstracts\Requests\Request;
+
+class ListPostsRequest extends Request
+{
+    public function rules(): array
+    {
+        return [];
+    }
+
+    public function authorize(): bool
+    {
+        return $this->user()->can('viewAny', Post::class);
+    }
+}

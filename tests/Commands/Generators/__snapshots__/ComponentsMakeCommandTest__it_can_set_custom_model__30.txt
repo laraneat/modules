@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\Tests;
+
+use App\Modules\Blog\Models\Post;
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * @group blog
+ * @group api
+ */
+class UpdatePostTest extends TestCase
+{
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'update-post',
+        'roles'       => '',
+    ];
+
+    public function testUpdatePost(): void
+    {
+        $this->getTestingUser();
+
+        $post = Post::factory()->create();
+
+        $data = [
+            // TODO: add fields here
+        ];
+        $expectedData = array_merge($data, [
+           'id' => $post->getKey(),
+        ]);
+
+        $this->patchJson(route('api.posts.update', ['post' => $post->getKey()]), $data)
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
+
+        $this->assertExistsModelWithAttributes(Post::class, $expectedData);
+    }
+
+    public function testUpdatePostWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $post = Post::factory()->create();
+
+        $data = [
+            // TODO: add fields here
+        ];
+
+        $this->patchJson(route('api.posts.update', ['post' => $post->getKey()]), $data)
+            ->assertForbidden();
+    }
+
+    public function testUpdateNonExistingPost(): void
+    {
+        $this->getTestingUser();
+
+        $data = [
+            // TODO: add fields here
+        ];
+
+        $this->patchJson(route('api.posts.update', ['post' => 7777]), $data)
+            ->assertNotFound();
+    }
+}

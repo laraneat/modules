@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Modules\Blog\Actions;
+
+use App\Modules\Blog\Models\Comment;
+use App\Modules\Blog\UI\API\QueryWizards\CommentQueryWizard;
+use App\Modules\Blog\UI\API\Requests\ViewCommentRequest;
+use App\Modules\Blog\UI\API\Resources\CommentResource;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Database\Eloquent\Model;
+
+class ViewCommentAction extends Action
+{
+    public function handle(ViewCommentRequest $request, Comment $comment): Model
+    {
+        return CommentQueryWizard::for($comment, $request)->build();
+    }
+
+    public function asController(ViewCommentRequest $request, Comment $comment): CommentResource
+    {
+        return new CommentResource($this->handle($request, $comment));
+    }
+}

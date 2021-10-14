@@ -75,6 +75,7 @@ class ModuleMakeCommandTest extends BaseTestCase
             $this->finder->deleteDirectory(base_path('app/Modules/Blog'));
         }
         $this->activator->reset();
+
         parent::tearDown();
     }
 

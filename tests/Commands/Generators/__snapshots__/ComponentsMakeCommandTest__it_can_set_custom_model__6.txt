@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Modules\Blog\Actions;
+
+use App\Modules\Blog\Models\Post;
+use App\Modules\Blog\UI\API\Requests\DeletePostRequest;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\JsonResponse;
+
+class DeletePostAction extends Action
+{
+    public function handle(Post $post): bool
+    {
+        return $post->delete();
+    }
+
+    public function asController(DeletePostRequest $request, Post $post): JsonResponse
+    {
+        $this->handle($post);
+
+        return $this->noContent();
+    }
+}

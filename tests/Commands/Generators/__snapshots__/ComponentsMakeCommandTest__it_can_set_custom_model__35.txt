@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Modules\Blog\Actions;
+
+use App\Modules\Blog\Models\Comment;
+use App\Modules\Blog\UI\API\Requests\UpdateCommentRequest;
+use App\Modules\Blog\UI\API\Resources\CommentResource;
+use App\Ship\Abstracts\Actions\Action;
+use App\Ship\Exceptions\UpdateResourceFailedException;
+
+class UpdateCommentAction extends Action
+{
+    public function handle(Comment $comment, array $data): Comment
+    {
+        if (empty($data)) {
+            throw new UpdateResourceFailedException();
+        }
+
+        $comment->update($data);
+
+        return $comment;
+    }
+
+    public function asController(UpdateCommentRequest $request, Comment $comment): CommentResource
+    {
+        $sanitizedData = $request->sanitizeInput([
+            //
+        ]);
+
+        $comment = $this->handle($comment, $sanitizedData);
+
+        return new CommentResource($comment);
+    }
+}

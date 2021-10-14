@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Modules\Blog\Actions;
+
+use App\Modules\Blog\Models\Comment;
+use App\Modules\Blog\UI\API\QueryWizards\CommentsQueryWizard;
+use App\Modules\Blog\UI\API\Requests\ListCommentsRequest;
+use App\Modules\Blog\UI\API\Resources\CommentResource;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Pagination\AbstractPaginator;
+
+class ListCommentsAction extends Action
+{
+    public function handle(ListCommentsRequest $request): AbstractPaginator
+    {
+        return CommentsQueryWizard::for(Comment::query(), $request)
+            ->build()
+            ->jsonPaginate();
+    }
+
+    public function asController(ListCommentsRequest $request): ResourceCollection
+    {
+        return CommentResource::collection($this->handle($request));
+    }
+}

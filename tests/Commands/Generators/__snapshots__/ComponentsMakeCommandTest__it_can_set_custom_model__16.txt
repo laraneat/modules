@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\QueryWizards;
+
+use App\Ship\Abstracts\QueryWizards\ModelQueryWizard;
+use Jackardios\QueryWizard\Handlers\Model\Includes\AbstractModelInclude;
+
+class PostQueryWizard extends ModelQueryWizard
+{
+    /**
+     * @return array<string>
+     */
+    protected function allowedAppends(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string>
+     */
+    protected function defaultAppends(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string>
+     */
+    protected function allowedFields(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string|AbstractModelInclude>
+     */
+    protected function allowedIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string|AbstractModelInclude>
+     */
+    protected function defaultIncludes(): array
+    {
+        return [];
+    }
+}

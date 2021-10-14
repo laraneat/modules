@@ -1,0 +1,75 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\QueryWizards;
+
+use App\Ship\Abstracts\QueryWizards\EloquentQueryWizard;
+use Jackardios\QueryWizard\Handlers\Eloquent\Filters\AbstractEloquentFilter;
+use Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude;
+use Jackardios\QueryWizard\Handlers\Eloquent\Sorts\AbstractEloquentSort;
+
+class PostsQueryWizard extends EloquentQueryWizard
+{
+    /**
+     * @return array<string>
+     */
+    protected function allowedAppends(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string>
+     */
+    protected function defaultAppends(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string>
+     */
+    protected function allowedFields(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string|AbstractEloquentFilter>
+     */
+    protected function allowedFilters(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string|AbstractEloquentInclude>
+     */
+    protected function allowedIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string|AbstractEloquentInclude>
+     */
+    protected function defaultIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string|AbstractEloquentSort>
+     */
+    protected function allowedSorts(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string|AbstractEloquentSort>
+     */
+    protected function defaultSorts(): array
+    {
+        return [];
+    }
+}

@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Modules\Blog\Data\Seeders;
+
+use App\Modules\Authorization\Actions\CreatePermissionAction;
+use App\Modules\Authorization\DTO\CreatePermissionDTO;
+use App\Ship\Abstracts\Seeders\Seeder;
+
+class CommentPermissionsSeeder_1 extends Seeder
+{
+    public function run(): void
+    {
+        $createPermissionAction = CreatePermissionAction::make();
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'view-comment',
+            displayName: 'View any comments',
+            group: 'comments'
+        ));
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'create-comment',
+            displayName: 'Create comments',
+            group: 'comments'
+        ));
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'update-comment',
+            displayName: 'Update any comments',
+            group: 'comments'
+        ));
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'delete-comment',
+            displayName: 'Delete any comments',
+            group: 'comments'
+        ));
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'force-delete-comment',
+            displayName: 'Force delete any comments',
+            group: 'comments'
+        ));
+    }
+}

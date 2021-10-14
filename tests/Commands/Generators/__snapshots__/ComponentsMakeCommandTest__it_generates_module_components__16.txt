@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Modules\Article\UI\API\Requests;
+
+use App\Modules\Article\DTO\CreateArticleDTO;
+use App\Modules\Article\Models\Article;
+use App\Ship\Abstracts\Requests\Request;
+
+class CreateArticleRequest extends Request
+{
+    public function rules(): array
+    {
+        return [
+            // TODO: add fields here
+        ];
+    }
+
+    public function authorize(): bool
+    {
+        return $this->user()->can('create', Article::class);
+    }
+
+    public function toDTO(): CreateArticleDTO
+    {
+        return new CreateArticleDTO(
+            // TODO: add fields here
+        );
+    }
+}

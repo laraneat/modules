@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Modules\Article\UI\API\Tests;
+
+use App\Modules\Article\Models\Article;
+use App\Ship\Abstracts\Tests\TestCase;
+
+/**
+ * @group article
+ * @group api
+ */
+class DeleteArticleTest extends TestCase
+{
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'delete-article',
+        'roles'       => '',
+    ];
+
+    public function testDeleteArticle(): void
+    {
+        $this->getTestingUser();
+
+        $article = Article::factory()->create();
+
+        $this->deleteJson(route('api.articles.delete', ['article' => $article->getKey()]))
+            ->assertNoContent();
+
+        $this->assertNull(Article::find($article->getKey()));
+    }
+
+    public function testDeleteArticleWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $article = Article::factory()->create();
+
+        $this->deleteJson(route('api.articles.delete', ['article' => $article->getKey()]))
+            ->assertForbidden();
+    }
+
+    public function testDeleteNotExistingArticle(): void
+    {
+        $this->getTestingUser();
+
+        $this->deleteJson(route('api.articles.delete', ['article' => 7777]))
+            ->assertNotFound();
+    }
+}

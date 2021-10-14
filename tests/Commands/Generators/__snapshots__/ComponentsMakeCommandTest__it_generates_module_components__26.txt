@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Modules\Article\UI\API\Tests;
+
+use App\Modules\Article\Models\Article;
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * @group article
+ * @group api
+ */
+class CreateArticleTest extends TestCase
+{
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'create-article',
+        'roles'       => '',
+    ];
+
+    protected function getTestData(): array
+    {
+        return [
+            // TODO: add fields here
+        ];
+    }
+
+    public function testCreateArticle(): void
+    {
+        $this->getTestingUser();
+        $data = $this->getTestData();
+
+        $this->postJson(route('api.articles.create'), $data)
+            ->assertCreated()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->has('id')
+                        ->whereAll($data)
+                        ->etc()
+                    )
+            );
+
+        $this->assertExistsModelWithAttributes(Article::class, $data);
+    }
+
+    public function testCreateArticleWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+        $data = $this->getTestData();
+
+        $this->postJson(route('api.articles.create'), $data)
+            ->assertForbidden();
+    }
+}

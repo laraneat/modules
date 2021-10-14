@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\Tests;
+
+use App\Modules\Blog\Models\Comment;
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * @group blog
+ * @group api
+ */
+class UpdateCommentTest extends TestCase
+{
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'update-comment',
+        'roles'       => '',
+    ];
+
+    public function testUpdateComment(): void
+    {
+        $this->getTestingUser();
+
+        $comment = Comment::factory()->create();
+
+        $data = [
+            // TODO: add fields here
+        ];
+        $expectedData = array_merge($data, [
+           'id' => $comment->getKey(),
+        ]);
+
+        $this->patchJson(route('api.comments.update', ['comment' => $comment->getKey()]), $data)
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
+
+        $this->assertExistsModelWithAttributes(Comment::class, $expectedData);
+    }
+
+    public function testUpdateCommentWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $comment = Comment::factory()->create();
+
+        $data = [
+            // TODO: add fields here
+        ];
+
+        $this->patchJson(route('api.comments.update', ['comment' => $comment->getKey()]), $data)
+            ->assertForbidden();
+    }
+
+    public function testUpdateNonExistingComment(): void
+    {
+        $this->getTestingUser();
+
+        $data = [
+            // TODO: add fields here
+        ];
+
+        $this->patchJson(route('api.comments.update', ['comment' => 7777]), $data)
+            ->assertNotFound();
+    }
+}

@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\Tests;
+
+use App\Modules\Blog\Models\Post;
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * @group blog
+ * @group api
+ */
+class ViewPostTest extends TestCase
+{
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'view-post',
+        'roles'       => '',
+    ];
+
+    public function testViewPost(): void
+    {
+        $this->getTestingUser();
+
+        $post = Post::factory()->create();
+        $expectedData = [
+            'id' => $post->getKey(),
+            // TODO: add fields here
+        ];
+
+        $this->getJson(route('api.posts.view', ['post' => $post->getKey()]))
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
+    }
+
+    public function testViewPostWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $post = Post::factory()->create();
+
+        $this->getJson(route('api.posts.view', ['post' => $post->getKey()]))
+            ->assertForbidden();
+    }
+
+    public function testViewNotExistingPost(): void
+    {
+        $this->getTestingUser();
+
+        $this->getJson(route('api.posts.view', ['post' => 7777]))
+            ->assertNotFound();
+    }
+}

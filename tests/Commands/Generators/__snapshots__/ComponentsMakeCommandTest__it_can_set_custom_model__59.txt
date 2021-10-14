@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\Tests;
+
+use App\Modules\Blog\Models\Comment;
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * @group blog
+ * @group api
+ */
+class CreateCommentTest extends TestCase
+{
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'create-comment',
+        'roles'       => '',
+    ];
+
+    protected function getTestData(): array
+    {
+        return [
+            // TODO: add fields here
+        ];
+    }
+
+    public function testCreateComment(): void
+    {
+        $this->getTestingUser();
+        $data = $this->getTestData();
+
+        $this->postJson(route('api.comments.create'), $data)
+            ->assertCreated()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->has('id')
+                        ->whereAll($data)
+                        ->etc()
+                    )
+            );
+
+        $this->assertExistsModelWithAttributes(Comment::class, $data);
+    }
+
+    public function testCreateCommentWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+        $data = $this->getTestData();
+
+        $this->postJson(route('api.comments.create'), $data)
+            ->assertForbidden();
+    }
+}

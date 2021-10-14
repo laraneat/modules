@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Modules\Blog\UI\API\Tests;
+
+use App\Modules\Blog\Models\Comment;
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * @group blog
+ * @group api
+ */
+class ViewCommentTest extends TestCase
+{
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'view-comment',
+        'roles'       => '',
+    ];
+
+    public function testViewComment(): void
+    {
+        $this->getTestingUser();
+
+        $comment = Comment::factory()->create();
+        $expectedData = [
+            'id' => $comment->getKey(),
+            // TODO: add fields here
+        ];
+
+        $this->getJson(route('api.comments.view', ['comment' => $comment->getKey()]))
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
+    }
+
+    public function testViewCommentWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $comment = Comment::factory()->create();
+
+        $this->getJson(route('api.comments.view', ['comment' => $comment->getKey()]))
+            ->assertForbidden();
+    }
+
+    public function testViewNotExistingComment(): void
+    {
+        $this->getTestingUser();
+
+        $this->getJson(route('api.comments.view', ['comment' => 7777]))
+            ->assertNotFound();
+    }
+}

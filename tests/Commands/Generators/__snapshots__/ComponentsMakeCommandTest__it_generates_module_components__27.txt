@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Modules\Article\UI\API\Tests;
+
+use App\Modules\Article\Models\Article;
+use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
+
+/**
+ * @group article
+ * @group api
+ */
+class UpdateArticleTest extends TestCase
+{
+    /**
+     * Roles and permissions, to be attached on the user by default
+     */
+    protected array $access = [
+        'permissions' => 'update-article',
+        'roles'       => '',
+    ];
+
+    public function testUpdateArticle(): void
+    {
+        $this->getTestingUser();
+
+        $article = Article::factory()->create();
+
+        $data = [
+            // TODO: add fields here
+        ];
+        $expectedData = array_merge($data, [
+           'id' => $article->getKey(),
+        ]);
+
+        $this->patchJson(route('api.articles.update', ['article' => $article->getKey()]), $data)
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
+
+        $this->assertExistsModelWithAttributes(Article::class, $expectedData);
+    }
+
+    public function testUpdateArticleWithoutAccess(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $article = Article::factory()->create();
+
+        $data = [
+            // TODO: add fields here
+        ];
+
+        $this->patchJson(route('api.articles.update', ['article' => $article->getKey()]), $data)
+            ->assertForbidden();
+    }
+
+    public function testUpdateNonExistingArticle(): void
+    {
+        $this->getTestingUser();
+
+        $data = [
+            // TODO: add fields here
+        ];
+
+        $this->patchJson(route('api.articles.update', ['article' => 7777]), $data)
+            ->assertNotFound();
+    }
+}
