@@ -174,18 +174,6 @@ class ModuleMakeCommandTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_generates_plain_module_with_no_service_provider_in_modulejson_file()
-    {
-        $code = $this->artisan('module:make', ['name' => 'ModuleName', '--plain' => true]);
-
-        $path = base_path('app/Modules/ModuleName') . '/module.json';
-        $content = json_decode($this->finder->get($path));
-
-        $this->assertCount(0, $content->providers);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
     public function it_outputs_error_when_module_exists()
     {
         $this->artisan('module:make', ['name' => 'Article']);

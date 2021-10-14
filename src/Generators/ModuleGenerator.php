@@ -250,6 +250,8 @@ class ModuleGenerator extends Generator
         $this->activator->setActiveByName($name, $this->isActive);
         $this->repository->flushCache();
 
+        $this->generateProviders();
+
         if ($this->type && $this->type !== 'plain') {
             $module = $this->repository->findOrFail($name);
             $code = (new ModuleComponentsGenerator($module))
@@ -295,6 +297,30 @@ class ModuleGenerator extends Generator
         $this->generateComposerJsonFile();
         $this->generateModuleJsonFile();
         $this->generateConfig();
+    }
+
+    /**
+     * Generate module providers.
+     */
+    public function generateProviders(): void
+    {
+        if (! GeneratorHelper::component('provider')->generate()) {
+            return;
+        }
+
+        $moduleName = $this->getName();
+
+        $this->console->call('module:make:provider', [
+            'name' => "{$moduleName}ServiceProvider",
+            'module' => $moduleName,
+            '--stub' => 'module'
+        ]);
+
+        $this->console->call('module:make:provider', [
+            'name' => "RouteServiceProvider",
+            'module' => $moduleName,
+            '--stub' => 'route'
+        ]);
     }
 
     /**

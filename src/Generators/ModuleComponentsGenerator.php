@@ -126,19 +126,6 @@ class ModuleComponentsGenerator extends Generator
         $snakeEntityName = Str::snake($entityName);
         $snakePluralEntityName = Str::plural($snakeEntityName);
 
-        if (GeneratorHelper::component('provider')->generate() === true) {
-            $this->console->call('module:make:provider', [
-                'name' => "{$moduleName}ServiceProvider",
-                'module' => $moduleName,
-                '--stub' => 'module'
-            ]);
-            $this->console->call('module:make:provider', [
-                'name' => "RouteServiceProvider",
-                'module' => $moduleName,
-                '--stub' => 'route'
-            ]);
-        }
-
         if (GeneratorHelper::component('factory')->generate() === true) {
             $this->console->call('module:make:factory', [
                 'name' => "{$entityName}Factory",
