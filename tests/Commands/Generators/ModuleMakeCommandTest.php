@@ -265,7 +265,7 @@ class ModuleMakeCommandTest extends BaseTestCase
     /** @test */
     public function it_can_set_custom_model()
     {
-        $code = $this->artisan('module:make', ['name' => 'Blog', '--model' => 'Post']);
+        $code = $this->artisan('module:make', ['name' => 'Blog', '--entity' => 'Post']);
 
         $modulePath = base_path('app/Modules/Blog');
         $moduleComponentPaths = [

@@ -21,11 +21,11 @@ class ModuleGenerator extends Generator
     protected string $name;
 
     /**
-     * The class name of the model.
+     * Entity name.
      *
      * @var string
      */
-    protected string $modelName;
+    protected string $entityName;
 
     /**
      * The repository instance.
@@ -85,7 +85,7 @@ class ModuleGenerator extends Generator
 
     public function __construct(
         string $name,
-        ?string $modelName = null,
+        ?string $entityName = null,
         ?FileRepository $repository = null,
         ?Config $config = null,
         ?Filesystem $filesystem = null,
@@ -93,7 +93,7 @@ class ModuleGenerator extends Generator
         ?ActivatorInterface $activator = null
     ) {
         $this->name = $name;
-        $this->setModelName($modelName ?: $name);
+        $this->setEntityName($entityName ?: $name);
         $this->repository = $repository;
         $this->config = $config;
         $this->filesystem = $filesystem;
@@ -102,15 +102,15 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Set model name.
+     * Set entity name.
      *
-     * @param string $modelName
+     * @param string $entityName
      *
      * @return $this
      */
-    public function setModelName(string $modelName)
+    public function setEntityName(string $entityName)
     {
-        $this->modelName = Str::studly($modelName);
+        $this->entityName = Str::studly($entityName);
 
         return $this;
     }
@@ -154,13 +154,13 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get the model name.
+     * Get the entity name.
      *
      * @return string
      */
-    public function getModelName(): string
+    public function getEntityName(): string
     {
-        return $this->modelName ?: $this->getName();
+        return $this->entityName ?: $this->getName();
     }
 
     /**
@@ -379,26 +379,26 @@ class ModuleGenerator extends Generator
             'web' => ['create', 'update', 'delete'],
         ];
         $moduleName = $this->getName();
-        $modelName = $this->getModelName();
-        $pluralModelName = Str::plural($modelName);
-        $camelModelName = Str::camel($modelName);
-        $snakeModelName = Str::snake($modelName);
-        $snakePluralModelName = Str::plural($snakeModelName);
-        $dashedPluralModelName = Str::snake($snakePluralModelName, '-');
-        $underlinedPluralModelName = Str::snake($snakePluralModelName, '_');
+        $entityName = $this->getEntityName();
+        $pluralEntityName = Str::plural($entityName);
+        $camelEntityName = Str::camel($entityName);
+        $snakeEntityName = Str::snake($entityName);
+        $snakePluralEntityName = Str::plural($snakeEntityName);
+        $dashedPluralEntityName = Str::snake($snakePluralEntityName, '-');
+        $underlinedPluralEntityName = Str::snake($snakePluralEntityName, '_');
 
         if (GeneratorHelper::component('action')->generate() === true) {
             foreach ($actionVerbs['api'] as $actionVerb) {
                 $studlyActionVerb = Str::studly($actionVerb);
-                $actionClass = "{$studlyActionVerb}{$modelName}Action";
-                $requestClass = "{$studlyActionVerb}{$modelName}Request";
-                $dtoClass = "{$studlyActionVerb}{$modelName}DTO";
-                $wizardClass = "{$modelName}QueryWizard";
+                $actionClass = "{$studlyActionVerb}{$entityName}Action";
+                $requestClass = "{$studlyActionVerb}{$entityName}Request";
+                $dtoClass = "{$studlyActionVerb}{$entityName}DTO";
+                $wizardClass = "{$entityName}QueryWizard";
 
                 if ($actionVerb === "list") {
-                    $actionClass = "{$studlyActionVerb}{$pluralModelName}Action";
-                    $requestClass = "{$studlyActionVerb}{$pluralModelName}Request";
-                    $wizardClass = "{$pluralModelName}QueryWizard";
+                    $actionClass = "{$studlyActionVerb}{$pluralEntityName}Action";
+                    $requestClass = "{$studlyActionVerb}{$pluralEntityName}Request";
+                    $wizardClass = "{$pluralEntityName}QueryWizard";
                 }
 
                 $this->console->call('module:make:action', [
@@ -406,9 +406,9 @@ class ModuleGenerator extends Generator
                     'module' => $moduleName,
                     '--stub' => $actionVerb,
                     '--dto' => $dtoClass,
-                    '--model' => $modelName,
+                    '--model' => $entityName,
                     '--request' => $requestClass,
-                    '--resource' => "{$modelName}Resource",
+                    '--resource' => "{$entityName}Resource",
                     '--wizard' => $wizardClass
                 ]);
             }
@@ -416,15 +416,15 @@ class ModuleGenerator extends Generator
 
         if (GeneratorHelper::component('factory')->generate() === true) {
             $this->console->call('module:make:factory', [
-                'name' => "{$modelName}Factory",
+                'name' => "{$entityName}Factory",
                 'module' => $moduleName,
-                '--model' => $modelName
+                '--model' => $entityName
             ]);
         }
 
         if (GeneratorHelper::component('migration')->generate() === true) {
             $this->console->call('module:make:migration', [
-                'name' => "create_{$snakePluralModelName}_table",
+                'name' => "create_{$snakePluralEntityName}_table",
                 'module' => $moduleName,
                 '--stub' => 'create'
             ]);
@@ -432,16 +432,16 @@ class ModuleGenerator extends Generator
 
         if (GeneratorHelper::component('seeder')->generate() === true) {
             $this->console->call('module:make:seeder', [
-                'name' => "{$modelName}PermissionsSeeder_1",
+                'name' => "{$entityName}PermissionsSeeder_1",
                 'module' => $moduleName,
                 '--stub' => 'permissions',
-                '--model' => $modelName
+                '--model' => $entityName
             ]);
         }
 
         if (GeneratorHelper::component('dto')->generate() === true) {
             $this->console->call('module:make:dto', [
-                'name' => "Create{$modelName}DTO",
+                'name' => "Create{$entityName}DTO",
                 'module' => $moduleName,
                 '--strict' => true,
             ]);
@@ -449,19 +449,19 @@ class ModuleGenerator extends Generator
 
         if (GeneratorHelper::component('model')->generate() === true) {
             $this->console->call('module:make:model', [
-                'name' => $modelName,
+                'name' => $entityName,
                 'module' => $moduleName,
                 '--stub' => 'full',
-                '--factory' => "{$modelName}Factory"
+                '--factory' => "{$entityName}Factory"
             ]);
         }
 
         if (GeneratorHelper::component('policy')->generate() === true) {
             $this->console->call('module:make:policy', [
-                'name' => "{$modelName}Policy",
+                'name' => "{$entityName}Policy",
                 'module' => $moduleName,
                 '--stub' => 'full',
-                '--model' => $modelName
+                '--model' => $entityName
             ]);
         }
 
@@ -480,12 +480,12 @@ class ModuleGenerator extends Generator
 
         if (GeneratorHelper::component('api-query-wizard')->generate() === true) {
             $this->console->call('module:make:wizard', [
-                'name' => "{$pluralModelName}QueryWizard",
+                'name' => "{$pluralEntityName}QueryWizard",
                 'module' => $moduleName,
                 '--stub' => 'eloquent',
             ]);
             $this->console->call('module:make:wizard', [
-                'name' => "{$modelName}QueryWizard",
+                'name' => "{$entityName}QueryWizard",
                 'module' => $moduleName,
                 '--stub' => 'model',
             ]);
@@ -493,7 +493,7 @@ class ModuleGenerator extends Generator
 
         if (GeneratorHelper::component('api-resource')->generate() === true) {
             $this->console->call('module:make:resource', [
-                'name' => "{$modelName}Resource",
+                'name' => "{$entityName}Resource",
                 'module' => $moduleName,
                 '--stub' => 'single'
             ]);
@@ -512,9 +512,9 @@ class ModuleGenerator extends Generator
                 foreach ($uiActionVerbs as $actionVerb) {
                     $studlyActionVerb = Str::studly($actionVerb);
                     $requestClass = $actionVerb === 'list'
-                        ? "{$studlyActionVerb}{$pluralModelName}Request"
-                        : "{$studlyActionVerb}{$modelName}Request";
-                    $dtoClass = "{$studlyActionVerb}{$modelName}DTO";
+                        ? "{$studlyActionVerb}{$pluralEntityName}Request"
+                        : "{$studlyActionVerb}{$entityName}Request";
+                    $dtoClass = "{$studlyActionVerb}{$entityName}DTO";
 
                     $this->console->call('module:make:request', [
                         'name' => $requestClass,
@@ -522,7 +522,7 @@ class ModuleGenerator extends Generator
                         '--ui' => $ui,
                         '--dto' => $dtoClass,
                         '--stub' => $actionVerb,
-                        '--model' => $modelName,
+                        '--model' => $entityName,
                     ]);
                 }
             }
@@ -538,12 +538,12 @@ class ModuleGenerator extends Generator
                 foreach ($uiActionVerbs as $actionVerb) {
                     $studlyActionVerb = Str::studly($actionVerb);
                     $actionClass = $actionVerb === 'list'
-                        ? "{$studlyActionVerb}{$pluralModelName}Action"
-                        : "{$studlyActionVerb}{$modelName}Action";
+                        ? "{$studlyActionVerb}{$pluralEntityName}Action"
+                        : "{$studlyActionVerb}{$entityName}Action";
 
-                    $url = $dashedPluralModelName;
+                    $url = $dashedPluralEntityName;
                     if (in_array($actionVerb, ['update', 'delete', 'view'])) {
-                        $url .= '/{' . $camelModelName . '}';
+                        $url .= '/{' . $camelEntityName . '}';
                     }
 
                     $filePath = Str::snake(str_replace('Action', '', $actionClass), '_');
@@ -558,7 +558,7 @@ class ModuleGenerator extends Generator
                         '--action' => $actionClass,
                         '--method' => $actionMethodsMap[$actionVerb],
                         '--url' => $url,
-                        '--name' => $ui . '.' . $underlinedPluralModelName . '.' . $actionVerb
+                        '--name' => $ui . '.' . $underlinedPluralEntityName . '.' . $actionVerb
                     ]);
                 }
             }
@@ -567,16 +567,16 @@ class ModuleGenerator extends Generator
                 foreach ($uiActionVerbs as $actionVerb) {
                     $studlyActionVerb = Str::studly($actionVerb);
                     $testClass = $actionVerb === 'list'
-                        ? "{$studlyActionVerb}{$pluralModelName}Test"
-                        : "{$studlyActionVerb}{$modelName}Test";
+                        ? "{$studlyActionVerb}{$pluralEntityName}Test"
+                        : "{$studlyActionVerb}{$entityName}Test";
 
                     $this->console->call('module:make:test', [
                         'name' => $testClass,
                         'module' => $moduleName,
                         '--type' => $ui,
                         '--stub' => $actionVerb,
-                        '--model' => $modelName,
-                        '--route' => $ui . '.' . $underlinedPluralModelName . '.' . $actionVerb
+                        '--model' => $entityName,
+                        '--route' => $ui . '.' . $underlinedPluralEntityName . '.' . $actionVerb
                     ]);
                 }
             }

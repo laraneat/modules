@@ -35,10 +35,10 @@ class ModuleMakeCommand extends Command
     public function handle(): int
     {
         $name = $this->argument('name');
-        $modelName = $this->option('model');
+        $entityName = $this->option('entity');
 
         $code = (new ModuleGenerator($name))
-            ->setModelName($modelName ?: $name)
+            ->setEntityName($entityName ?: $name)
             ->setFilesystem($this->laravel['files'])
             ->setRepository($this->laravel['modules'])
             ->setConfig($this->laravel['config'])
@@ -71,10 +71,12 @@ class ModuleMakeCommand extends Command
     protected function getOptions(): array
     {
         return [
+            ['api', 'a', InputOption::VALUE_NONE, 'Generate an api module (with api components, enabled by default).'],
+            ['web', 'w', InputOption::VALUE_NONE, 'Generate a web module (with web components).'],
             ['plain', 'p', InputOption::VALUE_NONE, 'Generate a plain module (without some components).'],
             ['disabled', 'd', InputOption::VALUE_NONE, 'Do not enable the module at creation.'],
-            ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when the module already exists.'],
-            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model.'],
+            ['force', 'f', InputOption::VALUE_NONE, 'Force the operation to run when the module already exists.'],
+            ['entity', null, InputOption::VALUE_REQUIRED, 'Entity name (used to create module components, the default is the name of the module).'],
         ];
     }
 
@@ -85,12 +87,14 @@ class ModuleMakeCommand extends Command
     */
     private function getModuleType(): string
     {
-        $isPlain = $this->option('plain');
-
-        if ($isPlain) {
+        if ($this->option('plain')) {
             return 'plain';
         }
 
-        return 'full';
+        if ($this->option('web')) {
+            return 'web';
+        }
+
+        return 'api';
     }
 }
