@@ -11,26 +11,31 @@ class ArticlePermissionsSeeder_1 extends Seeder
     public function run(): void
     {
         $createPermissionAction = CreatePermissionAction::make();
+
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'view-article',
             displayName: 'View any articles',
             group: 'articles'
         ));
+
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'create-article',
             displayName: 'Create articles',
             group: 'articles'
         ));
+
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'update-article',
             displayName: 'Update any articles',
             group: 'articles'
         ));
+
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'delete-article',
             displayName: 'Delete any articles',
             group: 'articles'
         ));
+
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'force-delete-article',
             displayName: 'Force delete any articles',

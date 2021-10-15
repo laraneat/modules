@@ -11,11 +11,6 @@ class MyAwesomeQueuedMail extends Mail implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         //
@@ -23,10 +18,8 @@ class MyAwesomeQueuedMail extends Mail implements ShouldQueue
 
     /**
      * Build the message.
-     *
-     * @return $this
      */
-    public function build()
+    public function build(): static
     {
         return $this->view('view.name');
     }

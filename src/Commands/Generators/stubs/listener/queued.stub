@@ -11,11 +11,6 @@ class {{ class }} extends Listener implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    /**
-     * Create the event listener.
-     *
-     * @return void
-     */
     public function __construct()
     {
         //
@@ -23,11 +18,8 @@ class {{ class }} extends Listener implements ShouldQueue
 
     /**
      * Handle the event.
-     *
-     * @param {{ event }} $event
-     * @return void
      */
-    public function handle({{ event }} $event)
+    public function handle({{ event }} $event): void
     {
         //
     }

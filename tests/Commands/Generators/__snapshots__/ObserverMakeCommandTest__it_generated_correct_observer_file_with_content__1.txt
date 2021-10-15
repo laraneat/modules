@@ -9,60 +9,40 @@ class MyAwesomeObserver extends Observer
 {
     /**
      * Handle the Model "created" event.
-     *
-     * @param Model $model
-     *
-     * @return void
      */
-    public function created(Model $model)
+    public function created(Model $model): void
     {
         //
     }
 
     /**
      * Handle the Model "updated" event.
-     *
-     * @param Model $model
-     *
-     * @return void
      */
-    public function updated(Model $model)
+    public function updated(Model $model): void
     {
         //
     }
 
     /**
      * Handle the Model "deleted" event.
-     *
-     * @param Model $model
-     *
-     * @return void
      */
-    public function deleted(Model $model)
+    public function deleted(Model $model): void
     {
         //
     }
 
     /**
      * Handle the Model "restored" event.
-     *
-     * @param Model $model
-     *
-     * @return void
      */
-    public function restored(Model $model)
+    public function restored(Model $model): void
     {
         //
     }
 
     /**
      * Handle the Model "force deleted" event.
-     *
-     * @param Model $model
-     *
-     * @return void
      */
-    public function forceDeleted(Model $model)
+    public function forceDeleted(Model $model): void
     {
         //
     }

@@ -14,8 +14,6 @@ class BlogServiceProvider extends ServiceProvider
 
     /**
      * Register services.
-     *
-     * @return void
      */
     public function register(): void
     {
@@ -24,8 +22,6 @@ class BlogServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap services.
-     *
-     * @return void
      */
     public function boot(): void
     {
@@ -38,8 +34,6 @@ class BlogServiceProvider extends ServiceProvider
 
     /**
      * Get the services provided by the provider.
-     *
-     * @return array
      */
     public function provides(): array
     {
@@ -48,8 +42,6 @@ class BlogServiceProvider extends ServiceProvider
 
     /**
      * Register translations.
-     *
-     * @return void
      */
     public function registerTranslations(): void
     {
@@ -65,8 +57,6 @@ class BlogServiceProvider extends ServiceProvider
 
     /**
      * Register config.
-     *
-     * @return void
      */
     protected function registerConfig(): void
     {
@@ -82,8 +72,6 @@ class BlogServiceProvider extends ServiceProvider
 
     /**
      * Register views.
-     *
-     * @return void
      */
     public function registerViews(): void
     {
@@ -102,8 +90,6 @@ class BlogServiceProvider extends ServiceProvider
 
     /**
      * Register migrations.
-     *
-     * @return void
      */
     public function registerMigrations(): void
     {
@@ -119,8 +105,6 @@ class BlogServiceProvider extends ServiceProvider
 
     /**
      * Register artisan commands.
-     *
-     * @return void
      */
     public function registerCommands(): void
     {

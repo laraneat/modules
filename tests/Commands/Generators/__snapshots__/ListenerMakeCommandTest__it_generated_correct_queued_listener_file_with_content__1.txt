@@ -11,11 +11,6 @@ class MyAwesomeQueuedListener extends Listener implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    /**
-     * Create the event listener.
-     *
-     * @return void
-     */
     public function __construct()
     {
         //
@@ -23,11 +18,8 @@ class MyAwesomeQueuedListener extends Listener implements ShouldQueue
 
     /**
      * Handle the event.
-     *
-     * @param MyAwesomeEvent $event
-     * @return void
      */
-    public function handle(MyAwesomeEvent $event)
+    public function handle(MyAwesomeEvent $event): void
     {
         //
     }

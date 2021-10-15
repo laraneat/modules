@@ -9,11 +9,6 @@ class MyAwesomePlainMail extends Mail
 {
     use SerializesModels;
 
-    /**
-     * Create a new message instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         //
@@ -21,10 +16,8 @@ class MyAwesomePlainMail extends Mail
 
     /**
      * Build the message.
-     *
-     * @return $this
      */
-    public function build()
+    public function build(): static
     {
         return $this->view('view.name');
     }

@@ -7,11 +7,6 @@ use {{ eventNamespace }}\{{ event }};
 
 class {{ class }} extends Listener
 {
-    /**
-     * Create the event listener.
-     *
-     * @return void
-     */
     public function __construct()
     {
         //
@@ -19,11 +14,8 @@ class {{ class }} extends Listener
 
     /**
      * Handle the event.
-     *
-     * @param {{ event }} $event
-     * @return void
      */
-    public function handle({{ event }} $event)
+    public function handle({{ event }} $event): void
     {
         //
     }

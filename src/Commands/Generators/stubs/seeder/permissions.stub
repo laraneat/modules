@@ -11,26 +11,31 @@ class {{ class }} extends Seeder
     public function run(): void
     {
         $createPermissionAction = {{ createPermissionAction }}::make();
+
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
             name: 'view-{{ modelPermissionEntity }}',
             displayName: 'View any {{ modelPermissionEntities }}',
             group: '{{ modelPermissionEntities }}'
         ));
+
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
             name: 'create-{{ modelPermissionEntity }}',
             displayName: 'Create {{ modelPermissionEntities }}',
             group: '{{ modelPermissionEntities }}'
         ));
+
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
             name: 'update-{{ modelPermissionEntity }}',
             displayName: 'Update any {{ modelPermissionEntities }}',
             group: '{{ modelPermissionEntities }}'
         ));
+
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
             name: 'delete-{{ modelPermissionEntity }}',
             displayName: 'Delete any {{ modelPermissionEntities }}',
             group: '{{ modelPermissionEntities }}'
         ));
+
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
             name: 'force-delete-{{ modelPermissionEntity }}',
             displayName: 'Force delete any {{ modelPermissionEntities }}',
