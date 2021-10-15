@@ -60,8 +60,6 @@ interface RepositoryInterface
 
     /**
      * Get count from all modules.
-     *
-     * @return int
      */
     public function count(): int;
 
@@ -85,10 +83,6 @@ interface RepositoryInterface
 
     /**
      * Find a specific module.
-     *
-     * @param string $moduleName
-     *
-     * @return Module|null
      */
     public function find(string $moduleName): ?Module;
 
@@ -105,61 +99,34 @@ interface RepositoryInterface
     /**
      * Find a specific module. If there return that, otherwise throw exception.
      *
-     * @param string $moduleName
-     *
-     * @return Module
      * @throws ModuleNotFoundException
      */
     public function findOrFail(string $moduleName): Module;
 
     /**
      * Get path for a specific module.
-     *
-     * @param Module|string $module
-     * @param string|null $extraPath
-     *
-     * @return string
      */
     public function getModulePath(Module|string $module, ?string $extraPath = null): string;
 
     /**
      * Get namespace for a specific module.
-     *
-     * @param Module|string $module
-     * @param string|null $extraNamespace
-     *
-     * @return string
      */
     public function getModuleNamespace(Module|string $module, ?string $extraNamespace = null): string;
 
-    /**
-     * @return Filesystem
-     */
     public function getFilesystem(): Filesystem;
 
     /**
      * Get a specific config data from a configuration file.
-     *
-     * @param string $key
-     * @param mixed $default
-     *
-     * @return mixed
      */
     public function config(string $key, $default = null);
 
     /**
      * Get default modules path.
-     *
-     * @return string
      */
     public function getDefaultPath(): string;
 
     /**
      * Find a specific module by its alias.
-     *
-     * @param string $alias
-     *
-     * @return Module|null
      */
     public function findByAlias(string $alias): ?Module;
 
@@ -175,19 +142,12 @@ interface RepositoryInterface
 
     /**
      * Get asset path for a specific module.
-     *
-     * @param string $moduleName
-     *
-     * @return string
      */
     public function assetPath(string $moduleName): string;
 
     /**
      * Delete a specific module.
      *
-     * @param string $moduleName
-     *
-     * @return bool
      * @throws ModuleNotFoundException
      */
     public function delete(string $moduleName): bool;
@@ -195,9 +155,6 @@ interface RepositoryInterface
     /**
      * Determine whether the given module is activated.
      *
-     * @param string $moduleName
-     *
-     * @return bool
      * @throws ModuleNotFoundException
      */
     public function isEnabled(string $moduleName): bool;
@@ -205,9 +162,6 @@ interface RepositoryInterface
     /**
      * Determine whether the given module is not activated.
      *
-     * @param string $moduleName
-     *
-     * @return bool
      * @throws ModuleNotFoundException
      */
     public function isDisabled(string $moduleName): bool;

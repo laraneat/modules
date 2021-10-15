@@ -9,7 +9,6 @@ class ConsoleServiceProvider extends ServiceProvider
 {
     /**
      * The available commands
-     * @var array
      */
     protected array $commands = [
         Commands\CacheClearCommand::class,

@@ -67,6 +67,7 @@ class FileActivator implements ActivatorInterface
 
     /**
      * @inheritDoc
+     * @see ActivatorInterface::reset()
      */
     public function reset(): void
     {
@@ -79,6 +80,7 @@ class FileActivator implements ActivatorInterface
 
     /**
      * @inheritDoc
+     * @see ActivatorInterface::enable()
      */
     public function enable(Module $module): void
     {
@@ -87,6 +89,7 @@ class FileActivator implements ActivatorInterface
 
     /**
      * @inheritDoc
+     * @see ActivatorInterface::disable()
      */
     public function disable(Module $module): void
     {
@@ -95,6 +98,7 @@ class FileActivator implements ActivatorInterface
 
     /**
      * @inheritDoc
+     * @see ActivatorInterface::hasStatus()
      */
     public function hasStatus(Module $module, bool $status): bool
     {
@@ -107,6 +111,7 @@ class FileActivator implements ActivatorInterface
 
     /**
      * @inheritDoc
+     * @see ActivatorInterface::setActive()
      */
     public function setActive(Module $module, bool $active): void
     {
@@ -115,6 +120,7 @@ class FileActivator implements ActivatorInterface
 
     /**
      * @inheritDoc
+     * @see ActivatorInterface::setActiveByName()
      */
     public function setActiveByName(string $moduleName, bool $active): void
     {
@@ -125,6 +131,7 @@ class FileActivator implements ActivatorInterface
 
     /**
      * @inheritDoc
+     * @see ActivatorInterface::delete()
      */
     public function delete(Module $module): void
     {

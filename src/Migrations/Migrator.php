@@ -13,29 +13,19 @@ class Migrator
 {
     /**
      * Module instance.
-     * @var Module
      */
     protected Module $module;
 
     /**
      * Laravel Application instance.
-     *
-     * @var Application.
      */
     protected Application $laravel;
 
     /**
      * The database connection to be used
-     *
-     * @var string
      */
     protected string $database = '';
 
-    /**
-     * Create new instance.
-     * @param Module $module
-     * @param Application $application
-     */
     public function __construct(Module $module, Application $application)
     {
         $this->module = $module;
@@ -44,14 +34,10 @@ class Migrator
 
     /**
      * Set the database connection to be used
-     *
-     * @param string $database
-     *
-     * @return $this
      */
-    public function setDatabase($database)
+    public function setDatabase(string $database): static
     {
-        if (is_string($database) && $database) {
+        if ($database) {
             $this->database = $database;
         }
 
@@ -59,7 +45,7 @@ class Migrator
     }
 
     /**
-     * @return Module
+     * Get module instance.
      */
     public function getModule(): Module
     {
@@ -68,8 +54,6 @@ class Migrator
 
     /**
      * Get migration path.
-     *
-     * @return string
      */
     public function getPath(): string
     {
@@ -83,9 +67,6 @@ class Migrator
 
     /**
      * Get migration files.
-     *
-     * @param boolean $reverse
-     * @return array
      */
     public function getMigrations(bool $reverse = false): array
     {
@@ -116,8 +97,6 @@ class Migrator
 
     /**
      * Rollback migration.
-     *
-     * @return array
      */
     public function rollback(): array
     {
@@ -144,8 +123,6 @@ class Migrator
 
     /**
      * Reset migration.
-     *
-     * @return array
      */
     public function reset(): array
     {
@@ -172,8 +149,6 @@ class Migrator
 
     /**
      * Run down schema from the given migration name.
-     *
-     * @param string $migration
      */
     public function down(string $migration): void
     {
@@ -182,8 +157,6 @@ class Migrator
 
     /**
      * Run up schema from the given migration name.
-     *
-     * @param string $migration
      */
     public function up(string $migration): void
     {
@@ -192,12 +165,8 @@ class Migrator
 
     /**
      * Resolve a migration instance from a file.
-     *
-     * @param string $file
-     *
-     * @return object
      */
-    public function resolve(string $file)
+    public function resolve(string $file): object
     {
         $file = implode('_', array_slice(explode('_', $file), 4));
 
@@ -208,8 +177,6 @@ class Migrator
 
     /**
      * Require in all the migration files in a given path.
-     *
-     * @param array $files
      */
     public function requireFiles(array $files): void
     {
@@ -221,8 +188,6 @@ class Migrator
 
     /**
      * Get table instance.
-     *
-     * @return Builder
      */
     public function table(): Builder
     {
@@ -231,24 +196,16 @@ class Migrator
 
     /**
      * Find migration data from database by given migration name.
-     *
-     * @param string $migration
-     *
-     * @return object
      */
-    public function find(string $migration)
+    public function find(string $migration): Builder
     {
-        return $this->table()->whereMigration($migration);
+        return $this->table()->where('migration', $migration);
     }
 
     /**
      * Save new migration to database.
-     *
-     * @param string $migration
-     *
-     * @return mixed
      */
-    public function log(string $migration)
+    public function log(string $migration): bool
     {
         return $this->table()->insert([
             'migration' => $migration,
@@ -258,8 +215,6 @@ class Migrator
 
     /**
      * Get the next migration batch number.
-     *
-     * @return int
      */
     public function getNextBatchNumber(): int
     {
@@ -268,9 +223,6 @@ class Migrator
 
     /**
      * Get the last migration batch number.
-     *
-     * @param array|null $migrations
-     * @return int
      */
     public function getLastBatchNumber(?array $migrations = null): int
     {
@@ -285,10 +237,6 @@ class Migrator
 
     /**
      * Get the last migration batch.
-     *
-     * @param array $migrations
-     *
-     * @return Collection
      */
     public function getLast(array $migrations): Collection
     {
@@ -305,8 +253,6 @@ class Migrator
 
     /**
      * Get the ran migrations.
-     *
-     * @return Collection
      */
     public function getRan(): Collection
     {
