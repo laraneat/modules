@@ -264,7 +264,7 @@ return [
     'cache' => [
         'enabled' => env('APP_ENV', 'production') === 'production',
         'key' => 'laraneat.modules',
-        'lifetime' => 86400, // 24 hours
+        'lifetime' => null, // store cache indefinitely
     ],
 
     /*
@@ -297,7 +297,7 @@ return [
             'class' => FileActivator::class,
             'statuses-file' => base_path('modules_statuses.json'),
             'cache-key' => 'laraneat.activator.installed',
-            'cache-lifetime' => 604800, // 7 days
+            'cache-lifetime' => null, // store cache indefinitely
         ],
     ],
 

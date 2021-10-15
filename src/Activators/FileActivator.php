@@ -34,7 +34,7 @@ class FileActivator implements ActivatorInterface
     /**
      * Modules cache lifetime
      */
-    protected string $cacheLifetime;
+    protected ?string $cacheLifetime;
 
     /**
      * Array of modules activation statuses
