@@ -188,11 +188,14 @@ class FileRepository implements RepositoryInterface, Countable
      */
     public function all(): array
     {
+        if (is_array($this->cachedModules)) {
+            return $this->cachedModules;
+        }
         if (! $this->config('cache.enabled')) {
-            return $this->scan();
+            return $this->cachedModules = $this->scan();
         }
 
-        return $this->getCached();
+        return $this->cachedModules = $this->getCached();
     }
 
     /**
@@ -222,11 +225,7 @@ class FileRepository implements RepositoryInterface, Countable
      */
     public function getCached(): array
     {
-        if (! is_array($this->cachedModules)) {
-            $this->cachedModules = $this->formatCached($this->getRawCached());
-        }
-
-        return $this->cachedModules;
+        return $this->formatCached($this->getRawCached());
     }
 
     /**
