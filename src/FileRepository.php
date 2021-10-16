@@ -8,6 +8,7 @@ use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use Laraneat\Modules\Contracts\ActivatorInterface;
@@ -222,13 +223,20 @@ class FileRepository implements RepositoryInterface, Countable
     public function getCached(): array
     {
         if (! is_array($this->cachedModules)) {
-            $cachedRaw = $this->cache->remember($this->config('cache.key'), $this->config('cache.lifetime'), function () {
-                return $this->toCollection()->toArray();
-            });
-            $this->cachedModules = $this->formatCached($cachedRaw);
+            $this->cachedModules = $this->formatCached($this->getRawCached());
         }
 
         return $this->cachedModules;
+    }
+
+    /**
+     * Get raw cache of modules.
+     */
+    protected function getRawCached(): array
+    {
+        return $this->cache->remember($this->config('cache.key'), $this->config('cache.lifetime'), function () {
+            return $this->toCollection()->toArray();
+        });
     }
 
     /**
@@ -290,13 +298,19 @@ class FileRepository implements RepositoryInterface, Countable
             is_array($manifests) || $manifests = [];
 
             foreach ($manifests as $manifest) {
-                $json = Json::make($manifest);
+                $json = Json::make($manifest, $this->filesystem);
                 $path = dirname($manifest);
                 $name = (string) $json->get('name');
                 $moduleKey = mb_strtolower($name);
                 $namespace = (string) $json->get('namespace', '');
 
-                $modules[$moduleKey] = $this->createModule($this->app, $name, $path, $namespace);
+                $modules[$moduleKey] = $this->createModule(
+                    $this->app,
+                    $name,
+                    $path,
+                    $namespace,
+                    ['module.json' => $json]
+                );
             }
         }
 
@@ -306,9 +320,14 @@ class FileRepository implements RepositoryInterface, Countable
     /**
      * Creates a new Module instance
      */
-    protected function createModule(Application $app, string $name, string $path, string $namespace): Module
-    {
-        return new Module($app, $name, $path, $namespace);
+    protected function createModule(
+        Application $app,
+        string $name,
+        string $path,
+        string $namespace,
+        array $moduleJson = []
+    ): Module {
+        return new Module($app, $name, $path, $namespace, $moduleJson);
     }
 
     /**
@@ -407,11 +426,22 @@ class FileRepository implements RepositoryInterface, Countable
     {
         $modules = [];
 
-        foreach ($cached as $moduleKey => $module) {
-            $path = $module['path'];
-            $name = $module['name'];
-            $namespace = $module['namespace'] ?? "";
-            $modules[$moduleKey] = $this->createModule($this->app, $name, $path, $namespace);
+        /**
+         * @var string $moduleKey
+         * @var array{name: string, path: string, namespace: string, module_json: array} $moduleArray
+         */
+        foreach ($cached as $moduleKey => $moduleArray) {
+            $moduleJson = array_map(
+                fn ($json) => Json::make($json['path'], $this->filesystem, $json['attributes']),
+                $moduleArray['module_json'] ?? []
+            );
+            $modules[$moduleKey] = $this->createModule(
+                $this->app,
+                $moduleArray['name'],
+                $moduleArray['path'],
+                $moduleArray['namespace'],
+                $moduleJson
+            );
         }
 
         return $modules;

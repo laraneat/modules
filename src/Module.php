@@ -3,16 +3,18 @@
 namespace Laraneat\Modules;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\ProviderRepository;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
+use JetBrains\PhpStorm\ArrayShape;
 use Laraneat\Modules\Contracts\ActivatorInterface;
 use Laraneat\Modules\Facades\Modules;
 
-class Module
+class Module implements Arrayable
 {
     use Macroable;
 
@@ -51,12 +53,18 @@ class Module
      */
     private ActivatorInterface $activator;
 
-    public function __construct(Application $app, string $name, string $path, string $namespace)
-    {
+    public function __construct(
+        Application $app,
+        string $name,
+        string $path,
+        string $namespace,
+        array $moduleJson = []
+    ) {
         $this->app = $app;
         $this->name = trim($name);
         $this->path = rtrim($path, '/');
         $this->namespace = trim($namespace, '\\');
+        $this->moduleJson = $moduleJson;
         $this->filesystem = $app['files'];
         $this->activator = $app[ActivatorInterface::class];
     }
@@ -163,7 +171,7 @@ class Module
         }
 
         return Arr::get($this->moduleJson, $fileName, function () use ($fileName) {
-            return $this->moduleJson[$fileName] = new Json($this->getExtraPath($fileName), $this->filesystem);
+            return $this->moduleJson[$fileName] = Json::make($this->getExtraPath($fileName), $this->filesystem);
         });
     }
 
@@ -346,6 +354,20 @@ class Module
     protected function isLoadFilesOnBoot(): bool
     {
         return config('modules.register.files', 'register') === 'boot';
+    }
+
+    /**
+     * Get the module as a plain array.
+     */
+    #[ArrayShape(['name' => "string", 'path' => "string", 'namespace' => "string", 'module_json' => "array"])]
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'path' => $this->path,
+            'namespace' => $this->namespace,
+            'module_json' => array_map(static fn (Json $json) => $json->toArray(), $this->moduleJson)
+        ];
     }
 
     /**

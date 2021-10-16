@@ -3,7 +3,7 @@
 namespace Laraneat\Modules\Contracts;
 
 use Illuminate\Filesystem\Filesystem;
-use Laraneat\Modules\Collection;
+use Illuminate\Support\Collection;
 use Laraneat\Modules\Exceptions\ModuleNotFoundException;
 use Laraneat\Modules\Module;
 

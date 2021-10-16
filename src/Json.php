@@ -3,10 +3,13 @@
 namespace Laraneat\Modules;
 
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Collection;
+use JetBrains\PhpStorm\ArrayShape;
 use JsonException;
 
-class Json
+class Json implements Arrayable
 {
     /**
      * The file path.
@@ -21,16 +24,21 @@ class Json
     /**
      * The collection of attributes.
      */
-    protected \Illuminate\Support\Collection $attributes;
+    protected Collection $attributes;
 
-    /**
-     * The constructor.
-     */
-    public function __construct(string $path, ?Filesystem $filesystem = null)
+    public function __construct(string $path, ?Filesystem $filesystem = null, ?array $cachedAttributes = null)
     {
         $this->path = $path;
         $this->filesystem = $filesystem ?: new Filesystem();
-        $this->attributes = Collection::make($this->getAttributes());
+        $this->attributes = Collection::make($cachedAttributes ?? $this->retrieveRawAttributes());
+    }
+
+    /**
+     * Make new instance.
+     */
+    public static function make(string $path, ?Filesystem $filesystem = null, ?array $cachedAttributes = null): static
+    {
+        return new static($path, $filesystem, $cachedAttributes);
     }
 
     public function getFilesystem(): Filesystem
@@ -57,12 +65,19 @@ class Json
         return $this;
     }
 
-    /**
-     * Make new instance.
-     */
-    public static function make(string $path, ?Filesystem $filesystem = null): static
+    public function getAttributes(): Collection
     {
-        return new static($path, $filesystem);
+        return $this->attributes;
+    }
+
+    /**
+     * Get file contents as array.
+     *
+     * @throws FileNotFoundException|JsonException
+     */
+    public function retrieveRawAttributes(): array
+    {
+        return json_decode($this->getContents(), true, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -77,23 +92,13 @@ class Json
     }
 
     /**
-     * Get file contents as array.
-     *
-     * @throws FileNotFoundException|JsonException
-     */
-    public function getAttributes(): array
-    {
-        return json_decode($this->getContents(), true, 512, JSON_THROW_ON_ERROR);
-    }
-
-    /**
      * Convert the given array data to pretty json.
      *
      * @throws JsonException
      */
-    public function toJsonPretty(?array $data = null): string
+    public function toJsonPretty(): string
     {
-        return json_encode($data ?: $this->attributes, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+        return json_encode($this->attributes, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
     }
 
     /**
@@ -109,16 +114,33 @@ class Json
     }
 
     /**
-     * Handle magic method __set.
+     * Save the current attributes array to the file storage.
+     *
+     * @throws JsonException
      */
-    public function __set($key, $value)
+    public function save(): int|false
     {
-        $this->set($key, $value);
+        return $this->filesystem->put($this->getPath(), $this->toJsonPretty());
     }
 
-    public function __isset(string $name): bool
+    /**
+     * Get json attributes as plain array
+     */
+    #[ArrayShape(['path' => "string", 'attributes' => "array"])]
+    public function toArray(): array
     {
-        return $this->attributes->offsetExists($name);
+        return [
+            'path' => $this->path,
+            'attributes' => $this->attributes->toArray(),
+        ];
+    }
+
+    /**
+     * Get the specified attribute from json file.
+     */
+    public function get($key, $default = null)
+    {
+        return $this->attributes->get($key, $default);
     }
 
     /**
@@ -132,16 +154,6 @@ class Json
     }
 
     /**
-     * Save the current attributes array to the file storage.
-     *
-     * @throws JsonException
-     */
-    public function save(): int|false
-    {
-        return $this->filesystem->put($this->getPath(), $this->toJsonPretty());
-    }
-
-    /**
      * Handle magic method __get.
      */
     public function __get($key)
@@ -150,11 +162,19 @@ class Json
     }
 
     /**
-     * Get the specified attribute from json file.
+     * Handle magic method __set.
      */
-    public function get($key, $default = null)
+    public function __set($key, $value)
     {
-        return $this->attributes->get($key, $default);
+        $this->set($key, $value);
+    }
+
+    /**
+     * Handle magic method __isset.
+     */
+    public function __isset(string $name): bool
+    {
+        return $this->attributes->offsetExists($name);
     }
 
     /**
