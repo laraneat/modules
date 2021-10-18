@@ -8,5 +8,5 @@ use Spatie\DataTransferObject\Attributes\Strict;
 #[Strict]
 class {{ class }} extends DataTransferObject
 {
-    //
+    // TODO: add fields here
 }

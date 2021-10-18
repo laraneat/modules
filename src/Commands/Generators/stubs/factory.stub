@@ -27,7 +27,7 @@ class {{ class }} extends Factory
     public function definition(): array
     {
         return [
-            //
+            // TODO: add fields here
         ];
     }
 }
