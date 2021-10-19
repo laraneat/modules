@@ -186,10 +186,8 @@ class ModuleComponentsGenerator extends Generator
         $entityName = $this->getEntityName();
         $pluralEntityName = Str::plural($entityName);
         $camelEntityName = Str::camel($entityName);
-        $snakeEntityName = Str::snake($entityName);
-        $snakePluralEntityName = Str::plural($snakeEntityName);
-        $dashedPluralEntityName = Str::snake($snakePluralEntityName, '-');
-        $underlinedPluralEntityName = Str::snake($snakePluralEntityName, '_');
+        $dashedPluralEntityName = Str::snake($pluralEntityName, '-');
+        $underlinedPluralEntityName = Str::snake($pluralEntityName, '_');
 
         if (GeneratorHelper::component('api-query-wizard')->generate() === true) {
             $this->console->call('module:make:wizard', [
