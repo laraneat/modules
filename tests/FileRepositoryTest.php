@@ -216,12 +216,12 @@ class FileRepositoryTest extends BaseTestCase
     public function it_calls_macros_on_modules()
     {
         Module::macro('getReverseName', function () {
-            return strrev($this->getLowerName());
+            return strrev($this->getName());
         });
 
         $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
         $module = $this->repository->find('article');
 
-        $this->assertEquals('elcitra', $module->getReverseName());
+        $this->assertEquals('elcitrA', $module->getReverseName());
     }
 }

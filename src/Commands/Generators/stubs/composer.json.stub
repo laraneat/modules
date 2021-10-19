@@ -1,5 +1,5 @@
 {
-    "name": "{{ vendor }}/{{ lowerName }}",
+    "name": "{{ vendor }}/{{ moduleKey }}",
     "description": "",
     "authors": [
         {

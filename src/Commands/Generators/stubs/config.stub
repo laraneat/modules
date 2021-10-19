@@ -4,10 +4,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | {{ studlyName }} Module Configuration
+    | {{ moduleName }} Module Configuration
     |--------------------------------------------------------------------------
     */
 
-    'name' => '{{ studlyName }}',
+    'name' => '{{ moduleName }}',
 
 ];

@@ -154,6 +154,16 @@ class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
+     * Get a module key by its name
+     */
+    public function getModuleKey(Module|string $module): string
+    {
+        return $module instanceof Module
+            ? $module->getKey()
+            : Str::snake($module, '-');
+    }
+
+    /**
      * Get path for a specific module.
      *
      * @throws ModuleNotFoundException
@@ -300,7 +310,7 @@ class FileRepository implements RepositoryInterface, Countable
                 $json = Json::make($manifest, $this->filesystem);
                 $path = dirname($manifest);
                 $name = (string) $json->get('name');
-                $moduleKey = mb_strtolower($name);
+                $moduleKey = $this->getModuleKey($name);
                 $namespace = (string) $json->get('namespace', '');
 
                 $modules[$moduleKey] = $this->createModule(
@@ -344,7 +354,7 @@ class FileRepository implements RepositoryInterface, Countable
      */
     public function has(string $moduleName): bool
     {
-        $moduleKey = mb_strtolower($moduleName);
+        $moduleKey = $this->getModuleKey($moduleName);
         return array_key_exists($moduleKey, $this->all());
     }
 
@@ -362,7 +372,7 @@ class FileRepository implements RepositoryInterface, Countable
     public function find(string $moduleName): ?Module
     {
         $allModules = $this->all();
-        $moduleKey = mb_strtolower($moduleName);
+        $moduleKey = $this->getModuleKey($moduleName);
 
         return $allModules[$moduleKey] ?? null;
     }

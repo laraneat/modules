@@ -120,7 +120,7 @@ class TestMakeCommand extends ComponentGeneratorCommand
     protected function getTemplateContents(): string
     {
         $stubReplaces = [
-            'moduleNameLower' => $this->module->getLowerName(),
+            'moduleKey' => $this->module->getKey(),
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
             'class' => $this->getClass($this->nameArgument)
         ];

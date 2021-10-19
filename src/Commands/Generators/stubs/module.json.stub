@@ -1,8 +1,8 @@
 {
-    "name": "{{ studlyName }}",
+    "name": "{{ moduleName }}",
     "namespace": "{{ moduleNamespace }}",
-    "alias": "{{ lowerName }}",
-    "description": "{{ studlyName }} module",
+    "alias": "{{ moduleKey }}",
+    "description": "{{ moduleName }} module",
     "keywords": [],
     "priority": 0,
     "providers": [],

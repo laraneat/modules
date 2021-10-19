@@ -10,7 +10,7 @@ class ArticleServiceProvider extends ServiceProvider
     use ModuleProviderHelpersTrait;
 
     protected string $moduleName = 'Article';
-    protected string $moduleNameLower = 'article';
+    protected string $moduleKey = 'article';
 
     /**
      * Register services.
@@ -46,9 +46,9 @@ class ArticleServiceProvider extends ServiceProvider
     public function registerTranslations(): void
     {
         $sourcePath = module_path($this->moduleName, 'Resources/lang');
-        $langPath = resource_path('lang/modules/' . $this->moduleNameLower);
+        $langPath = resource_path('lang/modules/' . $this->moduleKey);
 
-        $this->loadTranslationsFrom($sourcePath, $this->moduleNameLower);
+        $this->loadTranslationsFrom($sourcePath, $this->moduleKey);
 
         $this->publishes([
             $sourcePath => $langPath,
@@ -76,11 +76,11 @@ class ArticleServiceProvider extends ServiceProvider
     public function registerViews(): void
     {
         $sourcePath = module_path($this->moduleName, 'Resources/views');
-        $viewsPath = resource_path('views/modules/' . $this->moduleNameLower);
+        $viewsPath = resource_path('views/modules/' . $this->moduleKey);
 
         $this->loadViewsFrom(
-            array_merge($this->getPublishableViewPaths($this->moduleNameLower), [$sourcePath]),
-            $this->moduleNameLower
+            array_merge($this->getPublishableViewPaths($this->moduleKey), [$sourcePath]),
+            $this->moduleKey
         );
 
         $this->publishes([

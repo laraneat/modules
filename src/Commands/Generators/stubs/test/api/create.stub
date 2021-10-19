@@ -7,7 +7,7 @@ use Illuminate\Testing\Fluent\AssertableJson;
 use {{ modelNamespace }}\{{ model }};
 
 /**
- * @group {{ moduleNameLower }}
+ * @group {{ moduleKey }}
  * @group api
  */
 class {{ class }} extends TestCase

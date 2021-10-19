@@ -48,9 +48,9 @@ class ModuleTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_gets_lowercase_module_name()
+    public function it_gets_module_key()
     {
-        $this->assertEquals('article name', $this->module->getLowerName());
+        $this->assertEquals('article-name', $this->module->getKey());
     }
 
     /** @test */
@@ -164,8 +164,8 @@ class ModuleTest extends BaseTestCase
     public function it_fires_events_when_module_is_enabled()
     {
         $this->expectsEvents([
-            sprintf('modules.%s.enabling', $this->module->getLowerName()),
-            sprintf('modules.%s.enabled', $this->module->getLowerName()),
+            sprintf('modules.%s.enabling', $this->module->getKey()),
+            sprintf('modules.%s.enabled', $this->module->getKey()),
         ]);
 
         $this->module->enable();
@@ -175,8 +175,8 @@ class ModuleTest extends BaseTestCase
     public function it_fires_events_when_module_is_disabled()
     {
         $this->expectsEvents([
-            sprintf('modules.%s.disabling', $this->module->getLowerName()),
-            sprintf('modules.%s.disabled', $this->module->getLowerName()),
+            sprintf('modules.%s.disabling', $this->module->getKey()),
+            sprintf('modules.%s.disabled', $this->module->getKey()),
         ]);
 
         $this->module->disable();

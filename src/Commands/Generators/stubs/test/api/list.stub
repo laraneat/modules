@@ -6,7 +6,7 @@ use App\Ship\Abstracts\Tests\TestCase;
 use {{ modelNamespace }}\{{ model }};
 
 /**
- * @group {{ moduleNameLower }}
+ * @group {{ moduleKey }}
  * @group api
  */
 class {{ class }} extends TestCase

@@ -21,17 +21,17 @@ trait ModuleProviderHelpersTrait
     /**
      * Get publishable view paths
      *
-     * @param string $moduleNameLower
+     * @param string $moduleKey
      *
      * @return array
      */
-    protected function getPublishableViewPaths(string $moduleNameLower): array
+    protected function getPublishableViewPaths(string $moduleKey): array
     {
         $paths = [];
 
         foreach (config('view.paths', []) as $path) {
-            if (is_dir($path . '/modules/' . $moduleNameLower)) {
-                $paths[] = $path . '/modules/' . $moduleNameLower;
+            if (is_dir($path . '/modules/' . $moduleKey)) {
+                $paths[] = $path . '/modules/' . $moduleKey;
             }
         }
 

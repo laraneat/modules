@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string[] getPaths()
  * @method static $this addLocation(string $path)
  * @method static string[] getScanPaths()
+ * @method static string getModuleKey(\Laraneat\Modules\Module|string $module)
  * @method static string getModulePath(\Laraneat\Modules\Module|string $module, ?string $extraPath = null)
  * @method static string getModuleNamespace(\Laraneat\Modules\Module|string $module, ?string $extraNamespace = null)
  * @method static \Laraneat\Modules\Module[] all()

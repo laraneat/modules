@@ -87,8 +87,8 @@ class ProviderMakeCommand extends ComponentGeneratorCommand
 
         if ($this->stub === 'module') {
             $stubReplaces = array_merge($stubReplaces, [
-                'name' => $this->module->getStudlyName(),
-                'lowerName' => $this->module->getLowerName(),
+                'moduleName' => $this->module->getStudlyName(),
+                'moduleKey' => $this->module->getKey(),
                 'commandsPath' => GeneratorHelper::component('cli-command')->getPath(),
                 'langPath' => GeneratorHelper::component('lang')->getPath(),
                 'configPath' => GeneratorHelper::component('config')->getPath(),
@@ -97,7 +97,7 @@ class ProviderMakeCommand extends ComponentGeneratorCommand
             ]);
         } elseif ($this->stub === 'route') {
             $stubReplaces = array_merge($stubReplaces, [
-                'name' => $this->module->getStudlyName(),
+                'moduleName' => $this->module->getStudlyName(),
                 'webControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component('web-controller')->getFullNamespace($this->module)),
                 'apiControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component('api-controller')->getFullNamespace($this->module)),
                 'webRoutesPath' => GeneratorHelper::component('web-route')->getPath(),

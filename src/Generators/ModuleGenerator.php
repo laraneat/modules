@@ -391,25 +391,25 @@ class ModuleGenerator extends Generator
         return [
             'authorEmail' => $this->getAuthorEmailReplacement(),
             'authorName' => $this->getAuthorNameReplacement(),
-            'lowerName' => $this->getLowerNameReplacement(),
-            'studlyName' => $this->getStudlyNameReplacement(),
+            'moduleKey' => $this->getModuleKeyReplacement(),
+            'moduleName' => $this->getModuleNameReplacement(),
             'moduleNamespace' => $this->getModuleNamespaceReplacement(),
             'vendor' => $this->getVendorReplacement()
         ];
     }
 
     /**
-     * Get the module name in lower case (replacement for {{ lowerName }}).
+     * Get replacement for {{ moduleKey }}.
      */
-    protected function getLowerNameReplacement(): string
+    protected function getModuleKeyReplacement(): string
     {
-        return strtolower($this->getName());
+        return Str::snake($this->getName(), '-');
     }
 
     /**
-     * Get the module name in studly case (replacement for {{ studlyName }}).
+     * Get the module name in studly case (replacement for {{ moduleName }}).
      */
-    protected function getStudlyNameReplacement(): string
+    protected function getModuleNameReplacement(): string
     {
         return $this->getName();
     }

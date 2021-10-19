@@ -78,11 +78,11 @@ class Module implements Arrayable
     }
 
     /**
-     * Get name in lower case.
+     * Get key.
      */
-    public function getLowerName(): string
+    public function getKey(): string
     {
-        return strtolower($this->name);
+        return Str::snake($this->name, '-');
     }
 
     /**
@@ -211,7 +211,7 @@ class Module implements Arrayable
      */
     protected function fireEvent(string $event): void
     {
-        $this->app['events']->dispatch(sprintf('modules.%s.' . $event, $this->getLowerName()), [$this]);
+        $this->app['events']->dispatch(sprintf('modules.%s.' . $event, $this->getKey()), [$this]);
     }
 
     /**
