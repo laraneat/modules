@@ -28,7 +28,9 @@ class {{ class }} extends ModelQueryWizard
      */
     protected function allowedFields(): array
     {
-        return [];
+        return [
+            // TODO: add fields here
+        ];
     }
 
     /**
