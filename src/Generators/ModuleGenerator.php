@@ -7,6 +7,7 @@ use Illuminate\Console\Command as Console;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Contracts\ActivatorInterface;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\FileRepository;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use Laraneat\Modules\Support\Stub;
@@ -403,7 +404,7 @@ class ModuleGenerator extends Generator
      */
     protected function getModuleKeyReplacement(): string
     {
-        return Str::snake($this->getName(), '-');
+        return Modules::getModuleKey($this->getName());
     }
 
     /**
