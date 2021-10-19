@@ -11,7 +11,7 @@ use {{ resourceNamespace }}\{{ resource }};
 
 class {{ class }} extends Action
 {
-    public function handle({{ dto }} ${{ dtoEntity }}): {{ model }} {
+    public function handle({{ dto }} $dto): {{ model }} {
         return {{ model }}::create([
             // TODO: add fields here
         ]);
