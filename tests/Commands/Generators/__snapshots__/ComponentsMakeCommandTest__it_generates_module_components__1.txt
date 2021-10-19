@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 
 class CreateArticleAction extends Action
 {
-    public function handle(CreateArticleDTO $createArticleDTO): Article {
+    public function handle(CreateArticleDTO $dto): Article {
         return Article::create([
             // TODO: add fields here
         ]);

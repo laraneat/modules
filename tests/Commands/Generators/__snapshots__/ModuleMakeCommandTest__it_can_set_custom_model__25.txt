@@ -1,7 +1,7 @@
 <?php
 
-use App\Modules\Blog\Actions\UpdatePostAction;
+use App\Modules\Blog\Actions\UpdatePostCommentAction;
 use Illuminate\Support\Facades\Route;
 
-Route::patch('posts/{post}', UpdatePostAction::class)
-    ->name('api.posts.update');
+Route::patch('post-comments/{postComment}', UpdatePostCommentAction::class)
+    ->name('api.post_comments.update');

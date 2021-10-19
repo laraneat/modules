@@ -4,7 +4,7 @@ namespace App\Modules\Blog\UI\API\Requests;
 
 use App\Ship\Abstracts\Requests\Request;
 
-class DeletePostRequest extends Request
+class DeletePostCommentRequest extends Request
 {
     public function rules(): array
     {
@@ -13,7 +13,7 @@ class DeletePostRequest extends Request
 
     public function authorize(): bool
     {
-        $post = $this->route('post');
-        return $post && $this->user()->can('delete', $post);
+        $postComment = $this->route('postComment');
+        return $postComment && $this->user()->can('delete', $postComment);
     }
 }

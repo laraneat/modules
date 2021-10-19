@@ -2,33 +2,33 @@
 
 namespace App\Modules\Blog\Actions;
 
-use App\Modules\Blog\Models\Post;
-use App\Modules\Blog\UI\API\Requests\UpdatePostRequest;
-use App\Modules\Blog\UI\API\Resources\PostResource;
+use App\Modules\Blog\Models\PostComment;
+use App\Modules\Blog\UI\API\Requests\UpdatePostCommentRequest;
+use App\Modules\Blog\UI\API\Resources\PostCommentResource;
 use App\Ship\Abstracts\Actions\Action;
 use App\Ship\Exceptions\UpdateResourceFailedException;
 
-class UpdatePostAction extends Action
+class UpdatePostCommentAction extends Action
 {
-    public function handle(Post $post, array $data): Post
+    public function handle(PostComment $postComment, array $data): PostComment
     {
         if (empty($data)) {
             throw new UpdateResourceFailedException();
         }
 
-        $post->update($data);
+        $postComment->update($data);
 
-        return $post;
+        return $postComment;
     }
 
-    public function asController(UpdatePostRequest $request, Post $post): PostResource
+    public function asController(UpdatePostCommentRequest $request, PostComment $postComment): PostCommentResource
     {
         $sanitizedData = $request->sanitizeInput([
             //
         ]);
 
-        $post = $this->handle($post, $sanitizedData);
+        $postComment = $this->handle($postComment, $sanitizedData);
 
-        return new PostResource($post);
+        return new PostCommentResource($postComment);
     }
 }

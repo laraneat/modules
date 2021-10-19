@@ -4,7 +4,7 @@ namespace App\Modules\Blog\UI\API\Resources;
 
 use App\Ship\Abstracts\Resources\Json\JsonResource;
 
-class PostResource extends JsonResource
+class PostCommentResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

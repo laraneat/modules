@@ -27,7 +27,7 @@ class MyAwesomeFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            // TODO: add fields here
         ];
     }
 }

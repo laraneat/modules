@@ -7,7 +7,7 @@ use Jackardios\QueryWizard\Handlers\Eloquent\Filters\AbstractEloquentFilter;
 use Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude;
 use Jackardios\QueryWizard\Handlers\Eloquent\Sorts\AbstractEloquentSort;
 
-class PostsQueryWizard extends EloquentQueryWizard
+class PostCommentsQueryWizard extends EloquentQueryWizard
 {
     /**
      * @return array<string>
@@ -30,7 +30,9 @@ class PostsQueryWizard extends EloquentQueryWizard
      */
     protected function allowedFields(): array
     {
-        return [];
+        return [
+            // TODO: add fields here
+        ];
     }
 
     /**

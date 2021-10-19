@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 
 class CreatePostAction extends Action
 {
-    public function handle(CreatePostDTO $createPostDTO): Post {
+    public function handle(CreatePostDTO $dto): Post {
         return Post::create([
             // TODO: add fields here
         ]);

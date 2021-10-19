@@ -6,7 +6,7 @@ use App\Ship\Abstracts\DTO\DataTransferObject;
 use Spatie\DataTransferObject\Attributes\Strict;
 
 #[Strict]
-class CreatePostDTO extends DataTransferObject
+class CreatePostCommentDTO extends DataTransferObject
 {
-    //
+    // TODO: add fields here
 }

@@ -2,11 +2,11 @@
 
 namespace App\Modules\Blog\UI\API\Requests;
 
-use App\Modules\Blog\DTO\CreatePostDTO;
-use App\Modules\Blog\Models\Post;
+use App\Modules\Blog\DTO\CreatePostCommentDTO;
+use App\Modules\Blog\Models\PostComment;
 use App\Ship\Abstracts\Requests\Request;
 
-class CreatePostRequest extends Request
+class CreatePostCommentRequest extends Request
 {
     public function rules(): array
     {
@@ -17,12 +17,12 @@ class CreatePostRequest extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('create', Post::class);
+        return $this->user()->can('create', PostComment::class);
     }
 
-    public function toDTO(): CreatePostDTO
+    public function toDTO(): CreatePostCommentDTO
     {
-        return new CreatePostDTO(
+        return new CreatePostCommentDTO(
             // TODO: add fields here
         );
     }

@@ -4,7 +4,7 @@ namespace App\Modules\Blog\UI\API\Requests;
 
 use App\Ship\Abstracts\Requests\Request;
 
-class UpdatePostRequest extends Request
+class UpdatePostCommentRequest extends Request
 {
     public function rules(): array
     {
@@ -15,7 +15,7 @@ class UpdatePostRequest extends Request
 
     public function authorize(): bool
     {
-        $post = $this->route('post');
-        return $post && $this->user()->can('update', $post);
+        $postComment = $this->route('postComment');
+        return $postComment && $this->user()->can('update', $postComment);
     }
 }

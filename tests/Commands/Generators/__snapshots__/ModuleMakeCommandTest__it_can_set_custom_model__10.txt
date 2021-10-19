@@ -6,40 +6,40 @@ use App\Modules\Authorization\Actions\CreatePermissionAction;
 use App\Modules\Authorization\DTO\CreatePermissionDTO;
 use App\Ship\Abstracts\Seeders\Seeder;
 
-class PostPermissionsSeeder_1 extends Seeder
+class PostCommentPermissionsSeeder_1 extends Seeder
 {
     public function run(): void
     {
         $createPermissionAction = CreatePermissionAction::make();
 
         $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'view-post',
-            displayName: 'View any posts',
-            group: 'posts'
+            name: 'view-post-comment',
+            displayName: 'View any post-comments',
+            group: 'post-comments'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'create-post',
-            displayName: 'Create posts',
-            group: 'posts'
+            name: 'create-post-comment',
+            displayName: 'Create post-comments',
+            group: 'post-comments'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'update-post',
-            displayName: 'Update any posts',
-            group: 'posts'
+            name: 'update-post-comment',
+            displayName: 'Update any post-comments',
+            group: 'post-comments'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'delete-post',
-            displayName: 'Delete any posts',
-            group: 'posts'
+            name: 'delete-post-comment',
+            displayName: 'Delete any post-comments',
+            group: 'post-comments'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'force-delete-post',
-            displayName: 'Force delete any posts',
-            group: 'posts'
+            name: 'force-delete-post-comment',
+            displayName: 'Force delete any post-comments',
+            group: 'post-comments'
         ));
     }
 }

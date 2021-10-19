@@ -2,21 +2,21 @@
 
 namespace App\Modules\Blog\Actions;
 
-use App\Modules\Blog\Models\Post;
-use App\Modules\Blog\UI\API\Requests\DeletePostRequest;
+use App\Modules\Blog\Models\PostComment;
+use App\Modules\Blog\UI\API\Requests\DeletePostCommentRequest;
 use App\Ship\Abstracts\Actions\Action;
 use Illuminate\Http\JsonResponse;
 
-class DeletePostAction extends Action
+class DeletePostCommentAction extends Action
 {
-    public function handle(Post $post): bool
+    public function handle(PostComment $postComment): bool
     {
-        return $post->delete();
+        return $postComment->delete();
     }
 
-    public function asController(DeletePostRequest $request, Post $post): JsonResponse
+    public function asController(DeletePostCommentRequest $request, PostComment $postComment): JsonResponse
     {
-        $this->handle($post);
+        $this->handle($postComment);
 
         return $this->noContent();
     }

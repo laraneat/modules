@@ -2,46 +2,46 @@
 
 namespace App\Modules\Blog\UI\API\Tests;
 
-use App\Modules\Blog\Models\Post;
+use App\Modules\Blog\Models\PostComment;
 use App\Ship\Abstracts\Tests\TestCase;
 
 /**
  * @group blog
  * @group api
  */
-class ListPostsTest extends TestCase
+class ListPostCommentsTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'view-post',
+        'permissions' => 'view-post-comment',
         'roles'       => '',
     ];
 
-    public function testListPosts(): void
+    public function testListPostComments(): void
     {
         $this->getTestingUser();
 
-        Post::factory()->count(2)->create();
+        PostComment::factory()->count(2)->create();
 
-        $this->getJson(route('api.posts.list'))
+        $this->getJson(route('api.post_comments.list'))
             ->assertOk()
             ->assertJsonStructure([
                 'links',
                 'meta',
                 'data'
             ])
-            ->assertJsonCount(Post::query()->count(), 'data');
+            ->assertJsonCount(PostComment::query()->count(), 'data');
     }
 
-    public function testListPostsWithoutAccess(): void
+    public function testListPostCommentsWithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
 
-        Post::factory()->count(2)->create();
+        PostComment::factory()->count(2)->create();
 
-        $this->getJson(route('api.posts.list'))
+        $this->getJson(route('api.post_comments.list'))
             ->assertForbidden();
     }
 }

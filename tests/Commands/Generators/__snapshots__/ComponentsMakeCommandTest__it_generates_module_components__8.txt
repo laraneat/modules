@@ -8,5 +8,5 @@ use Spatie\DataTransferObject\Attributes\Strict;
 #[Strict]
 class CreateArticleDTO extends DataTransferObject
 {
-    //
+    // TODO: add fields here
 }

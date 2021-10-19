@@ -7,5 +7,5 @@ use Spatie\DataTransferObject\Attributes\Strict;
 
 class MyAwesomeDTO extends DataTransferObject
 {
-    //
+    // TODO: add fields here
 }

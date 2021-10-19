@@ -5,7 +5,7 @@ namespace App\Modules\Blog\UI\API\QueryWizards;
 use App\Ship\Abstracts\QueryWizards\ModelQueryWizard;
 use Jackardios\QueryWizard\Handlers\Model\Includes\AbstractModelInclude;
 
-class PostQueryWizard extends ModelQueryWizard
+class PostCommentQueryWizard extends ModelQueryWizard
 {
     /**
      * @return array<string>
@@ -28,7 +28,9 @@ class PostQueryWizard extends ModelQueryWizard
      */
     protected function allowedFields(): array
     {
-        return [];
+        return [
+            // TODO: add fields here
+        ];
     }
 
     /**

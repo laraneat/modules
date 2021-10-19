@@ -2,25 +2,25 @@
 
 namespace App\Modules\Blog\Actions;
 
-use App\Modules\Blog\DTO\CreatePostDTO;
-use App\Modules\Blog\Models\Post;
-use App\Modules\Blog\UI\API\Requests\CreatePostRequest;
-use App\Modules\Blog\UI\API\Resources\PostResource;
+use App\Modules\Blog\DTO\CreatePostCommentDTO;
+use App\Modules\Blog\Models\PostComment;
+use App\Modules\Blog\UI\API\Requests\CreatePostCommentRequest;
+use App\Modules\Blog\UI\API\Resources\PostCommentResource;
 use App\Ship\Abstracts\Actions\Action;
 use Illuminate\Http\JsonResponse;
 
-class CreatePostAction extends Action
+class CreatePostCommentAction extends Action
 {
-    public function handle(CreatePostDTO $createPostDTO): Post {
-        return Post::create([
+    public function handle(CreatePostCommentDTO $dto): PostComment {
+        return PostComment::create([
             // TODO: add fields here
         ]);
     }
 
-    public function asController(CreatePostRequest $request): JsonResponse
+    public function asController(CreatePostCommentRequest $request): JsonResponse
     {
-        $post = $this->handle($request->toDTO());
+        $postComment = $this->handle($request->toDTO());
 
-        return (new PostResource($post))->created();
+        return (new PostCommentResource($postComment))->created();
     }
 }

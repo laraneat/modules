@@ -2,22 +2,22 @@
 
 namespace App\Modules\Blog\Actions;
 
-use App\Modules\Blog\Models\Post;
-use App\Modules\Blog\UI\API\QueryWizards\PostQueryWizard;
-use App\Modules\Blog\UI\API\Requests\ViewPostRequest;
-use App\Modules\Blog\UI\API\Resources\PostResource;
+use App\Modules\Blog\Models\PostComment;
+use App\Modules\Blog\UI\API\QueryWizards\PostCommentQueryWizard;
+use App\Modules\Blog\UI\API\Requests\ViewPostCommentRequest;
+use App\Modules\Blog\UI\API\Resources\PostCommentResource;
 use App\Ship\Abstracts\Actions\Action;
 use Illuminate\Database\Eloquent\Model;
 
-class ViewPostAction extends Action
+class ViewPostCommentAction extends Action
 {
-    public function handle(ViewPostRequest $request, Post $post): Model
+    public function handle(ViewPostCommentRequest $request, PostComment $postComment): Model
     {
-        return PostQueryWizard::for($post, $request)->build();
+        return PostCommentQueryWizard::for($postComment, $request)->build();
     }
 
-    public function asController(ViewPostRequest $request, Post $post): PostResource
+    public function asController(ViewPostCommentRequest $request, PostComment $postComment): PostCommentResource
     {
-        return new PostResource($this->handle($request, $post));
+        return new PostCommentResource($this->handle($request, $postComment));
     }
 }

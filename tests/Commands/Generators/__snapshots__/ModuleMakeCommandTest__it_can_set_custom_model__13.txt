@@ -2,12 +2,12 @@
 
 namespace App\Modules\Blog\Policies;
 
-use App\Modules\Blog\Models\Post;
+use App\Modules\Blog\Models\PostComment;
 use App\Modules\User\Models\User;
 use App\Ship\Abstracts\Policies\Policy;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class PostPolicy extends Policy
+class PostCommentPolicy extends Policy
 {
     use HandlesAuthorization;
 
@@ -16,15 +16,15 @@ class PostPolicy extends Policy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view-post');
+        return $user->can('view-post-comment');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Post $post): bool
+    public function view(User $user, PostComment $postComment): bool
     {
-        return $user->can('view-post');
+        return $user->can('view-post-comment');
     }
 
     /**
@@ -32,38 +32,38 @@ class PostPolicy extends Policy
      */
     public function create(User $user): bool
     {
-        return $user->can('create-post');
+        return $user->can('create-post-comment');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Post $post): bool
+    public function update(User $user, PostComment $postComment): bool
     {
-        return $user->can('update-post');
+        return $user->can('update-post-comment');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Post $post): bool
+    public function delete(User $user, PostComment $postComment): bool
     {
-        return $user->can('delete-post');
+        return $user->can('delete-post-comment');
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Post $post): bool
+    public function restore(User $user, PostComment $postComment): bool
     {
-        return $user->can('delete-post');
+        return $user->can('delete-post-comment');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Post $post): bool
+    public function forceDelete(User $user, PostComment $postComment): bool
     {
-        return $user->can('force-delete-post');
+        return $user->can('force-delete-post-comment');
     }
 }
