@@ -30,7 +30,7 @@ class {{ class }} extends TestCase
             // TODO: add fields here
         ];
         $expectedData = array_merge($data, [
-           'id' => ${{ modelEntity }}->getKey(),
+            'id' => ${{ modelEntity }}->getKey(),
         ]);
 
         $this->patchJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)

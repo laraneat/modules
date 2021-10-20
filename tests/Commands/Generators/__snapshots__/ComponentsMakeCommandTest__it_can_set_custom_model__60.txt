@@ -30,7 +30,7 @@ class UpdateCommentTest extends TestCase
             // TODO: add fields here
         ];
         $expectedData = array_merge($data, [
-           'id' => $comment->getKey(),
+            'id' => $comment->getKey(),
         ]);
 
         $this->patchJson(route('api.comments.update', ['comment' => $comment->getKey()]), $data)

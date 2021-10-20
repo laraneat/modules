@@ -30,7 +30,7 @@ class UpdateArticleTest extends TestCase
             // TODO: add fields here
         ];
         $expectedData = array_merge($data, [
-           'id' => $article->getKey(),
+            'id' => $article->getKey(),
         ]);
 
         $this->patchJson(route('api.articles.update', ['article' => $article->getKey()]), $data)

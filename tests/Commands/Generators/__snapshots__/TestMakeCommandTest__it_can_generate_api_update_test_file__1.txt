@@ -30,7 +30,7 @@ class MyAwesomeApiUpdateTest extends TestCase
             // TODO: add fields here
         ];
         $expectedData = array_merge($data, [
-           'id' => $someTestModel->getKey(),
+            'id' => $someTestModel->getKey(),
         ]);
 
         $this->patchJson(route('some.api.url', ['someTestModel' => $someTestModel->getKey()]), $data)
