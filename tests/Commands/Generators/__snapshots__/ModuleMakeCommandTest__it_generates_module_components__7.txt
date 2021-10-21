@@ -14,31 +14,31 @@ class ArticlePermissionsSeeder_1 extends Seeder
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'view-article',
-            displayName: 'View any articles',
+            display_name: 'View any articles',
             group: 'articles'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'create-article',
-            displayName: 'Create articles',
+            display_name: 'Create articles',
             group: 'articles'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'update-article',
-            displayName: 'Update any articles',
+            display_name: 'Update any articles',
             group: 'articles'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'delete-article',
-            displayName: 'Delete any articles',
+            display_name: 'Delete any articles',
             group: 'articles'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'force-delete-article',
-            displayName: 'Force delete any articles',
+            display_name: 'Force delete any articles',
             group: 'articles'
         ));
     }
