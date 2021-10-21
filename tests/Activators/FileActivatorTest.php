@@ -15,7 +15,7 @@ class FileActivatorTest extends BaseTestCase
     private Filesystem $finder;
     private FileActivator $activator;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -24,7 +24,7 @@ class FileActivatorTest extends BaseTestCase
         $this->activator = new FileActivator($this->app);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         $this->activator->reset();
         parent::tearDown();

@@ -14,7 +14,7 @@ abstract class BaseTestCase extends OrchestraTestCase
         return __DIR__ . '/fixtures/laravel';
     }
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

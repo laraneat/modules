@@ -9,7 +9,7 @@ class JsonTest extends BaseTestCase
 {
     private Json $json;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $path = __DIR__ . '/fixtures/stubs/valid/module.json';

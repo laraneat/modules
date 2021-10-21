@@ -10,7 +10,7 @@ class GeneratorHelperReaderTest extends BaseTestCase
     private Filesystem $finder;
     private string $modulePath;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->finder = $this->app['files'];

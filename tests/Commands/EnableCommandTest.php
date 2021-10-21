@@ -11,14 +11,14 @@ use Laraneat\Modules\Tests\BaseTestCase;
  */
 class EnableCommandTest extends BaseTestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->artisan('module:make', ['name' => 'Article']);
         $this->artisan('module:make', ['name' => 'Taxonomy']);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         $this->app[RepositoryInterface::class]->delete('Article');
         $this->app[RepositoryInterface::class]->delete('Taxonomy');

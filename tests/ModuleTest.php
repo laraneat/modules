@@ -11,7 +11,7 @@ class ModuleTest extends BaseTestCase
     private TestingModule $module;
     private ActivatorInterface $activator;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->module = new TestingModule(
@@ -23,7 +23,7 @@ class ModuleTest extends BaseTestCase
         $this->activator = $this->app[ActivatorInterface::class];
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         $this->activator->reset();
         parent::tearDown();

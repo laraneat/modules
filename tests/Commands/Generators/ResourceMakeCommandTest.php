@@ -18,7 +18,7 @@ class ResourceMakeCommandTest extends BaseTestCase
     private Filesystem $finder;
     private string $modulePath;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->modulePath = base_path('app/Modules/Article');
@@ -26,7 +26,7 @@ class ResourceMakeCommandTest extends BaseTestCase
         $this->artisan('module:make', ['name' => 'Article', '--plain' => true]);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         $this->app[RepositoryInterface::class]->delete('Article');
         parent::tearDown();

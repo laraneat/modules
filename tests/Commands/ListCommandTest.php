@@ -10,13 +10,13 @@ use Laraneat\Modules\Tests\BaseTestCase;
  */
 class ListCommandTest extends BaseTestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->artisan('module:make', ['name' => 'Article']);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         $this->app[RepositoryInterface::class]->delete('Article');
         parent::tearDown();

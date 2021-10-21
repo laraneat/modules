@@ -10,13 +10,13 @@ class StubTest extends BaseTestCase
 {
     private Filesystem $finder;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->finder = $this->app['files'];
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
         $this->finder->delete([

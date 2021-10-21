@@ -24,7 +24,7 @@ class ModuleMakeCommandTest extends BaseTestCase
     private RepositoryInterface $repository;
     private array $moduleComponentPaths;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->modulePath = base_path('app/Modules/Article');
@@ -65,7 +65,7 @@ class ModuleMakeCommandTest extends BaseTestCase
         ];
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         $this->finder->deleteDirectory($this->modulePath);
         if ($this->finder->isDirectory(base_path('app/Modules/ModuleName'))) {

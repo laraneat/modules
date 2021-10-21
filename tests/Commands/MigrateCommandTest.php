@@ -15,7 +15,7 @@ abstract class MigrateCommandTest extends BaseTestCase
     protected FileRepository $repository;
     protected Filesystem $finder;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->repository = new FileRepository($this->app);

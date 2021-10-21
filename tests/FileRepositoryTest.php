@@ -13,14 +13,14 @@ class FileRepositoryTest extends BaseTestCase
     private FileRepository $repository;
     private ActivatorInterface $activator;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->repository = new FileRepository($this->app);
         $this->activator = $this->app[ActivatorInterface::class];
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         $this->activator->reset();
         parent::tearDown();
