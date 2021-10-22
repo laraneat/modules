@@ -34,7 +34,7 @@ class {{ class }} extends TestCase
         $this->post(route('{{ routeName }}'), $data)
             ->assertCreated();
 
-        $this->assertExistsModelWithAttributes({{ model }}::class, $data);
+        $this->assertExistsModelWhereColumns({{ model }}::class, $data);
     }
 
     public function testCreate{{ model }}WithoutAccess(): void

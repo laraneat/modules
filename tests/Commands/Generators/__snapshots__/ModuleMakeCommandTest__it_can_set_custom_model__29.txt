@@ -42,7 +42,7 @@ class CreatePostCommentTest extends TestCase
                     )
             );
 
-        $this->assertExistsModelWithAttributes(PostComment::class, $data);
+        $this->assertExistsModelWhereColumns(PostComment::class, $data);
     }
 
     public function testCreatePostCommentWithoutAccess(): void

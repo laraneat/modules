@@ -35,7 +35,7 @@ class {{ class }} extends TestCase
         $this->patch(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)
            ->assertOk();
 
-        $this->assertExistsModelWithAttributes({{ model }}::class, $expectedData);
+        $this->assertExistsModelWhereColumns({{ model }}::class, $expectedData);
     }
 
     public function testUpdate{{ model }}WithoutAccess(): void

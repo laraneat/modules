@@ -42,7 +42,7 @@ class MyAwesomeApiUpdateTest extends TestCase
                 )
             );
 
-        $this->assertExistsModelWithAttributes(SomeTestModel::class, $expectedData);
+        $this->assertExistsModelWhereColumns(SomeTestModel::class, $expectedData);
     }
 
     public function testUpdateSomeTestModelWithoutAccess(): void

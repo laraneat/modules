@@ -42,7 +42,7 @@ class CreateArticleTest extends TestCase
                     )
             );
 
-        $this->assertExistsModelWithAttributes(Article::class, $data);
+        $this->assertExistsModelWhereColumns(Article::class, $data);
     }
 
     public function testCreateArticleWithoutAccess(): void

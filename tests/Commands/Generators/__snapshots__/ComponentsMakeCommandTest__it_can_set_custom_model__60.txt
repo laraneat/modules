@@ -42,7 +42,7 @@ class UpdateCommentTest extends TestCase
                 )
             );
 
-        $this->assertExistsModelWithAttributes(Comment::class, $expectedData);
+        $this->assertExistsModelWhereColumns(Comment::class, $expectedData);
     }
 
     public function testUpdateCommentWithoutAccess(): void

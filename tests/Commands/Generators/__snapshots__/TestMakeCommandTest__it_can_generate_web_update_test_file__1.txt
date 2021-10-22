@@ -35,7 +35,7 @@ class MyAwesomeWebUpdateTest extends TestCase
         $this->patch(route('some.web.url', ['someTestModel' => $someTestModel->getKey()]), $data)
            ->assertOk();
 
-        $this->assertExistsModelWithAttributes(SomeTestModel::class, $expectedData);
+        $this->assertExistsModelWhereColumns(SomeTestModel::class, $expectedData);
     }
 
     public function testUpdateSomeTestModelWithoutAccess(): void

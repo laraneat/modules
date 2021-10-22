@@ -34,7 +34,7 @@ class MyAwesomeWebCreateTest extends TestCase
         $this->post(route('some.web.url'), $data)
             ->assertCreated();
 
-        $this->assertExistsModelWithAttributes(SomeTestModel::class, $data);
+        $this->assertExistsModelWhereColumns(SomeTestModel::class, $data);
     }
 
     public function testCreateSomeTestModelWithoutAccess(): void

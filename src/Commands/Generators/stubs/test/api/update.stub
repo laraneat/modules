@@ -42,7 +42,7 @@ class {{ class }} extends TestCase
                 )
             );
 
-        $this->assertExistsModelWithAttributes({{ model }}::class, $expectedData);
+        $this->assertExistsModelWhereColumns({{ model }}::class, $expectedData);
     }
 
     public function testUpdate{{ model }}WithoutAccess(): void
