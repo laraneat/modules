@@ -23,11 +23,7 @@ class MyAwesomeUpdateAction extends Action
 
     public function asController(TestRequest $request, TestModel $testModel): TestResource
     {
-        $sanitizedData = $request->sanitizeInput([
-            //
-        ]);
-
-        $testModel = $this->handle($testModel, $sanitizedData);
+        $testModel = $this->handle($testModel, $request->validated());
 
         return new TestResource($testModel);
     }

@@ -23,11 +23,7 @@ class UpdatePostAction extends Action
 
     public function asController(UpdatePostRequest $request, Post $post): PostResource
     {
-        $sanitizedData = $request->sanitizeInput([
-            //
-        ]);
-
-        $post = $this->handle($post, $sanitizedData);
+        $post = $this->handle($post, $request->validated());
 
         return new PostResource($post);
     }

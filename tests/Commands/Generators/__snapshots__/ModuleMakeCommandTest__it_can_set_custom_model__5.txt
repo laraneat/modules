@@ -23,11 +23,7 @@ class UpdatePostCommentAction extends Action
 
     public function asController(UpdatePostCommentRequest $request, PostComment $postComment): PostCommentResource
     {
-        $sanitizedData = $request->sanitizeInput([
-            //
-        ]);
-
-        $postComment = $this->handle($postComment, $sanitizedData);
+        $postComment = $this->handle($postComment, $request->validated());
 
         return new PostCommentResource($postComment);
     }
