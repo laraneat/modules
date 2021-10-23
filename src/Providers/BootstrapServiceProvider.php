@@ -8,18 +8,11 @@ use Laraneat\Modules\Contracts\RepositoryInterface;
 class BootstrapServiceProvider extends ServiceProvider
 {
     /**
-     * Booting the package.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
-        $this->app[RepositoryInterface::class]->boot();
-    }
-
-    /**
-     * Register the provider.
-     */
-    public function register(): void
-    {
         $this->app[RepositoryInterface::class]->register();
+        $this->app[RepositoryInterface::class]->boot();
     }
 }
