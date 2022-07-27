@@ -3,6 +3,7 @@
 namespace {{ namespace }};
 
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class {{ class }} extends Request
 {
@@ -16,6 +17,6 @@ class {{ class }} extends Request
     public function authorize(): bool
     {
         ${{ modelEntity }} = $this->route('{{ modelEntity }}');
-        return ${{ modelEntity }} && $this->user()->can('update', ${{ modelEntity }});
+        return ${{ modelEntity }} && Gate::check('update', ${{ modelEntity }});
     }
 }

@@ -5,6 +5,7 @@ namespace {{ namespace }};
 use App\Ship\Abstracts\Requests\Request;
 use {{ dtoNamespace }}\{{ dto }};
 use {{ modelNamespace }}\{{ model }};
+use Illuminate\Support\Facades\Gate;
 
 class {{ class }} extends Request
 {
@@ -17,13 +18,11 @@ class {{ class }} extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('create', {{ model }}::class);
+        return Gate::check('create', {{ model }}::class);
     }
 
     public function toDTO(): {{ dto }}
     {
-        return new {{ dto }}(
-            // TODO: add fields here
-        );
+        return new {{ dto }}($this->validated());
     }
 }
