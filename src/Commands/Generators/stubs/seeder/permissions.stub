@@ -14,31 +14,31 @@ class {{ class }} extends Seeder
 
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
             name: 'view-{{ modelPermissionEntity }}',
-            display_name: 'View any {{ modelPermissionEntities }}',
+            display_name: 'View any "{{ modelPermissionEntities }}"',
             group: '{{ modelPermissionEntities }}'
         ));
 
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
             name: 'create-{{ modelPermissionEntity }}',
-            display_name: 'Create {{ modelPermissionEntities }}',
+            display_name: 'Create "{{ modelPermissionEntities }}"',
             group: '{{ modelPermissionEntities }}'
         ));
 
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
             name: 'update-{{ modelPermissionEntity }}',
-            display_name: 'Update any {{ modelPermissionEntities }}',
+            display_name: 'Update any "{{ modelPermissionEntities }}"',
             group: '{{ modelPermissionEntities }}'
         ));
 
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
             name: 'delete-{{ modelPermissionEntity }}',
-            display_name: 'Delete any {{ modelPermissionEntities }}',
+            display_name: 'Delete any "{{ modelPermissionEntities }}"',
             group: '{{ modelPermissionEntities }}'
         ));
 
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
             name: 'force-delete-{{ modelPermissionEntity }}',
-            display_name: 'Force delete any {{ modelPermissionEntities }}',
+            display_name: 'Force delete any "{{ modelPermissionEntities }}"',
             group: '{{ modelPermissionEntities }}'
         ));
     }
