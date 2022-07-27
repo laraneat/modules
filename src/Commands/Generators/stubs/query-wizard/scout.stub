@@ -3,7 +3,7 @@
 namespace {{ namespace }};
 
 use App\Ship\Abstracts\QueryWizards\ScoutQueryWizard;
-use Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude;
+use Jackardios\QueryWizard\Eloquent\EloquentInclude;
 use Jackardios\ScoutQueryWizard\Handlers\Filters\AbstractScoutFilter;
 use Jackardios\ScoutQueryWizard\Handlers\Sorts\AbstractScoutSort;
 
@@ -44,7 +44,7 @@ class {{ class }} extends ScoutQueryWizard
     }
 
     /**
-     * @return array<string|AbstractEloquentInclude>
+     * @return array<string|EloquentInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -52,7 +52,7 @@ class {{ class }} extends ScoutQueryWizard
     }
 
     /**
-     * @return array<string|AbstractEloquentInclude>
+     * @return array<string|EloquentInclude>
      */
     protected function defaultIncludes(): array
     {
