@@ -13,7 +13,7 @@ class {{ class }} extends Action
 {
     public function handle({{ request }} $request, {{ model }} ${{ modelEntity }}): Model
     {
-        return {{ queryWizard }}::for(${{ modelEntity }}, $request)->build();
+        return {{ queryWizard }}::for(${{ modelEntity }})->build();
     }
 
     public function asController({{ request }} $request, {{ model }} ${{ modelEntity }}): {{ resource }}
