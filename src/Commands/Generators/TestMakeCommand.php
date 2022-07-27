@@ -133,7 +133,9 @@ class TestMakeCommand extends ComponentGeneratorCommand
                 true
             );
             $stubReplaces['model'] = $this->getClass($model);
+            $stubReplaces['modelSnake'] = Str::snake($stubReplaces['model']);
             $stubReplaces['models'] = Str::plural($stubReplaces['model']);
+            $stubReplaces['modelsSnake'] = Str::snake($stubReplaces['models']);
             $stubReplaces['modelEntity'] = Str::camel($stubReplaces['model']);
             $stubReplaces['modelNamespace'] = $this->getComponentNamespace($this->module, $model, 'model');
             $stubReplaces['modelPermissionEntity'] = Str::snake($stubReplaces['model'], '-');

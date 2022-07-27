@@ -19,7 +19,7 @@ class {{ class }} extends TestCase
         'roles'       => '',
     ];
 
-    public function testList{{ models }}(): void
+    public function test_list_{{ modelsSnake }}(): void
     {
         $this->getTestingUser();
 
@@ -35,7 +35,7 @@ class {{ class }} extends TestCase
             ->assertJsonCount({{ model }}::query()->count(), 'data');
     }
 
-    public function testList{{ models }}WithoutAccess(): void
+    public function test_list_{{ modelsSnake }}_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 

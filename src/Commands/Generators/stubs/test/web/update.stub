@@ -19,15 +19,20 @@ class {{ class }} extends TestCase
         'roles'       => '',
     ];
 
-    public function testUpdate{{ model }}(): void
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
+    }
+
+    public function test_update_{{ modelSnake }}(): void
     {
         $this->getTestingUser();
 
         ${{ modelEntity }} = {{ model }}::factory()->create();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
         $expectedData = array_merge($data, [
             'id' => ${{ modelEntity }}->getKey(),
         ]);
@@ -38,27 +43,23 @@ class {{ class }} extends TestCase
         $this->assertExistsModelWhereColumns({{ model }}::class, $expectedData);
     }
 
-    public function testUpdate{{ model }}WithoutAccess(): void
+    public function test_update_{{ modelSnake }}WithoutAccess(): void
     {
         $this->getTestingUserWithoutAccess();
 
         ${{ modelEntity }} = {{ model }}::factory()->create();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
 
         $this->patch(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)
             ->assertForbidden();
     }
 
-    public function testUpdateNonExisting{{ model }}(): void
+    public function test_update_non_existing_{{ modelSnake }}(): void
     {
         $this->getTestingUser();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
 
         $this->patch(route('{{ routeName }}', ['{{ modelEntity }}' => 7777]), $data)
             ->assertNotFound();

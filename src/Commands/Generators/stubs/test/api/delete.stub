@@ -19,7 +19,7 @@ class {{ class }} extends TestCase
         'roles'       => '',
     ];
 
-    public function testDelete{{ model }}(): void
+    public function test_delete_{{ modelSnake }}(): void
     {
         $this->getTestingUser();
 
@@ -31,7 +31,7 @@ class {{ class }} extends TestCase
         $this->assertNull({{ model }}::find(${{ modelEntity }}->getKey()));
     }
 
-    public function testDelete{{ model }}WithoutAccess(): void
+    public function test_delete_{{ modelSnake }}_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -41,7 +41,7 @@ class {{ class }} extends TestCase
             ->assertForbidden();
     }
 
-    public function testDeleteNotExisting{{ model }}(): void
+    public function test_delete_not_existing_{{ modelSnake }}(): void
     {
         $this->getTestingUser();
 

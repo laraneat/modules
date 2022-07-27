@@ -19,16 +19,17 @@ class {{ class }} extends TestCase
         'roles'       => '',
     ];
 
-    protected function getTestData(): array
+    protected function getTestData(array $mergeData = []): array
     {
-        return [
+        return array_merge([
             // TODO: add fields here
-        ];
+        ], $mergeData);
     }
 
-    public function testCreate{{ model }}(): void
+    public function test_create_{{ modelSnake }}(): void
     {
         $this->getTestingUser();
+
         $data = $this->getTestData();
 
         $this->post(route('{{ routeName }}'), $data)
@@ -37,9 +38,10 @@ class {{ class }} extends TestCase
         $this->assertExistsModelWhereColumns({{ model }}::class, $data);
     }
 
-    public function testCreate{{ model }}WithoutAccess(): void
+    public function test_create_{{ modelSnake }}_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
+
         $data = $this->getTestData();
 
         $this->post(route('{{ routeName }}'), $data)

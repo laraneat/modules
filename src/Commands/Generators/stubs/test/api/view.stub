@@ -20,15 +20,12 @@ class {{ class }} extends TestCase
         'roles'       => '',
     ];
 
-    public function testView{{ model }}(): void
+    public function test_view_{{ modelSnake }}(): void
     {
         $this->getTestingUser();
 
         ${{ modelEntity }} = {{ model }}::factory()->create();
-        $expectedData = [
-            'id' => ${{ modelEntity }}->getKey(),
-            // TODO: add fields here
-        ];
+        $expectedData = ${{ modelEntity }}->toArray();
 
         $this->getJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]))
             ->assertOk()
@@ -40,7 +37,7 @@ class {{ class }} extends TestCase
             );
     }
 
-    public function testView{{ model }}WithoutAccess(): void
+    public function test_view_{{ modelSnake }}_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -50,7 +47,7 @@ class {{ class }} extends TestCase
             ->assertForbidden();
     }
 
-    public function testViewNotExisting{{ model }}(): void
+    public function test_view_not_existing_{{ modelSnake }}(): void
     {
         $this->getTestingUser();
 
