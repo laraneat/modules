@@ -11,10 +11,9 @@ use Illuminate\Http\JsonResponse;
 
 class CreateCommentAction extends Action
 {
-    public function handle(CreateCommentDTO $dto): Comment {
-        return Comment::create([
-            // TODO: add fields here
-        ]);
+    public function handle(CreateCommentDTO $dto): Comment
+    {
+        return Comment::create($dto->toArray());
     }
 
     public function asController(CreateCommentRequest $request): JsonResponse

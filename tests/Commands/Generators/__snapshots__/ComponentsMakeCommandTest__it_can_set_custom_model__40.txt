@@ -14,31 +14,31 @@ class CommentPermissionsSeeder_1 extends Seeder
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'view-comment',
-            display_name: 'View any comments',
+            display_name: 'View any "comments"',
             group: 'comments'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'create-comment',
-            display_name: 'Create comments',
+            display_name: 'Create "comments"',
             group: 'comments'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'update-comment',
-            display_name: 'Update any comments',
+            display_name: 'Update any "comments"',
             group: 'comments'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'delete-comment',
-            display_name: 'Delete any comments',
+            display_name: 'Delete any "comments"',
             group: 'comments'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'force-delete-comment',
-            display_name: 'Force delete any comments',
+            display_name: 'Force delete any "comments"',
             group: 'comments'
         ));
     }

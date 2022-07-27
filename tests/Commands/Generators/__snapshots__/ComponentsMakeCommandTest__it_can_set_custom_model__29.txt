@@ -20,16 +20,17 @@ class CreatePostTest extends TestCase
         'roles'       => '',
     ];
 
-    protected function getTestData(): array
+    protected function getTestData(array $mergeData = []): array
     {
-        return [
+        return array_merge([
             // TODO: add fields here
-        ];
+        ], $mergeData);
     }
 
-    public function testCreatePost(): void
+    public function test_create_post(): void
     {
         $this->getTestingUser();
+
         $data = $this->getTestData();
 
         $this->postJson(route('api.posts.create'), $data)
@@ -45,9 +46,10 @@ class CreatePostTest extends TestCase
         $this->assertExistsModelWhereColumns(Post::class, $data);
     }
 
-    public function testCreatePostWithoutAccess(): void
+    public function test_create_post_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
+
         $data = $this->getTestData();
 
         $this->postJson(route('api.posts.create'), $data)

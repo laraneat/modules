@@ -20,15 +20,12 @@ class ViewPostTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testViewPost(): void
+    public function test_view_post(): void
     {
         $this->getTestingUser();
 
         $post = Post::factory()->create();
-        $expectedData = [
-            'id' => $post->getKey(),
-            // TODO: add fields here
-        ];
+        $expectedData = $post->toArray();
 
         $this->getJson(route('api.posts.view', ['post' => $post->getKey()]))
             ->assertOk()
@@ -40,7 +37,7 @@ class ViewPostTest extends TestCase
             );
     }
 
-    public function testViewPostWithoutAccess(): void
+    public function test_view_post_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -50,7 +47,7 @@ class ViewPostTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testViewNotExistingPost(): void
+    public function test_view_not_existing_post(): void
     {
         $this->getTestingUser();
 

@@ -19,7 +19,7 @@ class ListPostCommentsTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testListPostComments(): void
+    public function test_list_post_comments(): void
     {
         $this->getTestingUser();
 
@@ -35,7 +35,7 @@ class ListPostCommentsTest extends TestCase
             ->assertJsonCount(PostComment::query()->count(), 'data');
     }
 
-    public function testListPostCommentsWithoutAccess(): void
+    public function test_list_post_comments_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 

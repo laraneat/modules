@@ -4,6 +4,7 @@ namespace App\Modules\Article\UI\API\Requests;
 
 use App\Modules\Article\Models\Article;
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ListArticlesRequest extends Request
 {
@@ -14,6 +15,6 @@ class ListArticlesRequest extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('viewAny', Article::class);
+        return Gate::check('viewAny', Article::class);
     }
 }

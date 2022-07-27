@@ -4,6 +4,7 @@ namespace App\Modules\Blog\UI\API\Requests;
 
 use App\Modules\Blog\Models\Comment;
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ListCommentsRequest extends Request
 {
@@ -14,6 +15,6 @@ class ListCommentsRequest extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('viewAny', Comment::class);
+        return Gate::check('viewAny', Comment::class);
     }
 }

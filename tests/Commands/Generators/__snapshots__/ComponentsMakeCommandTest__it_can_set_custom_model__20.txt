@@ -3,6 +3,7 @@
 namespace App\Modules\Blog\UI\API\Requests;
 
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class UpdatePostRequest extends Request
 {
@@ -16,6 +17,6 @@ class UpdatePostRequest extends Request
     public function authorize(): bool
     {
         $post = $this->route('post');
-        return $post && $this->user()->can('update', $post);
+        return $post && Gate::check('update', $post);
     }
 }

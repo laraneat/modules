@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_role', function (Blueprint $table) {
+        Schema::create('user_role', static function (Blueprint $table) {
             $table->unsignedBigInteger('user_id')->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('role_id')->index();

@@ -5,6 +5,7 @@ namespace App\Modules\Blog\UI\API\Requests;
 use App\Modules\Blog\DTO\CreatePostDTO;
 use App\Modules\Blog\Models\Post;
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CreatePostRequest extends Request
 {
@@ -17,13 +18,11 @@ class CreatePostRequest extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('create', Post::class);
+        return Gate::check('create', Post::class);
     }
 
     public function toDTO(): CreatePostDTO
     {
-        return new CreatePostDTO(
-            // TODO: add fields here
-        );
+        return new CreatePostDTO($this->validated());
     }
 }

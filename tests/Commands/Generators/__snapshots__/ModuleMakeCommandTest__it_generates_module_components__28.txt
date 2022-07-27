@@ -19,7 +19,7 @@ class DeleteArticleTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testDeleteArticle(): void
+    public function test_delete_article(): void
     {
         $this->getTestingUser();
 
@@ -31,7 +31,7 @@ class DeleteArticleTest extends TestCase
         $this->assertNull(Article::find($article->getKey()));
     }
 
-    public function testDeleteArticleWithoutAccess(): void
+    public function test_delete_article_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -41,7 +41,7 @@ class DeleteArticleTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testDeleteNotExistingArticle(): void
+    public function test_delete_not_existing_article(): void
     {
         $this->getTestingUser();
 

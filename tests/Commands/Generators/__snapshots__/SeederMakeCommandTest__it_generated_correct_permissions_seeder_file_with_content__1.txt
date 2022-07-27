@@ -14,31 +14,31 @@ class MyAwesomePermissionsSeeder extends Seeder
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'view-my-awesome-model',
-            display_name: 'View any my-awesome-models',
+            display_name: 'View any "my-awesome-models"',
             group: 'my-awesome-models'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'create-my-awesome-model',
-            display_name: 'Create my-awesome-models',
+            display_name: 'Create "my-awesome-models"',
             group: 'my-awesome-models'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'update-my-awesome-model',
-            display_name: 'Update any my-awesome-models',
+            display_name: 'Update any "my-awesome-models"',
             group: 'my-awesome-models'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'delete-my-awesome-model',
-            display_name: 'Delete any my-awesome-models',
+            display_name: 'Delete any "my-awesome-models"',
             group: 'my-awesome-models'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'force-delete-my-awesome-model',
-            display_name: 'Force delete any my-awesome-models',
+            display_name: 'Force delete any "my-awesome-models"',
             group: 'my-awesome-models'
         ));
     }

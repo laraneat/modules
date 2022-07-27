@@ -20,15 +20,12 @@ class MyAwesomeApiViewTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testViewSomeTestModel(): void
+    public function test_view_some_test_model(): void
     {
         $this->getTestingUser();
 
         $someTestModel = SomeTestModel::factory()->create();
-        $expectedData = [
-            'id' => $someTestModel->getKey(),
-            // TODO: add fields here
-        ];
+        $expectedData = $someTestModel->toArray();
 
         $this->getJson(route('some.api.url', ['someTestModel' => $someTestModel->getKey()]))
             ->assertOk()
@@ -40,7 +37,7 @@ class MyAwesomeApiViewTest extends TestCase
             );
     }
 
-    public function testViewSomeTestModelWithoutAccess(): void
+    public function test_view_some_test_model_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -50,7 +47,7 @@ class MyAwesomeApiViewTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testViewNotExistingSomeTestModel(): void
+    public function test_view_not_existing_some_test_model(): void
     {
         $this->getTestingUser();
 

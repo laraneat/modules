@@ -19,7 +19,7 @@ class DeletePostTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testDeletePost(): void
+    public function test_delete_post(): void
     {
         $this->getTestingUser();
 
@@ -31,7 +31,7 @@ class DeletePostTest extends TestCase
         $this->assertNull(Post::find($post->getKey()));
     }
 
-    public function testDeletePostWithoutAccess(): void
+    public function test_delete_post_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -41,7 +41,7 @@ class DeletePostTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testDeleteNotExistingPost(): void
+    public function test_delete_not_existing_post(): void
     {
         $this->getTestingUser();
 

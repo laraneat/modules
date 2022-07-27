@@ -20,15 +20,20 @@ class UpdateArticleTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testUpdateArticle(): void
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
+    }
+
+    public function test_update_article(): void
     {
         $this->getTestingUser();
 
         $article = Article::factory()->create();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
         $expectedData = array_merge($data, [
             'id' => $article->getKey(),
         ]);
@@ -45,27 +50,23 @@ class UpdateArticleTest extends TestCase
         $this->assertExistsModelWhereColumns(Article::class, $expectedData);
     }
 
-    public function testUpdateArticleWithoutAccess(): void
+    public function test_update_article_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
         $article = Article::factory()->create();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
 
         $this->patchJson(route('api.articles.update', ['article' => $article->getKey()]), $data)
             ->assertForbidden();
     }
 
-    public function testUpdateNonExistingArticle(): void
+    public function test_update_non_existing_article(): void
     {
         $this->getTestingUser();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
 
         $this->patchJson(route('api.articles.update', ['article' => 7777]), $data)
             ->assertNotFound();

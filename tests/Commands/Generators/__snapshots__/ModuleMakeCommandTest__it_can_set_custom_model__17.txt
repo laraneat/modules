@@ -3,9 +3,9 @@
 namespace App\Modules\Blog\UI\API\QueryWizards;
 
 use App\Ship\Abstracts\QueryWizards\EloquentQueryWizard;
-use Jackardios\QueryWizard\Handlers\Eloquent\Filters\AbstractEloquentFilter;
-use Jackardios\QueryWizard\Handlers\Eloquent\Includes\AbstractEloquentInclude;
-use Jackardios\QueryWizard\Handlers\Eloquent\Sorts\AbstractEloquentSort;
+use Jackardios\QueryWizard\Eloquent\EloquentFilter;
+use Jackardios\QueryWizard\Eloquent\EloquentInclude;
+use Jackardios\QueryWizard\Eloquent\EloquentSort;
 
 class PostCommentsQueryWizard extends EloquentQueryWizard
 {
@@ -36,7 +36,7 @@ class PostCommentsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return array<string|AbstractEloquentFilter>
+     * @return array<string|EloquentFilter>
      */
     protected function allowedFilters(): array
     {
@@ -44,7 +44,7 @@ class PostCommentsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return array<string|AbstractEloquentInclude>
+     * @return array<string|EloquentInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -52,7 +52,7 @@ class PostCommentsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return array<string|AbstractEloquentInclude>
+     * @return array<string|EloquentInclude>
      */
     protected function defaultIncludes(): array
     {
@@ -60,7 +60,7 @@ class PostCommentsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return array<string|AbstractEloquentSort>
+     * @return array<string|EloquentSort>
      */
     protected function allowedSorts(): array
     {
@@ -68,7 +68,7 @@ class PostCommentsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return array<string|AbstractEloquentSort>
+     * @return array<string|EloquentSort>
      */
     protected function defaultSorts(): array
     {

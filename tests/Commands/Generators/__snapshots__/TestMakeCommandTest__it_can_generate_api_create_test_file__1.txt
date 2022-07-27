@@ -20,16 +20,17 @@ class MyAwesomeApiCreateTest extends TestCase
         'roles'       => '',
     ];
 
-    protected function getTestData(): array
+    protected function getTestData(array $mergeData = []): array
     {
-        return [
+        return array_merge([
             // TODO: add fields here
-        ];
+        ], $mergeData);
     }
 
-    public function testCreateSomeTestModel(): void
+    public function test_create_some_test_model(): void
     {
         $this->getTestingUser();
+
         $data = $this->getTestData();
 
         $this->postJson(route('some.api.url'), $data)
@@ -45,9 +46,10 @@ class MyAwesomeApiCreateTest extends TestCase
         $this->assertExistsModelWhereColumns(SomeTestModel::class, $data);
     }
 
-    public function testCreateSomeTestModelWithoutAccess(): void
+    public function test_create_some_test_model_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
+
         $data = $this->getTestData();
 
         $this->postJson(route('some.api.url'), $data)

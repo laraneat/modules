@@ -19,7 +19,7 @@ class ListPostsTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testListPosts(): void
+    public function test_list_posts(): void
     {
         $this->getTestingUser();
 
@@ -35,7 +35,7 @@ class ListPostsTest extends TestCase
             ->assertJsonCount(Post::query()->count(), 'data');
     }
 
-    public function testListPostsWithoutAccess(): void
+    public function test_list_posts_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 

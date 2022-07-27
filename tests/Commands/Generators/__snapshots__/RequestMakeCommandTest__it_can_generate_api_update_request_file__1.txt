@@ -3,6 +3,7 @@
 namespace App\Modules\Article\UI\API\Requests\Baz\Bat;
 
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class MyAwesomeApiUpdateRequest extends Request
 {
@@ -16,6 +17,6 @@ class MyAwesomeApiUpdateRequest extends Request
     public function authorize(): bool
     {
         $model = $this->route('model');
-        return $model && $this->user()->can('update', $model);
+        return $model && Gate::check('update', $model);
     }
 }

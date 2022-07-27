@@ -20,15 +20,20 @@ class UpdateCommentTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testUpdateComment(): void
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
+    }
+
+    public function test_update_comment(): void
     {
         $this->getTestingUser();
 
         $comment = Comment::factory()->create();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
         $expectedData = array_merge($data, [
             'id' => $comment->getKey(),
         ]);
@@ -45,27 +50,23 @@ class UpdateCommentTest extends TestCase
         $this->assertExistsModelWhereColumns(Comment::class, $expectedData);
     }
 
-    public function testUpdateCommentWithoutAccess(): void
+    public function test_update_comment_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
         $comment = Comment::factory()->create();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
 
         $this->patchJson(route('api.comments.update', ['comment' => $comment->getKey()]), $data)
             ->assertForbidden();
     }
 
-    public function testUpdateNonExistingComment(): void
+    public function test_update_non_existing_comment(): void
     {
         $this->getTestingUser();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
 
         $this->patchJson(route('api.comments.update', ['comment' => 7777]), $data)
             ->assertNotFound();

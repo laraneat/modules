@@ -20,15 +20,12 @@ class ViewArticleTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testViewArticle(): void
+    public function test_view_article(): void
     {
         $this->getTestingUser();
 
         $article = Article::factory()->create();
-        $expectedData = [
-            'id' => $article->getKey(),
-            // TODO: add fields here
-        ];
+        $expectedData = $article->toArray();
 
         $this->getJson(route('api.articles.view', ['article' => $article->getKey()]))
             ->assertOk()
@@ -40,7 +37,7 @@ class ViewArticleTest extends TestCase
             );
     }
 
-    public function testViewArticleWithoutAccess(): void
+    public function test_view_article_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -50,7 +47,7 @@ class ViewArticleTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testViewNotExistingArticle(): void
+    public function test_view_not_existing_article(): void
     {
         $this->getTestingUser();
 

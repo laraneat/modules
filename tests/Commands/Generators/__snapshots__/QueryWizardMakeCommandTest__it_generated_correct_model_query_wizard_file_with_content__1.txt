@@ -3,7 +3,7 @@
 namespace App\Modules\Article\UI\API\QueryWizards\Foo\Bar;
 
 use App\Ship\Abstracts\QueryWizards\ModelQueryWizard;
-use Jackardios\QueryWizard\Handlers\Model\Includes\AbstractModelInclude;
+use Jackardios\QueryWizard\Model\ModelInclude;
 
 class MyAwesomeModelQueryWizard extends ModelQueryWizard
 {
@@ -34,7 +34,7 @@ class MyAwesomeModelQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return array<string|AbstractModelInclude>
+     * @return array<string|ModelInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -42,7 +42,7 @@ class MyAwesomeModelQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return array<string|AbstractModelInclude>
+     * @return array<string|ModelInclude>
      */
     protected function defaultIncludes(): array
     {

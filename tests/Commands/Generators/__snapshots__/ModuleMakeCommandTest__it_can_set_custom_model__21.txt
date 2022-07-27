@@ -3,6 +3,7 @@
 namespace App\Modules\Blog\UI\API\Requests;
 
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class DeletePostCommentRequest extends Request
 {
@@ -14,6 +15,6 @@ class DeletePostCommentRequest extends Request
     public function authorize(): bool
     {
         $postComment = $this->route('postComment');
-        return $postComment && $this->user()->can('delete', $postComment);
+        return $postComment && Gate::check('delete', $postComment);
     }
 }

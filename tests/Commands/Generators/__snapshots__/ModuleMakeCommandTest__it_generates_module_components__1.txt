@@ -11,10 +11,9 @@ use Illuminate\Http\JsonResponse;
 
 class CreateArticleAction extends Action
 {
-    public function handle(CreateArticleDTO $dto): Article {
-        return Article::create([
-            // TODO: add fields here
-        ]);
+    public function handle(CreateArticleDTO $dto): Article
+    {
+        return Article::create($dto->toArray());
     }
 
     public function asController(CreateArticleRequest $request): JsonResponse

@@ -4,6 +4,7 @@ namespace App\Modules\Article\UI\API\Requests\Baz\Bat;
 
 use App\Modules\Article\Models\Some\Nested\Model;
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class MyAwesomeApiListRequest extends Request
 {
@@ -14,6 +15,6 @@ class MyAwesomeApiListRequest extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('viewAny', Model::class);
+        return Gate::check('viewAny', Model::class);
     }
 }

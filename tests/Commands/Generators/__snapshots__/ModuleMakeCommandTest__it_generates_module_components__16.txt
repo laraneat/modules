@@ -5,6 +5,7 @@ namespace App\Modules\Article\UI\API\Requests;
 use App\Modules\Article\DTO\CreateArticleDTO;
 use App\Modules\Article\Models\Article;
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CreateArticleRequest extends Request
 {
@@ -17,13 +18,11 @@ class CreateArticleRequest extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('create', Article::class);
+        return Gate::check('create', Article::class);
     }
 
     public function toDTO(): CreateArticleDTO
     {
-        return new CreateArticleDTO(
-            // TODO: add fields here
-        );
+        return new CreateArticleDTO($this->validated());
     }
 }

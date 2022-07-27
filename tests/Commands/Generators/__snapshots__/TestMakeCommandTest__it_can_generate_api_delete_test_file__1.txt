@@ -19,7 +19,7 @@ class MyAwesomeApiDeleteTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testDeleteSomeTestModel(): void
+    public function test_delete_some_test_model(): void
     {
         $this->getTestingUser();
 
@@ -31,7 +31,7 @@ class MyAwesomeApiDeleteTest extends TestCase
         $this->assertNull(SomeTestModel::find($someTestModel->getKey()));
     }
 
-    public function testDeleteSomeTestModelWithoutAccess(): void
+    public function test_delete_some_test_model_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -41,7 +41,7 @@ class MyAwesomeApiDeleteTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testDeleteNotExistingSomeTestModel(): void
+    public function test_delete_not_existing_some_test_model(): void
     {
         $this->getTestingUser();
 

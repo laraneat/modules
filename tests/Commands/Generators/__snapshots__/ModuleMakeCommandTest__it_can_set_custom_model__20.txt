@@ -3,6 +3,7 @@
 namespace App\Modules\Blog\UI\API\Requests;
 
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class UpdatePostCommentRequest extends Request
 {
@@ -16,6 +17,6 @@ class UpdatePostCommentRequest extends Request
     public function authorize(): bool
     {
         $postComment = $this->route('postComment');
-        return $postComment && $this->user()->can('update', $postComment);
+        return $postComment && Gate::check('update', $postComment);
     }
 }

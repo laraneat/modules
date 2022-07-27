@@ -20,16 +20,17 @@ class CreateCommentTest extends TestCase
         'roles'       => '',
     ];
 
-    protected function getTestData(): array
+    protected function getTestData(array $mergeData = []): array
     {
-        return [
+        return array_merge([
             // TODO: add fields here
-        ];
+        ], $mergeData);
     }
 
-    public function testCreateComment(): void
+    public function test_create_comment(): void
     {
         $this->getTestingUser();
+
         $data = $this->getTestData();
 
         $this->postJson(route('api.comments.create'), $data)
@@ -45,9 +46,10 @@ class CreateCommentTest extends TestCase
         $this->assertExistsModelWhereColumns(Comment::class, $data);
     }
 
-    public function testCreateCommentWithoutAccess(): void
+    public function test_create_comment_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
+
         $data = $this->getTestData();
 
         $this->postJson(route('api.comments.create'), $data)

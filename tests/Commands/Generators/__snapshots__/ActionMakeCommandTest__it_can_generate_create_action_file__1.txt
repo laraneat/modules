@@ -11,10 +11,9 @@ use Illuminate\Http\JsonResponse;
 
 class MyAwesomeCreateAction extends Action
 {
-    public function handle(TestDTO $dto): TestModel {
-        return TestModel::create([
-            // TODO: add fields here
-        ]);
+    public function handle(TestDTO $dto): TestModel
+    {
+        return TestModel::create($dto->toArray());
     }
 
     public function asController(TestRequest $request): JsonResponse

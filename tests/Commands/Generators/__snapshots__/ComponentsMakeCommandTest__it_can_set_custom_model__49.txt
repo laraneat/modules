@@ -5,6 +5,7 @@ namespace App\Modules\Blog\UI\API\Requests;
 use App\Modules\Blog\DTO\CreateCommentDTO;
 use App\Modules\Blog\Models\Comment;
 use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CreateCommentRequest extends Request
 {
@@ -17,13 +18,11 @@ class CreateCommentRequest extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('create', Comment::class);
+        return Gate::check('create', Comment::class);
     }
 
     public function toDTO(): CreateCommentDTO
     {
-        return new CreateCommentDTO(
-            // TODO: add fields here
-        );
+        return new CreateCommentDTO($this->validated());
     }
 }

@@ -20,15 +20,20 @@ class MyAwesomeApiUpdateTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testUpdateSomeTestModel(): void
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
+    }
+
+    public function test_update_some_test_model(): void
     {
         $this->getTestingUser();
 
         $someTestModel = SomeTestModel::factory()->create();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
         $expectedData = array_merge($data, [
             'id' => $someTestModel->getKey(),
         ]);
@@ -45,27 +50,23 @@ class MyAwesomeApiUpdateTest extends TestCase
         $this->assertExistsModelWhereColumns(SomeTestModel::class, $expectedData);
     }
 
-    public function testUpdateSomeTestModelWithoutAccess(): void
+    public function test_update_some_test_model_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
         $someTestModel = SomeTestModel::factory()->create();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
 
         $this->patchJson(route('some.api.url', ['someTestModel' => $someTestModel->getKey()]), $data)
             ->assertForbidden();
     }
 
-    public function testUpdateNonExistingSomeTestModel(): void
+    public function test_update_non_existing_some_test_model(): void
     {
         $this->getTestingUser();
 
-        $data = [
-            // TODO: add fields here
-        ];
+        $data = $this-getTestData();
 
         $this->patchJson(route('some.api.url', ['someTestModel' => 7777]), $data)
             ->assertNotFound();

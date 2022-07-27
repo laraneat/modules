@@ -14,31 +14,31 @@ class PostPermissionsSeeder_1 extends Seeder
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'view-post',
-            display_name: 'View any posts',
+            display_name: 'View any "posts"',
             group: 'posts'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'create-post',
-            display_name: 'Create posts',
+            display_name: 'Create "posts"',
             group: 'posts'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'update-post',
-            display_name: 'Update any posts',
+            display_name: 'Update any "posts"',
             group: 'posts'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'delete-post',
-            display_name: 'Delete any posts',
+            display_name: 'Delete any "posts"',
             group: 'posts'
         ));
 
         $createPermissionAction->handle(new CreatePermissionDTO(
             name: 'force-delete-post',
-            display_name: 'Force delete any posts',
+            display_name: 'Force delete any "posts"',
             group: 'posts'
         ));
     }

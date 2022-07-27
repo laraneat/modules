@@ -20,15 +20,12 @@ class ViewPostCommentTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testViewPostComment(): void
+    public function test_view_post_comment(): void
     {
         $this->getTestingUser();
 
         $postComment = PostComment::factory()->create();
-        $expectedData = [
-            'id' => $postComment->getKey(),
-            // TODO: add fields here
-        ];
+        $expectedData = $postComment->toArray();
 
         $this->getJson(route('api.post_comments.view', ['postComment' => $postComment->getKey()]))
             ->assertOk()
@@ -40,7 +37,7 @@ class ViewPostCommentTest extends TestCase
             );
     }
 
-    public function testViewPostCommentWithoutAccess(): void
+    public function test_view_post_comment_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -50,7 +47,7 @@ class ViewPostCommentTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testViewNotExistingPostComment(): void
+    public function test_view_not_existing_post_comment(): void
     {
         $this->getTestingUser();
 

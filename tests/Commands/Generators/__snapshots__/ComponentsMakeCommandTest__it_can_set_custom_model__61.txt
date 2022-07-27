@@ -19,7 +19,7 @@ class DeleteCommentTest extends TestCase
         'roles'       => '',
     ];
 
-    public function testDeleteComment(): void
+    public function test_delete_comment(): void
     {
         $this->getTestingUser();
 
@@ -31,7 +31,7 @@ class DeleteCommentTest extends TestCase
         $this->assertNull(Comment::find($comment->getKey()));
     }
 
-    public function testDeleteCommentWithoutAccess(): void
+    public function test_delete_comment_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
@@ -41,7 +41,7 @@ class DeleteCommentTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testDeleteNotExistingComment(): void
+    public function test_delete_not_existing_comment(): void
     {
         $this->getTestingUser();
 
