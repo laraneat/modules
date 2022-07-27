@@ -13,7 +13,7 @@ class ViewArticleAction extends Action
 {
     public function handle(ViewArticleRequest $request, Article $article): Model
     {
-        return ArticleQueryWizard::for($article, $request)->build();
+        return ArticleQueryWizard::for($article)->build();
     }
 
     public function asController(ViewArticleRequest $request, Article $article): ArticleResource

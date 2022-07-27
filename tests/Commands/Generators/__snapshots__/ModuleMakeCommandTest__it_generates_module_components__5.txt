@@ -14,7 +14,7 @@ class ListArticlesAction extends Action
 {
     public function handle(ListArticlesRequest $request): AbstractPaginator
     {
-        return ArticlesQueryWizard::for(Article::query(), $request)
+        return ArticlesQueryWizard::for(Article::query())
             ->build()
             ->jsonPaginate();
     }

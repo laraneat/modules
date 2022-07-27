@@ -14,7 +14,7 @@ class ListPostCommentsAction extends Action
 {
     public function handle(ListPostCommentsRequest $request): AbstractPaginator
     {
-        return PostCommentsQueryWizard::for(PostComment::query(), $request)
+        return PostCommentsQueryWizard::for(PostComment::query())
             ->build()
             ->jsonPaginate();
     }

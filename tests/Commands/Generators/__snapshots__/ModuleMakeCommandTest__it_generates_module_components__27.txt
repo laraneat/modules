@@ -33,7 +33,7 @@ class UpdateArticleTest extends TestCase
 
         $article = Article::factory()->create();
 
-        $data = $this-getTestData();
+        $data = $this->getTestData();
         $expectedData = array_merge($data, [
             'id' => $article->getKey(),
         ]);
@@ -56,7 +56,7 @@ class UpdateArticleTest extends TestCase
 
         $article = Article::factory()->create();
 
-        $data = $this-getTestData();
+        $data = $this->getTestData();
 
         $this->patchJson(route('api.articles.update', ['article' => $article->getKey()]), $data)
             ->assertForbidden();
@@ -66,7 +66,7 @@ class UpdateArticleTest extends TestCase
     {
         $this->getTestingUser();
 
-        $data = $this-getTestData();
+        $data = $this->getTestData();
 
         $this->patchJson(route('api.articles.update', ['article' => 7777]), $data)
             ->assertNotFound();

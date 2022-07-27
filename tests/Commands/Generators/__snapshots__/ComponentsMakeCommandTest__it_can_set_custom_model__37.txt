@@ -13,7 +13,7 @@ class ViewCommentAction extends Action
 {
     public function handle(ViewCommentRequest $request, Comment $comment): Model
     {
-        return CommentQueryWizard::for($comment, $request)->build();
+        return CommentQueryWizard::for($comment)->build();
     }
 
     public function asController(ViewCommentRequest $request, Comment $comment): CommentResource

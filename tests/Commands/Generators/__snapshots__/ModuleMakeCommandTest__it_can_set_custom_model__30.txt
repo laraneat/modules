@@ -33,7 +33,7 @@ class UpdatePostCommentTest extends TestCase
 
         $postComment = PostComment::factory()->create();
 
-        $data = $this-getTestData();
+        $data = $this->getTestData();
         $expectedData = array_merge($data, [
             'id' => $postComment->getKey(),
         ]);
@@ -56,7 +56,7 @@ class UpdatePostCommentTest extends TestCase
 
         $postComment = PostComment::factory()->create();
 
-        $data = $this-getTestData();
+        $data = $this->getTestData();
 
         $this->patchJson(route('api.post_comments.update', ['postComment' => $postComment->getKey()]), $data)
             ->assertForbidden();
@@ -66,7 +66,7 @@ class UpdatePostCommentTest extends TestCase
     {
         $this->getTestingUser();
 
-        $data = $this-getTestData();
+        $data = $this->getTestData();
 
         $this->patchJson(route('api.post_comments.update', ['postComment' => 7777]), $data)
             ->assertNotFound();

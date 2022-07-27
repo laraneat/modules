@@ -13,7 +13,7 @@ class MyAwesomeViewAction extends Action
 {
     public function handle(TestRequest $request, TestModel $testModel): Model
     {
-        return TestQueryWizard::for($testModel, $request)->build();
+        return TestQueryWizard::for($testModel)->build();
     }
 
     public function asController(TestRequest $request, TestModel $testModel): TestResource

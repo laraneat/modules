@@ -14,7 +14,7 @@ class MyAwesomeListAction extends Action
 {
     public function handle(TestRequest $request): AbstractPaginator
     {
-        return TestQueryWizard::for(TestModel::query(), $request)
+        return TestQueryWizard::for(TestModel::query())
             ->build()
             ->jsonPaginate();
     }

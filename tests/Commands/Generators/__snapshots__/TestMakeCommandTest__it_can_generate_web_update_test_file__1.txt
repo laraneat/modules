@@ -32,7 +32,7 @@ class MyAwesomeWebUpdateTest extends TestCase
 
         $someTestModel = SomeTestModel::factory()->create();
 
-        $data = $this-getTestData();
+        $data = $this->getTestData();
         $expectedData = array_merge($data, [
             'id' => $someTestModel->getKey(),
         ]);
@@ -49,7 +49,7 @@ class MyAwesomeWebUpdateTest extends TestCase
 
         $someTestModel = SomeTestModel::factory()->create();
 
-        $data = $this-getTestData();
+        $data = $this->getTestData();
 
         $this->patch(route('some.web.url', ['someTestModel' => $someTestModel->getKey()]), $data)
             ->assertForbidden();
@@ -59,7 +59,7 @@ class MyAwesomeWebUpdateTest extends TestCase
     {
         $this->getTestingUser();
 
-        $data = $this-getTestData();
+        $data = $this->getTestData();
 
         $this->patch(route('some.web.url', ['someTestModel' => 7777]), $data)
             ->assertNotFound();

@@ -13,7 +13,7 @@ class ViewPostCommentAction extends Action
 {
     public function handle(ViewPostCommentRequest $request, PostComment $postComment): Model
     {
-        return PostCommentQueryWizard::for($postComment, $request)->build();
+        return PostCommentQueryWizard::for($postComment)->build();
     }
 
     public function asController(ViewPostCommentRequest $request, PostComment $postComment): PostCommentResource
