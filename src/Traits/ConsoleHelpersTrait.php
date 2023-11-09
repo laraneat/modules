@@ -47,7 +47,7 @@ trait ConsoleHelpersTrait
     {
         $value = $this->getTrimmedOption($optionName);
 
-        if (empty($value)) {
+        if ($value === '' || $value === null) {
             $value = trim($this->ask($question, $default));
         }
 
@@ -74,9 +74,9 @@ trait ConsoleHelpersTrait
     {
         $value = $this->getTrimmedOption($optionName);
 
-        if (empty($value)) {
+        if ($value === '' || $value === null) {
             $value = trim($this->choice($question, $choices, $default));
-        } elseif (! in_array(mb_strtolower($value), $choices, true)) {
+        } elseif (!in_array(mb_strtolower($value), $choices, true)) {
             throw new InvalidOptionException(
                 sprintf(
                     'Wrong "%s" option value provided. Value should be one of "%s".',
@@ -101,7 +101,7 @@ trait ConsoleHelpersTrait
     {
         $value = $this->getTrimmedOption($optionName);
 
-        if (! in_array(mb_strtolower($value), $validValues, true)) {
+        if (!in_array(mb_strtolower($value), $validValues, true)) {
             throw new InvalidOptionException(
                 sprintf(
                     'Wrong "%s" option value provided. Value should be one of "%s".',
