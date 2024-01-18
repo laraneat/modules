@@ -1,26 +1,34 @@
 <?php
 
-namespace App\Modules\Blog\Actions;
+namespace App\Modules\Blog\Data\Factories;
 
 use App\Modules\Blog\Models\Post;
-use App\Modules\Blog\UI\API\QueryWizards\PostsQueryWizard;
-use App\Modules\Blog\UI\API\Requests\ListPostsRequest;
-use App\Modules\Blog\UI\API\Resources\PostResource;
-use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Pagination\AbstractPaginator;
+use App\Ship\Abstracts\Factories\Factory;
 
-class ListPostsAction extends Action
+/**
+ * @method \Illuminate\Support\Collection|Post create($attributes = [], ?Post $parent = null)
+ * @method \Illuminate\Support\Collection createMany(iterable $records)
+ * @method Post createOne($attributes = [])
+ * @method \Illuminate\Support\Collection|Post make($attributes = [], ?Post $parent = null)
+ * @method Post makeOne($attributes = [])
+ */
+class PostFactory extends Factory
 {
-    public function handle(ListPostsRequest $request): AbstractPaginator
-    {
-        return PostsQueryWizard::for(Post::query())
-            ->build()
-            ->jsonPaginate();
-    }
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Post::class;
 
-    public function asController(ListPostsRequest $request): ResourceCollection
+    /**
+     * Define the model's default state.
+     */
+    public function definition(): array
     {
-        return PostResource::collection($this->handle($request));
+        return [
+            // TODO: add fields here
+        ];
     }
 }
+

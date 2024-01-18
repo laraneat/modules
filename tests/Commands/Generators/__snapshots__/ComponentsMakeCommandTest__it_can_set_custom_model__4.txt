@@ -2,24 +2,29 @@
 
 namespace App\Modules\Blog\Actions;
 
-use App\Modules\Blog\DTO\CreatePostDTO;
 use App\Modules\Blog\Models\Post;
-use App\Modules\Blog\UI\API\Requests\CreatePostRequest;
+use App\Modules\Blog\UI\API\Requests\UpdatePostRequest;
 use App\Modules\Blog\UI\API\Resources\PostResource;
 use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Http\JsonResponse;
+use App\Ship\Exceptions\UpdateResourceFailedException;
 
-class CreatePostAction extends Action
+class UpdatePostAction extends Action
 {
-    public function handle(CreatePostDTO $dto): Post
+    public function handle(Post $post, array $data): Post
     {
-        return Post::create($dto->toArray());
+        if (empty($data)) {
+            throw new UpdateResourceFailedException();
+        }
+
+        $post->update($data);
+
+        return $post;
     }
 
-    public function asController(CreatePostRequest $request): JsonResponse
+    public function asController(UpdatePostRequest $request, Post $post): PostResource
     {
-        $post = $this->handle($request->toDTO());
+        $post = $this->handle($post, $request->validated());
 
-        return (new PostResource($post))->created();
+        return new PostResource($post);
     }
 }

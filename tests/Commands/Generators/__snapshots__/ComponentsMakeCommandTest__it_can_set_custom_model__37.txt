@@ -3,21 +3,24 @@
 namespace App\Modules\Blog\Actions;
 
 use App\Modules\Blog\Models\Comment;
-use App\Modules\Blog\UI\API\QueryWizards\CommentQueryWizard;
-use App\Modules\Blog\UI\API\Requests\ViewCommentRequest;
+use App\Modules\Blog\UI\API\QueryWizards\CommentsQueryWizard;
+use App\Modules\Blog\UI\API\Requests\ListCommentsRequest;
 use App\Modules\Blog\UI\API\Resources\CommentResource;
 use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Pagination\AbstractPaginator;
 
-class ViewCommentAction extends Action
+class ListCommentsAction extends Action
 {
-    public function handle(ViewCommentRequest $request, Comment $comment): Model
+    public function handle(ListCommentsRequest $request): AbstractPaginator
     {
-        return CommentQueryWizard::for($comment)->build();
+        return CommentsQueryWizard::for(Comment::query())
+            ->build()
+            ->jsonPaginate();
     }
 
-    public function asController(ViewCommentRequest $request, Comment $comment): CommentResource
+    public function asController(ListCommentsRequest $request): ResourceCollection
     {
-        return new CommentResource($this->handle($request, $comment));
+        return CommentResource::collection($this->handle($request));
     }
 }

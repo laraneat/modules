@@ -5,7 +5,7 @@ namespace App\Modules\Blog\UI\API\Requests;
 use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
-class DeleteCommentRequest extends Request
+class ViewCommentRequest extends Request
 {
     public function rules(): array
     {
@@ -15,6 +15,6 @@ class DeleteCommentRequest extends Request
     public function authorize(): bool
     {
         $comment = $this->route('comment');
-        return $comment && Gate::check('delete', $comment);
+        return $comment && Gate::check('view', $comment);
     }
 }

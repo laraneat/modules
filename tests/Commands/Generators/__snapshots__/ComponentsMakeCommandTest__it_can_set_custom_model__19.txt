@@ -2,12 +2,10 @@
 
 namespace App\Modules\Blog\UI\API\Requests;
 
-use App\Modules\Blog\DTO\CreatePostDTO;
-use App\Modules\Blog\Models\Post;
 use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
-class CreatePostRequest extends Request
+class UpdatePostRequest extends Request
 {
     public function rules(): array
     {
@@ -18,11 +16,7 @@ class CreatePostRequest extends Request
 
     public function authorize(): bool
     {
-        return Gate::check('create', Post::class);
-    }
-
-    public function toDTO(): CreatePostDTO
-    {
-        return new CreatePostDTO($this->validated());
+        $post = $this->route('post');
+        return $post && Gate::check('update', $post);
     }
 }

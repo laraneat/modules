@@ -1,20 +1,7 @@
 <?php
 
-namespace App\Modules\Blog\UI\API\Requests;
+use App\Modules\Blog\Actions\CreatePostCommentAction;
+use Illuminate\Support\Facades\Route;
 
-use App\Modules\Blog\Models\PostComment;
-use App\Ship\Abstracts\Requests\Request;
-use Illuminate\Support\Facades\Gate;
-
-class ListPostCommentsRequest extends Request
-{
-    public function rules(): array
-    {
-        return [];
-    }
-
-    public function authorize(): bool
-    {
-        return Gate::check('viewAny', PostComment::class);
-    }
-}
+Route::post('post-comments', CreatePostCommentAction::class)
+    ->name('api.post_comments.create');

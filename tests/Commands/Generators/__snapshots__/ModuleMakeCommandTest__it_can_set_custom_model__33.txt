@@ -1,47 +1,28 @@
 <?php
 
-namespace App\Modules\Blog\UI\API\Tests;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use App\Modules\Blog\Models\PostComment;
-use App\Ship\Abstracts\Tests\TestCase;
-
-/**
- * @group blog
- * @group api
- */
-class ListPostCommentsTest extends TestCase
+return new class extends Migration
 {
     /**
-     * Roles and permissions, to be attached on the user by default
+     * Run the migrations.
      */
-    protected array $access = [
-        'permissions' => 'view-post-comment',
-        'roles'       => '',
-    ];
-
-    public function test_list_post_comments(): void
+    public function up(): void
     {
-        $this->getTestingUser();
+        Schema::create('post_comments', static function (Blueprint $table) {
+            $table->id();
 
-        PostComment::factory()->count(2)->create();
-
-        $this->getJson(route('api.post_comments.list'))
-            ->assertOk()
-            ->assertJsonStructure([
-                'links',
-                'meta',
-                'data'
-            ])
-            ->assertJsonCount(PostComment::query()->count(), 'data');
+            $table->timestamps();
+        });
     }
 
-    public function test_list_post_comments_without_access(): void
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
-        $this->getTestingUserWithoutAccess();
-
-        PostComment::factory()->count(2)->create();
-
-        $this->getJson(route('api.post_comments.list'))
-            ->assertForbidden();
+        Schema::dropIfExists('post_comments');
     }
-}
+};

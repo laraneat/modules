@@ -3,28 +3,21 @@
 namespace App\Modules\Blog\Actions;
 
 use App\Modules\Blog\Models\Comment;
-use App\Modules\Blog\UI\API\Requests\UpdateCommentRequest;
-use App\Modules\Blog\UI\API\Resources\CommentResource;
+use App\Modules\Blog\UI\API\Requests\DeleteCommentRequest;
 use App\Ship\Abstracts\Actions\Action;
-use App\Ship\Exceptions\UpdateResourceFailedException;
+use Illuminate\Http\JsonResponse;
 
-class UpdateCommentAction extends Action
+class DeleteCommentAction extends Action
 {
-    public function handle(Comment $comment, array $data): Comment
+    public function handle(Comment $comment): bool
     {
-        if (empty($data)) {
-            throw new UpdateResourceFailedException();
-        }
-
-        $comment->update($data);
-
-        return $comment;
+        return $comment->delete();
     }
 
-    public function asController(UpdateCommentRequest $request, Comment $comment): CommentResource
+    public function asController(DeleteCommentRequest $request, Comment $comment): JsonResponse
     {
-        $comment = $this->handle($comment, $request->validated());
+        $this->handle($comment);
 
-        return new CommentResource($comment);
+        return $this->noContent();
     }
 }

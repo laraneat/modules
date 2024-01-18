@@ -4,13 +4,12 @@ namespace App\Modules\Blog\UI\API\Tests;
 
 use App\Modules\Blog\Models\Comment;
 use App\Ship\Abstracts\Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group blog
  * @group api
  */
-class ViewCommentTest extends TestCase
+class ListCommentsTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
@@ -20,38 +19,29 @@ class ViewCommentTest extends TestCase
         'roles'       => '',
     ];
 
-    public function test_view_comment(): void
+    public function test_list_comments(): void
     {
         $this->getTestingUser();
 
-        $comment = Comment::factory()->create();
-        $expectedData = $comment->toArray();
+        Comment::factory()->count(2)->create();
 
-        $this->getJson(route('api.comments.view', ['comment' => $comment->getKey()]))
+        $this->getJson(route('api.comments.list'))
             ->assertOk()
-            ->assertJson(fn (AssertableJson $json) =>
-                $json->has('data', fn (AssertableJson $json) =>
-                    $json->whereAll($expectedData)
-                        ->etc()
-                )
-            );
+            ->assertJsonStructure([
+                'links',
+                'meta',
+                'data'
+            ])
+            ->assertJsonCount(Comment::query()->count(), 'data');
     }
 
-    public function test_view_comment_without_access(): void
+    public function test_list_comments_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
-        $comment = Comment::factory()->create();
+        Comment::factory()->count(2)->create();
 
-        $this->getJson(route('api.comments.view', ['comment' => $comment->getKey()]))
+        $this->getJson(route('api.comments.list'))
             ->assertForbidden();
-    }
-
-    public function test_view_not_existing_comment(): void
-    {
-        $this->getTestingUser();
-
-        $this->getJson(route('api.comments.view', ['comment' => 7777]))
-            ->assertNotFound();
     }
 }

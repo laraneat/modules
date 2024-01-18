@@ -5,18 +5,16 @@ namespace App\Modules\Blog\UI\API\Requests;
 use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
-class UpdatePostRequest extends Request
+class DeletePostRequest extends Request
 {
     public function rules(): array
     {
-        return [
-            // TODO: add fields here
-        ];
+        return [];
     }
 
     public function authorize(): bool
     {
         $post = $this->route('post');
-        return $post && Gate::check('update', $post);
+        return $post && Gate::check('delete', $post);
     }
 }

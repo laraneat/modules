@@ -26,7 +26,6 @@ class ArticleServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerTranslations();
-        $this->registerConfig();
         $this->registerViews();
         $this->registerMigrations();
         $this->registerCommands();
@@ -53,21 +52,6 @@ class ArticleServiceProvider extends ServiceProvider
         $this->publishes([
             $sourcePath => $langPath,
         ], 'translations');
-    }
-
-    /**
-     * Register config.
-     */
-    protected function registerConfig(): void
-    {
-        $sourcePath = module_path($this->moduleName, 'Config');
-        $configPath = config_path();
-
-        $this->loadConfigs($sourcePath);
-
-        $this->publishes([
-            $sourcePath => $configPath
-        ], 'config');
     }
 
     /**

@@ -1,20 +1,7 @@
 <?php
 
-namespace App\Modules\Blog\UI\API\Requests;
+use App\Modules\Blog\Actions\CreatePostAction;
+use Illuminate\Support\Facades\Route;
 
-use App\Modules\Blog\Models\Post;
-use App\Ship\Abstracts\Requests\Request;
-use Illuminate\Support\Facades\Gate;
-
-class ListPostsRequest extends Request
-{
-    public function rules(): array
-    {
-        return [];
-    }
-
-    public function authorize(): bool
-    {
-        return Gate::check('viewAny', Post::class);
-    }
-}
+Route::post('posts', CreatePostAction::class)
+    ->name('api.posts.create');

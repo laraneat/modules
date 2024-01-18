@@ -1,69 +1,99 @@
 <?php
 
-namespace App\Modules\Blog\Policies;
+namespace App\Modules\Blog\Providers;
 
-use App\Modules\Blog\Models\Comment;
-use App\Modules\User\Models\User;
-use App\Ship\Abstracts\Policies\Policy;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Ship\Abstracts\Providers\ServiceProvider;
+use Laraneat\Modules\Traits\ModuleProviderHelpersTrait;
 
-class CommentPolicy extends Policy
+class BlogServiceProvider extends ServiceProvider
 {
-    use HandlesAuthorization;
+    use ModuleProviderHelpersTrait;
+
+    protected string $moduleName = 'Blog';
+    protected string $moduleKey = 'blog';
 
     /**
-     * Determine whether the user can view any models.
+     * Register services.
      */
-    public function viewAny(User $user): bool
+    public function register(): void
     {
-        return $user->can('view-comment');
+        //
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Bootstrap services.
      */
-    public function view(User $user, Comment $comment): bool
+    public function boot(): void
     {
-        return $user->can('view-comment');
+        $this->registerTranslations();
+        $this->registerViews();
+        $this->registerMigrations();
+        $this->registerCommands();
     }
 
     /**
-     * Determine whether the user can create models.
+     * Get the services provided by the provider.
      */
-    public function create(User $user): bool
+    public function provides(): array
     {
-        return $user->can('create-comment');
+        return [];
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Register translations.
      */
-    public function update(User $user, Comment $comment): bool
+    public function registerTranslations(): void
     {
-        return $user->can('update-comment');
+        $sourcePath = module_path($this->moduleName, 'Resources/lang');
+        $langPath = resource_path('lang/modules/' . $this->moduleKey);
+
+        $this->loadTranslationsFrom($sourcePath, $this->moduleKey);
+
+        $this->publishes([
+            $sourcePath => $langPath,
+        ], 'translations');
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Register views.
      */
-    public function delete(User $user, Comment $comment): bool
+    public function registerViews(): void
     {
-        return $user->can('delete-comment');
+        $sourcePath = module_path($this->moduleName, 'Resources/views');
+        $viewsPath = resource_path('views/modules/' . $this->moduleKey);
+
+        $this->loadViewsFrom(
+            array_merge($this->getPublishableViewPaths($this->moduleKey), [$sourcePath]),
+            $this->moduleKey
+        );
+
+        $this->publishes([
+            $sourcePath => $viewsPath
+        ], 'views');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Register migrations.
      */
-    public function restore(User $user, Comment $comment): bool
+    public function registerMigrations(): void
     {
-        return $user->can('delete-comment');
+        $sourcePath = module_path($this->moduleName, 'Data/Migrations');
+        $migrationsPath = database_path('migrations');
+
+        $this->loadMigrationsFrom($sourcePath);
+
+        $this->publishes([
+            $sourcePath => $migrationsPath
+        ], 'migrations');
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Register artisan commands.
      */
-    public function forceDelete(User $user, Comment $comment): bool
+    public function registerCommands(): void
     {
-        return $user->can('force-delete-comment');
+        if ($this->app->runningInConsole()) {
+            $this->loadCommands(module_path($this->moduleName, 'UI/CLI/Commands'));
+        }
     }
 }

@@ -1,45 +1,12 @@
 <?php
 
-namespace App\Modules\Blog\Data\Seeders;
+namespace App\Modules\Blog\DTO;
 
-use App\Modules\Authorization\Actions\CreatePermissionAction;
-use App\Modules\Authorization\DTO\CreatePermissionDTO;
-use App\Ship\Abstracts\Seeders\Seeder;
+use App\Ship\Abstracts\DTO\DataTransferObject;
+use Spatie\DataTransferObject\Attributes\Strict;
 
-class PostPermissionsSeeder_1 extends Seeder
+#[Strict]
+class CreatePostDTO extends DataTransferObject
 {
-    public function run(): void
-    {
-        $createPermissionAction = CreatePermissionAction::make();
-
-        $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'view-post',
-            display_name: 'View any "posts"',
-            group: 'posts'
-        ));
-
-        $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'create-post',
-            display_name: 'Create "posts"',
-            group: 'posts'
-        ));
-
-        $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'update-post',
-            display_name: 'Update any "posts"',
-            group: 'posts'
-        ));
-
-        $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'delete-post',
-            display_name: 'Delete any "posts"',
-            group: 'posts'
-        ));
-
-        $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'force-delete-post',
-            display_name: 'Force delete any "posts"',
-            group: 'posts'
-        ));
-    }
+    // TODO: add fields here
 }

@@ -5,7 +5,7 @@ namespace App\Modules\Blog\UI\API\Requests;
 use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
-class DeletePostRequest extends Request
+class ViewPostRequest extends Request
 {
     public function rules(): array
     {
@@ -15,6 +15,6 @@ class DeletePostRequest extends Request
     public function authorize(): bool
     {
         $post = $this->route('post');
-        return $post && Gate::check('delete', $post);
+        return $post && Gate::check('view', $post);
     }
 }

@@ -2,10 +2,11 @@
 
 namespace App\Modules\Blog\UI\API\Requests;
 
+use App\Modules\Blog\Models\Comment;
 use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
-class ViewCommentRequest extends Request
+class ListCommentsRequest extends Request
 {
     public function rules(): array
     {
@@ -14,7 +15,6 @@ class ViewCommentRequest extends Request
 
     public function authorize(): bool
     {
-        $comment = $this->route('comment');
-        return $comment && Gate::check('view', $comment);
+        return Gate::check('viewAny', Comment::class);
     }
 }

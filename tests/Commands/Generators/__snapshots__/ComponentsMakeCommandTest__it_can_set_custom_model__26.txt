@@ -1,7 +1,7 @@
 <?php
 
-use App\Modules\Blog\Actions\DeletePostAction;
+use App\Modules\Blog\Actions\ViewPostAction;
 use Illuminate\Support\Facades\Route;
 
-Route::delete('posts/{post}', DeletePostAction::class)
-    ->name('api.posts.delete');
+Route::get('posts/{post}', ViewPostAction::class)
+    ->name('api.posts.view');

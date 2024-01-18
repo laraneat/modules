@@ -1,47 +1,25 @@
 <?php
 
-namespace App\Modules\Blog\UI\API\Tests;
+namespace App\Modules\Blog\Actions;
 
-use App\Modules\Blog\Models\Post;
-use App\Ship\Abstracts\Tests\TestCase;
+use App\Modules\Blog\DTO\CreateCommentDTO;
+use App\Modules\Blog\Models\Comment;
+use App\Modules\Blog\UI\API\Requests\CreateCommentRequest;
+use App\Modules\Blog\UI\API\Resources\CommentResource;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\JsonResponse;
 
-/**
- * @group blog
- * @group api
- */
-class ListPostsTest extends TestCase
+class CreateCommentAction extends Action
 {
-    /**
-     * Roles and permissions, to be attached on the user by default
-     */
-    protected array $access = [
-        'permissions' => 'view-post',
-        'roles'       => '',
-    ];
-
-    public function test_list_posts(): void
+    public function handle(CreateCommentDTO $dto): Comment
     {
-        $this->getTestingUser();
-
-        Post::factory()->count(2)->create();
-
-        $this->getJson(route('api.posts.list'))
-            ->assertOk()
-            ->assertJsonStructure([
-                'links',
-                'meta',
-                'data'
-            ])
-            ->assertJsonCount(Post::query()->count(), 'data');
+        return Comment::create($dto->toArray());
     }
 
-    public function test_list_posts_without_access(): void
+    public function asController(CreateCommentRequest $request): JsonResponse
     {
-        $this->getTestingUserWithoutAccess();
+        $comment = $this->handle($request->toDTO());
 
-        Post::factory()->count(2)->create();
-
-        $this->getJson(route('api.posts.list'))
-            ->assertForbidden();
+        return (new CommentResource($comment))->created();
     }
 }

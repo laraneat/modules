@@ -10,13 +10,13 @@ use Illuminate\Testing\Fluent\AssertableJson;
  * @group blog
  * @group api
  */
-class CreateCommentTest extends TestCase
+class UpdateCommentTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'create-comment',
+        'permissions' => 'update-comment',
         'roles'       => '',
     ];
 
@@ -27,32 +27,48 @@ class CreateCommentTest extends TestCase
         ], $mergeData);
     }
 
-    public function test_create_comment(): void
+    public function test_update_comment(): void
+    {
+        $this->getTestingUser();
+
+        $comment = Comment::factory()->create();
+
+        $data = $this->getTestData();
+        $expectedData = array_merge($data, [
+            'id' => $comment->getKey(),
+        ]);
+
+        $this->patchJson(route('api.comments.update', ['comment' => $comment->getKey()]), $data)
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
+
+        $this->assertExistsModelWhereColumns(Comment::class, $expectedData);
+    }
+
+    public function test_update_comment_without_access(): void
+    {
+        $this->getTestingUserWithoutAccess();
+
+        $comment = Comment::factory()->create();
+
+        $data = $this->getTestData();
+
+        $this->patchJson(route('api.comments.update', ['comment' => $comment->getKey()]), $data)
+            ->assertForbidden();
+    }
+
+    public function test_update_non_existing_comment(): void
     {
         $this->getTestingUser();
 
         $data = $this->getTestData();
 
-        $this->postJson(route('api.comments.create'), $data)
-            ->assertCreated()
-            ->assertJson(fn (AssertableJson $json) =>
-                $json->has('data', fn (AssertableJson $json) =>
-                    $json->has('id')
-                        ->whereAll($data)
-                        ->etc()
-                    )
-            );
-
-        $this->assertExistsModelWhereColumns(Comment::class, $data);
-    }
-
-    public function test_create_comment_without_access(): void
-    {
-        $this->getTestingUserWithoutAccess();
-
-        $data = $this->getTestData();
-
-        $this->postJson(route('api.comments.create'), $data)
-            ->assertForbidden();
+        $this->patchJson(route('api.comments.update', ['comment' => 7777]), $data)
+            ->assertNotFound();
     }
 }

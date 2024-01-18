@@ -177,10 +177,6 @@ class ComponentsMakeCommandTest extends BaseTestCase
         $this->assertFileExists($composerJsonPath);
         $this->assertMatchesSnapshot($this->finder->get($composerJsonPath));
 
-        $configPath = $modulePath . '/Config/blog-module.php';
-        $this->assertFileExists($configPath);
-        $this->assertMatchesSnapshot($this->finder->get($configPath));
-
         foreach ($moduleComponentPaths as $componentPath) {
             $path = $modulePath . '/' . $componentPath;
             $this->assertFileExists($path);

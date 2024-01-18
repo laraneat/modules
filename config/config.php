@@ -117,10 +117,6 @@ return [
                 'path' => 'UI/CLI/Tests',
                 'generate' => false
             ],
-            'config' => [
-                'path' => 'Config',
-                'generate' => true
-            ],
             'dto' => [
                 'path' => 'DTO',
                 'generate' => true

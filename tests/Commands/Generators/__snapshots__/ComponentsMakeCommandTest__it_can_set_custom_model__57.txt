@@ -1,7 +1,7 @@
 <?php
 
-use App\Modules\Blog\Actions\ViewCommentAction;
+use App\Modules\Blog\Actions\ListCommentsAction;
 use Illuminate\Support\Facades\Route;
 
-Route::get('comments/{comment}', ViewCommentAction::class)
-    ->name('api.comments.view');
+Route::get('comments', ListCommentsAction::class)
+    ->name('api.comments.list');
