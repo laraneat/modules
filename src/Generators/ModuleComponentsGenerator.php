@@ -155,7 +155,10 @@ class ModuleComponentsGenerator extends Generator
             $this->console->call('module:make:dto', [
                 'name' => "Create{$entityName}DTO",
                 'module' => $moduleName,
-                '--strict' => true,
+            ]);
+            $this->console->call('module:make:dto', [
+                'name' => "Update{$entityName}DTO",
+                'module' => $moduleName,
             ]);
         }
 

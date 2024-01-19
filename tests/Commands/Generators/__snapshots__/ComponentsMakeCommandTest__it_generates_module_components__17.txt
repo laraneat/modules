@@ -2,6 +2,7 @@
 
 namespace App\Modules\Article\UI\API\Requests;
 
+use App\Modules\Article\DTO\UpdateArticleDTO;
 use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -18,5 +19,10 @@ class UpdateArticleRequest extends Request
     {
         $article = $this->route('article');
         return $article && Gate::check('update', $article);
+    }
+
+    public function toDTO(): UpdateArticleDTO
+    {
+        return new UpdateArticleDTO($this->validated());
     }
 }

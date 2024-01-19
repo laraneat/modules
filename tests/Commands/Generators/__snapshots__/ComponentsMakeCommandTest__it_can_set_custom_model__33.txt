@@ -13,7 +13,7 @@ class CreateCommentAction extends Action
 {
     public function handle(CreateCommentDTO $dto): Comment
     {
-        return Comment::create($dto->toArray());
+        return Comment::create($dto->all());
     }
 
     public function asController(CreateCommentRequest $request): JsonResponse

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Blog\UI\API\Requests;
 
+use App\Modules\Blog\DTO\UpdateCommentDTO;
 use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -18,5 +19,10 @@ class UpdateCommentRequest extends Request
     {
         $comment = $this->route('comment');
         return $comment && Gate::check('update', $comment);
+    }
+
+    public function toDTO(): UpdateCommentDTO
+    {
+        return new UpdateCommentDTO($this->validated());
     }
 }

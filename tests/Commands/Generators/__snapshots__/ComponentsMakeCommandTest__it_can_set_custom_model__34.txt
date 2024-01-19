@@ -2,6 +2,7 @@
 
 namespace App\Modules\Blog\Actions;
 
+use App\Modules\Blog\DTO\UpdateCommentDTO;
 use App\Modules\Blog\Models\Comment;
 use App\Modules\Blog\UI\API\Requests\UpdateCommentRequest;
 use App\Modules\Blog\UI\API\Resources\CommentResource;
@@ -10,8 +11,10 @@ use App\Ship\Exceptions\UpdateResourceFailedException;
 
 class UpdateCommentAction extends Action
 {
-    public function handle(Comment $comment, array $data): Comment
+    public function handle(Comment $comment, UpdateCommentDTO $dto): Comment
     {
+        $data = $dto->all();
+
         if (empty($data)) {
             throw new UpdateResourceFailedException();
         }
@@ -23,7 +26,7 @@ class UpdateCommentAction extends Action
 
     public function asController(UpdateCommentRequest $request, Comment $comment): CommentResource
     {
-        $comment = $this->handle($comment, $request->validated());
+        $comment = $this->handle($comment, $request->toDTO());
 
         return new CommentResource($comment);
     }

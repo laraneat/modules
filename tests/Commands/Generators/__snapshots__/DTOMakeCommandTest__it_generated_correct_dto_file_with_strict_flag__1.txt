@@ -3,9 +3,7 @@
 namespace App\Modules\Article\DTO\Foo\Bar;
 
 use App\Ship\Abstracts\DTO\DataTransferObject;
-use Spatie\DataTransferObject\Attributes\Strict;
 
-#[Strict]
 class MyAwesomeDTO extends DataTransferObject
 {
     // TODO: add fields here

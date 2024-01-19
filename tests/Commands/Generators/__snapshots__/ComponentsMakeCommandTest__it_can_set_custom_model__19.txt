@@ -2,6 +2,7 @@
 
 namespace App\Modules\Blog\UI\API\Requests;
 
+use App\Modules\Blog\DTO\UpdatePostDTO;
 use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -18,5 +19,10 @@ class UpdatePostRequest extends Request
     {
         $post = $this->route('post');
         return $post && Gate::check('update', $post);
+    }
+
+    public function toDTO(): UpdatePostDTO
+    {
+        return new UpdatePostDTO($this->validated());
     }
 }

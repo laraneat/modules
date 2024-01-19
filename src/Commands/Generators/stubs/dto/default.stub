@@ -3,7 +3,6 @@
 namespace {{ namespace }};
 
 use App\Ship\Abstracts\DTO\DataTransferObject;
-use Spatie\DataTransferObject\Attributes\Strict;
 
 class {{ class }} extends DataTransferObject
 {

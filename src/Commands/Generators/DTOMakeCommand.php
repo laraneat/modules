@@ -5,7 +5,6 @@ namespace Laraneat\Modules\Commands\Generators;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @group generator
@@ -56,9 +55,7 @@ class DTOMakeCommand extends ComponentGeneratorCommand
      */
     protected function getOptions(): array
     {
-        return [
-            ['strict', 's', InputOption::VALUE_NONE, 'Create strict DTO.'],
-        ];
+        return [];
     }
 
     protected function prepare()
@@ -79,8 +76,6 @@ class DTOMakeCommand extends ComponentGeneratorCommand
             'class' => $this->getClass($this->nameArgument)
         ];
 
-        $stub = $this->option('strict') ? 'strict' : 'default';
-
-        return Stub::create("dto/{$stub}.stub", $stubReplaces)->render();
+        return Stub::create("dto/default.stub", $stubReplaces)->render();
     }
 }

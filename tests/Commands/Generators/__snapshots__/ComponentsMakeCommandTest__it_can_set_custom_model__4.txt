@@ -2,6 +2,7 @@
 
 namespace App\Modules\Blog\Actions;
 
+use App\Modules\Blog\DTO\UpdatePostDTO;
 use App\Modules\Blog\Models\Post;
 use App\Modules\Blog\UI\API\Requests\UpdatePostRequest;
 use App\Modules\Blog\UI\API\Resources\PostResource;
@@ -10,8 +11,10 @@ use App\Ship\Exceptions\UpdateResourceFailedException;
 
 class UpdatePostAction extends Action
 {
-    public function handle(Post $post, array $data): Post
+    public function handle(Post $post, UpdatePostDTO $dto): Post
     {
+        $data = $dto->all();
+
         if (empty($data)) {
             throw new UpdateResourceFailedException();
         }
@@ -23,7 +26,7 @@ class UpdatePostAction extends Action
 
     public function asController(UpdatePostRequest $request, Post $post): PostResource
     {
-        $post = $this->handle($post, $request->validated());
+        $post = $this->handle($post, $request->toDTO());
 
         return new PostResource($post);
     }
