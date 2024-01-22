@@ -6,7 +6,6 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
-use JetBrains\PhpStorm\ArrayShape;
 use JsonException;
 
 class Json implements Arrayable
@@ -126,7 +125,6 @@ class Json implements Arrayable
     /**
      * Get json attributes as plain array
      */
-    #[ArrayShape(['path' => "string", 'attributes' => "array"])]
     public function toArray(): array
     {
         return [

@@ -10,7 +10,6 @@ use Illuminate\Foundation\ProviderRepository;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use JetBrains\PhpStorm\ArrayShape;
 use Laraneat\Modules\Contracts\ActivatorInterface;
 use Laraneat\Modules\Facades\Modules;
 
@@ -359,7 +358,6 @@ class Module implements Arrayable
     /**
      * Get the module as a plain array.
      */
-    #[ArrayShape(['name' => "string", 'path' => "string", 'namespace' => "string", 'module_json' => "array"])]
     public function toArray(): array
     {
         return [
