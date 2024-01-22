@@ -241,10 +241,10 @@ return [
     |
     */
     'composer' => [
-        'vendor' => 'laraneat',
+        'vendor' => 'example',
         'author' => [
-            'name' => 'Salakhutdinov Salavat',
-            'email' => 'salahutdinov.salavat@gmail.com',
+            'name' => 'Example name',
+            'email' => 'example@example.com',
         ],
         'composer-output' => false,
     ],
