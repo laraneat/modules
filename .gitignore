@@ -8,6 +8,7 @@ coverage
 .env.backup
 .php_cs.cache
 .phpunit.result.cache
+.phpunit.cache
 .phpstorm.meta.php
 _ide_helper*.php
 _ide_macros*.php
