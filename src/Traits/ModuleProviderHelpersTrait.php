@@ -4,14 +4,13 @@ namespace Laraneat\Modules\Traits;
 
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * @mixin \Illuminate\Support\ServiceProvider
@@ -39,36 +38,6 @@ trait ModuleProviderHelpersTrait
     }
 
     /**
-     * Merge configurations from directory with the existing configuration.
-     *
-     * @param string $directory
-     * @param string|null $namespace
-     *
-     * @return void
-     */
-    protected function loadConfigs(string $directory, ?string $namespace = null): void
-    {
-        if (!($this->app instanceof CachesConfiguration && $this->app->configurationIsCached()) && File::isDirectory($directory)) {
-            $files = File::files($directory);
-            $namespace = $namespace ? $namespace . '::' : '';
-
-            foreach ($files as $file) {
-                $config = File::getRequire($file);
-                $name = File::name($file);
-
-                // special case for files named config.php (config keyword is omitted)
-                if ($name === 'config') {
-                    foreach ($config as $key => $value) {
-                        Config::set($namespace . $key, $value);
-                    }
-                }
-
-                Config::set($namespace . $name, $config);
-            }
-        }
-    }
-
-    /**
      * Register all of the commands in the given directory.
      *
      * @param array|string $paths
@@ -90,20 +59,34 @@ trait ModuleProviderHelpersTrait
 
         $namespace = $this->app->getNamespace();
 
-        foreach ((new Finder)->in($paths)->files() as $command) {
-            $command = $namespace . str_replace(
-                ['/', '.php'],
-                ['\\', ''],
-                Str::after($command->getRealPath(), realpath(app_path()).DIRECTORY_SEPARATOR)
-            );
+        foreach (Finder::create()->in($paths)->files() as $file) {
+            $command = $this->commandClassFromFile($file, $namespace);
 
-            if (is_subclass_of($command, Command::class) &&
-                ! (new ReflectionClass($command))->isAbstract()) {
+            if (
+                is_subclass_of($command, Command::class) &&
+                !(new ReflectionClass($command))->isAbstract()
+            ) {
                 Artisan::starting(function ($artisan) use ($command) {
                     $artisan->resolve($command);
                 });
             }
         }
+    }
+
+    /**
+     * Extract the command class name from the given file path.
+     *
+     * @param  \SplFileInfo  $file
+     * @param  string  $namespace
+     * @return string
+     */
+    protected function commandClassFromFile(SplFileInfo $file, string $namespace): string
+    {
+        return $namespace . str_replace(
+            ['/', '.php'],
+            ['\\', ''],
+            Str::after($file->getRealPath(), realpath(app_path()) . DIRECTORY_SEPARATOR)
+        );
     }
 
     /**
