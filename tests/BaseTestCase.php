@@ -3,7 +3,6 @@
 namespace Laraneat\Modules\Tests;
 
 use Illuminate\Foundation\Application;
-use Laraneat\Modules\Commands;
 use Laraneat\Modules\ModulesServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
@@ -88,10 +87,6 @@ abstract class BaseTestCase extends OrchestraTestCase
                 'cli-test' => [
                     'path' => 'UI/CLI/Tests',
                     'generate' => false
-                ],
-                'config' => [
-                    'path' => 'Config',
-                    'generate' => true
                 ],
                 'dto' => [
                     'path' => 'DTO',

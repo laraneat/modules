@@ -25,10 +25,10 @@ class MyAwesomeModuleProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->registerTranslations();
-        $this->registerViews();
         $this->registerMigrations();
-        $this->registerCommands();
+        // $this->registerTranslations();
+        // $this->registerCommands();
+        // $this->registerViews();
     }
 
     /**
