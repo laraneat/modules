@@ -1,34 +1,45 @@
 <?php
 
-namespace App\Modules\Blog\Data\Factories;
+namespace App\Modules\Blog\Data\Seeders;
 
-use App\Modules\Blog\Models\Post;
-use App\Ship\Abstracts\Factories\Factory;
+use App\Modules\Authorization\Actions\CreatePermissionAction;
+use App\Modules\Authorization\DTO\CreatePermissionDTO;
+use App\Ship\Abstracts\Seeders\Seeder;
 
-/**
- * @method \Illuminate\Support\Collection|Post create($attributes = [], ?Post $parent = null)
- * @method \Illuminate\Support\Collection createMany(iterable $records)
- * @method Post createOne($attributes = [])
- * @method \Illuminate\Support\Collection|Post make($attributes = [], ?Post $parent = null)
- * @method Post makeOne($attributes = [])
- */
-class PostFactory extends Factory
+class PostPermissionsSeeder_1 extends Seeder
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
-    protected $model = Post::class;
-
-    /**
-     * Define the model's default state.
-     */
-    public function definition(): array
+    public function run(): void
     {
-        return [
-            // TODO: add fields here
-        ];
+        $createPermissionAction = CreatePermissionAction::make();
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'view-post',
+            display_name: 'View any "posts"',
+            group: 'posts'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'create-post',
+            display_name: 'Create "posts"',
+            group: 'posts'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'update-post',
+            display_name: 'Update any "posts"',
+            group: 'posts'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'delete-post',
+            display_name: 'Delete any "posts"',
+            group: 'posts'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'force-delete-post',
+            display_name: 'Force delete any "posts"',
+            group: 'posts'
+        ));
     }
 }
-

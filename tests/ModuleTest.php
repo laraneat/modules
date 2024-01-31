@@ -4,6 +4,7 @@ namespace Laraneat\Modules\Tests;
 
 use App\Modules\Article\Providers\DeferredServiceProvider;
 use App\Modules\Article\Providers\ArticleServiceProvider;
+use Illuminate\Support\Facades\Event;
 use Laraneat\Modules\Contracts\ActivatorInterface;
 
 class ModuleTest extends BaseTestCase
@@ -163,23 +164,23 @@ class ModuleTest extends BaseTestCase
     /** @test */
     public function it_fires_events_when_module_is_enabled()
     {
-        $this->expectsEvents([
-            sprintf('modules.%s.enabling', $this->module->getKey()),
-            sprintf('modules.%s.enabled', $this->module->getKey()),
-        ]);
+        Event::fake();
 
         $this->module->enable();
+
+        Event::assertDispatched(sprintf('modules.%s.enabling', $this->module->getKey()));
+        Event::assertDispatched(sprintf('modules.%s.enabled', $this->module->getKey()));
     }
 
     /** @test */
     public function it_fires_events_when_module_is_disabled()
     {
-        $this->expectsEvents([
-            sprintf('modules.%s.disabling', $this->module->getKey()),
-            sprintf('modules.%s.disabled', $this->module->getKey()),
-        ]);
+        Event::fake();
 
         $this->module->disable();
+
+        Event::assertDispatched(sprintf('modules.%s.disabling', $this->module->getKey()));
+        Event::assertDispatched(sprintf('modules.%s.disabled', $this->module->getKey()));
     }
 
     /** @test */
@@ -212,7 +213,7 @@ class ModuleTest extends BaseTestCase
             'eager'     => [ArticleServiceProvider::class],
             'deferred'  => ['deferred' => DeferredServiceProvider::class],
             'when'      =>
-                [DeferredServiceProvider::class => []],
+            [DeferredServiceProvider::class => []],
         ], $manifest);
     }
 

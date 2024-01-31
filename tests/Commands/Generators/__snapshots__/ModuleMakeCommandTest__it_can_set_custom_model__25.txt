@@ -1,7 +1,7 @@
 <?php
 
-use App\Modules\Blog\Actions\UpdatePostCommentAction;
+use App\Modules\Blog\Actions\DeletePostCommentAction;
 use Illuminate\Support\Facades\Route;
 
-Route::patch('post-comments/{postComment}', UpdatePostCommentAction::class)
-    ->name('api.post_comments.update');
+Route::delete('post-comments/{postComment}', DeletePostCommentAction::class)
+    ->name('api.post_comments.delete');

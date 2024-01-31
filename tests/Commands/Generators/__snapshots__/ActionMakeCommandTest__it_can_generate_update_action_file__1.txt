@@ -2,6 +2,7 @@
 
 namespace App\Modules\Article\Actions\Baz\Bat;
 
+use App\Modules\Article\DTO\Foo\Bar\TestDTO;
 use App\Modules\Article\Models\Bar\TestModel;
 use App\Modules\Article\UI\API\Requests\Bat\TestRequest;
 use App\Modules\Article\UI\API\Resources\Baz\TestResource;
@@ -10,8 +11,10 @@ use App\Ship\Exceptions\UpdateResourceFailedException;
 
 class MyAwesomeUpdateAction extends Action
 {
-    public function handle(TestModel $testModel, array $data): TestModel
+    public function handle(TestModel $testModel, TestDTO $dto): TestModel
     {
+        $data = $dto->all();
+
         if (empty($data)) {
             throw new UpdateResourceFailedException();
         }
@@ -23,7 +26,7 @@ class MyAwesomeUpdateAction extends Action
 
     public function asController(TestRequest $request, TestModel $testModel): TestResource
     {
-        $testModel = $this->handle($testModel, $request->validated());
+        $testModel = $this->handle($testModel, $request->toDTO());
 
         return new TestResource($testModel);
     }

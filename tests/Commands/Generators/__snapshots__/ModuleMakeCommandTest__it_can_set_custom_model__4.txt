@@ -2,24 +2,32 @@
 
 namespace App\Modules\Blog\Actions;
 
-use App\Modules\Blog\DTO\CreatePostCommentDTO;
+use App\Modules\Blog\DTO\UpdatePostCommentDTO;
 use App\Modules\Blog\Models\PostComment;
-use App\Modules\Blog\UI\API\Requests\CreatePostCommentRequest;
+use App\Modules\Blog\UI\API\Requests\UpdatePostCommentRequest;
 use App\Modules\Blog\UI\API\Resources\PostCommentResource;
 use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Http\JsonResponse;
+use App\Ship\Exceptions\UpdateResourceFailedException;
 
-class CreatePostCommentAction extends Action
+class UpdatePostCommentAction extends Action
 {
-    public function handle(CreatePostCommentDTO $dto): PostComment
+    public function handle(PostComment $postComment, UpdatePostCommentDTO $dto): PostComment
     {
-        return PostComment::create($dto->toArray());
+        $data = $dto->all();
+
+        if (empty($data)) {
+            throw new UpdateResourceFailedException();
+        }
+
+        $postComment->update($data);
+
+        return $postComment;
     }
 
-    public function asController(CreatePostCommentRequest $request): JsonResponse
+    public function asController(UpdatePostCommentRequest $request, PostComment $postComment): PostCommentResource
     {
-        $postComment = $this->handle($request->toDTO());
+        $postComment = $this->handle($postComment, $request->toDTO());
 
-        return (new PostCommentResource($postComment))->created();
+        return new PostCommentResource($postComment);
     }
 }

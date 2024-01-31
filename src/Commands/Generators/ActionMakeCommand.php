@@ -100,7 +100,7 @@ class ActionMakeCommand extends ComponentGeneratorCommand
         ];
 
         if ($this->stub !== 'plain') {
-            if ($this->stub === 'create') {
+            if ($this->stub === 'create' || $this->stub === 'update') {
                 $dto = $this->getOptionOrAsk(
                     'dto',
                     'Enter the class name of the DTO to be used in the request',

@@ -4,48 +4,54 @@ namespace App\Modules\Blog\UI\API\Tests;
 
 use App\Modules\Blog\Models\Comment;
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group blog
  * @group api
  */
-class DeleteCommentTest extends TestCase
+class ViewCommentTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'delete-comment',
+        'permissions' => 'view-comment',
         'roles'       => '',
     ];
 
-    public function test_delete_comment(): void
+    public function test_view_comment(): void
     {
         $this->getTestingUser();
 
         $comment = Comment::factory()->create();
+        $expectedData = $comment->toArray();
 
-        $this->deleteJson(route('api.comments.delete', ['comment' => $comment->getKey()]))
-            ->assertNoContent();
-
-        $this->assertNull(Comment::find($comment->getKey()));
+        $this->getJson(route('api.comments.view', ['comment' => $comment->getKey()]))
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
     }
 
-    public function test_delete_comment_without_access(): void
+    public function test_view_comment_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
         $comment = Comment::factory()->create();
 
-        $this->deleteJson(route('api.comments.delete', ['comment' => $comment->getKey()]))
+        $this->getJson(route('api.comments.view', ['comment' => $comment->getKey()]))
             ->assertForbidden();
     }
 
-    public function test_delete_not_existing_comment(): void
+    public function test_view_not_existing_comment(): void
     {
         $this->getTestingUser();
 
-        $this->deleteJson(route('api.comments.delete', ['comment' => 7777]))
+        $this->getJson(route('api.comments.view', ['comment' => 7777]))
             ->assertNotFound();
     }
 }

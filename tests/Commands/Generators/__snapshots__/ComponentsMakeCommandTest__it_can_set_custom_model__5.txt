@@ -3,28 +3,21 @@
 namespace App\Modules\Blog\Actions;
 
 use App\Modules\Blog\Models\Post;
-use App\Modules\Blog\UI\API\Requests\UpdatePostRequest;
-use App\Modules\Blog\UI\API\Resources\PostResource;
+use App\Modules\Blog\UI\API\Requests\DeletePostRequest;
 use App\Ship\Abstracts\Actions\Action;
-use App\Ship\Exceptions\UpdateResourceFailedException;
+use Illuminate\Http\JsonResponse;
 
-class UpdatePostAction extends Action
+class DeletePostAction extends Action
 {
-    public function handle(Post $post, array $data): Post
+    public function handle(Post $post): bool
     {
-        if (empty($data)) {
-            throw new UpdateResourceFailedException();
-        }
-
-        $post->update($data);
-
-        return $post;
+        return $post->delete();
     }
 
-    public function asController(UpdatePostRequest $request, Post $post): PostResource
+    public function asController(DeletePostRequest $request, Post $post): JsonResponse
     {
-        $post = $this->handle($post, $request->validated());
+        $this->handle($post);
 
-        return new PostResource($post);
+        return $this->noContent();
     }
 }

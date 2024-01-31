@@ -4,48 +4,54 @@ namespace App\Modules\Blog\UI\API\Tests;
 
 use App\Modules\Blog\Models\PostComment;
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group blog
  * @group api
  */
-class DeletePostCommentTest extends TestCase
+class ViewPostCommentTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'delete-post-comment',
+        'permissions' => 'view-post-comment',
         'roles'       => '',
     ];
 
-    public function test_delete_post_comment(): void
+    public function test_view_post_comment(): void
     {
         $this->getTestingUser();
 
         $postComment = PostComment::factory()->create();
+        $expectedData = $postComment->toArray();
 
-        $this->deleteJson(route('api.post_comments.delete', ['postComment' => $postComment->getKey()]))
-            ->assertNoContent();
-
-        $this->assertNull(PostComment::find($postComment->getKey()));
+        $this->getJson(route('api.post_comments.view', ['postComment' => $postComment->getKey()]))
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
     }
 
-    public function test_delete_post_comment_without_access(): void
+    public function test_view_post_comment_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
         $postComment = PostComment::factory()->create();
 
-        $this->deleteJson(route('api.post_comments.delete', ['postComment' => $postComment->getKey()]))
+        $this->getJson(route('api.post_comments.view', ['postComment' => $postComment->getKey()]))
             ->assertForbidden();
     }
 
-    public function test_delete_not_existing_post_comment(): void
+    public function test_view_not_existing_post_comment(): void
     {
         $this->getTestingUser();
 
-        $this->deleteJson(route('api.post_comments.delete', ['postComment' => 7777]))
+        $this->getJson(route('api.post_comments.view', ['postComment' => 7777]))
             ->assertNotFound();
     }
 }

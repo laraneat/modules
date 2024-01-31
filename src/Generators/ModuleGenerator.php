@@ -297,7 +297,6 @@ class ModuleGenerator extends Generator
     {
         $this->generateComposerJsonFile();
         $this->generateModuleJsonFile();
-        $this->generateConfig();
     }
 
     /**
@@ -305,7 +304,7 @@ class ModuleGenerator extends Generator
      */
     public function generateProviders(): void
     {
-        if (! GeneratorHelper::component('provider')->generate()) {
+        if (!GeneratorHelper::component('provider')->generate()) {
             return;
         }
 
@@ -333,24 +332,7 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Generate config
-     */
-    protected function generateConfig(): void
-    {
-        if (! GeneratorHelper::component('config')->generate()) {
-            return;
-        }
-        $configFileName = Str::snake($this->getName(), '-') . '-module';
-        $subPath = GeneratorHelper::component('config')->getPath() . '/' . $configFileName . '.php';
-        $path = GeneratorHelper::modulePath($this->getName(), $subPath);
-
-        $stubContent = (new Stub('/config.stub', $this->getAllReplacements()))->render();
-
-        $this->createFile($path, $stubContent);
-    }
-
-    /**
-     * Generate config
+     * Generate composer.json
      */
     protected function generateComposerJsonFile(): void
     {

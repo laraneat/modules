@@ -201,7 +201,8 @@ class FileRepository implements RepositoryInterface, Countable
         if (is_array($this->cachedModules)) {
             return $this->cachedModules;
         }
-        if (! $this->config('cache.enabled')) {
+
+        if (!$this->config('cache.enabled')) {
             return $this->cachedModules = $this->scan();
         }
 

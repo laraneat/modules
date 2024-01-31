@@ -174,12 +174,27 @@ class RequestMakeCommandTest extends BaseTestCase
             '--ui' => 'api',
             '--stub' => 'update',
             '--model' => 'Some/Nested\\Model',
+            '--dto' => 'Foo/Bar\\TestDTO',
         ]);
 
         $file = $this->finder->get($this->modulePath . '/UI/API/Requests/Baz/Bat/MyAwesomeApiUpdateRequest.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);
+    }
+
+    /** @test */
+    public function it_throws_exception_when_classes_not_provided_for_api_update_request_file()
+    {
+        $this->expectException(InvalidOptionException::class);
+
+        $this->artisan('module:make:request', [
+            'name' => 'Baz\\Bat/MyAwesomeApiUpdateRequest',
+            'module' => 'Article',
+            '--ui' => 'api',
+            '--stub' => 'update',
+            '-n' => '',
+        ]);
     }
 
     /** @test */
@@ -323,11 +338,26 @@ class RequestMakeCommandTest extends BaseTestCase
             '--ui' => 'web',
             '--stub' => 'update',
             '--model' => 'Some/Nested\\Model',
+            '--dto' => 'Foo/Bar\\TestDTO',
         ]);
 
         $file = $this->finder->get($this->modulePath . '/UI/WEB/Requests/Baz/Bat/MyAwesomeWebUpdateRequest.php');
 
         $this->assertMatchesSnapshot($file);
         $this->assertSame(0, $code);
+    }
+
+    /** @test */
+    public function it_throws_exception_when_classes_not_provided_for_web_update_request_file()
+    {
+        $this->expectException(InvalidOptionException::class);
+
+        $this->artisan('module:make:request', [
+            'name' => 'Baz\\Bat/MyAwesomeWebUpdateRequest',
+            'module' => 'Article',
+            '--ui' => 'web',
+            '--stub' => 'update',
+            '-n' => '',
+        ]);
     }
 }

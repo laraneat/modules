@@ -2,114 +2,58 @@
 
 namespace App\Modules\Blog\Providers;
 
-use App\Ship\Abstracts\Providers\ServiceProvider;
-use Laraneat\Modules\Traits\ModuleProviderHelpersTrait;
+use App\Ship\Abstracts\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Route;
+use Laraneat\Modules\Traits\RouteProviderHelpersTrait;
 
-class BlogServiceProvider extends ServiceProvider
+class RouteServiceProvider extends ServiceProvider
 {
-    use ModuleProviderHelpersTrait;
+    use RouteProviderHelpersTrait;
 
     protected string $moduleName = 'Blog';
-    protected string $moduleKey = 'blog';
 
     /**
-     * Register services.
-     */
-    public function register(): void
-    {
-        //
-    }
-
-    /**
-     * Bootstrap services.
+     * Called before routes are registered.
+     * Register any model bindings or pattern based filters.
      */
     public function boot(): void
     {
-        $this->registerTranslations();
-        $this->registerConfig();
-        $this->registerViews();
-        $this->registerMigrations();
-        $this->registerCommands();
+        parent::boot();
     }
 
     /**
-     * Get the services provided by the provider.
+     * Define the routes for the application.
      */
-    public function provides(): array
+    public function map(): void
     {
-        return [];
+        $this->mapApiRoutes();
+        $this->mapWebRoutes();
     }
 
     /**
-     * Register translations.
+     * Define the "web" routes for the application.
+     * These routes all receive session state, CSRF protection, etc.
      */
-    public function registerTranslations(): void
+    protected function mapWebRoutes(): void
     {
-        $sourcePath = module_path($this->moduleName, 'Resources/lang');
-        $langPath = resource_path('lang/modules/' . $this->moduleKey);
-
-        $this->loadTranslationsFrom($sourcePath, $this->moduleKey);
-
-        $this->publishes([
-            $sourcePath => $langPath,
-        ], 'translations');
+        Route::middleware('web')
+//            ->namespace('App\\Modules\\Blog\\UI\\WEB\\Controllers')
+            ->group(function () {
+                $this->loadRoutesFromDirectory(module_path($this->moduleName, 'UI/WEB/Routes'));
+            });
     }
 
     /**
-     * Register config.
+     * Define the "api" routes for the application.
+     * These routes are typically stateless.
      */
-    protected function registerConfig(): void
+    protected function mapApiRoutes(): void
     {
-        $sourcePath = module_path($this->moduleName, 'Config');
-        $configPath = config_path();
-
-        $this->loadConfigs($sourcePath);
-
-        $this->publishes([
-            $sourcePath => $configPath
-        ], 'config');
-    }
-
-    /**
-     * Register views.
-     */
-    public function registerViews(): void
-    {
-        $sourcePath = module_path($this->moduleName, 'Resources/views');
-        $viewsPath = resource_path('views/modules/' . $this->moduleKey);
-
-        $this->loadViewsFrom(
-            array_merge($this->getPublishableViewPaths($this->moduleKey), [$sourcePath]),
-            $this->moduleKey
-        );
-
-        $this->publishes([
-            $sourcePath => $viewsPath
-        ], 'views');
-    }
-
-    /**
-     * Register migrations.
-     */
-    public function registerMigrations(): void
-    {
-        $sourcePath = module_path($this->moduleName, 'Data/Migrations');
-        $migrationsPath = database_path('migrations');
-
-        $this->loadMigrationsFrom($sourcePath);
-
-        $this->publishes([
-            $sourcePath => $migrationsPath
-        ], 'migrations');
-    }
-
-    /**
-     * Register artisan commands.
-     */
-    public function registerCommands(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->loadCommands(module_path($this->moduleName, 'UI/CLI/Commands'));
-        }
+        Route::prefix('api')
+            ->middleware('api')
+//            ->namespace('App\\Modules\\Blog\\UI\\API\\Controllers')
+            ->group(function () {
+                $this->loadRoutesFromDirectory(module_path($this->moduleName, 'UI/API/Routes'));
+            });
     }
 }

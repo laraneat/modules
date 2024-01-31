@@ -4,48 +4,54 @@ namespace App\Modules\Blog\UI\API\Tests;
 
 use App\Modules\Blog\Models\Post;
 use App\Ship\Abstracts\Tests\TestCase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group blog
  * @group api
  */
-class DeletePostTest extends TestCase
+class ViewPostTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
      */
     protected array $access = [
-        'permissions' => 'delete-post',
+        'permissions' => 'view-post',
         'roles'       => '',
     ];
 
-    public function test_delete_post(): void
+    public function test_view_post(): void
     {
         $this->getTestingUser();
 
         $post = Post::factory()->create();
+        $expectedData = $post->toArray();
 
-        $this->deleteJson(route('api.posts.delete', ['post' => $post->getKey()]))
-            ->assertNoContent();
-
-        $this->assertNull(Post::find($post->getKey()));
+        $this->getJson(route('api.posts.view', ['post' => $post->getKey()]))
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->whereAll($expectedData)
+                        ->etc()
+                )
+            );
     }
 
-    public function test_delete_post_without_access(): void
+    public function test_view_post_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
         $post = Post::factory()->create();
 
-        $this->deleteJson(route('api.posts.delete', ['post' => $post->getKey()]))
+        $this->getJson(route('api.posts.view', ['post' => $post->getKey()]))
             ->assertForbidden();
     }
 
-    public function test_delete_not_existing_post(): void
+    public function test_view_not_existing_post(): void
     {
         $this->getTestingUser();
 
-        $this->deleteJson(route('api.posts.delete', ['post' => 7777]))
+        $this->getJson(route('api.posts.view', ['post' => 7777]))
             ->assertNotFound();
     }
 }

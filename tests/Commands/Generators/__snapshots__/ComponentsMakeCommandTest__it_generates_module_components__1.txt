@@ -13,7 +13,7 @@ class CreateArticleAction extends Action
 {
     public function handle(CreateArticleDTO $dto): Article
     {
-        return Article::create($dto->toArray());
+        return Article::create($dto->all());
     }
 
     public function asController(CreateArticleRequest $request): JsonResponse

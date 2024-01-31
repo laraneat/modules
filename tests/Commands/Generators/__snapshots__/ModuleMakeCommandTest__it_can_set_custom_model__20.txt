@@ -5,18 +5,16 @@ namespace App\Modules\Blog\UI\API\Requests;
 use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
-class UpdatePostCommentRequest extends Request
+class DeletePostCommentRequest extends Request
 {
     public function rules(): array
     {
-        return [
-            // TODO: add fields here
-        ];
+        return [];
     }
 
     public function authorize(): bool
     {
         $postComment = $this->route('postComment');
-        return $postComment && Gate::check('update', $postComment);
+        return $postComment && Gate::check('delete', $postComment);
     }
 }

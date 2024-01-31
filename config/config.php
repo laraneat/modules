@@ -117,10 +117,6 @@ return [
                 'path' => 'UI/CLI/Tests',
                 'generate' => false
             ],
-            'config' => [
-                'path' => 'Config',
-                'generate' => true
-            ],
             'dto' => [
                 'path' => 'DTO',
                 'generate' => true
@@ -245,10 +241,10 @@ return [
     |
     */
     'composer' => [
-        'vendor' => 'laraneat',
+        'vendor' => 'example',
         'author' => [
-            'name' => 'Salakhutdinov Salavat',
-            'email' => 'salahutdinov.salavat@gmail.com',
+            'name' => 'Example name',
+            'email' => 'example@example.com',
         ],
         'composer-output' => false,
     ],

@@ -1,26 +1,34 @@
 <?php
 
-namespace App\Modules\Blog\Actions;
+namespace App\Modules\Blog\Data\Factories;
 
 use App\Modules\Blog\Models\Comment;
-use App\Modules\Blog\UI\API\QueryWizards\CommentsQueryWizard;
-use App\Modules\Blog\UI\API\Requests\ListCommentsRequest;
-use App\Modules\Blog\UI\API\Resources\CommentResource;
-use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Pagination\AbstractPaginator;
+use App\Ship\Abstracts\Factories\Factory;
 
-class ListCommentsAction extends Action
+/**
+ * @method \Illuminate\Support\Collection|Comment create($attributes = [], ?Comment $parent = null)
+ * @method \Illuminate\Support\Collection createMany(iterable $records)
+ * @method Comment createOne($attributes = [])
+ * @method \Illuminate\Support\Collection|Comment make($attributes = [], ?Comment $parent = null)
+ * @method Comment makeOne($attributes = [])
+ */
+class CommentFactory extends Factory
 {
-    public function handle(ListCommentsRequest $request): AbstractPaginator
-    {
-        return CommentsQueryWizard::for(Comment::query())
-            ->build()
-            ->jsonPaginate();
-    }
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Comment::class;
 
-    public function asController(ListCommentsRequest $request): ResourceCollection
+    /**
+     * Define the model's default state.
+     */
+    public function definition(): array
     {
-        return CommentResource::collection($this->handle($request));
+        return [
+            // TODO: add fields here
+        ];
     }
 }
+

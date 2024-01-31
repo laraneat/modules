@@ -1,77 +1,19 @@
 <?php
 
-namespace App\Modules\Blog\UI\API\QueryWizards;
+namespace App\Modules\Blog\UI\API\Resources;
 
-use App\Ship\Abstracts\QueryWizards\EloquentQueryWizard;
-use Jackardios\QueryWizard\Eloquent\EloquentFilter;
-use Jackardios\QueryWizard\Eloquent\EloquentInclude;
-use Jackardios\QueryWizard\Eloquent\EloquentSort;
+use App\Ship\Abstracts\Resources\Json\JsonResource;
 
-class CommentsQueryWizard extends EloquentQueryWizard
+class CommentResource extends JsonResource
 {
     /**
-     * @return array<string>
+     * Transform the resource into an array.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
-    protected function allowedAppends(): array
+    public function toArray($request)
     {
-        return [];
-    }
-
-    /**
-     * @return array<string>
-     */
-    protected function defaultAppends(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<string>
-     */
-    protected function allowedFields(): array
-    {
-        return [
-            // TODO: add fields here
-        ];
-    }
-
-    /**
-     * @return array<string|EloquentFilter>
-     */
-    protected function allowedFilters(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<string|EloquentInclude>
-     */
-    protected function allowedIncludes(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<string|EloquentInclude>
-     */
-    protected function defaultIncludes(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<string|EloquentSort>
-     */
-    protected function allowedSorts(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<string|EloquentSort>
-     */
-    protected function defaultSorts(): array
-    {
-        return [];
+        return parent::toArray($request);
     }
 }

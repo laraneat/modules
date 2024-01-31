@@ -2,12 +2,11 @@
 
 namespace App\Modules\Blog\UI\API\Requests;
 
-use App\Modules\Blog\DTO\CreateCommentDTO;
-use App\Modules\Blog\Models\Comment;
+use App\Modules\Blog\DTO\UpdateCommentDTO;
 use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
-class CreateCommentRequest extends Request
+class UpdateCommentRequest extends Request
 {
     public function rules(): array
     {
@@ -18,11 +17,12 @@ class CreateCommentRequest extends Request
 
     public function authorize(): bool
     {
-        return Gate::check('create', Comment::class);
+        $comment = $this->route('comment');
+        return $comment && Gate::check('update', $comment);
     }
 
-    public function toDTO(): CreateCommentDTO
+    public function toDTO(): UpdateCommentDTO
     {
-        return new CreateCommentDTO($this->validated());
+        return new UpdateCommentDTO($this->validated());
     }
 }

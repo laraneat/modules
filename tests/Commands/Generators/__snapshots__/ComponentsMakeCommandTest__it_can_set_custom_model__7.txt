@@ -3,21 +3,24 @@
 namespace App\Modules\Blog\Actions;
 
 use App\Modules\Blog\Models\Post;
-use App\Modules\Blog\UI\API\QueryWizards\PostQueryWizard;
-use App\Modules\Blog\UI\API\Requests\ViewPostRequest;
+use App\Modules\Blog\UI\API\QueryWizards\PostsQueryWizard;
+use App\Modules\Blog\UI\API\Requests\ListPostsRequest;
 use App\Modules\Blog\UI\API\Resources\PostResource;
 use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Pagination\AbstractPaginator;
 
-class ViewPostAction extends Action
+class ListPostsAction extends Action
 {
-    public function handle(ViewPostRequest $request, Post $post): Model
+    public function handle(ListPostsRequest $request): AbstractPaginator
     {
-        return PostQueryWizard::for($post)->build();
+        return PostsQueryWizard::for(Post::query())
+            ->build()
+            ->jsonPaginate();
     }
 
-    public function asController(ViewPostRequest $request, Post $post): PostResource
+    public function asController(ListPostsRequest $request): ResourceCollection
     {
-        return new PostResource($this->handle($request, $post));
+        return PostResource::collection($this->handle($request));
     }
 }

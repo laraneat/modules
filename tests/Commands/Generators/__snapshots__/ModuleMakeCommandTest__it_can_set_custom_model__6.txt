@@ -3,21 +3,21 @@
 namespace App\Modules\Blog\Actions;
 
 use App\Modules\Blog\Models\PostComment;
-use App\Modules\Blog\UI\API\Requests\DeletePostCommentRequest;
+use App\Modules\Blog\UI\API\QueryWizards\PostCommentQueryWizard;
+use App\Modules\Blog\UI\API\Requests\ViewPostCommentRequest;
+use App\Modules\Blog\UI\API\Resources\PostCommentResource;
 use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\Model;
 
-class DeletePostCommentAction extends Action
+class ViewPostCommentAction extends Action
 {
-    public function handle(PostComment $postComment): bool
+    public function handle(ViewPostCommentRequest $request, PostComment $postComment): Model
     {
-        return $postComment->delete();
+        return PostCommentQueryWizard::for($postComment)->build();
     }
 
-    public function asController(DeletePostCommentRequest $request, PostComment $postComment): JsonResponse
+    public function asController(ViewPostCommentRequest $request, PostComment $postComment): PostCommentResource
     {
-        $this->handle($postComment);
-
-        return $this->noContent();
+        return new PostCommentResource($this->handle($request, $postComment));
     }
 }

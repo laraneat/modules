@@ -4,13 +4,12 @@ namespace App\Modules\Blog\UI\API\Tests;
 
 use App\Modules\Blog\Models\PostComment;
 use App\Ship\Abstracts\Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group blog
  * @group api
  */
-class ViewPostCommentTest extends TestCase
+class ListPostCommentsTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
@@ -20,38 +19,29 @@ class ViewPostCommentTest extends TestCase
         'roles'       => '',
     ];
 
-    public function test_view_post_comment(): void
+    public function test_list_post_comments(): void
     {
         $this->getTestingUser();
 
-        $postComment = PostComment::factory()->create();
-        $expectedData = $postComment->toArray();
+        PostComment::factory()->count(2)->create();
 
-        $this->getJson(route('api.post_comments.view', ['postComment' => $postComment->getKey()]))
+        $this->getJson(route('api.post_comments.list'))
             ->assertOk()
-            ->assertJson(fn (AssertableJson $json) =>
-                $json->has('data', fn (AssertableJson $json) =>
-                    $json->whereAll($expectedData)
-                        ->etc()
-                )
-            );
+            ->assertJsonStructure([
+                'links',
+                'meta',
+                'data'
+            ])
+            ->assertJsonCount(PostComment::query()->count(), 'data');
     }
 
-    public function test_view_post_comment_without_access(): void
+    public function test_list_post_comments_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
-        $postComment = PostComment::factory()->create();
+        PostComment::factory()->count(2)->create();
 
-        $this->getJson(route('api.post_comments.view', ['postComment' => $postComment->getKey()]))
+        $this->getJson(route('api.post_comments.list'))
             ->assertForbidden();
-    }
-
-    public function test_view_not_existing_post_comment(): void
-    {
-        $this->getTestingUser();
-
-        $this->getJson(route('api.post_comments.view', ['postComment' => 7777]))
-            ->assertNotFound();
     }
 }

@@ -1,13 +1,25 @@
 <?php
 
-return [
+namespace App\Modules\Blog\Actions;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Blog Module Configuration
-    |--------------------------------------------------------------------------
-    */
+use App\Modules\Blog\DTO\CreatePostDTO;
+use App\Modules\Blog\Models\Post;
+use App\Modules\Blog\UI\API\Requests\CreatePostRequest;
+use App\Modules\Blog\UI\API\Resources\PostResource;
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\JsonResponse;
 
-    'name' => 'Blog',
+class CreatePostAction extends Action
+{
+    public function handle(CreatePostDTO $dto): Post
+    {
+        return Post::create($dto->all());
+    }
 
-];
+    public function asController(CreatePostRequest $request): JsonResponse
+    {
+        $post = $this->handle($request->toDTO());
+
+        return (new PostResource($post))->created();
+    }
+}

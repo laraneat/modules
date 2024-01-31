@@ -2,10 +2,12 @@
 
 namespace App\Modules\Blog\UI\API\QueryWizards;
 
-use App\Ship\Abstracts\QueryWizards\ModelQueryWizard;
-use Jackardios\QueryWizard\Model\ModelInclude;
+use App\Ship\Abstracts\QueryWizards\EloquentQueryWizard;
+use Jackardios\QueryWizard\Eloquent\EloquentFilter;
+use Jackardios\QueryWizard\Eloquent\EloquentInclude;
+use Jackardios\QueryWizard\Eloquent\EloquentSort;
 
-class PostCommentQueryWizard extends ModelQueryWizard
+class PostCommentsQueryWizard extends EloquentQueryWizard
 {
     /**
      * @return array<string>
@@ -34,7 +36,15 @@ class PostCommentQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return array<string|ModelInclude>
+     * @return array<string|EloquentFilter>
+     */
+    protected function allowedFilters(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string|EloquentInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -42,9 +52,25 @@ class PostCommentQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return array<string|ModelInclude>
+     * @return array<string|EloquentInclude>
      */
     protected function defaultIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string|EloquentSort>
+     */
+    protected function allowedSorts(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string|EloquentSort>
+     */
+    protected function defaultSorts(): array
     {
         return [];
     }

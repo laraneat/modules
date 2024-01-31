@@ -4,13 +4,12 @@ namespace App\Modules\Blog\UI\API\Tests;
 
 use App\Modules\Blog\Models\Post;
 use App\Ship\Abstracts\Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @group blog
  * @group api
  */
-class ViewPostTest extends TestCase
+class ListPostsTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
@@ -20,38 +19,29 @@ class ViewPostTest extends TestCase
         'roles'       => '',
     ];
 
-    public function test_view_post(): void
+    public function test_list_posts(): void
     {
         $this->getTestingUser();
 
-        $post = Post::factory()->create();
-        $expectedData = $post->toArray();
+        Post::factory()->count(2)->create();
 
-        $this->getJson(route('api.posts.view', ['post' => $post->getKey()]))
+        $this->getJson(route('api.posts.list'))
             ->assertOk()
-            ->assertJson(fn (AssertableJson $json) =>
-                $json->has('data', fn (AssertableJson $json) =>
-                    $json->whereAll($expectedData)
-                        ->etc()
-                )
-            );
+            ->assertJsonStructure([
+                'links',
+                'meta',
+                'data'
+            ])
+            ->assertJsonCount(Post::query()->count(), 'data');
     }
 
-    public function test_view_post_without_access(): void
+    public function test_list_posts_without_access(): void
     {
         $this->getTestingUserWithoutAccess();
 
-        $post = Post::factory()->create();
+        Post::factory()->count(2)->create();
 
-        $this->getJson(route('api.posts.view', ['post' => $post->getKey()]))
+        $this->getJson(route('api.posts.list'))
             ->assertForbidden();
-    }
-
-    public function test_view_not_existing_post(): void
-    {
-        $this->getTestingUser();
-
-        $this->getJson(route('api.posts.view', ['post' => 7777]))
-            ->assertNotFound();
     }
 }

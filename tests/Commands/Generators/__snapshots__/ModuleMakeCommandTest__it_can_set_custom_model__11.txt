@@ -1,12 +1,33 @@
 <?php
 
-namespace App\Modules\Blog\DTO;
+namespace App\Modules\Blog\Models;
 
-use App\Ship\Abstracts\DTO\DataTransferObject;
-use Spatie\DataTransferObject\Attributes\Strict;
+use App\Modules\Blog\Data\Factories\PostCommentFactory;
+use App\Ship\Abstracts\Models\Model;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-#[Strict]
-class CreatePostCommentDTO extends DataTransferObject
+class PostComment extends Model
 {
-    // TODO: add fields here
+    use HasFactory;
+
+    protected $fillable = [
+        // TODO: add fields here
+    ];
+
+    protected $hidden = [
+        // TODO: add fields here
+    ];
+
+    protected $casts = [
+        // TODO: add fields here
+    ];
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
+    {
+        return PostCommentFactory::new();
+    }
 }

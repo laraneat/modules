@@ -13,7 +13,7 @@ class MyAwesomeCreateAction extends Action
 {
     public function handle(TestDTO $dto): TestModel
     {
-        return TestModel::create($dto->toArray());
+        return TestModel::create($dto->all());
     }
 
     public function asController(TestRequest $request): JsonResponse

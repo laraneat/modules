@@ -3,7 +3,6 @@
 namespace App\Modules\Article\DTO\Foo\Bar;
 
 use App\Ship\Abstracts\DTO\DataTransferObject;
-use Spatie\DataTransferObject\Attributes\Strict;
 
 class MyAwesomeDTO extends DataTransferObject
 {

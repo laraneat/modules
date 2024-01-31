@@ -59,21 +59,6 @@ class DTOMakeCommandTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_generated_correct_dto_file_with_strict_flag()
-    {
-        $code = $this->artisan('module:make:dto', [
-            'name' => 'Foo/Bar\\MyAwesomeDTO',
-            'module' => 'Article',
-            '--strict' => true
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/DTO/Foo/Bar/MyAwesomeDTO.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
     public function it_can_change_the_default_path_for_dto_file()
     {
         $this->app['config']->set('modules.generator.components.dto.path', 'Foo/Bar\\DTO');

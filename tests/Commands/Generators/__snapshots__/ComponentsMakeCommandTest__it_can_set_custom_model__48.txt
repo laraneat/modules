@@ -1,19 +1,28 @@
 <?php
 
-namespace App\Modules\Blog\UI\API\Resources;
+namespace App\Modules\Blog\UI\API\Requests;
 
-use App\Ship\Abstracts\Resources\Json\JsonResource;
+use App\Modules\Blog\DTO\CreateCommentDTO;
+use App\Modules\Blog\Models\Comment;
+use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Support\Facades\Gate;
 
-class CommentResource extends JsonResource
+class CreateCommentRequest extends Request
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
-     */
-    public function toArray($request)
+    public function rules(): array
     {
-        return parent::toArray($request);
+        return [
+            // TODO: add fields here
+        ];
+    }
+
+    public function authorize(): bool
+    {
+        return Gate::check('create', Comment::class);
+    }
+
+    public function toDTO(): CreateCommentDTO
+    {
+        return new CreateCommentDTO($this->validated());
     }
 }

@@ -26,7 +26,7 @@ class ArticleServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-//        $this->app->register(RouteServiceProvider::class);
+        // $this->app->register(RouteServiceProvider::class);
     }
 
     /**
@@ -36,11 +36,10 @@ class ArticleServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-//        $this->registerCommands();
-//        $this->registerTranslations();
-//        $this->registerConfig();
-//        $this->registerViews();
-//        $this->registerMigrations();
+        // $this->registerCommands();
+        // $this->registerTranslations();
+        // $this->registerViews();
+        // $this->registerMigrations();
     }
 
     /**
@@ -76,23 +75,6 @@ class ArticleServiceProvider extends ServiceProvider
         $langPath = resource_path('lang/modules/' . $this->moduleNameLower);
 
         $this->loadTranslationsFrom($sourcePath, $this->moduleNameLower);
-    }
-
-    /**
-     * Register config.
-     *
-     * @return void
-     */
-    protected function registerConfig(): void
-    {
-        $sourcePath = module_path($this->moduleName, 'Config');
-        $configPath = config_path();
-
-        $this->publishes([
-            $sourcePath => $configPath
-        ], 'config');
-
-        $this->loadConfigs($sourcePath);
     }
 
     /**

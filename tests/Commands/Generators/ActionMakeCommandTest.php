@@ -170,6 +170,7 @@ class ActionMakeCommandTest extends BaseTestCase
             'name' => 'Baz\\Bat/MyAwesomeUpdateAction',
             'module' => 'Article',
             '--stub' => 'update',
+            '--dto' => 'Foo/Bar\\TestDTO',
             '--model' => 'Bar/TestModel',
             '--request' => 'Bat/TestRequest',
             '--resource' => 'Baz\\TestResource',
