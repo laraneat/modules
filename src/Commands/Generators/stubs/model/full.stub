@@ -2,10 +2,10 @@
 
 namespace {{ namespace }};
 
+use {{ factoryNamespace }}\{{ factory }};
 use App\Ship\Abstracts\Models\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use {{ factoryNamespace }}\{{ factory }};
 
 class {{ class }} extends Model
 {

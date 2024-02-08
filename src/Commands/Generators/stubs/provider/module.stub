@@ -93,7 +93,7 @@ class {{ class }} extends ServiceProvider
     public function registerCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommands(module_path($this->moduleName, '{{ commandsPath }}'));
+            $this->loadCommandsFrom(module_path($this->moduleName, '{{ commandsPath }}'));
         }
     }
 }

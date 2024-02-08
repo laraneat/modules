@@ -2,12 +2,12 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Database\Eloquent\Model;
 use {{ modelNamespace }}\{{ model }};
 use {{ queryWizardNamespace }}\{{ queryWizard }};
 use {{ requestNamespace }}\{{ request }};
 use {{ resourceNamespace }}\{{ resource }};
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Database\Eloquent\Model;
 
 class {{ class }} extends Action
 {

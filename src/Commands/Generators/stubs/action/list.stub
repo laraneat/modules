@@ -2,17 +2,17 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Pagination\AbstractPaginator;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 use {{ modelNamespace }}\{{ model }};
 use {{ queryWizardNamespace }}\{{ queryWizard }};
 use {{ requestNamespace }}\{{ request }};
 use {{ resourceNamespace }}\{{ resource }};
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class {{ class }} extends Action
 {
-    public function handle({{ request }} $request): AbstractPaginator
+    public function handle({{ request }} $request): LengthAwarePaginator
     {
         return {{ queryWizard }}::for({{ model }}::query())
             ->build()

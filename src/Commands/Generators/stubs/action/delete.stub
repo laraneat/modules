@@ -2,10 +2,10 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Http\JsonResponse;
 use {{ modelNamespace }}\{{ model }};
 use {{ requestNamespace }}\{{ request }};
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\JsonResponse;
 
 class {{ class }} extends Action
 {

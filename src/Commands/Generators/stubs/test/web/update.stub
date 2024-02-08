@@ -2,8 +2,8 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Tests\TestCase;
 use {{ modelNamespace }}\{{ model }};
+use App\Ship\Abstracts\Tests\TestCase;
 
 /**
  * @group {{ moduleKey }}

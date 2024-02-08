@@ -6,10 +6,10 @@ use App\Ship\Abstracts\Factories\Factory;
 use {{ modelNamespace }}\{{ model }};
 
 /**
- * @method \Illuminate\Support\Collection|{{ model }} create($attributes = [], ?{{ model }} $parent = null)
- * @method \Illuminate\Support\Collection createMany(iterable $records)
+ * @method \Illuminate\Support\Collection<int, {{ model }}>|{{ model }} create($attributes = [], ?{{ model }} $parent = null)
+ * @method \Illuminate\Support\Collection<int, {{ model }}> createMany(iterable $records)
  * @method {{ model }} createOne($attributes = [])
- * @method \Illuminate\Support\Collection|{{ model }} make($attributes = [], ?{{ model }} $parent = null)
+ * @method \Illuminate\Support\Collection<int, {{ model }}>|{{ model }} make($attributes = [], ?{{ model }} $parent = null)
  * @method {{ model }} makeOne($attributes = [])
  */
 class {{ class }} extends Factory
@@ -17,7 +17,7 @@ class {{ class }} extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string
      */
     protected $model = {{ model }}::class;
 

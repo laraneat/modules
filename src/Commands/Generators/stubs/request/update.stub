@@ -2,8 +2,8 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Requests\Request;
 use {{ dtoNamespace }}\{{ dto }};
+use App\Ship\Abstracts\Requests\Request;
 use Illuminate\Support\Facades\Gate;
 
 class {{ class }} extends Request

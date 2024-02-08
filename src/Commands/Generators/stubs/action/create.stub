@@ -2,12 +2,12 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Http\JsonResponse;
 use {{ dtoNamespace }}\{{ dto }};
 use {{ modelNamespace }}\{{ model }};
 use {{ requestNamespace }}\{{ request }};
 use {{ resourceNamespace }}\{{ resource }};
+use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Http\JsonResponse;
 
 class {{ class }} extends Action
 {
