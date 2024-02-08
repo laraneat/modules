@@ -186,10 +186,6 @@ class FileActivator implements ActivatorInterface
 
     /**
      * Reads a config parameter under the 'activators.file' key
-     * @template T
-     * @param string $key
-     * @param T $default
-     * @return T|string
      */
     protected function config(string $key, mixed $default = null): mixed
     {
