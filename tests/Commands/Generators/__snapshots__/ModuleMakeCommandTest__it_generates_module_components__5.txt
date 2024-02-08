@@ -7,12 +7,12 @@ use App\Modules\Article\UI\API\QueryWizards\ArticlesQueryWizard;
 use App\Modules\Article\UI\API\Requests\ListArticlesRequest;
 use App\Modules\Article\UI\API\Resources\ArticleResource;
 use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Pagination\AbstractPaginator;
 
 class ListArticlesAction extends Action
 {
-    public function handle(ListArticlesRequest $request): AbstractPaginator
+    public function handle(ListArticlesRequest $request): LengthAwarePaginator
     {
         return ArticlesQueryWizard::for(Article::query())
             ->build()

@@ -7,12 +7,12 @@ use App\Modules\Blog\UI\API\QueryWizards\PostsQueryWizard;
 use App\Modules\Blog\UI\API\Requests\ListPostsRequest;
 use App\Modules\Blog\UI\API\Resources\PostResource;
 use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Pagination\AbstractPaginator;
 
 class ListPostsAction extends Action
 {
-    public function handle(ListPostsRequest $request): AbstractPaginator
+    public function handle(ListPostsRequest $request): LengthAwarePaginator
     {
         return PostsQueryWizard::for(Post::query())
             ->build()

@@ -87,7 +87,7 @@ class InstallCommand extends Command
      * @param string $type
      * @param bool   $tree
      */
-    protected function install($name, $version = 'dev-master', $type = 'composer', $tree = false)
+    protected function install(string $name, string $version = 'dev-master', string $type = 'composer', bool $tree = false): void
     {
         $installer = new Installer(
             $name,
@@ -100,7 +100,7 @@ class InstallCommand extends Command
 
         $installer->setConsole($this);
 
-        if ($timeout = $this->option('timeout')) {
+        if ($timeout = (int) $this->option('timeout')) {
             $installer->setTimeout($timeout);
         }
 

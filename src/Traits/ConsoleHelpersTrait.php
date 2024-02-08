@@ -26,11 +26,12 @@ trait ConsoleHelpersTrait
      *
      * @param string $key
      *
-     * @return string
+     * @return string|null
      */
-    protected function getTrimmedOption(string $key): string
+    protected function getTrimmedOption(string $key): string|null
     {
-        return trim($this->option($key));
+        $option = $this->option($key);
+        return $option ? trim($option) : $option;
     }
 
     /**
@@ -43,7 +44,7 @@ trait ConsoleHelpersTrait
      *
      * @return string
      */
-    protected function getOptionOrAsk(string $optionName, string $question, $default = null, bool $required = false): string
+    protected function getOptionOrAsk(string $optionName, string $question, mixed $default = null, bool $required = false): string
     {
         $value = $this->getTrimmedOption($optionName);
 
@@ -70,7 +71,7 @@ trait ConsoleHelpersTrait
      *
      * @return string
      */
-    protected function getOptionOrChoice(string $optionName, string $question, array $choices, $default = null): string
+    protected function getOptionOrChoice(string $optionName, string $question, array $choices, mixed $default = null): string
     {
         $value = $this->getTrimmedOption($optionName);
 

@@ -221,7 +221,7 @@ class ModuleGenerator extends Generator
     /**
      * Set force status.
      */
-    public function setForce($force): static
+    public function setForce(bool $force): static
     {
         $this->force = $force;
 

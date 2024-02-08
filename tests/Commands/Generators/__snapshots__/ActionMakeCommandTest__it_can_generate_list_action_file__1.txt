@@ -7,12 +7,12 @@ use App\Modules\Article\UI\API\QueryWizards\Bat\TestQueryWizard;
 use App\Modules\Article\UI\API\Requests\Bat\TestRequest;
 use App\Modules\Article\UI\API\Resources\Baz\TestResource;
 use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Pagination\AbstractPaginator;
 
 class MyAwesomeListAction extends Action
 {
-    public function handle(TestRequest $request): AbstractPaginator
+    public function handle(TestRequest $request): LengthAwarePaginator
     {
         return TestQueryWizard::for(TestModel::query())
             ->build()

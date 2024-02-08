@@ -29,20 +29,6 @@ class FileRepository implements RepositoryInterface, Countable
     protected Application $app;
 
     /**
-     * Default modules path.
-     *
-     * @var string|null
-     */
-    protected ?string $defaultPath;
-
-    /**
-     * The scanned paths.
-     *
-     * @var string[]
-     */
-    protected array $paths = [];
-
-    /**
      * @var UrlGenerator
      */
     private UrlGenerator $url;
@@ -58,29 +44,40 @@ class FileRepository implements RepositoryInterface, Countable
     private Filesystem $filesystem;
 
     /**
+     * @var CacheManager
+     */
+    private CacheManager $cache;
+
+    /**
      * @var ActivatorInterface
      */
     private ActivatorInterface $activator;
 
     /**
-     * @var CacheManager
+     * The scanned paths.
+     *
+     * @var string[]
      */
-    private CacheManager $cache;
+    protected array $scanPaths = [];
 
     /**
      * @var array|null
      */
     private ?array $cachedModules = null;
 
-    public function __construct(Application $app, ?string $defaultPath = null)
+    public function __construct(Application $app)
     {
         $this->app = $app;
-        $this->defaultPath = $defaultPath ? rtrim($defaultPath, '/') : null;
         $this->url = $app['url'];
         $this->config = $app['config'];
         $this->filesystem = $app['files'];
-        $this->activator = $app[ActivatorInterface::class];
         $this->cache = $app['cache'];
+        $this->activator = $app[ActivatorInterface::class];
+
+        $scanPaths = $this->config('scan_paths', []);
+        $this->scanPaths = is_array($scanPaths)
+            ? array_map([$this, 'normalizeScanPath'], $scanPaths)
+            : [];
     }
 
     /**
@@ -94,101 +91,13 @@ class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::boot()
+     * Boot the modules.
      */
     public function boot(): void
     {
         foreach ($this->getOrdered() as $module) {
             $module->boot();
         }
-    }
-
-    /**
-     * Get modules path.
-     */
-    public function getDefaultPath(): string
-    {
-        return $this->defaultPath ?: rtrim($this->config('generator.path', base_path('app/Modules')), '/');
-    }
-
-    /**
-     * Get all additional paths.
-     *
-     * @return string[]
-     */
-    public function getPaths(): array
-    {
-        return $this->paths;
-    }
-
-    /**
-     * Add other module location.
-     */
-    public function addLocation(string $path): static
-    {
-        $this->paths[] = $path;
-        $this->flushCache();
-
-        return $this;
-    }
-
-    /**
-     * Get scanned modules paths.
-     *
-     * @return string[]
-     */
-    public function getScanPaths(): array
-    {
-        $paths = $this->paths;
-
-        $paths[] = $this->getDefaultPath();
-
-        if ($this->config('scan.enabled')) {
-            $paths = array_merge($paths, $this->config('scan.paths'));
-        }
-
-        return array_map(static function ($path) {
-            return Str::endsWith($path, '/*') ? $path : Str::finish($path, '/*');
-        }, $paths);
-    }
-
-    /**
-     * Get a module key by its name
-     */
-    public function getModuleKey(Module|string $module): string
-    {
-        return $module instanceof Module
-            ? $module->getKey()
-            : Str::snake($module, '-');
-    }
-
-    /**
-     * Get path for a specific module.
-     *
-     * @throws ModuleNotFoundException
-     */
-    public function getModulePath(Module|string $module, ?string $extraPath = null): string
-    {
-        $modulePath = $module instanceof Module
-            ? $module->getPath()
-            : $this->findOrFail($module)->getPath();
-
-        return $extraPath ? $modulePath . '/' . $extraPath : $modulePath;
-    }
-
-    /**
-     * Get namespace for a specific module.
-     *
-     * @throws ModuleNotFoundException
-     */
-    public function getModuleNamespace(Module|string $module, ?string $extraNamespace = null): string
-    {
-        $moduleNamespace = $module instanceof Module
-            ? $module->getNamespace()
-            : $this->findOrFail($module)->getNamespace();
-
-        return $extraNamespace ? $moduleNamespace . '\\' . $extraNamespace : $moduleNamespace;
     }
 
     /**
@@ -202,11 +111,9 @@ class FileRepository implements RepositoryInterface, Countable
             return $this->cachedModules;
         }
 
-        if (!$this->config('cache.enabled')) {
-            return $this->cachedModules = $this->scan();
-        }
-
-        return $this->cachedModules = $this->getCached();
+        return $this->cachedModules = $this->config('cache.enabled', false)
+            ? $this->getCached()
+            : $this->scan();
     }
 
     /**
@@ -236,17 +143,21 @@ class FileRepository implements RepositoryInterface, Countable
      */
     public function getCached(): array
     {
-        return $this->formatCached($this->getRawCached());
+        return $this->parseModulesFromArray($this->getRawCached());
     }
 
     /**
      * Get raw cache of modules.
+     *
+     * @return array<string, array{name: string, path: string, namespace: string, jsons: array<string, array{path: string, attributes: array}>}>
      */
     protected function getRawCached(): array
     {
-        return $this->cache->remember($this->config('cache.key'), $this->config('cache.lifetime'), function () {
-            return $this->toCollection()->toArray();
-        });
+        return $this->cache->remember(
+            $this->config('cache.key'),
+            $this->config('cache.lifetime'),
+            fn () => $this->scanRaw()
+        );
     }
 
     /**
@@ -292,11 +203,21 @@ class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * Get & scan all modules.
+     * Scan and get all modules.
      *
      * @return array<string, Module>
      */
     public function scan(): array
+    {
+        return $this->parseModulesFromArray($this->scanRaw());
+    }
+
+    /**
+     * Scan and get all modules as raw array.
+     *
+     * @return array<string, array{name: string, path: string, namespace: string, jsons: array<string, array{path: string, attributes: array}>}>
+     */
+    public function scanRaw(): array
     {
         $paths = $this->getScanPaths();
 
@@ -305,49 +226,29 @@ class FileRepository implements RepositoryInterface, Countable
         foreach ($paths as $path) {
             $manifests = $this->getFilesystem()->glob("$path/module.json");
 
-            is_array($manifests) || $manifests = [];
+            if (!is_array($manifests)) {
+                continue;
+            }
 
             foreach ($manifests as $manifest) {
-                $json = Json::make($manifest, $this->filesystem);
+                $moduleJson = Json::make($manifest, $this->filesystem);
                 $path = dirname($manifest);
-                $name = (string) $json->get('name');
+                $name = (string) $moduleJson->get('name');
                 $moduleKey = $this->getModuleKey($name);
-                $namespace = (string) $json->get('namespace', '');
+                $namespace = (string) $moduleJson->get('namespace', '');
 
-                $modules[$moduleKey] = $this->createModule(
-                    $this->app,
-                    $name,
-                    $path,
-                    $namespace,
-                    ['module.json' => $json]
-                );
+                $modules[$moduleKey] = [
+                    'name' => $name,
+                    'path' => $path,
+                    'namespace' => $namespace,
+                    'jsons' => [
+                        'module.json' => $moduleJson->toArray()
+                    ],
+                ];
             }
         }
 
         return $modules;
-    }
-
-    /**
-     * Creates a new Module instance
-     */
-    protected function createModule(
-        Application $app,
-        string $name,
-        string $path,
-        string $namespace,
-        array $moduleJson = []
-    ): Module {
-        return new Module($app, $name, $path, $namespace, $moduleJson);
-    }
-
-    /**
-     * Get all modules as collection instance.
-     *
-     * @return Collection<string, Module>
-     */
-    public function toCollection(): Collection
-    {
-        return new Collection($this->scan());
     }
 
     /**
@@ -428,63 +329,73 @@ class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * Format the cached data as array of modules.
+     * Determine whether the given module is activated.
      *
-     * @return array<string, Module>
+     * @throws ModuleNotFoundException
      */
-    protected function formatCached(array $cached): array
+    public function isEnabled(string $moduleName): bool
     {
-        $modules = [];
-
-        /**
-         * @var string $moduleKey
-         * @var array{name: string, path: string, namespace: string, module_json: array} $moduleArray
-         */
-        foreach ($cached as $moduleKey => $moduleArray) {
-            $moduleJson = array_map(
-                fn ($json) => Json::make($json['path'], $this->filesystem, $json['attributes']),
-                $moduleArray['module_json'] ?? []
-            );
-            $modules[$moduleKey] = $this->createModule(
-                $this->app,
-                $moduleArray['name'],
-                $moduleArray['path'],
-                $moduleArray['namespace'],
-                $moduleJson
-            );
-        }
-
-        return $modules;
+        return $this->findOrFail($moduleName)->isEnabled();
     }
 
     /**
-     * Get all modules as laravel collection instance.
+     * Determine whether the given module is not activated.
      *
-     * @param bool $status
-     *
-     * @return Collection<string, Module>
+     * @throws ModuleNotFoundException
      */
-    public function collections(bool $status = true): Collection
+    public function isDisabled(string $moduleName): bool
     {
-        return new Collection($this->getByStatus($status));
+        return !$this->isEnabled($moduleName);
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::assetPath()
+     * Enable a specific module.
+     *
+     * @throws ModuleNotFoundException
      */
-    public function assetPath(string $moduleName): string
+    public function enable(string $moduleName): void
     {
-        return rtrim($this->config('paths.assets'), '/') . '/' . $moduleName;
+        $this->findOrFail($moduleName)->enable();
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::config()
+     * Disable a specific module.
+     *
+     * @throws ModuleNotFoundException
      */
-    public function config(string $key, $default = null)
+    public function disable(string $moduleName): void
     {
-        return $this->config->get('modules.' . $key, $default);
+        $this->findOrFail($moduleName)->disable();
+    }
+
+    /**
+     * Delete a specific module.
+     *
+     * @throws ModuleNotFoundException
+     */
+    public function delete(string $moduleName): bool
+    {
+        return $this->findOrFail($moduleName)->delete();
+    }
+
+    /**
+     * Update dependencies for the specified module.
+     *
+     * @throws ModuleNotFoundException
+     */
+    public function update(string $moduleName): void
+    {
+        (new Updater($this))->update($moduleName);
+    }
+
+    /**
+     * Install the specified module.
+     */
+    public function install(string $name, ?string $version = 'dev-master', ?string $type = 'composer', bool $subtree = false): Process
+    {
+        $installer = new Installer($name, $version, $type, $subtree);
+
+        return $installer->run();
     }
 
     /**
@@ -538,6 +449,110 @@ class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
+     * Flush modules cache
+     */
+    public function flushCache(): void
+    {
+        $this->cachedModules = null;
+        $this->cache->forget(config('modules.cache.key'));
+
+        if (method_exists($this->activator, 'flushCache')) {
+            $this->activator->flushCache();
+        }
+    }
+
+    /**
+     * Get all modules as collection instance.
+     *
+     * @return Collection<string, Module>
+     */
+    public function toCollection(): Collection
+    {
+        return new Collection($this->all());
+    }
+
+    /**
+     * Get a module key by its name
+     */
+    public function getModuleKey(Module|string $module): string
+    {
+        return $module instanceof Module
+            ? $module->getKey()
+            : Str::snake($module, '-');
+    }
+
+    /**
+     * Get path for a specific module.
+     *
+     * @throws ModuleNotFoundException
+     */
+    public function getModulePath(Module|string $module, ?string $extraPath = null): string
+    {
+        $modulePath = $module instanceof Module
+            ? $module->getPath()
+            : $this->findOrFail($module)->getPath();
+
+        return $extraPath ? $modulePath . '/' . $extraPath : $modulePath;
+    }
+
+    /**
+     * Get namespace for a specific module.
+     *
+     * @throws ModuleNotFoundException
+     */
+    public function getModuleNamespace(Module|string $module, ?string $extraNamespace = null): string
+    {
+        $moduleNamespace = $module instanceof Module
+            ? $module->getNamespace()
+            : $this->findOrFail($module)->getNamespace();
+
+        return $extraNamespace ? $moduleNamespace . '\\' . $extraNamespace : $moduleNamespace;
+    }
+
+    /**
+     * Get scanned modules paths.
+     *
+     * @return array<int, string>
+     */
+    public function getScanPaths(): array
+    {
+        return $this->scanPaths;
+    }
+
+    /**
+     * Add scan path.
+     */
+    public function addScanPath(string $path): static
+    {
+        $normalizedScanPaths = $this->normalizeScanPath($path);
+
+        if (in_array($normalizedScanPaths, $this->scanPaths)) {
+            return $this;
+        }
+
+        $this->scanPaths[] = $normalizedScanPaths;
+        $this->flushCache();
+
+        return $this;
+    }
+
+    /**
+     * Get asset path for a specific module.
+     */
+    public function assetPath(string $moduleName): string
+    {
+        return rtrim($this->config('assets_path'), '/') . '/' . $moduleName;
+    }
+
+    /**
+     * Get a specific config data from a configuration file.
+     */
+    public function config(string $key, mixed $default = null): mixed
+    {
+        return $this->config->get('modules.' . $key, $default);
+    }
+
+    /**
      * Get laravel filesystem instance.
      */
     public function getFilesystem(): Filesystem
@@ -550,7 +565,7 @@ class FileRepository implements RepositoryInterface, Countable
      */
     public function getAssetsPath(): string
     {
-        return $this->config('paths.assets');
+        return $this->config('assets_path');
     }
 
     /**
@@ -572,84 +587,18 @@ class FileRepository implements RepositoryInterface, Countable
         return str_replace(['http://', 'https://'], '//', $url);
     }
 
-    /**
-     * @inheritDoc
-     * @see RepositoryInterface::isEnabled()
-     */
-    public function isEnabled(string $moduleName): bool
+    protected function normalizeScanPath(string $path): string
     {
-        return $this->findOrFail($moduleName)->isEnabled();
+        return Str::endsWith($path, '/*') ? $path : Str::finish($path, '/*');
     }
 
     /**
-     * @inheritDoc
-     * @see RepositoryInterface::isDisabled()
-     */
-    public function isDisabled(string $moduleName): bool
-    {
-        return !$this->isEnabled($moduleName);
-    }
-
-    /**
-     * Enabling a specific module.
+     * @param array<string, array{name: string, path: string, namespace: string, jsons: array<string, array{path: string, attributes: array}>}> $modulesArray
      *
-     * @param string $moduleName
-     *
-     * @return void
-     * @throws ModuleNotFoundException
+     * @return array<string, Module>
      */
-    public function enable(string $moduleName): void
+    protected function parseModulesFromArray(array $modulesArray): array
     {
-        $this->findOrFail($moduleName)->enable();
-    }
-
-    /**
-     * Disabling a specific module.
-     *
-     * @param string $moduleName
-     *
-     * @return void
-     * @throws ModuleNotFoundException
-     */
-    public function disable(string $moduleName): void
-    {
-        $this->findOrFail($moduleName)->disable();
-    }
-
-    /**
-     * @inheritDoc
-     * @see RepositoryInterface::delete()
-     */
-    public function delete(string $moduleName): bool
-    {
-        return $this->findOrFail($moduleName)->delete();
-    }
-
-    /**
-     * Update dependencies for the specified module.
-     */
-    public function update(string $moduleName): void
-    {
-        (new Updater($this))->update($moduleName);
-    }
-
-    /**
-     * Install the specified module.
-     */
-    public function install(string $name, ?string $version = 'dev-master', ?string $type = 'composer', bool $subtree = false): Process
-    {
-        $installer = new Installer($name, $version, $type, $subtree);
-
-        return $installer->run();
-    }
-
-    /**
-     * Flush modules cache
-     */
-    public function flushCache(): void
-    {
-        $this->cachedModules = null;
-        $this->cache->forget(config('modules.cache.key'));
-        $this->activator->flushCache();
+        return array_map(fn ($moduleArray) => Module::makeFromArray($this->app, $moduleArray), $modulesArray);
     }
 }

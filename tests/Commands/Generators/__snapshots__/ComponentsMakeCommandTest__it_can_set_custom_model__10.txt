@@ -6,5 +6,8 @@ use App\Ship\Abstracts\DTO\DataTransferObject;
 
 class CreatePostDTO extends DataTransferObject
 {
-    // TODO: add fields here
+    public function __construct(
+        // TODO: add fields here
+    ) {
+    }
 }

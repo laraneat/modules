@@ -4,8 +4,8 @@ namespace Laraneat\Modules\Exceptions;
 
 class InvalidAssetPath extends \Exception
 {
-    public static function missingModuleName($asset): InvalidAssetPath
+    public static function missingModuleName(string $asset): InvalidAssetPath
     {
-        return new static("Module name was not specified in asset [$asset].");
+        return new InvalidAssetPath("Module name was not specified in asset [$asset].");
     }
 }

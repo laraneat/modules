@@ -6,10 +6,10 @@ use App\Modules\Blog\Models\Comment;
 use App\Ship\Abstracts\Factories\Factory;
 
 /**
- * @method \Illuminate\Support\Collection|Comment create($attributes = [], ?Comment $parent = null)
- * @method \Illuminate\Support\Collection createMany(iterable $records)
+ * @method \Illuminate\Support\Collection<int, Comment>|Comment create($attributes = [], ?Comment $parent = null)
+ * @method \Illuminate\Support\Collection<int, Comment> createMany(iterable $records)
  * @method Comment createOne($attributes = [])
- * @method \Illuminate\Support\Collection|Comment make($attributes = [], ?Comment $parent = null)
+ * @method \Illuminate\Support\Collection<int, Comment>|Comment make($attributes = [], ?Comment $parent = null)
  * @method Comment makeOne($attributes = [])
  */
 class CommentFactory extends Factory
@@ -17,7 +17,7 @@ class CommentFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string
      */
     protected $model = Comment::class;
 

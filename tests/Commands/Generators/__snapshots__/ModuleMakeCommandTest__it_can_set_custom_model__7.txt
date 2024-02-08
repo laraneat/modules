@@ -7,12 +7,12 @@ use App\Modules\Blog\UI\API\QueryWizards\PostCommentsQueryWizard;
 use App\Modules\Blog\UI\API\Requests\ListPostCommentsRequest;
 use App\Modules\Blog\UI\API\Resources\PostCommentResource;
 use App\Ship\Abstracts\Actions\Action;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Pagination\AbstractPaginator;
 
 class ListPostCommentsAction extends Action
 {
-    public function handle(ListPostCommentsRequest $request): AbstractPaginator
+    public function handle(ListPostCommentsRequest $request): LengthAwarePaginator
     {
         return PostCommentsQueryWizard::for(PostComment::query())
             ->build()

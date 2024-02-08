@@ -36,11 +36,11 @@ class Stub
      * @param string $path
      * @param array  $replaces
      *
-     * @return static
+     * @return Stub
      */
-    public static function create(string $path, array $replaces = [])
+    public static function create(string $path, array $replaces = []): Stub
     {
-        return new static($path, $replaces);
+        return new Stub($path, $replaces);
     }
 
     /**

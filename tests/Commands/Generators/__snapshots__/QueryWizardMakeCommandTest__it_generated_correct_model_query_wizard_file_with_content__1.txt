@@ -8,7 +8,7 @@ use Jackardios\QueryWizard\Model\ModelInclude;
 class MyAwesomeModelQueryWizard extends ModelQueryWizard
 {
     /**
-     * @return array<string>
+     * @return array<int, string>
      */
     protected function allowedAppends(): array
     {
@@ -16,7 +16,7 @@ class MyAwesomeModelQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return array<string>
+     * @return array<int, string>
      */
     protected function defaultAppends(): array
     {
@@ -24,7 +24,7 @@ class MyAwesomeModelQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return array<string>
+     * @return array<int, string>
      */
     protected function allowedFields(): array
     {
@@ -34,7 +34,7 @@ class MyAwesomeModelQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return array<string|ModelInclude>
+     * @return array<int, string|ModelInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -42,7 +42,7 @@ class MyAwesomeModelQueryWizard extends ModelQueryWizard
     }
 
     /**
-     * @return array<string|ModelInclude>
+     * @return array<int, string|ModelInclude>
      */
     protected function defaultIncludes(): array
     {

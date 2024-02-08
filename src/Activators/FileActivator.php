@@ -5,6 +5,7 @@ namespace Laraneat\Modules\Activators;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use Laraneat\Modules\Contracts\ActivatorInterface;
 use Laraneat\Modules\Module;
@@ -34,7 +35,7 @@ class FileActivator implements ActivatorInterface
     /**
      * Modules cache lifetime
      */
-    protected ?string $cacheLifetime;
+    protected ?int $cacheLifetime;
 
     /**
      * Array of modules activation statuses
@@ -51,9 +52,11 @@ class FileActivator implements ActivatorInterface
         $this->cache = $app['cache'];
         $this->files = $app['files'];
         $this->config = $app['config'];
-        $this->statusesFile = $this->config('statuses-file');
-        $this->cacheKey = $this->config('cache-key');
-        $this->cacheLifetime = $this->config('cache-lifetime');
+
+        $this->statusesFile = $this->config('statuses-file') ?? "";
+        $this->cacheKey = $this->config('cache-key') ?? "";
+        $cacheLifetime = $this->config('cache-lifetime');
+        $this->cacheLifetime = isset($cacheLifetime) ? (int) $cacheLifetime : null;
         $this->modulesStatuses = $this->getModulesStatuses();
     }
 
@@ -148,7 +151,10 @@ class FileActivator implements ActivatorInterface
      */
     protected function writeJson(): void
     {
-        $this->files->put($this->statusesFile, json_encode($this->modulesStatuses, JSON_PRETTY_PRINT));
+        $encoded = json_encode($this->modulesStatuses, JSON_PRETTY_PRINT);
+        if ($encoded) {
+            $this->files->put($this->statusesFile, $encoded);
+        }
     }
 
     /**
@@ -156,11 +162,11 @@ class FileActivator implements ActivatorInterface
      */
     protected function readJson(): array
     {
-        if (!$this->files->exists($this->statusesFile)) {
+        try {
+            return json_decode($this->files->get($this->statusesFile), true);
+        } catch (FileNotFoundException $e) {
             return [];
         }
-
-        return json_decode($this->files->get($this->statusesFile), true);
     }
 
     /**
@@ -180,8 +186,12 @@ class FileActivator implements ActivatorInterface
 
     /**
      * Reads a config parameter under the 'activators.file' key
+     * @template T
+     * @param string $key
+     * @param T $default
+     * @return T|string
      */
-    protected function config(string $key, $default = null)
+    protected function config(string $key, mixed $default = null): mixed
     {
         return $this->config->get('modules.activators.file.' . $key, $default);
     }

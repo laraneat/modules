@@ -2,6 +2,7 @@
 
 namespace Laraneat\Modules\Process;
 
+use Laraneat\Modules\Exceptions\ModuleNotFoundException;
 use Laraneat\Modules\Module;
 
 class Updater extends Runner
@@ -10,6 +11,7 @@ class Updater extends Runner
      * Update the dependencies for the specified module by given the module name.
      *
      * @param string $moduleName
+     * @throws ModuleNotFoundException
      */
     public function update(string $moduleName): void
     {

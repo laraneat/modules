@@ -29,17 +29,17 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_adds_location_to_paths()
     {
-        $this->repository->addLocation('some/path');
+        $this->repository->addScanPath('some/path');
 
-        $paths = $this->repository->getPaths();
-        $this->assertCount(1, $paths);
-        $this->assertEquals('some/path', $paths[0]);
+        $paths = $this->repository->getScanPaths();
+        $this->assertCount(2, $paths);
+        $this->assertEquals('some/path/*', $paths[1]);
     }
 
     /** @test */
     public function it_returns_all_enabled_modules()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $this->assertCount(0, $this->repository->getByStatus(true));
         $this->assertCount(0, $this->repository->allEnabled());
@@ -48,7 +48,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_returns_all_disabled_modules()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $this->assertCount(2, $this->repository->getByStatus(false));
         $this->assertCount(2, $this->repository->allDisabled());
@@ -57,7 +57,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_counts_all_modules()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $this->assertEquals(2, $this->repository->count());
     }
@@ -65,7 +65,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_finds_a_module()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $this->assertInstanceOf(Module::class, $this->repository->find('article'));
     }
@@ -73,7 +73,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_finds_a_module_by_alias()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $this->assertInstanceOf(Module::class, $this->repository->findByAlias('article'));
         $this->assertInstanceOf(Module::class, $this->repository->findByAlias('required_module'));
@@ -90,7 +90,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_finds_the_module_asset_path()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid/Article');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid/Article');
         $assetPath = $this->repository->assetPath('article');
 
         $this->assertEquals(public_path('modules/article'), $assetPath);
@@ -107,7 +107,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_sets_used_module()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $this->repository->setUsed('Article');
 
@@ -140,7 +140,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_can_detect_if_module_is_active()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $this->repository->enable('Article');
 
@@ -150,7 +150,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_can_detect_if_module_is_inactive()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $this->repository->isDisabled('Article');
 
@@ -160,7 +160,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_can_disabled_a_module()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $this->repository->disable('Article');
 
@@ -170,7 +170,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_can_enable_a_module()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $this->repository->enable('Article');
 
@@ -190,7 +190,7 @@ class FileRepositoryTest extends BaseTestCase
     /** @test */
     public function it_can_find_all_requirements_of_a_module()
     {
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
 
         $requirements = $this->repository->findRequirements('Article');
 
@@ -219,7 +219,7 @@ class FileRepositoryTest extends BaseTestCase
             return strrev($this->getName());
         });
 
-        $this->repository->addLocation(__DIR__ . '/fixtures/stubs/valid');
+        $this->repository->addScanPath(__DIR__ . '/fixtures/stubs/valid');
         $module = $this->repository->find('article');
 
         $this->assertEquals('elcitrA', $module->getReverseName());

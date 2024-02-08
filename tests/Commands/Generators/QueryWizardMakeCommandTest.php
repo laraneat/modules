@@ -61,21 +61,6 @@ class QueryWizardMakeCommandTest extends BaseTestCase
     }
 
     /** @test */
-    public function it_generated_correct_scout_query_wizard_file_with_content()
-    {
-        $code = $this->artisan('module:make:wizard', [
-            'name' => 'Foo/Bar\\MyAwesomeScoutQueryWizard',
-            'module' => 'Article',
-            '--stub' => 'scout'
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/API/QueryWizards/Foo/Bar/MyAwesomeScoutQueryWizard.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
     public function it_generated_correct_model_query_wizard_file_with_content()
     {
         $code = $this->artisan('module:make:wizard', [

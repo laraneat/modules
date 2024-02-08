@@ -2,6 +2,7 @@
 
 namespace Laraneat\Modules;
 
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Filesystem\Filesystem;
@@ -38,9 +39,9 @@ class Module implements Arrayable
     protected string $namespace;
 
     /**
-     * @var array of cached Json objects, keyed by filename
+     * @var array<string, Json> array of cached Json objects, keyed by filename
      */
-    protected array $moduleJson = [];
+    protected array $jsons = [];
 
     /**
      * The laravel filesystem instance.
@@ -52,20 +53,48 @@ class Module implements Arrayable
      */
     private ActivatorInterface $activator;
 
+    /**
+     * @param array<string, Json> $jsons
+     */
     public function __construct(
         Application $app,
         string $name,
         string $path,
         string $namespace,
-        array $moduleJson = []
+        array $jsons = []
     ) {
         $this->app = $app;
         $this->name = trim($name);
         $this->path = rtrim($path, '/');
         $this->namespace = trim($namespace, '\\');
-        $this->moduleJson = $moduleJson;
+        $this->jsons = $jsons;
         $this->filesystem = $app['files'];
         $this->activator = $app[ActivatorInterface::class];
+    }
+
+    /**
+     * Make the module from a plain array
+     *
+     * @param Application $app
+     * @param array{name: string, path: string, namespace: string, jsons: array<string, array{path: string, attributes: array}>} $moduleArray
+     *
+     * @return Module
+     *
+     * @throws FileNotFoundException
+     * @throws \JsonException
+     */
+    public static function makeFromArray(Application $app, array $moduleArray): Module
+    {
+        return new Module(
+            $app,
+            $moduleArray['name'],
+            $moduleArray['path'],
+            $moduleArray['namespace'],
+            array_map(
+                fn ($json) => Json::make($json['path'], $app['files'], $json['attributes']),
+                $moduleArray['jsons']
+            )
+        );
     }
 
     /**
@@ -169,15 +198,15 @@ class Module implements Arrayable
             $fileName = 'module.json';
         }
 
-        return Arr::get($this->moduleJson, $fileName, function () use ($fileName) {
-            return $this->moduleJson[$fileName] = Json::make($this->getExtraPath($fileName), $this->filesystem);
+        return Arr::get($this->jsons, $fileName, function () use ($fileName) {
+            return $this->jsons[$fileName] = Json::make($this->getExtraPath($fileName), $this->filesystem);
         });
     }
 
     /**
      * Get a specific data from json file by given the key.
      */
-    public function get(string $key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         return $this->json()->get($key, $default);
     }
@@ -185,7 +214,7 @@ class Module implements Arrayable
     /**
      * Get a specific data from composer.json file by given the key.
      */
-    public function getComposerAttr(string $key, $default = null)
+    public function getComposerAttr(string $key, mixed $default = null): mixed
     {
         return $this->json('composer.json')->get($key, $default);
     }
@@ -220,10 +249,12 @@ class Module implements Arrayable
     {
         // This checks if we are running on a Laravel Vapor managed instance
         // and sets the path to a writable one (services path is not on a writable storage in Vapor).
-        if (!is_null(env('VAPOR_MAINTENANCE_MODE', null))) {
+        if (!is_null(env('VAPOR_MAINTENANCE_MODE'))) {
+            /** @phpstan-ignore-next-line  */
             return Str::replaceLast('config.php', $this->getSnakeName() . '_module.php', $this->app->getCachedConfigPath());
         }
 
+        /** @phpstan-ignore-next-line  */
         return Str::replaceLast('services.php', $this->getSnakeName() . '_module.php', $this->app->getCachedServicesPath());
     }
 
@@ -357,6 +388,8 @@ class Module implements Arrayable
 
     /**
      * Get the module as a plain array.
+     *
+     * @return array{name: string, path: string, namespace: string, module_json: array}
      */
     public function toArray(): array
     {
@@ -364,7 +397,7 @@ class Module implements Arrayable
             'name' => $this->name,
             'path' => $this->path,
             'namespace' => $this->namespace,
-            'module_json' => array_map(static fn (Json $json) => $json->toArray(), $this->moduleJson)
+            'module_json' => array_map(static fn (Json $json) => $json->toArray(), $this->jsons)
         ];
     }
 

@@ -38,9 +38,7 @@ class ModulesServiceProvider extends ServiceProvider
     {
         $this->app->alias(RepositoryInterface::class, 'modules');
         $this->app->singleton(RepositoryInterface::class, function ($app) {
-            $path = $app['config']->get('modules.generator.path');
-
-            return new FileRepository($app, $path);
+            return new FileRepository($app);
         });
 
         $this->app->singleton(ActivatorInterface::class, function ($app) {

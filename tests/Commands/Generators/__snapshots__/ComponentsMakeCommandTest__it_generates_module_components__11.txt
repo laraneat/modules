@@ -93,7 +93,7 @@ class ArticleServiceProvider extends ServiceProvider
     public function registerCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommands(module_path($this->moduleName, 'UI/CLI/Commands'));
+            $this->loadCommandsFrom(module_path($this->moduleName, 'UI/CLI/Commands'));
         }
     }
 }

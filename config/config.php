@@ -3,17 +3,29 @@
 use Laraneat\Modules\Activators\FileActivator;
 
 return [
-    'paths' => [
-        /*
-        |--------------------------------------------------------------------------
-        | The path to assets
-        |--------------------------------------------------------------------------
-        |
-        | This path is used to store public assets of modules
-        |
-        */
-        'assets' => public_path('modules'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scan Paths
+    |--------------------------------------------------------------------------
+    |
+    | Here you define which folders will be scanned for modules.
+    | Path glob patters are also supported.
+    |
+    */
+    'scan_paths' => [
+        base_path('app/Modules'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | The path to assets
+    |--------------------------------------------------------------------------
+    |
+    | This path is used to store public assets of modules
+    |
+    */
+    'assets_path' => public_path('modules'),
 
     'generator' => [
         /*
@@ -21,8 +33,7 @@ return [
         | Modules path
         |--------------------------------------------------------------------------
         |
-        | This path used for save the generated module. This path also will be added
-        | automatically to list of scanned folders.
+        | This path used for save the generated module.
         |
         */
         'path' => base_path('app/Modules'),
@@ -213,22 +224,6 @@ return [
                 'path' => 'Tests/Unit',
                 'generate' => false
             ],
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Scan Path
-    |--------------------------------------------------------------------------
-    |
-    | Here you define which folder will be scanned. By default will scan vendor
-    | directory. This is useful if you host the package in packagist website.
-    |
-    */
-    'scan' => [
-        'enabled' => false,
-        'paths' => [
-            base_path('vendor/*/*'),
         ],
     ],
 

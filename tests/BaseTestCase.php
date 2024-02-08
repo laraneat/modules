@@ -41,7 +41,8 @@ abstract class BaseTestCase extends OrchestraTestCase
             'prefix' => '',
         ]);
 
-        $app['config']->set('modules.paths.assets', public_path('modules'));
+        $app['config']->set('modules.scan_paths', [base_path('app/Modules')]);
+        $app['config']->set('modules.assets_path', public_path('modules'));
         $app['config']->set('modules.generator', [
             'path' => base_path('app/Modules'),
             'namespace' => 'App\\Modules',

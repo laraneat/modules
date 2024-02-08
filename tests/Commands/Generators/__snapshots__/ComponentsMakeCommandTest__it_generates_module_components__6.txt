@@ -6,10 +6,10 @@ use App\Modules\Article\Models\Article;
 use App\Ship\Abstracts\Factories\Factory;
 
 /**
- * @method \Illuminate\Support\Collection|Article create($attributes = [], ?Article $parent = null)
- * @method \Illuminate\Support\Collection createMany(iterable $records)
+ * @method \Illuminate\Support\Collection<int, Article>|Article create($attributes = [], ?Article $parent = null)
+ * @method \Illuminate\Support\Collection<int, Article> createMany(iterable $records)
  * @method Article createOne($attributes = [])
- * @method \Illuminate\Support\Collection|Article make($attributes = [], ?Article $parent = null)
+ * @method \Illuminate\Support\Collection<int, Article>|Article make($attributes = [], ?Article $parent = null)
  * @method Article makeOne($attributes = [])
  */
 class ArticleFactory extends Factory
@@ -17,7 +17,7 @@ class ArticleFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string
      */
     protected $model = Article::class;
 

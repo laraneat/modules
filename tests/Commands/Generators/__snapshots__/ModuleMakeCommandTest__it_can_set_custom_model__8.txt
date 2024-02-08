@@ -6,10 +6,10 @@ use App\Modules\Blog\Models\PostComment;
 use App\Ship\Abstracts\Factories\Factory;
 
 /**
- * @method \Illuminate\Support\Collection|PostComment create($attributes = [], ?PostComment $parent = null)
- * @method \Illuminate\Support\Collection createMany(iterable $records)
+ * @method \Illuminate\Support\Collection<int, PostComment>|PostComment create($attributes = [], ?PostComment $parent = null)
+ * @method \Illuminate\Support\Collection<int, PostComment> createMany(iterable $records)
  * @method PostComment createOne($attributes = [])
- * @method \Illuminate\Support\Collection|PostComment make($attributes = [], ?PostComment $parent = null)
+ * @method \Illuminate\Support\Collection<int, PostComment>|PostComment make($attributes = [], ?PostComment $parent = null)
  * @method PostComment makeOne($attributes = [])
  */
 class PostCommentFactory extends Factory
@@ -17,7 +17,7 @@ class PostCommentFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string
      */
     protected $model = PostComment::class;
 

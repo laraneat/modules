@@ -11,7 +11,7 @@ use Jackardios\QueryWizard\Eloquent\EloquentInclude;
 class MyAwesomeElasticQueryWizard extends ElasticQueryWizard
 {
     /**
-     * @return array<string>
+     * @return array<int, string>
      */
     protected function allowedAppends(): array
     {
@@ -19,7 +19,7 @@ class MyAwesomeElasticQueryWizard extends ElasticQueryWizard
     }
 
     /**
-     * @return array<string>
+     * @return array<int, string>
      */
     protected function defaultAppends(): array
     {
@@ -27,7 +27,7 @@ class MyAwesomeElasticQueryWizard extends ElasticQueryWizard
     }
 
     /**
-     * @return array<string>
+     * @return array<int, string>
      */
     protected function allowedFields(): array
     {
@@ -37,7 +37,7 @@ class MyAwesomeElasticQueryWizard extends ElasticQueryWizard
     }
 
     /**
-     * @return array<string|ElasticFilter|EloquentFilter>
+     * @return array<int, string|ElasticFilter|EloquentFilter>
      */
     protected function allowedFilters(): array
     {
@@ -45,7 +45,7 @@ class MyAwesomeElasticQueryWizard extends ElasticQueryWizard
     }
 
     /**
-     * @return array<string|EloquentInclude>
+     * @return array<int, string|EloquentInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -53,7 +53,7 @@ class MyAwesomeElasticQueryWizard extends ElasticQueryWizard
     }
 
     /**
-     * @return array<string|EloquentInclude>
+     * @return array<int, string|EloquentInclude>
      */
     protected function defaultIncludes(): array
     {
@@ -61,7 +61,7 @@ class MyAwesomeElasticQueryWizard extends ElasticQueryWizard
     }
 
     /**
-     * @return array<string|ElasticSort>
+     * @return array<int, string|ElasticSort>
      */
     protected function allowedSorts(): array
     {
@@ -69,7 +69,7 @@ class MyAwesomeElasticQueryWizard extends ElasticQueryWizard
     }
 
     /**
-     * @return array<string|ElasticSort>
+     * @return array<int, string|ElasticSort>
      */
     protected function defaultSorts(): array
     {

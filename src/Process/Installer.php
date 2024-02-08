@@ -85,7 +85,7 @@ class Installer
      *
      * @return $this
      */
-    public function setPath(string $path)
+    public function setPath(string $path): static
     {
         $this->path = $path;
 
@@ -99,7 +99,7 @@ class Installer
      *
      * @return $this
      */
-    public function setRepository(RepositoryInterface $repository)
+    public function setRepository(RepositoryInterface $repository): static
     {
         $this->repository = $repository;
 
@@ -113,7 +113,7 @@ class Installer
      *
      * @return $this
      */
-    public function setConsole(Command $console)
+    public function setConsole(Command $console): static
     {
         $this->console = $console;
 
@@ -127,7 +127,7 @@ class Installer
      *
      * @return $this
      */
-    public function setTimeout(int $timeout)
+    public function setTimeout(int $timeout): static
     {
         $this->timeout = $timeout;
 
@@ -202,7 +202,6 @@ class Installer
 
             case 'gitlab':
                 return "git@gitlab.com:{$this->name}.git";
-                break;
 
             case 'bitbucket':
                 return "git@bitbucket.org:{$this->name}.git";

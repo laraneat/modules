@@ -32,7 +32,7 @@ class SetupCommand extends Command
     /**
      * Generate the modules folder.
      */
-    public function generateModulesFolder()
+    public function generateModulesFolder(): int
     {
         return $this->generateDirectory(
             Modules::config('paths.generators'),
@@ -44,12 +44,12 @@ class SetupCommand extends Command
     /**
      * Generate the specified directory by given $dir.
      *
-     * @param $dir
-     * @param $success
-     * @param $error
+     * @param string $dir
+     * @param string $success
+     * @param string $error
      * @return int
      */
-    protected function generateDirectory($dir, $success, $error): int
+    protected function generateDirectory(string $dir, string $success, string $error): int
     {
         if (!$this->laravel['files']->isDirectory($dir)) {
             $this->laravel['files']->makeDirectory($dir, 0755, true, true);

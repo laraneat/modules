@@ -25,6 +25,10 @@ class Json implements Arrayable
      */
     protected Collection $attributes;
 
+    /**
+     * @throws FileNotFoundException
+     * @throws JsonException
+     */
     public function __construct(string $path, ?Filesystem $filesystem = null, ?array $cachedAttributes = null)
     {
         $this->path = $path;
@@ -34,10 +38,13 @@ class Json implements Arrayable
 
     /**
      * Make new instance.
+     *
+     * @throws FileNotFoundException
+     * @throws JsonException
      */
-    public static function make(string $path, ?Filesystem $filesystem = null, ?array $cachedAttributes = null): static
+    public static function make(string $path, ?Filesystem $filesystem = null, ?array $cachedAttributes = null): Json
     {
-        return new static($path, $filesystem, $cachedAttributes);
+        return new Json($path, $filesystem, $cachedAttributes);
     }
 
     public function getFilesystem(): Filesystem
@@ -57,9 +64,9 @@ class Json implements Arrayable
         return $this->path;
     }
 
-    public function setPath($path): static
+    public function setPath(string $path): static
     {
-        $this->path = (string) $path;
+        $this->path = $path;
 
         return $this;
     }
@@ -103,7 +110,7 @@ class Json implements Arrayable
     /**
      * Update json contents from array data.
      *
-     * @throws FileNotFoundException|JsonException
+     * @throws JsonException
      */
     public function update(array $data): int|false
     {
@@ -136,7 +143,7 @@ class Json implements Arrayable
     /**
      * Get the specified attribute from json file.
      */
-    public function get($key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         return $this->attributes->get($key, $default);
     }
@@ -144,7 +151,7 @@ class Json implements Arrayable
     /**
      * Set a specific key & value.
      */
-    public function set($key, $value): static
+    public function set(string $key, mixed $value): static
     {
         $this->attributes->offsetSet($key, $value);
 
@@ -154,7 +161,7 @@ class Json implements Arrayable
     /**
      * Handle magic method __get.
      */
-    public function __get($key)
+    public function __get(string $key): mixed
     {
         return $this->get($key);
     }
@@ -162,7 +169,7 @@ class Json implements Arrayable
     /**
      * Handle magic method __set.
      */
-    public function __set($key, $value)
+    public function __set(string $key, mixed $value)
     {
         $this->set($key, $value);
     }
@@ -178,7 +185,7 @@ class Json implements Arrayable
     /**
      * Handle call to __call method.
      */
-    public function __call(string $method, array $arguments = [])
+    public function __call(string $method, array $arguments = []): mixed
     {
         if (method_exists($this, $method)) {
             return call_user_func_array([$this, $method], $arguments);
@@ -190,10 +197,9 @@ class Json implements Arrayable
     /**
      * Handle call to __toString method.
      *
-     * @return string
      * @throws FileNotFoundException
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getContents();
     }

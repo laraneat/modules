@@ -56,7 +56,7 @@ class MigrateCommand extends Command
      *
      * @param Module $module
      */
-    protected function migrate(Module $module)
+    protected function migrate(Module $module): void
     {
         $path = str_replace(base_path(), '', (new Migrator($module, $this->getLaravel()))->getPath());
 

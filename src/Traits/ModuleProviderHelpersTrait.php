@@ -45,7 +45,7 @@ trait ModuleProviderHelpersTrait
      *
      * @throws ReflectionException
      */
-    protected function loadCommands(array|string $paths): void
+    protected function loadCommandsFrom(array|string $paths): void
     {
         $paths = array_unique(Arr::wrap($paths));
 

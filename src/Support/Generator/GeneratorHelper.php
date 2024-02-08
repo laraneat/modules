@@ -10,8 +10,6 @@ class GeneratorHelper
 {
     /**
      * Get generator modules path
-     *
-     * @return string
      */
     public static function path(): string
     {
@@ -20,8 +18,6 @@ class GeneratorHelper
 
     /**
      * Get generator modules namespace
-     *
-     * @return string
      */
     public static function namespace(): string
     {
@@ -30,8 +26,6 @@ class GeneratorHelper
 
     /**
      * Get custom stubs path
-     *
-     * @return string
      */
     public static function customStubsPath(): string
     {
@@ -40,8 +34,6 @@ class GeneratorHelper
 
     /**
      * Get user model
-     *
-     * @return string
      */
     public static function userModel(): string
     {
@@ -50,8 +42,6 @@ class GeneratorHelper
 
     /**
      * Get "create permission" action
-     *
-     * @return string
      */
     public static function createPermissionAction(): string
     {
@@ -60,8 +50,6 @@ class GeneratorHelper
 
     /**
      * Get "create permission" DTO
-     *
-     * @return string
      */
     public static function createPermissionDTO(): string
     {
@@ -70,10 +58,6 @@ class GeneratorHelper
 
     /**
      * Get component config
-     *
-     * @param string $componentType
-     *
-     * @return GeneratorPath
      */
     public static function component(string $componentType): GeneratorPath
     {
@@ -82,16 +66,12 @@ class GeneratorHelper
 
     /**
      * Get module path
-     *
-     * @param Module|string $module
-     * @param string|null $extraPath
-     * @return string
      */
     public static function modulePath(Module|string $module, ?string $extraPath = null): string
     {
         try {
             $modulePath = Modules::getModulePath($module);
-        } catch (ModuleNotFoundException $e) {
+        } catch (ModuleNotFoundException $e) { /** @phpstan-ignore-line */
             $modulesPath = self::path();
             $modulePart = self::formatPath($module);
             $modulePath = $modulePart ? $modulesPath . '/' . $modulePart : $modulePart;
@@ -102,16 +82,12 @@ class GeneratorHelper
 
     /**
      * Get module namespace
-     *
-     * @param Module|string $module
-     * @param string|null $extraNamespace
-     * @return string
      */
     public static function moduleNamespace(Module|string $module, ?string $extraNamespace = null): string
     {
         try {
             $moduleNamespace = Modules::getModuleNamespace($module);
-        } catch (ModuleNotFoundException $e) {
+        } catch (ModuleNotFoundException $e) { /** @phpstan-ignore-line */
             $modulesNamespace = self::namespace();
             $modulePart = self::formatNamespace($module);
             $moduleNamespace = $modulePart ? $modulesNamespace . '\\' . $modulePart : $modulePart;
@@ -122,9 +98,6 @@ class GeneratorHelper
 
     /**
      * Format path (normalize slashes)
-     *
-     * @param string $path
-     * @return string
      */
     private static function formatPath(string $path): string
     {
@@ -133,9 +106,6 @@ class GeneratorHelper
 
     /**
      * Format namespace (normalize slashes)
-     *
-     * @param string $namespace
-     * @return string
      */
     private static function formatNamespace(string $namespace): string
     {
