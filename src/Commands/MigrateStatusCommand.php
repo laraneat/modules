@@ -2,91 +2,67 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Migrations\Migrator;
 use Laraneat\Modules\Module;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
 
-class MigrateStatusCommand extends Command
+class MigrateStatusCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:migrate-status';
+    protected $signature = 'module:migrate:status
+                            {module?* : Module name(s)}
+                            {--d|direction=asc : The direction of ordering (asc/desc)}
+                            {--subpath=* : The subpath(s) to the migrations files to be executed}
+                            {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
+                            {--database= : The database connection to use}
+                            {--pending : Only list pending migrations}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Status for all module migrations';
+    protected $description = 'Reset the modules migrations.';
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
-        $name = $this->argument('module');
+        /** @var array<Module|string> $modulesToHandle */
+        $modulesToHandle = $this->argument('module') ?: $this->modules->getOrdered($this->option('direction') ?: 'asc');
 
-        if ($name) {
-            $module = Modules::findOrFail($name);
-
-            $this->migrateStatus($module);
-
-            return self::SUCCESS;
-        }
-
-        foreach (Modules::getOrdered($this->option('direction')) as $module) {
-            $this->line('Running for module: <info>' . $module->getName() . '</info>');
-            $this->migrateStatus($module);
+        foreach($modulesToHandle as $module) {
+            $this->status($module);
         }
 
         return self::SUCCESS;
     }
 
     /**
-     * Run the migration from the specified module.
-     *
-     * @param Module $module
+     * Show migration status from the specified module.
      */
-    protected function migrateStatus(Module $module): void
+    protected function status(Module|string $moduleOrName): void
     {
-        $path = str_replace(base_path(), '', (new Migrator($module, $this->getLaravel()))->getPath());
+        $module = $this->findModuleOrFail($moduleOrName);
+
+        $this->line('Running for module: <info>' . $module->getName() . '</info>');
+
+        $moduleMigrationPath = $module->getExtraPath(GeneratorHelper::component('migration')->getPath());
+
+        $paths = $this->option('subpath')
+            ? collect($this->option('subpath'))
+                ->map(static fn (string $subPath) => $moduleMigrationPath . "/" .$subPath)->all()
+            : [$moduleMigrationPath];
 
         $this->call('migrate:status', [
-            '--path' => $path,
+            '--path' => $paths,
             '--database' => $this->option('database'),
+            '--realpath' => (bool) $this->option('realpath'),
+            '--pending' => (bool) $this->option('pending'),
         ]);
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['direction', 'd', InputOption::VALUE_OPTIONAL, 'The direction of ordering.', 'asc'],
-            ['database', null, InputOption::VALUE_OPTIONAL, 'The database connection to use.'],
-        ];
     }
 }

@@ -2,49 +2,52 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Migrations\Migrator;
+use Illuminate\Console\ConfirmableTrait;
 use Laraneat\Modules\Module;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
 
-class MigrateCommand extends Command
+class MigrateCommand extends BaseCommand
 {
+    use ConfirmableTrait;
+
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:migrate';
+    protected $signature = 'module:migrate
+                            {module?* : Module name(s)}
+                            {--d|direction=asc : The direction of ordering (asc/desc)}
+                            {--subpath=* : The subpath(s) to the migrations files to be executed}
+                            {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
+                            {--database= : The database connection to use}
+                            {--force : Force the operation to run when in production}
+                            {--schema-path= : The path to a schema dump file}
+                            {--pretend : Dump the SQL queries that would be run}
+                            {--seed : Indicates if the seed task should be re-run}
+                            {--seeder= : The class name of the root seeder}
+                            {--step : Force the migrations to be run so they can be rolled back individually}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Migrate the migrations from the specified module or from all modules.';
+    protected $description = 'Migrate the migrations from the specified module(s) or from all modules.';
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
-        $name = $this->argument('module');
-
-        if ($name) {
-            $module = Modules::findOrFail($name);
-
-            $this->migrate($module);
-
-            return self::SUCCESS;
+        if (! $this->confirmToProceed()) {
+            return self::FAILURE;
         }
 
-        foreach (Modules::getOrdered($this->option('direction')) as $module) {
-            $this->line('Running for module: <info>' . $module->getName() . '</info>');
+        /** @var array<Module|string> $modulesToHandle */
+        $modulesToHandle = $this->argument('module') ?: $this->modules->getOrdered($this->option('direction') ?: 'asc');
 
+        foreach($modulesToHandle as $module) {
             $this->migrate($module);
         }
 
@@ -53,55 +56,36 @@ class MigrateCommand extends Command
 
     /**
      * Run the migration from the specified module.
-     *
-     * @param Module $module
      */
-    protected function migrate(Module $module): void
+    protected function migrate(Module|string $moduleOrName): void
     {
-        $path = str_replace(base_path(), '', (new Migrator($module, $this->getLaravel()))->getPath());
+        $module = $this->findModuleOrFail($moduleOrName);
 
-        if ($this->option('subpath')) {
-            $path .= "/" . $this->option("subpath");
-        }
+        $this->line('Running for module: <info>' . $module->getName() . '</info>');
+
+        $moduleMigrationPath = $module->getExtraPath(GeneratorHelper::component('migration')->getPath());
+
+        $paths = $this->option('subpath')
+            ? collect($this->option('subpath'))
+                ->map(static fn (string $subPath) => $moduleMigrationPath . "/" .$subPath)->all()
+            : [$moduleMigrationPath];
 
         $this->call('migrate', [
-            '--path' => $path,
+            '--path' => $paths,
+            '--realpath' => (bool) $this->option('realpath'),
             '--database' => $this->option('database'),
-            '--pretend' => $this->option('pretend'),
-            '--force' => $this->option('force'),
+            '--schema-path' => $this->option('schema-path'),
+            '--pretend' => (bool) $this->option('pretend'),
+            '--step' => (bool) $this->option('step'),
+            '--force' => true,
         ]);
 
-        if ($this->option('seed')) {
-            $this->call('module:seed', ['module' => $module->getName(), '--force' => $this->option('force')]);
+        if ($this->option('seed') && ! $this->option('pretend')) {
+            $this->call('module:seed', [
+                'module' => $module->getName(),
+                '--class' => $this->option('seeder'),
+                '--force' => true
+            ]);
         }
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['direction', 'd', InputOption::VALUE_OPTIONAL, 'The direction of ordering.', 'asc'],
-            ['database', null, InputOption::VALUE_OPTIONAL, 'The database connection to use.'],
-            ['pretend', null, InputOption::VALUE_NONE, 'Dump the SQL queries that would be run.'],
-            ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production.'],
-            ['seed', null, InputOption::VALUE_NONE, 'Indicates if the seed task should be re-run.'],
-            ['subpath', null, InputOption::VALUE_OPTIONAL, 'Indicate a subpath to run your migrations from'],
-        ];
     }
 }

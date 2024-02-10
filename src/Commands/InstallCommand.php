@@ -2,20 +2,24 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
 use Laraneat\Modules\Json;
 use Laraneat\Modules\Process\Installer;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
-class InstallCommand extends Command
+class InstallCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:install';
+    protected $signature = 'module:install
+                            {name? : The name of module will be installed}
+                            {version?=latest : The version of module will be installed}
+                            {--timeout= : The process timeout}
+                            {--path= : The installation path}
+                            {--type=composer : The type of installation}
+                            {--tree : Install the module as a git subtree}
+                            {--no-update : Disables the automatic update of the dependencies}';
 
     /**
      * The console command description.
@@ -23,14 +27,6 @@ class InstallCommand extends Command
      * @var string
      */
     protected $description = 'Install the specified module by given package name (vendor/name).';
-
-    /**
-     * Create a new command instance.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     /**
      * Execute the console command.
@@ -59,13 +55,14 @@ class InstallCommand extends Command
         if (!file_exists($path = base_path('modules.json'))) {
             $this->error("File 'modules.json' does not exist in your project root.");
 
-            return self::FAILURE;
+            return E_ERROR;
         }
 
         $modules = Json::make($path);
 
         $dependencies = $modules->get('require', []);
 
+        /** @var array<string, mixed> $module */
         foreach ($dependencies as $module) {
             $module = collect($module);
 
@@ -87,7 +84,7 @@ class InstallCommand extends Command
      * @param string $type
      * @param bool   $tree
      */
-    protected function install(string $name, string $version = 'dev-master', string $type = 'composer', bool $tree = false): void
+    protected function install(string $name, string $version = 'latest', string $type = 'composer', bool $tree = false): void
     {
         $installer = new Installer(
             $name,
@@ -96,7 +93,7 @@ class InstallCommand extends Command
             $tree ?: $this->option('tree')
         );
 
-        $installer->setRepository($this->laravel['modules']);
+        $installer->setRepository($this->modules);
 
         $installer->setConsole($this);
 
@@ -115,34 +112,5 @@ class InstallCommand extends Command
                 'module' => $installer->getModuleName(),
             ]);
         }
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['name', InputArgument::OPTIONAL, 'The name of module will be installed.'],
-            ['version', InputArgument::OPTIONAL, 'The version of module will be installed.'],
-        ];
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['timeout', null, InputOption::VALUE_OPTIONAL, 'The process timeout.', null],
-            ['path', null, InputOption::VALUE_OPTIONAL, 'The installation path.', null],
-            ['type', null, InputOption::VALUE_OPTIONAL, 'The type of installation.', null],
-            ['tree', null, InputOption::VALUE_NONE, 'Install the module as a git subtree', null],
-            ['no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.', null],
-        ];
     }
 }

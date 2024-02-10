@@ -2,21 +2,29 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Migrations\Migrator;
+use Illuminate\Console\ConfirmableTrait;
 use Laraneat\Modules\Module;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
 
-class MigrateRollbackCommand extends Command
+class MigrateRollbackCommand extends BaseCommand
 {
+    use ConfirmableTrait;
+
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:migrate-rollback';
+    protected $signature = 'module:migrate:rollback
+                            {module?* : Module name(s)}
+                            {--d|direction=asc : The direction of ordering (asc/desc)}
+                            {--subpath=* : The subpath(s) to the migrations files to be executed}
+                            {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
+                            {--database= : The database connection to use}
+                            {--force : Force the operation to run when in production}
+                            {--pretend : Dump the SQL queries that would be run}
+                            {--step= : The number of migrations to be reverted}
+                            {--batch= : The batch of migrations (identified by their batch number) to be reverted}';
 
     /**
      * The console command description.
@@ -30,79 +38,45 @@ class MigrateRollbackCommand extends Command
      */
     public function handle(): int
     {
-        $name = $this->argument('module');
-
-        if (!empty($name)) {
-            $this->rollback($name);
-
-            return self::SUCCESS;
+        if (! $this->confirmToProceed()) {
+            return self::FAILURE;
         }
 
-        foreach (Modules::getOrdered($this->option('direction')) as $module) {
-            $this->line('Running for module: <info>' . $module->getName() . '</info>');
+        /** @var array<Module|string> $modulesToHandle */
+        $modulesToHandle = $this->argument('module') ?: $this->modules->getOrdered($this->option('direction') ?: 'asc');
 
+        foreach($modulesToHandle as $module) {
             $this->rollback($module);
         }
 
         return self::SUCCESS;
+
     }
 
     /**
      * Rollback migration from the specified module.
-     *
-     * @param Module|string $module
      */
-    public function rollback($module): void
+    protected function rollback(Module|string $moduleOrName): void
     {
-        if (is_string($module)) {
-            $module = Modules::findOrFail($module);
-        }
+        $module = $this->findModuleOrFail($moduleOrName);
 
-        $migrator = new Migrator($module, $this->getLaravel());
+        $this->line('Running for module: <info>' . $module->getName() . '</info>');
 
-        $database = $this->option('database');
+        $moduleMigrationPath = $module->getExtraPath(GeneratorHelper::component('migration')->getPath());
 
-        if (!empty($database)) {
-            $migrator->setDatabase($database);
-        }
+        $paths = $this->option('subpath')
+            ? collect($this->option('subpath'))
+                ->map(static fn (string $subPath) => $moduleMigrationPath . "/" .$subPath)->all()
+            : [$moduleMigrationPath];
 
-        $migrated = $migrator->rollback();
-
-        if (count($migrated)) {
-            foreach ($migrated as $migration) {
-                $this->line("Rollback: <info>{$migration}</info>");
-            }
-
-            return;
-        }
-
-        $this->comment('Nothing to rollback.');
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['direction', 'd', InputOption::VALUE_OPTIONAL, 'The direction of ordering.', 'desc'],
-            ['database', null, InputOption::VALUE_OPTIONAL, 'The database connection to use.'],
-            ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production.'],
-            ['pretend', null, InputOption::VALUE_NONE, 'Dump the SQL queries that would be run.'],
-        ];
+        $this->call('migrate:rollback', [
+            '--path' => $paths,
+            '--database' => $this->option('database'),
+            '--step' => $this->option('step') ?: null,
+            '--batch' => $this->option('batch') ?: null,
+            '--realpath' => (bool) $this->option('realpath'),
+            '--pretend' => (bool) $this->option('pretend'),
+            '--force' => true,
+        ]);
     }
 }

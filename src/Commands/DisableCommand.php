@@ -2,80 +2,52 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
-use Symfony\Component\Console\Input\InputArgument;
+use Laraneat\Modules\Module;
 
-class DisableCommand extends Command
+class DisableCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The console command signature.
      *
      * @var string
      */
-    protected $name = 'module:disable';
+    protected $signature = 'module:disable
+                            {module?* : Module name(s)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Disable the specified module.';
+    protected $description = 'Disable the specified module(s) or all modules.';
 
     /**
      * Execute the console command.
      */
     public function handle(): int
     {
-        /**
-         * check if user entered an argument
-         */
-        if ($this->argument('module') === null) {
-            $this->disableAll();
-        }
+        $this->components->info('Disabling module ...');
 
-        $module = Modules::findOrFail($this->argument('module'));
+        /** @var array<Module|string> $modulesToHandle */
+        $modulesToHandle = $this->argument('module') ?: $this->modules->all();
 
-        if ($module->isEnabled()) {
-            $module->disable();
-
-            $this->info("Module [{$module}] disabled successful.");
-        } else {
-            $this->comment("Module [{$module}] has already disabled.");
+        foreach($modulesToHandle as $module) {
+            $this->disable($module);
         }
 
         return self::SUCCESS;
     }
 
-    /**
-     * disableAll
-     *
-     * @return void
-     */
-    public function disableAll(): void
+    protected function disable(Module|string $moduleOrName): void
     {
-        $modules = Modules::all();
+        $module = $this->findModuleOrFail($moduleOrName);
 
-        foreach ($modules as $module) {
-            if ($module->isEnabled()) {
-                $module->disable();
+        if ($module->isEnabled()) {
+            $module->disable();
 
-                $this->info("Module [{$module}] disabled successful.");
-            } else {
-                $this->comment("Module [{$module}] has already disabled.");
-            }
+            $this->components->info("Module <info>{$module->getName()}</info> disabled successful.");
+        } else {
+            $this->components->warn("Module <info>{$module->getName()}</info> has already disabled.");
         }
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::OPTIONAL, 'Module name.'],
-        ];
     }
 }

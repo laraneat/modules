@@ -2,82 +2,53 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
-use Symfony\Component\Console\Input\InputArgument;
+use Laraneat\Modules\Module;
 
-class EnableCommand extends Command
+class EnableCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:enable';
+    protected $signature = 'module:enable
+                            {module?* : Module name(s)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Enable the specified module.';
+    protected $description = 'Enable the specified module(s) or all modules.';
 
     /**
      * Execute the console command.
      */
     public function handle(): int
     {
-        /**
-         * check if user entred an argument
-         */
-        if ($this->argument('module') === null) {
-            $this->enableAll();
+        $this->components->info('Enabling module ...');
 
-            return self::SUCCESS;
-        }
+        /** @var array<Module|string> $modulesToHandle */
+        $modulesToHandle = $this->argument('module') ?: $this->modules->allDisabled();
 
-        $module = Modules::findOrFail($this->argument('module'));
-
-        if ($module->isDisabled()) {
-            $module->enable();
-
-            $this->info("Module [{$module}] enabled successful.");
-        } else {
-            $this->comment("Module [{$module}] has already enabled.");
+        foreach($modulesToHandle as $module) {
+            $this->enable($module);
         }
 
         return self::SUCCESS;
     }
 
-    /**
-     * enableAll
-     *
-     * @return void
-     */
-    public function enableAll()
+    public function enable(Module|string $moduleOrName): void
     {
-        $modules = Modules::all();
+        $module = $this->findModuleOrFail($moduleOrName);
 
-        foreach ($modules as $module) {
-            if ($module->isDisabled()) {
-                $module->enable();
+        if ($module->isDisabled()) {
+            $module->enable();
 
-                $this->info("Module [{$module}] enabled successful.");
-            } else {
-                $this->comment("Module [{$module}] has already enabled.");
-            }
+            $this->components->info("Module <info>{$module->getName()}</info> enabled successful.");
+        }else {
+            $this->components->warn("Module <info>{$module->getName()}</info> has already enabled.");
         }
-    }
 
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::OPTIONAL, 'Module name.'],
-        ];
     }
 }

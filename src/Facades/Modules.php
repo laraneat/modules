@@ -32,7 +32,7 @@ use Symfony\Component\Process\Process;
  * @method static void disable(string $moduleName)
  * @method static bool delete(string $moduleName)
  * @method static void update(string $moduleName)
- * @method static Process install(string $name, ?string $version = 'dev-master', ?string $type = 'composer', bool $subtree = false)
+ * @method static Process install(string $name, ?string $version = 'latest', ?string $type = 'composer', bool $subtree = false)
  * @method static string getUsedStoragePath()
  * @method static void setUsed(string $moduleName)
  * @method static void forgetUsed()
@@ -44,11 +44,11 @@ use Symfony\Component\Process\Process;
  * @method static string getModuleNamespace(Module|string $module, ?string $extraNamespace = null)
  * @method static array<int, string> getScanPaths()
  * @method static void addScanPath(string $path)
- * @method static string assetPath(string $moduleName)
- * @method static mixed config(string $key, mixed $default = null)
  * @method static Filesystem getFilesystem()
  * @method static string getAssetsPath()
+ * @method static string assetPath(string $moduleName)
  * @method static string asset(string $asset)
+ * @method static mixed config(string $key, mixed $default = null)
  *
  * @see \Laraneat\Modules\FileRepository
  */

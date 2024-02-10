@@ -2,19 +2,16 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
-use Symfony\Component\Console\Input\InputArgument;
 
-class UseCommand extends Command
+class UseCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:use';
+    protected $signature = 'module:use {module : The name of module will be used}';
 
     /**
      * The console command description.
@@ -30,28 +27,16 @@ class UseCommand extends Command
     {
         $module = Str::studly($this->argument('module'));
 
-        if (!Modules::has($module)) {
-            $this->error("Module [{$module}] does not exists.");
+        if (!$this->modules->has($module)) {
+            $this->error("Module <info>$module</info> does not exists.");
 
             return self::FAILURE;
         }
 
-        Modules::setUsed($module);
+        $this->modules->setUsed($module);
 
-        $this->info("Module [{$module}] used successfully.");
+        $this->components->info("Module <info>$module</info> used successfully.");
 
         return self::SUCCESS;
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::REQUIRED, 'The name of module will be used.'],
-        ];
     }
 }

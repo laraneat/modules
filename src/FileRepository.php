@@ -74,7 +74,7 @@ class FileRepository implements RepositoryInterface, Countable
         $this->cache = $app['cache'];
         $this->activator = $app[ActivatorInterface::class];
 
-        $scanPaths = $this->config('scan_paths', []);
+        $scanPaths = $this->config('paths.modules', []);
         $this->scanPaths = is_array($scanPaths)
             ? array_map([$this, 'normalizeScanPath'], $scanPaths)
             : [];
@@ -391,7 +391,7 @@ class FileRepository implements RepositoryInterface, Countable
     /**
      * Install the specified module.
      */
-    public function install(string $name, ?string $version = 'dev-master', ?string $type = 'composer', bool $subtree = false): Process
+    public function install(string $name, ?string $version = 'latest', ?string $type = 'composer', bool $subtree = false): Process
     {
         $installer = new Installer($name, $version, $type, $subtree);
 
@@ -537,22 +537,6 @@ class FileRepository implements RepositoryInterface, Countable
     }
 
     /**
-     * Get asset path for a specific module.
-     */
-    public function assetPath(string $moduleName): string
-    {
-        return rtrim($this->config('assets_path'), '/') . '/' . $moduleName;
-    }
-
-    /**
-     * Get a specific config data from a configuration file.
-     */
-    public function config(string $key, mixed $default = null): mixed
-    {
-        return $this->config->get('modules.' . $key, $default);
-    }
-
-    /**
      * Get laravel filesystem instance.
      */
     public function getFilesystem(): Filesystem
@@ -565,7 +549,15 @@ class FileRepository implements RepositoryInterface, Countable
      */
     public function getAssetsPath(): string
     {
-        return $this->config('assets_path');
+        return $this->config('paths.assets');
+    }
+
+    /**
+     * Get asset path for a specific module.
+     */
+    public function assetPath(string $moduleName): string
+    {
+        return rtrim($this->config('paths.assets'), '/') . '/' . $moduleName;
     }
 
     /**
@@ -585,6 +577,14 @@ class FileRepository implements RepositoryInterface, Countable
         $url = $this->url->asset($baseUrl . "/$name/" . $url);
 
         return str_replace(['http://', 'https://'], '//', $url);
+    }
+
+    /**
+     * Get a specific config data from a configuration file.
+     */
+    public function config(string $key, mixed $default = null): mixed
+    {
+        return $this->config->get('modules.' . $key, $default);
     }
 
     protected function normalizeScanPath(string $path): string

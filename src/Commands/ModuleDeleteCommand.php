@@ -2,28 +2,40 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
-use Symfony\Component\Console\Input\InputArgument;
+use Laraneat\Modules\Exceptions\ModuleNotFoundException;
 
-class ModuleDeleteCommand extends Command
+class ModuleDeleteCommand extends BaseCommand
 {
-    protected $name = 'module:delete';
-    protected $description = 'Remove a module from the application';
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'module:delete
+                            {module?* : Module name(s) to delete}';
 
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Delete the specified module(s)';
+
+    /**
+     * @throws ModuleNotFoundException
+     */
     public function handle(): int
     {
-        Modules::delete($this->argument('module'));
+        $this->components->info('Deleting module ...');
 
-        $this->info("Module {$this->argument('module')} has been deleted.");
+        /** @var array<string> $moduleNamesToDelete */
+        $moduleNamesToDelete = $this->argument('module');
+
+        foreach($moduleNamesToDelete as $moduleName) {
+            $this->modules->delete($moduleName);
+            $this->components->info("Module $moduleName has been deleted.");
+        }
 
         return self::SUCCESS;
-    }
-
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::REQUIRED, 'The name of module to delete.'],
-        ];
     }
 }

@@ -2,17 +2,15 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
 
-class UnUseCommand extends Command
+class UnUseCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:unuse';
+    protected $signature = 'module:unuse';
 
     /**
      * The console command description.
@@ -26,9 +24,9 @@ class UnUseCommand extends Command
      */
     public function handle(): int
     {
-        Modules::forgetUsed();
+        $this->modules->forgetUsed();
 
-        $this->info('Previous module used successfully forgotten.');
+        $this->components->info('Previous module used successfully forgotten.');
 
         return self::SUCCESS;
     }

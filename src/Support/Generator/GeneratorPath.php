@@ -11,10 +11,7 @@ class GeneratorPath
     private bool $generate;
     private bool $gitkeep;
 
-    /**
-     * @param array|bool|string $config
-     */
-    public function __construct($config)
+    public function __construct(bool|array|string $config)
     {
         if (!is_array($config)) {
             $config = [

@@ -2,19 +2,18 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
-use Symfony\Component\Console\Input\InputOption;
 
-class ListCommand extends Command
+class ListCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:list';
+    protected $signature = 'module:list
+                            {--o|only= : Types of modules will be displayed (enabled/disabled)}
+                            {--d|direction=asc : The direction of ordering (asc/desc)}';
 
     /**
      * The console command description.
@@ -28,62 +27,32 @@ class ListCommand extends Command
      */
     public function handle(): int
     {
-        $this->table(['Name', 'Status', 'Priority', 'Path'], $this->getRows());
+        $this->components->twoColumnDetail('<fg=gray>Status / Name</>', '<fg=gray>Path / priority</>');
+        collect($this->getModules())->each(function (Module $module) {
+            $row = [
+                $module->isEnabled() ? '<fg=green>Enabled</>' : '<fg=red>Disabled</>',
+                $module->getName(),
+                $module->getPath(),
+                $module->getPriority(),
+            ];
+            $this->components->twoColumnDetail("[{$row[0]}] {$row[1]}", "{$row[2]} [{$row[3]}]");
+        });
 
         return self::SUCCESS;
     }
 
     /**
-     * Get table rows.
-     *
-     * @return array
+     * @return array<string, Module>
      */
-    public function getRows(): array
+    protected function getModules(): array
     {
-        $rows = [];
+        /** @var string $only */
+        $only = $this->option('only');
 
-        foreach ($this->getModules() as $module) {
-            $rows[] = [
-                $module->getName(),
-                $module->isEnabled() ? 'Enabled' : 'Disabled',
-                $module->get('priority'),
-                $module->getPath(),
-            ];
-        }
-
-        return $rows;
-    }
-
-    /**
-     * @return Module[]
-     */
-    public function getModules(): array
-    {
-        switch ($this->option('only')) {
-            case 'enabled':
-                return Modules::getByStatus(true);
-
-            case 'disabled':
-                return Modules::getByStatus(false);
-
-            case 'priority':
-                return Modules::getOrdered($this->option('direction'));
-
-            default:
-                return Modules::all();
-        }
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['only', 'o', InputOption::VALUE_OPTIONAL, 'Types of modules will be displayed.', null],
-            ['direction', 'd', InputOption::VALUE_OPTIONAL, 'The direction of ordering.', 'asc'],
-        ];
+        return match ($only) {
+            'enabled' => $this->modules->getByStatus(true),
+            'disabled' => $this->modules->getByStatus(false),
+            default => $this->modules->all(),
+        };
     }
 }

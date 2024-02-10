@@ -10,9 +10,10 @@ class ConsoleServiceProvider extends ServiceProvider implements DeferrableProvid
 {
     /**
      * The available commands
-     * @var array
+     *
+     * @var array<int, class-string>
      */
-    protected $commands = [
+    protected array $commands = [
         Commands\CacheClearCommand::class,
         Commands\CacheCommand::class,
         Commands\DisableCommand::class,
@@ -25,9 +26,10 @@ class ConsoleServiceProvider extends ServiceProvider implements DeferrableProvid
         Commands\MigrateResetCommand::class,
         Commands\MigrateRollbackCommand::class,
         Commands\MigrateStatusCommand::class,
+        Commands\ModelPruneCommand::class,
+        Commands\ModelShowCommand::class,
         Commands\ModuleDeleteCommand::class,
         Commands\SeedCommand::class,
-        Commands\SetupCommand::class,
         Commands\UnUseCommand::class,
         Commands\UpdateCommand::class,
         Commands\UseCommand::class,
@@ -69,7 +71,7 @@ class ConsoleServiceProvider extends ServiceProvider implements DeferrableProvid
     /**
      * Get the services provided by the provider.
      *
-     * @return array<int, string>
+     * @return array<int, class-string>
      */
     public function provides(): array
     {

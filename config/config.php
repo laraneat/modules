@@ -3,29 +3,31 @@
 use Laraneat\Modules\Activators\FileActivator;
 
 return [
+    'paths' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Modules Paths
+        |--------------------------------------------------------------------------
+        |
+        | Here you define which folders will be scanned for modules.
+        | Path glob patters are also supported.
+        |
+        */
+        'modules' => [
+            base_path('app/Modules'),
+        ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Scan Paths
-    |--------------------------------------------------------------------------
-    |
-    | Here you define which folders will be scanned for modules.
-    | Path glob patters are also supported.
-    |
-    */
-    'scan_paths' => [
-        base_path('app/Modules'),
+        /*
+        |--------------------------------------------------------------------------
+        | Modules assets path
+        |--------------------------------------------------------------------------
+        |
+        | When you run the 'module:publish' command, where do you publish the
+        | the asset files?
+        |
+        */
+        'assets' => public_path('modules'),
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | The path to assets
-    |--------------------------------------------------------------------------
-    |
-    | This path is used to store public assets of modules
-    |
-    */
-    'assets_path' => public_path('modules'),
 
     'generator' => [
         /*
@@ -153,7 +155,7 @@ return [
                 'generate' => false
             ],
             'lang' => [
-                'path' => 'Resources/lang',
+                'path' => 'lang',
                 'generate' => false
             ],
             'listener' => [
@@ -217,7 +219,7 @@ return [
                 'generate' => false
             ],
             'view' => [
-                'path' => 'Resources/views',
+                'path' => 'resources/views',
                 'generate' => false
             ],
             'unit-test' => [

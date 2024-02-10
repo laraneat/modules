@@ -2,21 +2,19 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Traits\ConsoleHelpersTrait;
-use Symfony\Component\Console\Input\InputArgument;
+use Laraneat\Modules\Module;
+use Laraneat\Modules\Traits\ModuleCommandTrait;
 
-class UpdateCommand extends Command
+class UpdateCommand extends BaseCommand
 {
-    use ConsoleHelpersTrait;
+    use ModuleCommandTrait;
 
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:update';
+    protected $signature = 'module:update';
 
     /**
      * The console command description.
@@ -30,34 +28,48 @@ class UpdateCommand extends Command
      */
     public function handle(): int
     {
-        $name = $this->argument('module');
+        $this->components->info('Updating module ...');
 
-        if ($name) {
+        if ($name = $this->argument('module')) {
             $this->updateModule($name);
 
             return self::SUCCESS;
         }
 
-        foreach (Modules::getOrdered() as $module) {
-            $this->updateModule($module->getName());
-        }
+        $this->updateAllModule();
 
         return self::SUCCESS;
     }
 
-    protected function updateModule(string $moduleName): void
+
+    protected function updateAllModule(): void
     {
-        $this->line('Running for module: <info>' . $moduleName . '</info>');
+        $modules = $this->modules->getOrdered();
 
-        Modules::update($moduleName);
+        foreach ($modules as $module) {
+            $this->updateModule($module);
+        }
 
-        $this->info("Module [{$moduleName}] updated successfully.");
+    }
+
+    protected function updateModule(Module|string $module): void
+    {
+
+        if ($name instanceof Module) {
+            $module = $name;
+        }else {
+            $module = $this->modules->findOrFail($name);
+        }
+
+        $this->components->task("Updating {$module->getName()} module", function () use ($module) {
+            $this->modules->update($module);
+        });
+        $this->modules->update($name);
+
     }
 
     /**
      * Get the console command arguments.
-     *
-     * @return array
      */
     protected function getArguments(): array
     {

@@ -3,28 +3,23 @@
 namespace Laraneat\Modules\Commands;
 
 use ErrorException;
-use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
+use Laraneat\Modules\Contracts\RepositoryInterface;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Generator\GeneratorHelper;
-use Laraneat\Modules\Traits\ConsoleHelpersTrait;
+use Laraneat\Modules\Traits\ModuleCommandTrait;
 use RuntimeException;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 
-class SeedCommand extends Command
+class SeedCommand extends BaseCommand
 {
-    use ConsoleHelpersTrait;
+    use ModuleCommandTrait;
 
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:seed';
+    protected $signature = 'module:seed';
 
     /**
      * The console command description.
@@ -43,40 +38,55 @@ class SeedCommand extends Command
                 $name = Str::studly($name);
                 $this->moduleSeed($this->getModuleByName($name));
             } else {
-                $modules = Modules::getOrdered();
+                $modules = $this->getModuleRepository()->getOrdered();
                 array_walk($modules, [$this, 'moduleSeed']);
-                $this->info('All modules seeded.');
+                $this->components->info('All modules seeded.');
             }
         } catch (\Error $e) {
             $e = new ErrorException($e->getMessage(), $e->getCode(), 1, $e->getFile(), $e->getLine(), $e);
             $this->reportException($e);
             $this->renderException($this->getOutput(), $e);
 
-            return self::FAILURE;
+            return E_ERROR;
         } catch (\Exception $e) {
             $this->reportException($e);
             $this->renderException($this->getOutput(), $e);
 
-            return self::FAILURE;
+            return E_ERROR;
         }
 
         return self::SUCCESS;
     }
 
     /**
-     * @param string $moduleName
+     * @throws RuntimeException
+     * @return RepositoryInterface
+     */
+    public function getModuleRepository(): RepositoryInterface
+    {
+        $modules = $this->laravel['modules'];
+        if (!$modules instanceof RepositoryInterface) {
+            throw new RuntimeException('Module repository not found!');
+        }
+
+        return $modules;
+    }
+
+    /**
+     * @param $name
      *
      * @throws RuntimeException
      *
      * @return Module
      */
-    public function getModuleByName(string $moduleName): Module
+    public function getModuleByName($name)
     {
-        if (!Modules::has($moduleName)) {
-            throw new RuntimeException("Module [$moduleName] does not exists.");
+        $modules = $this->getModuleRepository();
+        if ($modules->has($name) === false) {
+            throw new RuntimeException("Module [$name] does not exists.");
         }
 
-        return Modules::find($moduleName);
+        return $modules->find($name);
     }
 
     /**
@@ -84,7 +94,7 @@ class SeedCommand extends Command
      *
      * @return void
      */
-    public function moduleSeed(Module $module): void
+    public function moduleSeed(Module $module)
     {
         $seeders = [];
         $name = $module->getName();
@@ -112,7 +122,7 @@ class SeedCommand extends Command
 
         if (count($seeders) > 0) {
             array_walk($seeders, [$this, 'dbSeed']);
-            $this->info("Module [$name] seeded.");
+            $this->components->info("Module [$name] seeded.");
         }
     }
 
@@ -121,7 +131,7 @@ class SeedCommand extends Command
      *
      * @param string $className
      */
-    protected function dbSeed(string $className): void
+    protected function dbSeed($className)
     {
         if ($option = $this->option('class')) {
             $params['--class'] = Str::finish(substr($className, 0, strrpos($className, '\\')), '\\') . $option;
@@ -147,12 +157,12 @@ class SeedCommand extends Command
      *
      * @return string
      */
-    public function getSeederName(string $name): string
+    public function getSeederName($name)
     {
         $name = Str::studly($name);
 
-        $namespace = Modules::config('namespace');
-        $config = GeneratorHelper::component('seeder');
+        $namespace = $this->modules->config('namespace');
+        $config = GenerateConfigReader::read('seeder');
         $seederPath = str_replace('/', '\\', $config->getPath());
 
         return $namespace . '\\' . $name . '\\' . $seederPath . '\\' . $name . 'DatabaseSeeder';
@@ -165,15 +175,15 @@ class SeedCommand extends Command
      *
      * @return array $foundModules array containing namespace paths
      */
-    public function getSeederNames(string $name): array
+    public function getSeederNames($name)
     {
         $name = Str::studly($name);
 
-        $seederPath = GeneratorHelper::component('seeder');
+        $seederPath = GenerateConfigReader::read('seeder');
         $seederPath = str_replace('/', '\\', $seederPath->getPath());
 
         $foundModules = [];
-        foreach (Modules::config('scan_paths') as $path) {
+        foreach ($this->modules->config('scan.paths') as $path) {
             $namespace = array_slice(explode('/', $path), -1)[0];
             $foundModules[] = $namespace . '\\' . $name . '\\' . $seederPath . '\\' . $name . 'DatabaseSeeder';
         }
@@ -184,11 +194,11 @@ class SeedCommand extends Command
     /**
      * Report the exception to the exception handler.
      *
-     * @param OutputInterface $output
-     * @param \Exception $e
+     * @param  \Symfony\Component\Console\Output\OutputInterface  $output
+     * @param  \Throwable  $e
      * @return void
      */
-    protected function renderException(OutputInterface $output, \Exception $e)
+    protected function renderException($output, \Exception $e)
     {
         $this->laravel[ExceptionHandler::class]->renderForConsole($output, $e);
     }
@@ -196,7 +206,7 @@ class SeedCommand extends Command
     /**
      * Report the exception to the exception handler.
      *
-     * @param \Exception $e
+     * @param  \Throwable  $e
      * @return void
      */
     protected function reportException(\Exception $e)
@@ -206,8 +216,6 @@ class SeedCommand extends Command
 
     /**
      * Get the console command arguments.
-     *
-     * @return array
      */
     protected function getArguments(): array
     {
@@ -218,8 +226,6 @@ class SeedCommand extends Command
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {

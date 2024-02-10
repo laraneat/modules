@@ -2,64 +2,50 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
-use Symfony\Component\Console\Input\InputArgument;
+use Laraneat\Modules\Module;
 
-class DumpCommand extends Command
+class DumpCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:dump';
+    protected $signature = 'module:dump
+                            {module?* : Module name(s)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Dump-autoload the specified module or for all modules.';
+    protected $description = 'Dump-autoload the specified module(s) or for all module.';
 
     /**
      * Execute the console command.
      */
     public function handle(): int
     {
-        $this->info('Generating optimized autoload modules.');
+        $this->components->info('Generating optimized autoload modules.');
 
-        if ($module = $this->argument('module')) {
+        /** @var array<Module|string> $modulesToHandle */
+        $modulesToHandle = $this->argument('module') ?: $this->modules->all();
+
+        foreach($modulesToHandle as $module) {
             $this->dump($module);
-        } else {
-            foreach (Modules::all() as $module) {
-                $this->dump($module->getStudlyName());
-            }
         }
 
         return self::SUCCESS;
     }
 
-    public function dump(string $moduleName): void
+    protected function dump(Module|string $moduleOrName): void
     {
-        $module = Modules::findOrFail($moduleName);
+        $module = $this->findModuleOrFail($moduleOrName);
 
-        $this->line("<comment>Running for module</comment>: {$moduleName}");
+        $this->components->task("$module", function () use ($module) {
+            chdir($module->getPath());
 
-        chdir($module->getPath());
-
-        passthru('composer dump -o -n -q');
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::OPTIONAL, 'Module name.'],
-        ];
+            passthru('composer dump -o -n -q');
+        });
     }
 }
