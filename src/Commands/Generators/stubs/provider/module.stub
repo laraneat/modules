@@ -45,13 +45,13 @@ class {{ class }} extends ServiceProvider
     public function registerTranslations(): void
     {
         $sourcePath = module_path($this->moduleName, '{{ langPath }}');
-        $langPath = resource_path('lang/modules/' . $this->moduleKey);
+        $langPath = lang_path('modules/' .$this->moduleKey);
 
         $this->loadTranslationsFrom($sourcePath, $this->moduleKey);
 
         $this->publishes([
             $sourcePath => $langPath,
-        ], 'translations');
+        ], $this->moduleKey . '-translations');
     }
 
     /**
@@ -69,7 +69,7 @@ class {{ class }} extends ServiceProvider
 
         $this->publishes([
             $sourcePath => $viewsPath
-        ], 'views');
+        ], $this->moduleKey . '-views');
     }
 
     /**
@@ -84,7 +84,7 @@ class {{ class }} extends ServiceProvider
 
         $this->publishes([
             $sourcePath => $migrationsPath
-        ], 'migrations');
+        ], $this->moduleKey . '-migrations');
     }
 
     /**

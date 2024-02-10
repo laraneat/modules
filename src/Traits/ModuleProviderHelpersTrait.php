@@ -19,10 +19,6 @@ trait ModuleProviderHelpersTrait
 {
     /**
      * Get publishable view paths
-     *
-     * @param string $moduleKey
-     *
-     * @return array
      */
     protected function getPublishableViewPaths(string $moduleKey): array
     {
@@ -39,9 +35,6 @@ trait ModuleProviderHelpersTrait
 
     /**
      * Register all of the commands in the given directory.
-     *
-     * @param array|string $paths
-     * @return void
      *
      * @throws ReflectionException
      */
@@ -75,10 +68,6 @@ trait ModuleProviderHelpersTrait
 
     /**
      * Extract the command class name from the given file path.
-     *
-     * @param  \SplFileInfo  $file
-     * @param  string  $namespace
-     * @return string
      */
     protected function commandClassFromFile(SplFileInfo $file, string $namespace): string
     {
@@ -91,10 +80,6 @@ trait ModuleProviderHelpersTrait
 
     /**
      * Load files from directory
-     *
-     * @param string $directory
-     *
-     * @return void
      */
     protected function loadFiles(string $directory): void
     {
@@ -109,10 +94,6 @@ trait ModuleProviderHelpersTrait
 
     /**
      * Load all files from directory
-     *
-     * @param string $directory
-     *
-     * @return void
      */
     protected function loadAllFiles(string $directory): void
     {
