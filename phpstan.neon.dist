@@ -1,8 +1,13 @@
+includes:
+    - phpstan-baseline.neon
+    - vendor/larastan/larastan/extension.neon
+
 parameters:
-  level: 6
-  checkMissingIterableValueType: false
-  checkGenericClassInNonGenericObjectType: false
-  paths:
-    - src
-  ignoreErrors:
-    - '#Parameter .+? of method Illuminate\\Support\\Collection<.+?>::.+?\(\) expects .+? given#'
+    level: 5
+    paths:
+        - src
+    tmpDir: build/phpstan
+    reportUnmatchedIgnoredErrors: true
+    checkOctaneCompatibility: true
+    checkModelProperties: true
+    checkMissingIterableValueType: true
