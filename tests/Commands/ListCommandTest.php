@@ -1,34 +1,39 @@
 <?php
 
-namespace Laraneat\Modules\Tests\Commands;
+beforeEach(function() {
+    $this->setVendorModules([
+        realpath(__DIR__ . '/../fixtures/stubs/modules/valid/vendor/laraneat/foo'),
+        realpath(__DIR__ . '/../fixtures/stubs/modules/valid/vendor/laraneat/bar'),
+    ]);
+    $this->setAppModules([
+        realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Article'),
+        realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Author'),
+    ]);
+});
 
-use Laraneat\Modules\Contracts\RepositoryInterface;
-use Laraneat\Modules\Tests\BaseTestCase;
+it('outputs a table of app modules', function () {
+    $this->artisan('module:list --app')
+        ->expectsTable(['Package Name', 'Namespace', 'Path'], [
+            ['laraneat/article', 'App\\Modules\\Article', realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Article')],
+            ['laraneat/author', 'App\\Modules\\Author', realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Author')],
+        ])
+        ->assertSuccessful();
+});
 
-/**
- * @group command
- */
-class ListCommandTest extends BaseTestCase
-{
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->artisan('module:make', ['name' => 'Article']);
-    }
-
-    protected function tearDown(): void
-    {
-        $this->app[RepositoryInterface::class]->delete('Article');
-        parent::tearDown();
-    }
-
-    /** @test */
-    public function it_can_list_modules()
-    {
-        $code = $this->artisan('module:list');
-
-        // We just want to make sure nothing throws an exception inside the list command
-        $this->assertTrue(true);
-        $this->assertSame(0, $code);
-    }
-}
+//it('outputs a table of vendor modules', function () {
+//    $this->mock(ModulesRepository::class, function(MockInterface $mock) {
+//        $mock->shouldReceive('buildVendorModulesManifest')->once();
+//    });
+//    $this->artisan('module:list')
+//        ->expectsOutputToContain('Vendor modules cached!')
+//        ->assertSuccessful();
+//});
+//
+//it('outputs a table of all modules', function () {
+//    $this->mock(ModulesRepository::class, function(MockInterface $mock) {
+//        $mock->shouldReceive('buildVendorModulesManifest')->once();
+//    });
+//    $this->artisan('module:list')
+//        ->expectsOutputToContain('Vendor modules cached!')
+//        ->assertSuccessful();
+//});

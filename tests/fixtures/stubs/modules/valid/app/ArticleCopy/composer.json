@@ -1,0 +1,28 @@
+{
+    "name": "laraneat/article",
+    "description": "Article module for testing",
+    "authors": [
+        {
+            "name": "Salavat Salakhutdinov",
+            "email": "salahutdinov.salavat@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\Modules\\Article\\": ""
+        }
+    },
+    "extra": {
+        "laraneat": {
+            "module": {
+                "name": "Article",
+                "namespace": "App\\Modules\\Article\\",
+                "providers": [
+                    "App\\Modules\\Article\\Providers\\ArticleServiceProvider",
+                    "App\\Modules\\Article\\Providers\\RouteServiceProvider"
+                ],
+                "aliases": []
+            }
+        }
+    }
+}

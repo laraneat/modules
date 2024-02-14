@@ -1,0 +1,28 @@
+{
+    "name": "laraneat/author",
+    "description": "Author module for testing",
+    "authors": [
+        {
+            "name": "Salavat Salakhutdinov",
+            "email": "salahutdinov.salavat@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\Modules\\Author\\": ""
+        }
+    },
+    "extra": {
+        "laraneat": {
+            "module": {
+                "name": "Author",
+                "namespace": "App\\Modules\\Author\\",
+                "providers": [
+                    "App\\Modules\\Author\\Providers\\AuthorServiceProvider",
+                    "App\\Modules\\Author\\Providers\\RouteServiceProvider"
+                ],
+                "aliases": []
+            }
+        }
+    }
+}
