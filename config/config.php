@@ -1,7 +1,5 @@
 <?php
 
-use Laraneat\Modules\Activators\FileActivator;
-
 return [
     'paths' => [
         /*
@@ -11,22 +9,12 @@ return [
         |
         | Here you define which folders will be scanned for modules.
         | Path glob patters are also supported.
+        | Do not include the /vendor folder in this list, it is scanned automatically.
         |
         */
         'modules' => [
             base_path('app/Modules'),
         ],
-
-        /*
-        |--------------------------------------------------------------------------
-        | Modules assets path
-        |--------------------------------------------------------------------------
-        |
-        | When you run the 'module:publish' command, where do you publish the
-        | the asset files?
-        |
-        */
-        'assets' => public_path('modules'),
     ],
 
     'generator' => [
@@ -238,7 +226,7 @@ return [
     |
     */
     'composer' => [
-        'vendor' => 'example',
+        'vendor' => 'app',
         'author' => [
             'name' => 'Example name',
             'email' => 'example@example.com',
@@ -251,48 +239,10 @@ return [
     | Caching
     |--------------------------------------------------------------------------
     |
-    | Here is the config for setting up caching feature for scanned modules.
+    | Here is the config for setting up caching feature for scanned app modules.
     |
     */
     'cache' => [
         'enabled' => env('APP_ENV', 'production') === 'production',
-        'key' => 'laraneat.modules',
-        'lifetime' => null, // store cache indefinitely
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Choose what laraneat/modules will register as custom namespaces.
-    | Setting one to false will require you to register that part
-    | in your own Service Provider class.
-    |--------------------------------------------------------------------------
-    */
-    'register' => [
-        /**
-         * load files on boot or register method
-         *
-         * @example boot|register
-         */
-        'files' => 'register',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activators
-    |--------------------------------------------------------------------------
-    |
-    | You can define new types of activators here, file, database etc. The only
-    | required parameter is 'class'.
-    | The file activator will store the activation status in storage/installed_modules
-    */
-    'activators' => [
-        'file' => [
-            'class' => FileActivator::class,
-            'statuses-file' => base_path('modules_statuses.json'),
-            'cache-key' => 'laraneat.activator.installed',
-            'cache-lifetime' => null, // store cache indefinitely
-        ],
-    ],
-
-    'activator' => 'file',
 ];
