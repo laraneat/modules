@@ -2,21 +2,17 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Commands\BaseCommand;
 use Laraneat\Modules\Exceptions\FileAlreadyExistException;
 use Laraneat\Modules\Generators\FileGenerator;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
-use Laraneat\Modules\Traits\ConsoleHelpersTrait;
 use LogicException;
-use Symfony\Component\Console\Input\InputArgument;
 
-abstract class ComponentGeneratorCommand extends Command
+abstract class ComponentGeneratorCommand extends BaseCommand
 {
-    use ConsoleHelpersTrait;
-
     /**
      * Reserved names that cannot be used for generation.
      *
@@ -109,8 +105,6 @@ abstract class ComponentGeneratorCommand extends Command
 
     /**
      * Get the console command arguments.
-     *
-     * @return array
      */
     protected function getArguments(): array
     {
@@ -157,7 +151,7 @@ abstract class ComponentGeneratorCommand extends Command
             File::ensureDirectoryExists(dirname($path));
             (new FileGenerator($path, $contents))->withFileOverwrite($overwriteFile)->generate();
 
-            $this->info("Created: `$path`");
+            $this->components->info("Created: `$path`");
         } catch (FileAlreadyExistException $e) {
             $this->error("File: `$path` already exists.");
 
@@ -243,7 +237,7 @@ abstract class ComponentGeneratorCommand extends Command
     {
         $userModel = GeneratorHelper::userModel();
 
-        if (!$userModel) {
+        if (! $userModel) {
             $userModel = $this->ask('Enter the class name of the "User model"');
 
             if (empty($userModel)) {
@@ -261,7 +255,7 @@ abstract class ComponentGeneratorCommand extends Command
     {
         $createPermissionAction = GeneratorHelper::createPermissionAction();
 
-        if (!$createPermissionAction) {
+        if (! $createPermissionAction) {
             $createPermissionAction = $this->ask('Enter the class name of the "Create permission action"');
 
             if (empty($createPermissionAction)) {
@@ -279,7 +273,7 @@ abstract class ComponentGeneratorCommand extends Command
     {
         $createPermissionAction = GeneratorHelper::createPermissionDTO();
 
-        if (!$createPermissionAction) {
+        if (! $createPermissionAction) {
             $createPermissionAction = $this->ask('Enter the class name of the "Create permission DTO"');
 
             if (empty($createPermissionAction)) {

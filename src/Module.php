@@ -2,17 +2,13 @@
 
 namespace Laraneat\Modules;
 
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Foundation\AliasLoader;
-use Illuminate\Foundation\ProviderRepository;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use Laraneat\Modules\Contracts\ActivatorInterface;
-use Laraneat\Modules\Facades\Modules;
+use Symfony\Component\Process\Process;
 
 class Module implements Arrayable
 {
@@ -22,6 +18,26 @@ class Module implements Arrayable
      * The laravel application instance.
      */
     protected Application $app;
+
+    /**
+     * The laravel filesystem instance.
+     */
+    protected Filesystem $filesystem;
+
+    /**
+     * The laraneat modules repository instance.
+     */
+    protected ModulesRepository $modulesRepository;
+
+    /**
+     * Determines the module is a vendor package.
+     */
+    protected bool $isVendor;
+
+    /**
+     * The module package name.
+     */
+    protected string $packageName;
 
     /**
      * The module name.
@@ -39,62 +55,67 @@ class Module implements Arrayable
     protected string $namespace;
 
     /**
-     * @var array<string, Json> array of cached Json objects, keyed by filename
+     * Module providers
+     *
+     * @var array<int, class-string>
      */
-    protected array $jsons = [];
+    protected array $providers = [];
 
     /**
-     * The laravel filesystem instance.
+     * Module aliases
+     *
+     * @var array<string, class-string>
      */
-    private Filesystem $filesystem;
+    protected array $aliases = [];
 
     /**
-     * The activator instance.
-     */
-    private ActivatorInterface $activator;
-
-    /**
-     * @param array<string, Json> $jsons
+     * @param Application $app The laravel application instance.
+     * @param ModulesRepository $modulesRepository The laraneat modules repository instance.
+     * @param bool $isVendor Determines whether the module is a vendor package.
+     * @param string $packageName The module package name.
+     * @param string|null $name The module name.
+     * @param string $path The module path.
+     * @param string $namespace The module namespace.
+     * @param array<int, class-string> $providers Module providers
+     * @param array<string, class-string> $aliases Module aliases
      */
     public function __construct(
         Application $app,
-        string $name,
+        ModulesRepository $modulesRepository,
+        bool $isVendor,
+        string $packageName,
+        ?string $name,
         string $path,
         string $namespace,
-        array $jsons = []
+        array $providers,
+        array $aliases,
     ) {
         $this->app = $app;
-        $this->name = trim($name);
+        $this->filesystem = $app['files'];
+        $this->modulesRepository = $modulesRepository;
+        $this->isVendor = $isVendor;
+        $this->packageName = trim($packageName);
+        $this->name = $name ? trim($name) : Str::afterLast($this->packageName, '/');
         $this->path = rtrim($path, '/');
         $this->namespace = trim($namespace, '\\');
-        $this->jsons = $jsons;
-        $this->filesystem = $app['files'];
-        $this->activator = $app[ActivatorInterface::class];
+        $this->providers = $providers;
+        $this->aliases = $aliases;
     }
 
     /**
-     * Make the module from a plain array
-     *
-     * @param Application $app
-     * @param array{name: string, path: string, namespace: string, jsons: array<string, array{path: string, attributes: array}>} $moduleArray
-     *
-     * @return Module
-     *
-     * @throws FileNotFoundException
-     * @throws \JsonException
+     * Determines the module is a vendor package.
      */
-    public static function makeFromArray(Application $app, array $moduleArray): Module
+    public function isVendor(): bool
     {
-        return new Module(
-            $app,
-            $moduleArray['name'],
-            $moduleArray['path'],
-            $moduleArray['namespace'],
-            array_map(
-                fn ($json) => Json::make($json['path'], $app['files'], $json['attributes']),
-                $moduleArray['jsons']
-            )
-        );
+        return $this->isVendor;
+    }
+
+    /**
+     * Get package name.
+     */
+    public function getPackageName(): string
+    {
+        return $this->packageName;
     }
 
     /**
@@ -106,14 +127,6 @@ class Module implements Arrayable
     }
 
     /**
-     * Get key.
-     */
-    public function getKey(): string
-    {
-        return Str::snake($this->name, '-');
-    }
-
-    /**
      * Get name in studly case.
      */
     public function getStudlyName(): string
@@ -122,43 +135,19 @@ class Module implements Arrayable
     }
 
     /**
+     * Get name in kebab case.
+     */
+    public function getKebabName(): string
+    {
+        return Str::kebab(str_replace('_', '-', $this->name));
+    }
+
+    /**
      * Get name in snake case.
      */
     public function getSnakeName(): string
     {
-        return Str::snake($this->name);
-    }
-
-    /**
-     * Get description.
-     */
-    public function getDescription(): string
-    {
-        return $this->get('description');
-    }
-
-    /**
-     * Get alias.
-     */
-    public function getAlias(): string
-    {
-        return $this->get('alias');
-    }
-
-    /**
-     * Get priority.
-     */
-    public function getPriority(): string
-    {
-        return $this->get('priority');
-    }
-
-    /**
-     * Get module requirements.
-     */
-    public function getRequires(): array
-    {
-        return $this->get('requires');
+        return Str::snake(str_replace('-', '_', $this->name));
     }
 
     /**
@@ -178,180 +167,23 @@ class Module implements Arrayable
     }
 
     /**
-     * Bootstrap the application events.
+     * Get module providers.
+     *
+     * @return array<int, class-string>
      */
-    public function boot(): void
+    public function getProviders(): array
     {
-        if ($this->isLoadFilesOnBoot()) {
-            $this->registerFiles();
-        }
-
-        $this->fireEvent('boot');
+        return $this->providers;
     }
 
     /**
-     * Get json contents from the cache, setting as needed.
+     * Get module aliases.
+     *
+     * @return array<string, class-string>
      */
-    public function json(?string $fileName = 'module.json'): Json
+    public function getAliases(): array
     {
-        if ($fileName === null) {
-            $fileName = 'module.json';
-        }
-
-        return Arr::get($this->jsons, $fileName, function () use ($fileName) {
-            return $this->jsons[$fileName] = Json::make($this->getExtraPath($fileName), $this->filesystem);
-        });
-    }
-
-    /**
-     * Get a specific data from json file by given the key.
-     */
-    public function get(string $key, mixed $default = null): mixed
-    {
-        return $this->json()->get($key, $default);
-    }
-
-    /**
-     * Get a specific data from composer.json file by given the key.
-     */
-    public function getComposerAttr(string $key, mixed $default = null): mixed
-    {
-        return $this->json('composer.json')->get($key, $default);
-    }
-
-    /**
-     * Register the module.
-     */
-    public function register(): void
-    {
-        $this->registerAliases();
-        $this->registerProviders();
-
-        if ($this->isLoadFilesOnBoot() === false) {
-            $this->registerFiles();
-        }
-
-        $this->fireEvent('register');
-    }
-
-    /**
-     * Register the module event.
-     */
-    protected function fireEvent(string $event): void
-    {
-        $this->app['events']->dispatch(sprintf('modules.%s.' . $event, $this->getKey()), [$this]);
-    }
-
-    /**
-     * Get the path to the cached *_module.php file.
-     */
-    public function getCachedServicesPath(): string
-    {
-        // This checks if we are running on a Laravel Vapor managed instance
-        // and sets the path to a writable one (services path is not on a writable storage in Vapor).
-        if (!is_null(env('VAPOR_MAINTENANCE_MODE'))) {
-            /** @phpstan-ignore-next-line  */
-            return Str::replaceLast('config.php', $this->getSnakeName() . '_module.php', $this->app->getCachedConfigPath());
-        }
-
-        /** @phpstan-ignore-next-line  */
-        return Str::replaceLast('services.php', $this->getSnakeName() . '_module.php', $this->app->getCachedServicesPath());
-    }
-
-    /**
-     * Register the service providers from this module.
-     */
-    public function registerProviders(): void
-    {
-        (new ProviderRepository($this->app, new Filesystem(), $this->getCachedServicesPath()))
-            ->load($this->get('providers', []));
-    }
-
-    /**
-     * Register the aliases from this module.
-     */
-    public function registerAliases(): void
-    {
-        $loader = AliasLoader::getInstance();
-        foreach ($this->get('aliases', []) as $aliasName => $aliasClass) {
-            $loader->alias($aliasName, $aliasClass);
-        }
-    }
-
-    /**
-     * Register the files from this module.
-     */
-    protected function registerFiles(): void
-    {
-        foreach ($this->get('files', []) as $fileName) {
-            include $this->path . '/' . $fileName;
-        }
-    }
-
-    /**
-     * Handle call __toString.
-     */
-    public function __toString()
-    {
-        return $this->getStudlyName();
-    }
-
-    /**
-     * Determine whether the given status same with the current module status.
-     */
-    public function isStatus(bool $status): bool
-    {
-        return $this->activator->hasStatus($this, $status);
-    }
-
-    /**
-     * Determine whether the current module activated.
-     */
-    public function isEnabled(): bool
-    {
-        return $this->activator->hasStatus($this, true);
-    }
-
-    /**
-     * Determine whether the current module not disabled.
-     */
-    public function isDisabled(): bool
-    {
-        return !$this->isEnabled();
-    }
-
-    /**
-     * Set active state for current module.
-     */
-    public function setActive(bool $active): void
-    {
-        $this->activator->setActive($this, $active);
-    }
-
-    /**
-     * Disable the current module.
-     */
-    public function disable(): void
-    {
-        $this->fireEvent('disabling');
-
-        $this->activator->disable($this);
-        $this->flushCache();
-
-        $this->fireEvent('disabled');
-    }
-
-    /**
-     * Enable the current module.
-     */
-    public function enable(): void
-    {
-        $this->fireEvent('enabling');
-
-        $this->activator->enable($this);
-        $this->flushCache();
-
-        $this->fireEvent('enabled');
+        return $this->aliases;
     }
 
     /**
@@ -361,9 +193,17 @@ class Module implements Arrayable
     {
         $this->fireEvent('deleting');
 
-        $this->activator->delete($this);
-        $status = $this->json()->getFilesystem()->deleteDirectory($this->getPath());
-        $this->flushCache();
+        if ($this->isVendor()) {
+            $this->modulesRepository->pruneVendorModulesManifest();
+            $status = Process::fromShellCommandline(sprintf(
+                'cd %s && composer remove %s',
+                base_path(),
+                $this->getPackageName()
+            ))->run() === 0;
+        } else {
+            $status = $this->filesystem->deleteDirectory($this->getPath());
+            $this->modulesRepository->pruneAppModulesManifest();
+        }
 
         $this->fireEvent('deleted');
 
@@ -373,39 +213,68 @@ class Module implements Arrayable
     /**
      * Get extra path.
      */
-    public function getExtraPath(string $path): string
+    public function subPath(string $path): string
     {
         return $this->getPath() . '/' . ltrim($path, '/');
     }
 
     /**
-     * Check if the module files can be loaded on boot.
+     * Get migration paths.
+     *
+     * @return array<int, string>
      */
-    protected function isLoadFilesOnBoot(): bool
+    public function getMigrationPaths(): array
     {
-        return config('modules.register.files', 'register') === 'boot';
+        /** @var Migrator|null $migrator */
+        $migrator = $this->app['migrator'] ?? null;
+
+        if ($migrator === null) {
+            return [];
+        }
+
+        return collect($migrator->paths())
+            ->filter(fn (string $path) => Str::startsWith($path, $this->getPath()))
+            ->values()
+            ->toArray();
     }
 
     /**
-     * Get the module as a plain array.
-     *
-     * @return array{name: string, path: string, namespace: string, module_json: array}
+     * Handle call __toString.
+     */
+    public function __toString()
+    {
+        return $this->getPackageName();
+    }
+
+    /**
+     * @return array{
+     *     isVendor: bool,
+     *     packageName: string,
+     *     name: string,
+     *     path: string,
+     *     namespace: string,
+     *     providers: array<int, class-string>,
+     *     aliases: array<string, class-string>
+     * }
      */
     public function toArray(): array
     {
         return [
+            'isVendor' => $this->isVendor,
+            'packageName' => $this->packageName,
             'name' => $this->name,
             'path' => $this->path,
             'namespace' => $this->namespace,
-            'module_json' => array_map(static fn (Json $json) => $json->toArray(), $this->jsons)
+            'providers' => $this->providers,
+            'aliases' => $this->aliases,
         ];
     }
 
     /**
-     * Flush modules cache.
+     * Register the module event.
      */
-    protected function flushCache(): void
+    protected function fireEvent(string $event): void
     {
-        Modules::flushCache();
+        $this->app['events']->dispatch(sprintf('modules.%s.' . $event, $this->getPackageName()), [$this]);
     }
 }

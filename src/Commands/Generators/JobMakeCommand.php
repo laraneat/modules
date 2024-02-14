@@ -19,7 +19,7 @@ class JobMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:job';
+    protected $signature = 'module:make:job';
 
     /**
      * The console command description.
@@ -58,8 +58,6 @@ class JobMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -90,7 +88,7 @@ class JobMakeCommand extends ComponentGeneratorCommand
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         return Stub::create("job/{$this->stub}.stub", $stubReplaces)->render();

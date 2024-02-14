@@ -20,7 +20,7 @@ class TestMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:test';
+    protected $signature = 'module:make:test';
 
     /**
      * The console command description.
@@ -66,8 +66,6 @@ class TestMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -94,7 +92,7 @@ class TestMakeCommand extends ComponentGeneratorCommand
             'web' => ['plain', 'create', 'delete', 'update'],
             'cli' => ['plain'],
             'unit' => ['plain'],
-            'feature' => ['plain']
+            'feature' => ['plain'],
         ];
         $stubChoices = $stubsMap[$this->type];
         if (count($stubChoices) === 1) {
@@ -120,9 +118,9 @@ class TestMakeCommand extends ComponentGeneratorCommand
     protected function getTemplateContents(): string
     {
         $stubReplaces = [
-            'moduleKey' => $this->module->getKey(),
+            'modulePackageName' => $this->module->getKey(),
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         if ($this->stub !== 'plain') {

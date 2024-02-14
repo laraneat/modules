@@ -18,7 +18,7 @@ class EventMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:event';
+    protected $signature = 'module:make:event';
 
     /**
      * The console command description.

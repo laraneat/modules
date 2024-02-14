@@ -19,7 +19,7 @@ class ModelMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:model';
+    protected $signature = 'module:make:model';
 
     /**
      * The console command description.
@@ -58,8 +58,6 @@ class ModelMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -91,7 +89,7 @@ class ModelMakeCommand extends ComponentGeneratorCommand
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         if ($this->stub === 'full') {

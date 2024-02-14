@@ -18,7 +18,7 @@ class RuleMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:rule';
+    protected $signature = 'module:make:rule';
 
     /**
      * The console command description.

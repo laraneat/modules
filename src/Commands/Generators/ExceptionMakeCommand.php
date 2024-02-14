@@ -18,7 +18,7 @@ class ExceptionMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:exception';
+    protected $signature = 'module:make:exception';
 
     /**
      * The console command description.

@@ -2,23 +2,20 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Console\Command;
 use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Generators\ModuleComponentsGenerator;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @group generator
  */
-class ComponentsMakeCommand extends Command
+class ComponentsMakeCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make:components';
+    protected $signature = 'module:make:components';
 
     /**
      * The console command description.
@@ -53,8 +50,6 @@ class ComponentsMakeCommand extends Command
 
     /**
      * Get the console command arguments.
-     *
-     * @return array
      */
     protected function getArguments(): array
     {
@@ -79,9 +74,9 @@ class ComponentsMakeCommand extends Command
      */
     private function getModuleType(): string
     {
-//        if ($this->option('web')) {
-//            return 'web';
-//        }
+        //        if ($this->option('web')) {
+        //            return 'web';
+        //        }
 
         return 'api';
     }

@@ -19,7 +19,7 @@ class ControllerMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:controller';
+    protected $signature = 'module:make:controller';
 
     /**
      * The console command description.
@@ -58,8 +58,6 @@ class ControllerMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -90,7 +88,7 @@ class ControllerMakeCommand extends ComponentGeneratorCommand
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         return Stub::create("controller/{$this->ui}.stub", $stubReplaces)->render();

@@ -5,7 +5,7 @@ namespace {{ namespace }};
 use App\Ship\Abstracts\Tests\TestCase;
 
 /**
- * @group {{ moduleKey }}
+ * @group {{ modulePackageName }}
  * @group unit
  */
 class {{ class }} extends TestCase

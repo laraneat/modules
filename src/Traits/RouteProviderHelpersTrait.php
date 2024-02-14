@@ -26,28 +26,28 @@ trait RouteProviderHelpersTrait
         string $routePrefix = "",
         bool $generateRoutePrefixesByNestedDirectories = true
     ): void {
-        if (File::isDirectory($directory)) {
-            $directories = File::directories($directory);
-
-            foreach ($directories as $nestedDirectory) {
-                $directoryRoutePrefix = $generateRoutePrefixesByNestedDirectories ? basename($nestedDirectory) : "";
-                $this->loadRoutesFromDirectory(
-                    $nestedDirectory,
-                    $directoryRoutePrefix,
-                    $generateRoutePrefixesByNestedDirectories
-                );
-            }
-
-            /** @var SplFileInfo[] $files */
-            $files = Arr::sort(File::files($directory), function (SplFileInfo $file) {
-                return $file->getFilename();
-            });
-
-            Route::prefix($routePrefix)->group(function () use ($files) {
-                foreach ($files as $file) {
-                    require $file->getPathname();
-                }
-            });
+        if (! File::isDirectory($directory)) {
+            return;
         }
+
+        foreach (File::directories($directory) as $nestedDirectory) {
+            $directoryRoutePrefix = $generateRoutePrefixesByNestedDirectories ? basename($nestedDirectory) : "";
+            $this->loadRoutesFromDirectory(
+                $nestedDirectory,
+                $directoryRoutePrefix,
+                $generateRoutePrefixesByNestedDirectories
+            );
+        }
+
+        /** @var SplFileInfo[] $files */
+        $files = Arr::sort(File::files($directory), function (SplFileInfo $file) {
+            return $file->getFilename();
+        });
+
+        Route::prefix($routePrefix)->group(function () use ($files) {
+            foreach ($files as $file) {
+                require $file->getPathname();
+            }
+        });
     }
 }

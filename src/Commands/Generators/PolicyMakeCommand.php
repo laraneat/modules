@@ -20,7 +20,7 @@ class PolicyMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:policy';
+    protected $signature = 'module:make:policy';
 
     /**
      * The console command description.
@@ -59,8 +59,6 @@ class PolicyMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -92,7 +90,7 @@ class PolicyMakeCommand extends ComponentGeneratorCommand
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         if ($this->stub === 'full') {

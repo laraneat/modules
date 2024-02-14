@@ -20,7 +20,7 @@ class RequestMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:request';
+    protected $signature = 'module:make:request';
 
     /**
      * The console command description.
@@ -66,8 +66,6 @@ class RequestMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -110,7 +108,7 @@ class RequestMakeCommand extends ComponentGeneratorCommand
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         if ($this->stub !== 'plain') {

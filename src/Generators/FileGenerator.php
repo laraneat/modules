@@ -86,10 +86,10 @@ class FileGenerator extends Generator
     {
         $path = $this->getPath();
 
-        if ($this->overwriteFile === true || !$this->filesystem->exists($path)) {
+        if ($this->overwriteFile === true || ! $this->filesystem->exists($path)) {
             return $this->filesystem->put($path, $this->getContents());
         }
 
-        throw new FileAlreadyExistException('File already exists!');
+        throw new FileAlreadyExistException();
     }
 }

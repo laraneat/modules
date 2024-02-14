@@ -70,8 +70,8 @@ class GeneratorHelper
     public static function modulePath(Module|string $module, ?string $extraPath = null): string
     {
         try {
-            $modulePath = Modules::getModulePath($module);
-        } catch (ModuleNotFoundException $e) { /** @phpstan-ignore-line */
+            $modulePath = Modules::findOrFail($module)->getPath();
+        } catch (ModuleNotFoundException $e) {
             $modulesPath = self::path();
             $modulePart = self::formatPath($module);
             $modulePath = $modulePart ? $modulesPath . '/' . $modulePart : $modulePart;
@@ -83,17 +83,17 @@ class GeneratorHelper
     /**
      * Get module namespace
      */
-    public static function moduleNamespace(Module|string $module, ?string $extraNamespace = null): string
+    public static function modulePackageNamespace(Module|string $module, ?string $extraNamespace = null): string
     {
         try {
-            $moduleNamespace = Modules::getModuleNamespace($module);
-        } catch (ModuleNotFoundException $e) { /** @phpstan-ignore-line */
+            $modulePackageNamespace = Modules::findOrFail($module)->getNamespace();
+        } catch (ModuleNotFoundException $e) {
             $modulesNamespace = self::namespace();
             $modulePart = self::formatNamespace($module);
-            $moduleNamespace = $modulePart ? $modulesNamespace . '\\' . $modulePart : $modulePart;
+            $modulePackageNamespace = $modulePart ? $modulesNamespace . '\\' . $modulePart : $modulePart;
         }
 
-        return $extraNamespace ? $moduleNamespace . '\\' . self::formatNamespace($extraNamespace) : $moduleNamespace;
+        return $extraNamespace ? $modulePackageNamespace . '\\' . self::formatNamespace($extraNamespace) : $modulePackageNamespace;
     }
 
     /**

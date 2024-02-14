@@ -1,32 +1,51 @@
 <?php
 
-namespace Laraneat\Modules\Traits;
+namespace Laraneat\Modules\Support;
 
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Module;
+use Laraneat\Modules\ModulesRepository;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
-/**
- * @mixin \Illuminate\Support\ServiceProvider
- */
-trait ModuleProviderHelpersTrait
+abstract class ModuleServiceProvider extends ServiceProvider
 {
+    protected string $modulePackageName;
+
+    private ?Module $module = null;
+
+    /**
+     * Get current module
+     */
+    public function getModule(): Module
+    {
+        if ($this->module !== null) {
+            return $this->module;
+        }
+
+        /** @var ModulesRepository $modules */
+        $modules = $this->app[ModulesRepository::class];
+
+        return $this->module = $modules->findOrFail($this->modulePackageName);
+    }
+
     /**
      * Get publishable view paths
      */
-    protected function getPublishableViewPaths(string $moduleKey): array
+    protected function getPublishableViewPaths(string $modulePackageName): array
     {
         $paths = [];
 
         foreach (config('view.paths', []) as $path) {
-            if (is_dir($path . '/modules/' . $moduleKey)) {
-                $paths[] = $path . '/modules/' . $moduleKey;
+            if (is_dir($path . '/modules/' . $modulePackageName)) {
+                $paths[] = $path . '/modules/' . $modulePackageName;
             }
         }
 
@@ -34,7 +53,7 @@ trait ModuleProviderHelpersTrait
     }
 
     /**
-     * Register all of the commands in the given directory.
+     * Register all commands in the given directory(ies).
      *
      * @throws ReflectionException
      */
@@ -57,7 +76,7 @@ trait ModuleProviderHelpersTrait
 
             if (
                 is_subclass_of($command, Command::class) &&
-                !(new ReflectionClass($command))->isAbstract()
+                ! (new ReflectionClass($command))->isAbstract()
             ) {
                 Artisan::starting(function ($artisan) use ($command) {
                     $artisan->resolve($command);

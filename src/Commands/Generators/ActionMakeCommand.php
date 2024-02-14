@@ -20,7 +20,8 @@ class ActionMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:action';
+    protected $signature = 'module:make:action
+                            ';
 
     /**
      * The console command description.
@@ -59,8 +60,6 @@ class ActionMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -96,7 +95,7 @@ class ActionMakeCommand extends ComponentGeneratorCommand
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         if ($this->stub !== 'plain') {

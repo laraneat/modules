@@ -121,7 +121,7 @@ class ModuleComponentsGenerator extends Generator
 
     public function generateBaseComponentsForModule(Module $module): void
     {
-        $moduleName = $module->getStudlyName();
+        $modulePackageName = $module->getStudlyName();
         $entityName = $this->getEntityName();
         $snakeEntityName = Str::snake($entityName);
         $snakePluralEntityName = Str::plural($snakeEntityName);
@@ -129,54 +129,54 @@ class ModuleComponentsGenerator extends Generator
         if (GeneratorHelper::component('factory')->generate() === true) {
             $this->console->call('module:make:factory', [
                 'name' => "{$entityName}Factory",
-                'module' => $moduleName,
-                '--model' => $entityName
+                'module' => $modulePackageName,
+                '--model' => $entityName,
             ]);
         }
 
         if (GeneratorHelper::component('migration')->generate() === true) {
             $this->console->call('module:make:migration', [
                 'name' => "create_{$snakePluralEntityName}_table",
-                'module' => $moduleName,
-                '--stub' => 'create'
+                'module' => $modulePackageName,
+                '--stub' => 'create',
             ]);
         }
 
         if (GeneratorHelper::component('seeder')->generate() === true) {
             $this->console->call('module:make:seeder', [
                 'name' => "{$entityName}PermissionsSeeder_1",
-                'module' => $moduleName,
+                'module' => $modulePackageName,
                 '--stub' => 'permissions',
-                '--model' => $entityName
+                '--model' => $entityName,
             ]);
         }
 
         if (GeneratorHelper::component('dto')->generate() === true) {
             $this->console->call('module:make:dto', [
                 'name' => "Create{$entityName}DTO",
-                'module' => $moduleName,
+                'module' => $modulePackageName,
             ]);
             $this->console->call('module:make:dto', [
                 'name' => "Update{$entityName}DTO",
-                'module' => $moduleName,
+                'module' => $modulePackageName,
             ]);
         }
 
         if (GeneratorHelper::component('model')->generate() === true) {
             $this->console->call('module:make:model', [
                 'name' => $entityName,
-                'module' => $moduleName,
+                'module' => $modulePackageName,
                 '--stub' => 'full',
-                '--factory' => "{$entityName}Factory"
+                '--factory' => "{$entityName}Factory",
             ]);
         }
 
         if (GeneratorHelper::component('policy')->generate() === true) {
             $this->console->call('module:make:policy', [
                 'name' => "{$entityName}Policy",
-                'module' => $moduleName,
+                'module' => $modulePackageName,
                 '--stub' => 'full',
-                '--model' => $entityName
+                '--model' => $entityName,
             ]);
         }
     }
@@ -185,7 +185,7 @@ class ModuleComponentsGenerator extends Generator
     {
         $actionVerbs = ['create', 'update', 'delete', 'list', 'view'];
 
-        $moduleName = $module->getStudlyName();
+        $modulePackageName = $module->getStudlyName();
         $entityName = $this->getEntityName();
         $pluralEntityName = Str::plural($entityName);
         $camelEntityName = Str::camel($entityName);
@@ -195,12 +195,12 @@ class ModuleComponentsGenerator extends Generator
         if (GeneratorHelper::component('api-query-wizard')->generate() === true) {
             $this->console->call('module:make:wizard', [
                 'name' => "{$pluralEntityName}QueryWizard",
-                'module' => $moduleName,
+                'module' => $modulePackageName,
                 '--stub' => 'eloquent',
             ]);
             $this->console->call('module:make:wizard', [
                 'name' => "{$entityName}QueryWizard",
-                'module' => $moduleName,
+                'module' => $modulePackageName,
                 '--stub' => 'model',
             ]);
         }
@@ -208,8 +208,8 @@ class ModuleComponentsGenerator extends Generator
         if (GeneratorHelper::component('api-resource')->generate() === true) {
             $this->console->call('module:make:resource', [
                 'name' => "{$entityName}Resource",
-                'module' => $moduleName,
-                '--stub' => 'single'
+                'module' => $modulePackageName,
+                '--stub' => 'single',
             ]);
         }
 
@@ -233,28 +233,28 @@ class ModuleComponentsGenerator extends Generator
             if (GeneratorHelper::component('action')->generate() === true) {
                 $this->console->call('module:make:action', [
                     'name' => $actionClass,
-                    'module' => $moduleName,
+                    'module' => $modulePackageName,
                     '--stub' => $actionVerb,
                     '--dto' => $dtoClass,
                     '--model' => $entityName,
                     '--request' => $requestClass,
                     '--resource' => $resourceClass,
-                    '--wizard' => $wizardClass
+                    '--wizard' => $wizardClass,
                 ]);
             }
 
             if (GeneratorHelper::component("api-controller")->generate() === true) {
                 $this->console->call('module:make:controller', [
                     'name' => 'Controller',
-                    'module' => $moduleName,
-                    '--ui' => 'api'
+                    'module' => $modulePackageName,
+                    '--ui' => 'api',
                 ]);
             }
 
             if (GeneratorHelper::component("api-request")->generate() === true) {
                 $this->console->call('module:make:request', [
                     'name' => $requestClass,
-                    'module' => $moduleName,
+                    'module' => $modulePackageName,
                     '--ui' => 'api',
                     '--dto' => $dtoClass,
                     '--stub' => $actionVerb,
@@ -268,7 +268,7 @@ class ModuleComponentsGenerator extends Generator
                     'update' => 'patch',
                     'delete' => 'delete',
                     'list' => 'get',
-                    'view' => 'get'
+                    'view' => 'get',
                 ];
 
                 $url = $dashedPluralEntityName;
@@ -281,12 +281,12 @@ class ModuleComponentsGenerator extends Generator
 
                 $this->console->call('module:make:route', [
                     'name' => $filePath,
-                    'module' => $moduleName,
+                    'module' => $modulePackageName,
                     '--ui' => 'api',
                     '--action' => $actionClass,
                     '--method' => $actionMethodsMap[$actionVerb],
                     '--url' => $url,
-                    '--name' => $routeName
+                    '--name' => $routeName,
                 ]);
             }
 
@@ -297,11 +297,11 @@ class ModuleComponentsGenerator extends Generator
 
                 $this->console->call('module:make:test', [
                     'name' => $testClass,
-                    'module' => $moduleName,
+                    'module' => $modulePackageName,
                     '--type' => 'api',
                     '--stub' => $actionVerb,
                     '--model' => $entityName,
-                    '--route' => $routeName
+                    '--route' => $routeName,
                 ]);
             }
         }

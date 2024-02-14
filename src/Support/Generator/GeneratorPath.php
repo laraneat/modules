@@ -13,10 +13,10 @@ class GeneratorPath
 
     public function __construct(bool|array|string $config)
     {
-        if (!is_array($config)) {
+        if (! is_array($config)) {
             $config = [
                 'path' => (string) $config,
-                'generate' => (bool) $config
+                'generate' => (bool) $config,
             ];
         }
 
@@ -45,7 +45,7 @@ class GeneratorPath
 
     public function getFullNamespace(Module|string $module): string
     {
-        return GeneratorHelper::moduleNamespace($module, $this->namespace);
+        return GeneratorHelper::modulePackageNamespace($module, $this->namespace);
     }
 
     public function generate(): bool

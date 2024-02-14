@@ -19,7 +19,7 @@ class NotificationMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:notification';
+    protected $signature = 'module:make:notification';
 
     /**
      * The console command description.
@@ -58,8 +58,6 @@ class NotificationMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -90,7 +88,7 @@ class NotificationMakeCommand extends ComponentGeneratorCommand
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         return Stub::create("notification/{$this->stub}.stub", $stubReplaces)->render();

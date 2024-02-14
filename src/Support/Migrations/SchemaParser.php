@@ -173,13 +173,13 @@ class SchemaParser implements Arrayable
         if ($key === 0) {
             $relatedColumn = Str::snake(class_basename($field)) . '_id';
 
-            return "->integer('{$relatedColumn}')->unsigned();" . PHP_EOL . "\t\t\t" . "\$table->foreign('{$relatedColumn}')";
+            return "->integer('$relatedColumn')->unsigned();" . PHP_EOL . "\t\t\t" . "\$table->foreign('$relatedColumn')";
         }
         if ($key === 1) {
-            return "->references('{$field}')";
+            return "->references('$field')";
         }
         if ($key === 2) {
-            return "->on('{$field}')";
+            return "->on('$field')";
         }
         if (Str::contains($field, '(')) {
             return '->' . $field;
@@ -260,7 +260,7 @@ class SchemaParser implements Arrayable
     }
 
     /**
-     * Determine whether the given column is exist in customAttributes array.
+     * Determine whether the given column exists in the customAttributes array.
      *
      * @param string $column
      *

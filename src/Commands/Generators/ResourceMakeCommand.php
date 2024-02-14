@@ -19,7 +19,7 @@ class ResourceMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:resource';
+    protected $signature = 'module:make:resource';
 
     /**
      * The console command description.
@@ -58,8 +58,6 @@ class ResourceMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -90,7 +88,7 @@ class ResourceMakeCommand extends ComponentGeneratorCommand
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         return Stub::create("resource/{$this->stub}.stub", $stubReplaces)->render();

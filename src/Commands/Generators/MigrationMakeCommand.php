@@ -24,7 +24,7 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:migration';
+    protected $signature = 'module:make:migration';
 
     /**
      * The console command description.
@@ -56,8 +56,6 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -173,7 +171,7 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
             'tableOne' => $tableOne,
             'tableTwo' => $tableTwo,
             'columnOne' => $this->convertTableNameToPrimaryColumnName($tableOne),
-            'columnTwo' => $this->convertTableNameToPrimaryColumnName($tableTwo)
+            'columnTwo' => $this->convertTableNameToPrimaryColumnName($tableTwo),
         ])->render();
     }
 

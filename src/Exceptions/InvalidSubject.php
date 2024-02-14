@@ -6,9 +6,9 @@ use InvalidArgumentException;
 
 class InvalidSubject extends InvalidArgumentException
 {
-    public static function make(mixed $subject): InvalidSubject
+    public static function make(mixed $subject): static
     {
-        return new InvalidSubject(
+        return new static(
             sprintf(
                 'Subject %s is invalid.',
                 is_object($subject)

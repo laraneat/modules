@@ -19,7 +19,7 @@ class ListenerMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:listener';
+    protected $signature = 'module:make:listener';
 
     /**
      * The console command description.
@@ -58,8 +58,6 @@ class ListenerMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {

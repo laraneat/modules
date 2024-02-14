@@ -6,9 +6,9 @@ use InvalidArgumentException;
 
 class InvalidPath extends InvalidArgumentException
 {
-    public static function make(mixed $path): InvalidPath
+    public static function make(mixed $path): static
     {
-        return new InvalidPath(
+        return new static(
             sprintf(
                 'Path %s is invalid.',
                 is_object($path)

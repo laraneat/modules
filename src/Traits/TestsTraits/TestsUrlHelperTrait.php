@@ -43,7 +43,7 @@ trait TestsUrlHelperTrait
     {
         $path = $path ?? $this->url ?? null;
 
-        if (!$path) {
+        if (! $path) {
             throw InvalidPath::make($path);
         }
 

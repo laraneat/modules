@@ -20,7 +20,7 @@ class RouteMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:route';
+    protected $signature = 'module:make:route';
 
     /**
      * The console command description.
@@ -59,8 +59,6 @@ class RouteMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -151,6 +149,7 @@ class RouteMakeCommand extends ComponentGeneratorCommand
     {
         $verb = $this->recognizeActionVerbByMethod($url, $method);
         $resource = Str::snake($this->recognizeResourceByUrl($url));
+
         return Str::lower($this->ui) . '.' . $resource . '.' . $verb;
     }
 

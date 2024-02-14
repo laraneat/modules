@@ -18,7 +18,7 @@ class MiddlewareMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:middleware';
+    protected $signature = 'module:make:middleware';
 
     /**
      * The console command description.

@@ -2,17 +2,21 @@
 
 namespace Laraneat\Modules\Commands;
 
+use Illuminate\Console\ConfirmableTrait;
 use Laraneat\Modules\Exceptions\ModuleNotFoundException;
 
 class ModuleDeleteCommand extends BaseCommand
 {
+    use ConfirmableTrait;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
     protected $signature = 'module:delete
-                            {module?* : Module name(s) to delete}';
+                            {module?* : Module name(s) to delete}
+                            {--force : Force the operation to run when in production}';
 
     /**
      * The console command description.
@@ -21,19 +25,23 @@ class ModuleDeleteCommand extends BaseCommand
      */
     protected $description = 'Delete the specified module(s)';
 
-    /**
-     * @throws ModuleNotFoundException
-     */
     public function handle(): int
     {
-        $this->components->info('Deleting module ...');
+        if (! $this->confirmToProceed()) {
+            return self::FAILURE;
+        }
 
-        /** @var array<string> $moduleNamesToDelete */
-        $moduleNamesToDelete = $this->argument('module');
+        try {
+            $modulesToDelete = $this->getModuleArgumentOrFail();
+        } catch (ModuleNotFoundException $exception) {
+            $this->error($exception->getMessage());
 
-        foreach($moduleNamesToDelete as $moduleName) {
-            $this->modules->delete($moduleName);
-            $this->components->info("Module $moduleName has been deleted.");
+            return self::FAILURE;
+        }
+
+        foreach($modulesToDelete as $moduleToDelete) {
+            $moduleToDelete->delete();
+            $this->components->info("Module [{$moduleToDelete->getPackageName()}] has been deleted.");
         }
 
         return self::SUCCESS;

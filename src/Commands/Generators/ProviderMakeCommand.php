@@ -6,7 +6,6 @@ use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
@@ -14,14 +13,12 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class ProviderMakeCommand extends ComponentGeneratorCommand
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make:provider';
+    protected $signature = 'module:make:provider';
 
     /**
      * The console command description.
@@ -82,13 +79,13 @@ class ProviderMakeCommand extends ComponentGeneratorCommand
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         if ($this->stub === 'module') {
             $stubReplaces = array_merge($stubReplaces, [
-                'moduleName' => $this->module->getStudlyName(),
-                'moduleKey' => $this->module->getKey(),
+                'modulePackageName' => $this->module->getPackageName(),
+                'moduleKebabName' => $this->module->getKebabName(),
                 'commandsPath' => GeneratorHelper::component('cli-command')->getPath(),
                 'langPath' => GeneratorHelper::component('lang')->getPath(),
                 'configPath' => GeneratorHelper::component('config')->getPath(),
@@ -97,11 +94,11 @@ class ProviderMakeCommand extends ComponentGeneratorCommand
             ]);
         } elseif ($this->stub === 'route') {
             $stubReplaces = array_merge($stubReplaces, [
-                'moduleName' => $this->module->getStudlyName(),
+                'modulePackageName' => $this->module->getPackageName(),
                 'webControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component('web-controller')->getFullNamespace($this->module)),
                 'apiControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component('api-controller')->getFullNamespace($this->module)),
                 'webRoutesPath' => GeneratorHelper::component('web-route')->getPath(),
-                'apiRoutesPath' => GeneratorHelper::component('api-route')->getPath()
+                'apiRoutesPath' => GeneratorHelper::component('api-route')->getPath(),
             ]);
         }
 

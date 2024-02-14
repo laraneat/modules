@@ -50,7 +50,7 @@ class Stub
      *
      * @return $this
      */
-    public function setPath(string $path)
+    public function setPath(string $path): static
     {
         $this->path = $path;
 
@@ -112,7 +112,7 @@ class Stub
      *
      * @return int|false
      */
-    public function saveTo(string $path, string $filename)
+    public function saveTo(string $path, string $filename): bool|int
     {
         return file_put_contents($path . '/' . $filename, $this->getContents());
     }
@@ -124,7 +124,7 @@ class Stub
      *
      * @return $this
      */
-    public function replace(array $replaces = [])
+    public function replace(array $replaces = []): static
     {
         $this->replaces = $replaces;
 

@@ -3,24 +3,15 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
-use Laraneat\Modules\FileRepository;
-use Laraneat\Modules\Module;
+use Laraneat\Modules\ModulesRepository;
+use Laraneat\Modules\Traits\ModuleCommandHelpersTrait;
 
 abstract class BaseCommand extends Command
 {
-    protected FileRepository $modules;
+    use ModuleCommandHelpersTrait;
 
-    public function __construct()
+    public function __construct(protected ModulesRepository $modulesRepository)
     {
         parent::__construct();
-
-        $this->modules = $this->laravel['modules'];
-    }
-
-    protected function findModuleOrFail(Module|string $module): Module
-    {
-        return $module instanceof Module
-            ? $module
-            : $this->modules->findOrFail($module);
     }
 }

@@ -2,23 +2,21 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Console\Command;
 use Laraneat\Modules\Contracts\ActivatorInterface;
 use Laraneat\Modules\Generators\ModuleGenerator;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\ModulesRepository;
 
 /**
  * @group generator
  */
-class ModuleMakeCommand extends Command
+class ModuleMakeCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make';
+    protected $signature = 'module:make';
 
     /**
      * The console command description.
@@ -40,13 +38,13 @@ class ModuleMakeCommand extends Command
         $code = (new ModuleGenerator($name))
             ->setEntityName($entityName ?: $name)
             ->setFilesystem($this->laravel['files'])
-            ->setRepository($this->laravel['modules'])
+            ->setRepository($this->laravel[ModulesRepository::class])
             ->setConfig($this->laravel['config'])
             ->setActivator($this->laravel[ActivatorInterface::class])
             ->setConsole($this)
             ->setForce($this->option('force'))
             ->setType($this->getModuleType())
-            ->setActive(!$this->option('disabled'))
+            ->setActive(! $this->option('disabled'))
             ->generate();
 
         if ($code === E_ERROR) {
@@ -58,8 +56,6 @@ class ModuleMakeCommand extends Command
 
     /**
      * Get the console command arguments.
-     *
-     * @return array
      */
     protected function getArguments(): array
     {
@@ -91,9 +87,9 @@ class ModuleMakeCommand extends Command
             return 'plain';
         }
 
-//        if ($this->option('web')) {
-//            return 'web';
-//        }
+        //        if ($this->option('web')) {
+        //            return 'web';
+        //        }
 
         return 'api';
     }

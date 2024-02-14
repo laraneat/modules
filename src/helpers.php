@@ -6,15 +6,13 @@ if (! function_exists('module_path')) {
     /**
      * Get the module path
      *
-     * @param string $moduleName
+     * @param string $modulePackageName
      * @param string $path
      *
      * @return string
      */
-    function module_path(string $moduleName, string $path = ''): string
+    function module_path(string $modulePackageName, string $path = ''): string
     {
-        $module = Modules::findOrFail($moduleName);
-
-        return $module->getExtraPath($path);
+        return Modules::findOrFail($modulePackageName)->subPath($path);
     }
 }

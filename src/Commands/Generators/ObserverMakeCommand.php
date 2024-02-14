@@ -20,7 +20,7 @@ class ObserverMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:observer';
+    protected $signature = 'module:make:observer';
 
     /**
      * The console command description.
@@ -52,8 +52,6 @@ class ObserverMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -87,7 +85,7 @@ class ObserverMakeCommand extends ComponentGeneratorCommand
             'class' => $this->getClass($this->nameArgument),
             'model' => $modelClass,
             'modelEntity' => Str::camel($modelClass),
-            'modelNamespace' => $this->getComponentNamespace($this->module, $model, 'model')
+            'modelNamespace' => $this->getComponentNamespace($this->module, $model, 'model'),
         ];
 
         return Stub::create("observer.stub", $stubReplaces)->render();

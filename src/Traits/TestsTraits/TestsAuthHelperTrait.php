@@ -2,9 +2,9 @@
 
 namespace Laraneat\Modules\Traits\TestsTraits;
 
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 use Faker\Generator;
+use Illuminate\Contracts\Auth\Authenticatable as UserContract;
+use Illuminate\Support\Facades\Hash;
 use LogicException;
 
 /**
@@ -75,11 +75,12 @@ trait TestsAuthHelperTrait
         $this->createUserAsAdmin = $createUserAsAdmin;
         $this->userClass = $this->userClass ?? config('laraneat.tests.user-class');
 
-        if (!$this->userClass) {
+        if (! $this->userClass) {
             throw new LogicException("User class was not provided");
         }
 
         $this->userAdminState = config('laraneat.tests.user-admin-state');
+
         return is_null($userDetails) ? $this->findOrCreateTestingUser($userDetails, $access)
             : $this->createTestingUser($userDetails, $access);
     }
@@ -109,6 +110,7 @@ trait TestsAuthHelperTrait
         $user = str_replace('::class', '', $this->userClass);
         if ($this->createUserAsAdmin) {
             $state = $this->userAdminState;
+
             return $user::factory()->$state()->create($this->prepareUserDetails($userDetails));
         }
 
@@ -143,6 +145,7 @@ trait TestsAuthHelperTrait
         $access = $access ?: $this->getAccess();
 
         $user = $this->setupTestingUserPermissions($user, $access);
+
         return $this->setupTestingUserRoles($user, $access);
     }
 
@@ -153,7 +156,7 @@ trait TestsAuthHelperTrait
 
     private function setupTestingUserPermissions($user, ?array $access)
     {
-        if (isset($access['permissions']) && !empty($access['permissions'])) {
+        if (isset($access['permissions']) && ! empty($access['permissions'])) {
             $user->givePermissionTo($access['permissions']);
             $user = $user->fresh();
         }
@@ -163,7 +166,7 @@ trait TestsAuthHelperTrait
 
     private function setupTestingUserRoles($user, ?array $access)
     {
-        if (isset($access['roles']) && !empty($access['roles']) && !$user->hasRole($access['roles'])) {
+        if (isset($access['roles']) && ! empty($access['roles']) && ! $user->hasRole($access['roles'])) {
             $user->assignRole($access['roles']);
             $user = $user->fresh();
         }
@@ -178,7 +181,7 @@ trait TestsAuthHelperTrait
     {
         return [
             'permissions' => null,
-            'roles' => null
+            'roles' => null,
         ];
     }
 }

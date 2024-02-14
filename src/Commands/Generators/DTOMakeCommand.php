@@ -18,7 +18,7 @@ class DTOMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:dto';
+    protected $signature = 'module:make:dto';
 
     /**
      * The console command description.
@@ -50,8 +50,6 @@ class DTOMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -73,7 +71,7 @@ class DTOMakeCommand extends ComponentGeneratorCommand
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => $this->getClass($this->nameArgument),
         ];
 
         return Stub::create("dto/default.stub", $stubReplaces)->render();

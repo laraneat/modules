@@ -8,7 +8,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Contracts\ActivatorInterface;
 use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\FileRepository;
+use Laraneat\Modules\ModulesRepository;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use Laraneat\Modules\Support\Stub;
 
@@ -27,7 +27,7 @@ class ModuleGenerator extends Generator
     /**
      * The repository instance.
      */
-    protected ?FileRepository $repository;
+    protected ?ModulesRepository $repository;
 
     /**
      * The laravel config instance.
@@ -65,12 +65,12 @@ class ModuleGenerator extends Generator
     protected bool $isActive = false;
 
     public function __construct(
-        string $name,
-        ?string $entityName = null,
-        ?FileRepository $repository = null,
-        ?Config $config = null,
-        ?Filesystem $filesystem = null,
-        ?Console $console = null,
+        string              $name,
+        ?string             $entityName = null,
+        ?ModulesRepository     $repository = null,
+        ?Config             $config = null,
+        ?Filesystem         $filesystem = null,
+        ?Console            $console = null,
         ?ActivatorInterface $activator = null
     ) {
         $this->name = $name;
@@ -195,7 +195,7 @@ class ModuleGenerator extends Generator
     /**
      * Get the repository instance.
      */
-    public function getRepository(): ?FileRepository
+    public function getRepository(): ?ModulesRepository
     {
         return $this->repository;
     }
@@ -203,7 +203,7 @@ class ModuleGenerator extends Generator
     /**
      * Set the repository instance.
      */
-    public function setRepository(FileRepository $repository): static
+    public function setRepository(ModulesRepository $repository): static
     {
         $this->repository = $repository;
 
@@ -284,7 +284,7 @@ class ModuleGenerator extends Generator
 
             $path = GeneratorHelper::modulePath($this->getName(), $folder->getPath());
 
-            if (!$this->filesystem->isDirectory($path)) {
+            if (! $this->filesystem->isDirectory($path)) {
                 $this->filesystem->makeDirectory($path, 0755, true);
                 if ($folder->withGitKeep()) {
                     $this->generateGitKeep($path);
@@ -304,22 +304,22 @@ class ModuleGenerator extends Generator
      */
     public function generateProviders(): void
     {
-        if (!GeneratorHelper::component('provider')->generate()) {
+        if (! GeneratorHelper::component('provider')->generate()) {
             return;
         }
 
-        $moduleName = $this->getName();
+        $modulePackageName = $this->getName();
 
         $this->console->call('module:make:provider', [
-            'name' => "{$moduleName}ServiceProvider",
-            'module' => $moduleName,
-            '--stub' => 'module'
+            'name' => "{$modulePackageName}ServiceProvider",
+            'module' => $modulePackageName,
+            '--stub' => 'module',
         ]);
 
         $this->console->call('module:make:provider', [
             'name' => "RouteServiceProvider",
-            'module' => $moduleName,
-            '--stub' => 'route'
+            'module' => $modulePackageName,
+            '--stub' => 'route',
         ]);
     }
 
@@ -374,15 +374,15 @@ class ModuleGenerator extends Generator
         return [
             'authorEmail' => $this->getAuthorEmailReplacement(),
             'authorName' => $this->getAuthorNameReplacement(),
-            'moduleKey' => $this->getModuleKeyReplacement(),
-            'moduleName' => $this->getModuleNameReplacement(),
-            'moduleNamespace' => $this->getModuleNamespaceReplacement(),
-            'vendor' => $this->getVendorReplacement()
+            'modulePackageName' => $this->getModuleKeyReplacement(),
+            'modulePackageName' => $this->getModuleNameReplacement(),
+            'modulePackageNamespace' => $this->getModuleNamespaceReplacement(),
+            'vendor' => $this->getVendorReplacement(),
         ];
     }
 
     /**
-     * Get replacement for {{ moduleKey }}.
+     * Get replacement for {{ modulePackageName }}.
      */
     protected function getModuleKeyReplacement(): string
     {
@@ -390,7 +390,7 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get the module name in studly case (replacement for {{ moduleName }}).
+     * Get the module name in studly case (replacement for {{ modulePackageName }}).
      */
     protected function getModuleNameReplacement(): string
     {
@@ -422,10 +422,10 @@ class ModuleGenerator extends Generator
     }
 
     /**
-     * Get replacement for {{ moduleNamespace }}.
+     * Get replacement for {{ modulePackageNamespace }}.
      */
     protected function getModuleNamespaceReplacement(): string
     {
-        return str_replace('\\', '\\\\', GeneratorHelper::moduleNamespace($this->getName()));
+        return str_replace('\\', '\\\\', GeneratorHelper::modulePackageNamespace($this->getName()));
     }
 }

@@ -19,7 +19,7 @@ trait SeederLoaderTrait
     public function runSeedersFromModules(array|string $subdirectories = []): void
     {
         $subdirectories = Arr::wrap($subdirectories);
-        $modules = Modules::allEnabled();
+        $modules = Modules::getModules();
 
         $seederClasses = [];
         foreach ($modules as $module) {
@@ -50,7 +50,7 @@ trait SeederLoaderTrait
         $moduleSeedersPath = GeneratorHelper::component('seeder')->getFullPath($module);
         $paths = [$moduleSeedersPath];
 
-        if (!empty($subdirectories)) {
+        if (! empty($subdirectories)) {
             $paths += array_map(
                 static fn ($subdirectory)
                     => rtrim($moduleSeedersPath, '/') . '/' . ltrim($subdirectory, '/'),
@@ -109,15 +109,17 @@ trait SeederLoaderTrait
                     if ($tokens[$i] === ';') {
                         $namespace_ok = true;
                         $namespace = trim($namespace);
+
                         break;
                     }
                     $namespace .= is_array($tokens[$i]) ? $tokens[$i][1] : $tokens[$i];
                 }
+
                 break;
             }
             $i++;
         }
-        if (!$namespace_ok) {
+        if (! $namespace_ok) {
             return null;
         }
 

@@ -2,24 +2,34 @@
 
 namespace Laraneat\Modules\Providers;
 
+use Illuminate\Foundation\ProviderRepository;
 use Illuminate\Support\ServiceProvider;
-use Laraneat\Modules\Contracts\RepositoryInterface;
+use Laraneat\Modules\ModulesRepository;
 
 class BootstrapServiceProvider extends ServiceProvider
 {
     /**
-     * Register the provider.
+     * Bootstrap any application services.
      */
     public function register(): void
     {
-        $this->app[RepositoryInterface::class]->register();
+        /** @var ModulesRepository $repository */
+        $repository = $this->app[ModulesRepository::class];
+
+        $this->registerProviders($repository);
+        $this->registerAliases($repository);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
+    protected function registerProviders(ModulesRepository $modulesRepository): void
     {
-        $this->app[RepositoryInterface::class]->boot();
+        (new ProviderRepository($this->app, $this->app['files'], $modulesRepository->getCachedModulesServicesPath()))
+            ->load($modulesRepository->getProviders());
+    }
+
+    protected function registerAliases(ModulesRepository $modulesRepository): void
+    {
+        foreach ($modulesRepository->getAliases() as $key => $alias) {
+            $this->app->alias($key, $alias);
+        }
     }
 }

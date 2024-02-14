@@ -4,4 +4,23 @@ namespace Laraneat\Modules\Exceptions;
 
 class ModuleNotFoundException extends \Exception
 {
+    public static function make(string $packageName): static
+    {
+        return new static(
+            sprintf(
+                "Module with '%s' package name does not exist!",
+                $packageName,
+            )
+        );
+    }
+
+    public static function makeForName(string $name): static
+    {
+        return new static(
+            sprintf(
+                "Module with '%s' name does not exist!",
+                $name,
+            )
+        );
+    }
 }

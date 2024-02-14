@@ -12,8 +12,8 @@ class ListCommand extends BaseCommand
      * @var string
      */
     protected $signature = 'module:list
-                            {--o|only= : Types of modules will be displayed (enabled/disabled)}
-                            {--d|direction=asc : The direction of ordering (asc/desc)}';
+                            {--vendor : Outputs vendor modules}
+                            {--app : Outputs app modules}';
 
     /**
      * The console command description.
@@ -27,32 +27,24 @@ class ListCommand extends BaseCommand
      */
     public function handle(): int
     {
-        $this->components->twoColumnDetail('<fg=gray>Status / Name</>', '<fg=gray>Path / priority</>');
-        collect($this->getModules())->each(function (Module $module) {
-            $row = [
-                $module->isEnabled() ? '<fg=green>Enabled</>' : '<fg=red>Disabled</>',
-                $module->getName(),
-                $module->getPath(),
-                $module->getPriority(),
-            ];
-            $this->components->twoColumnDetail("[{$row[0]}] {$row[1]}", "{$row[2]} [{$row[3]}]");
-        });
+        $listVendorModules = $this->option('vendor');
+        $listAppModules = $this->option('app');
+
+        if (!$listAppModules && !$listVendorModules || $listAppModules && $listVendorModules) {
+            $modules = $this->modulesRepository->getModules();
+        } else if ($listVendorModules) {
+            $modules = $this->modulesRepository->getVendorModules();
+        } else {
+            $modules = $this->modulesRepository->getAppModules();
+        }
+
+        $this->table(
+            ['Package Name', 'Namespace', 'Path'],
+            collect($modules)
+                ->map(fn (Module $module) => [$module->getPackageName(), $module->getNamespace(), $module->getPath()])
+                ->toArray()
+        );
 
         return self::SUCCESS;
-    }
-
-    /**
-     * @return array<string, Module>
-     */
-    protected function getModules(): array
-    {
-        /** @var string $only */
-        $only = $this->option('only');
-
-        return match ($only) {
-            'enabled' => $this->modules->getByStatus(true),
-            'disabled' => $this->modules->getByStatus(false),
-            default => $this->modules->all(),
-        };
     }
 }

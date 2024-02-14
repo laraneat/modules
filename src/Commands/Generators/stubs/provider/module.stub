@@ -2,15 +2,11 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Providers\ServiceProvider;
-use Laraneat\Modules\Traits\ModuleProviderHelpersTrait;
+use Laraneat\Modules\Support\ModuleServiceProvider;
 
-class {{ class }} extends ServiceProvider
+class {{ class }} extends ModuleServiceProvider
 {
-    use ModuleProviderHelpersTrait;
-
-    protected string $moduleName = '{{ moduleName }}';
-    protected string $moduleKey = '{{ moduleKey }}';
+    protected string $modulePackageName = '{{ modulePackageName }}';
 
     /**
      * Register services.
@@ -44,14 +40,14 @@ class {{ class }} extends ServiceProvider
      */
     public function registerTranslations(): void
     {
-        $sourcePath = module_path($this->moduleName, '{{ langPath }}');
-        $langPath = lang_path('modules/' .$this->moduleKey);
+        $sourcePath = $this->getModule()->subPath('{{ langPath }}');
+        $langPath = lang_path('modules/' .$this->modulePackageName);
 
-        $this->loadTranslationsFrom($sourcePath, $this->moduleKey);
+        $this->loadTranslationsFrom($sourcePath, $this->modulePackageName);
 
         $this->publishes([
             $sourcePath => $langPath,
-        ], $this->moduleKey . '-translations');
+        ], '{{ moduleKebabName }}-translations');
     }
 
     /**
@@ -59,17 +55,17 @@ class {{ class }} extends ServiceProvider
      */
     public function registerViews(): void
     {
-        $sourcePath = module_path($this->moduleName, '{{ viewsPath }}');
-        $viewsPath = resource_path('views/modules/' . $this->moduleKey);
+        $sourcePath = $this->getModule()->subPath('{{ viewsPath }}');
+        $viewsPath = resource_path('views/modules/' . $this->modulePackageName);
 
         $this->loadViewsFrom(
-            array_merge($this->getPublishableViewPaths($this->moduleKey), [$sourcePath]),
-            $this->moduleKey
+            array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
+            $this->modulePackageName
         );
 
         $this->publishes([
             $sourcePath => $viewsPath
-        ], $this->moduleKey . '-views');
+        ], '{{ moduleKebabName }}-views');
     }
 
     /**
@@ -77,14 +73,14 @@ class {{ class }} extends ServiceProvider
      */
     public function registerMigrations(): void
     {
-        $sourcePath = module_path($this->moduleName, '{{ migrationsPath }}');
+        $sourcePath = $this->getModule()->subPath('{{ migrationsPath }}');
         $migrationsPath = database_path('migrations');
 
         $this->loadMigrationsFrom($sourcePath);
 
         $this->publishes([
             $sourcePath => $migrationsPath
-        ], $this->moduleKey . '-migrations');
+        ], '{{ moduleKebabName }}-migrations');
     }
 
     /**
@@ -93,7 +89,7 @@ class {{ class }} extends ServiceProvider
     public function registerCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommandsFrom(module_path($this->moduleName, '{{ commandsPath }}'));
+            $this->loadCommandsFrom($this->getModule()->subPath('{{ commandsPath }}'));
         }
     }
 }

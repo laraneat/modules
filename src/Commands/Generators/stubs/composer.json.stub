@@ -1,6 +1,6 @@
 {
-    "name": "{{ vendor }}/{{ moduleKey }}",
-    "description": "",
+    "name": "{{ vendor }}/{{ modulePackageName }}",
+    "description": "{{ modulePackageName }} module",
     "authors": [
         {
             "name": "{{ authorName }}",
@@ -9,7 +9,17 @@
     ],
     "autoload": {
         "psr-4": {
-            "{{ moduleNamespace }}\\": ""
+            "{{ modulePackageNamespace }}\\": ""
+        }
+    },
+    "extra": {
+        "laraneat": {
+            "module": {
+                "name": "{{ modulePackageName }}",
+                "namespace": "{{ modulePackageNamespace }}",
+                "providers": [],
+                "aliases": []
+            }
         }
     }
 }

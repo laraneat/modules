@@ -20,7 +20,7 @@ class FactoryMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:factory';
+    protected $signature = 'module:make:factory';
 
     /**
      * The console command description.
@@ -52,8 +52,6 @@ class FactoryMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
@@ -87,7 +85,7 @@ class FactoryMakeCommand extends ComponentGeneratorCommand
             'class' => $this->getClass($this->nameArgument),
             'model' => $modelClass,
             'modelEntity' => Str::camel($modelClass),
-            'modelNamespace' => $this->getComponentNamespace($this->module, $model, 'model')
+            'modelNamespace' => $this->getComponentNamespace($this->module, $model, 'model'),
         ];
 
         return Stub::create("factory.stub", $stubReplaces)->render();

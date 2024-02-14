@@ -2,8 +2,8 @@
 
 namespace Laraneat\Modules\Commands;
 
+use Laraneat\Modules\Exceptions\ModuleNotFoundException;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Generator\GeneratorHelper;
 
 class MigrateStatusCommand extends BaseCommand
 {
@@ -14,8 +14,6 @@ class MigrateStatusCommand extends BaseCommand
      */
     protected $signature = 'module:migrate:status
                             {module?* : Module name(s)}
-                            {--d|direction=asc : The direction of ordering (asc/desc)}
-                            {--subpath=* : The subpath(s) to the migrations files to be executed}
                             {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
                             {--database= : The database connection to use}
                             {--pending : Only list pending migrations}';
@@ -32,8 +30,13 @@ class MigrateStatusCommand extends BaseCommand
      */
     public function handle(): int
     {
-        /** @var array<Module|string> $modulesToHandle */
-        $modulesToHandle = $this->argument('module') ?: $this->modules->getOrdered($this->option('direction') ?: 'asc');
+        try {
+            $modulesToHandle = $this->getModuleArgumentOrFail();
+        } catch (ModuleNotFoundException $exception) {
+            $this->error($exception->getMessage());
+
+            return self::FAILURE;
+        }
 
         foreach($modulesToHandle as $module) {
             $this->status($module);
@@ -45,21 +48,12 @@ class MigrateStatusCommand extends BaseCommand
     /**
      * Show migration status from the specified module.
      */
-    protected function status(Module|string $moduleOrName): void
+    protected function status(Module|string $module): void
     {
-        $module = $this->findModuleOrFail($moduleOrName);
-
         $this->line('Running for module: <info>' . $module->getName() . '</info>');
 
-        $moduleMigrationPath = $module->getExtraPath(GeneratorHelper::component('migration')->getPath());
-
-        $paths = $this->option('subpath')
-            ? collect($this->option('subpath'))
-                ->map(static fn (string $subPath) => $moduleMigrationPath . "/" .$subPath)->all()
-            : [$moduleMigrationPath];
-
         $this->call('migrate:status', [
-            '--path' => $paths,
+            '--path' => $module->getMigrationPaths(),
             '--database' => $this->option('database'),
             '--realpath' => (bool) $this->option('realpath'),
             '--pending' => (bool) $this->option('pending'),

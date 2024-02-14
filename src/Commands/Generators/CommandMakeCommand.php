@@ -5,7 +5,6 @@ namespace Laraneat\Modules\Commands\Generators;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Stub;
 use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @group generator
@@ -19,7 +18,7 @@ class CommandMakeCommand extends ComponentGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make:command';
+    protected $signature = 'module:make:command';
 
     /**
      * The console command description.
@@ -51,13 +50,22 @@ class CommandMakeCommand extends ComponentGeneratorCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
         return [
             ['command', 'c', InputOption::VALUE_REQUIRED, 'The terminal command that should be assigned.'],
+        ];
+    }
+
+    /**
+     * Get the console command arguments.
+     */
+    protected function getArguments(): array
+    {
+        return [
+            ['name', InputArgument::REQUIRED, 'The name of the command.'],
+            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
         ];
     }
 
@@ -76,7 +84,7 @@ class CommandMakeCommand extends ComponentGeneratorCommand
     {
         $command = $this->getOptionOrAsk(
             'command',
-            'Enter the terminal command that should be assigned',
+            'Enter the terminal command signature that should be assigned',
             'command:name',
             true
         );
@@ -84,7 +92,7 @@ class CommandMakeCommand extends ComponentGeneratorCommand
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
             'class' => $this->getClass($this->nameArgument),
-            'command' => $command
+            'command' => $command,
         ];
 
         return Stub::create("command.stub", $stubReplaces)->render();

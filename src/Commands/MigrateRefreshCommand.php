@@ -2,7 +2,6 @@
 
 namespace Laraneat\Modules\Commands;
 
-
 use Illuminate\Console\ConfirmableTrait;
 
 class MigrateRefreshCommand extends BaseCommand
@@ -16,8 +15,6 @@ class MigrateRefreshCommand extends BaseCommand
      */
     protected $signature = 'module:migrate:refresh
                             {module?* : Module name(s)}
-                            {--d|direction=asc : The direction of ordering (asc/desc)}
-                            {--subpath=* : The subpath(s) to the migrations files to be executed}
                             {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
                             {--database= : The database connection to use}
                             {--force : Force the operation to run when in production}
@@ -45,8 +42,6 @@ class MigrateRefreshCommand extends BaseCommand
 
         $this->call('module:migrate:reset', [
             'module' => $this->argument('module'),
-            '--direction' => $this->option('direction'),
-            '--subpath' => $this->option('subpath'),
             '--realpath' => $this->option('realpath'),
             '--database' => $this->option('database'),
             '--pretend' => $this->option('pretend'),
@@ -55,8 +50,6 @@ class MigrateRefreshCommand extends BaseCommand
 
         $this->call('module:migrate', [
             'module' => $this->argument('module'),
-            '--direction' => $this->option('direction'),
-            '--subpath' => $this->option('subpath'),
             '--realpath' => $this->option('realpath'),
             '--database' => $this->option('database'),
             '--schema-path' => $this->option('schema-path'),
