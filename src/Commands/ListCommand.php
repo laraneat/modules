@@ -42,6 +42,7 @@ class ListCommand extends BaseCommand
             ['Package Name', 'Namespace', 'Path'],
             collect($modules)
                 ->map(fn (Module $module) => [$module->getPackageName(), $module->getNamespace(), $module->getPath()])
+                ->values()
                 ->toArray()
         );
 
