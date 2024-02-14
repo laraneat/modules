@@ -215,6 +215,7 @@ abstract class TestCase extends OrchestraTestCase
             $modulePath = rtrim($modulePath, '/');
             $this->filesystem->copyDirectory($modulePath, $appModulesPath . '/' . Str::afterLast($modulePath, '/'));
         }
+        $this->app['modules']->pruneAppModulesManifest();
     }
 
     /**
@@ -247,16 +248,20 @@ abstract class TestCase extends OrchestraTestCase
         $this->filesystem->replace($vendorPath . '/composer/installed.json', json_encode([
             'packages' => $packages,
         ]));
+        $this->app['modules']->pruneVendorModulesManifest();
     }
 
     public function pruneModulesPaths(): void
     {
-        foreach($this->modulesPaths as $path) {
-            if ($this->filesystem->isDirectory($path)) {
-                $this->filesystem->deleteDirectory($path);
+        if ($this->modulesPaths) {
+            foreach($this->modulesPaths as $path) {
+                if ($this->filesystem->isDirectory($path)) {
+                    $this->filesystem->deleteDirectory($path);
+                }
             }
+            $this->modulesPaths = [];
+            $this->app['modules']->pruneModulesManifest();
         }
-        $this->modulesPaths = [];
     }
 
     /**
