@@ -6,7 +6,7 @@ build
 coverage
 .env
 .env.backup
-.php_cs.cache
+.php-cs-fixer.cache
 .phpunit.result.cache
 .phpunit.cache
 .phpstorm.meta.php
