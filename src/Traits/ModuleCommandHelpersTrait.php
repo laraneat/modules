@@ -21,7 +21,7 @@ trait ModuleCommandHelpersTrait
     }
 
     /**
-     * @return array<string, Module>|Module
+     * @return array<int, Module>|Module
      *
      * @throws ModuleNotFoundException
      * @throws ModuleHasNonUniquePackageName
@@ -67,7 +67,9 @@ trait ModuleCommandHelpersTrait
 
         return collect($moduleArgument)
             ->map(fn (string $moduleNameOrPackageName)
-            => $this->findModuleByNameOrPackageNameOrFail($moduleNameOrPackageName))
+                => $this->findModuleByNameOrPackageNameOrFail($moduleNameOrPackageName))
+            ->unique(fn (Module $module) => $module->getPackageName())
+            ->values()
             ->all();
     }
 
@@ -87,7 +89,7 @@ trait ModuleCommandHelpersTrait
         $numberOfFoundModules = $foundModules->count();
 
         if ($numberOfFoundModules === 0) {
-            throw ModuleNotFoundException::makeForName($moduleNameOrPackageName);
+            throw ModuleNotFoundException::makeForNameOrPackageName($moduleNameOrPackageName);
         }
 
         if ($numberOfFoundModules === 1) {
@@ -98,6 +100,7 @@ trait ModuleCommandHelpersTrait
             "$numberOfFoundModules modules with name «{$moduleNameOrPackageName}» found, please select one module from those found",
             $foundModules->keys()->all(),
         );
+
 
         return $this->getModulesRepository()->findOrFail($selectedPackageName);
     }

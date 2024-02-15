@@ -23,4 +23,14 @@ class ModuleNotFoundException extends \Exception
             )
         );
     }
+
+    public static function makeForNameOrPackageName(string $nameOrPackageName): static
+    {
+        return new static(
+            sprintf(
+                "Module with '%s' name or package name does not exist!",
+                $nameOrPackageName,
+            )
+        );
+    }
 }
