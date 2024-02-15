@@ -1,0 +1,28 @@
+{
+    "name": "app/foo",
+    "description": "Foo module for testing",
+    "authors": [
+        {
+            "name": "Salavat Salakhutdinov",
+            "email": "salahutdinov.salavat@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\Modules\\Foo\\": ""
+        }
+    },
+    "extra": {
+        "laraneat": {
+            "module": {
+                "name": "Foo",
+                "namespace": "App\\Modules\\Foo\\",
+                "providers": [
+                    "App\\Modules\\Foo\\Providers\\FooServiceProvider",
+                    "App\\Modules\\Foo\\Providers\\RouteServiceProvider"
+                ],
+                "aliases": []
+            }
+        }
+    }
+}
