@@ -15,7 +15,7 @@ class ModuleDeleteCommand extends BaseCommand
      * @var string
      */
     protected $signature = 'module:delete
-                            {module?* : Module name(s) to delete}
+                            {module?* : Module name(s) or package name(s) to delete}
                             {--force : Force the operation to run when in production}';
 
     /**

@@ -13,7 +13,7 @@ class MigrateStatusCommand extends BaseCommand
      * @var string
      */
     protected $signature = 'module:migrate:status
-                            {module?* : Module name(s)}
+                            {module?* : Module name(s) or package name(s)}
                             {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
                             {--database= : The database connection to use}
                             {--pending : Only list pending migrations}';

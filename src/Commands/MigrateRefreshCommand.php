@@ -14,7 +14,7 @@ class MigrateRefreshCommand extends BaseCommand
      * @var string
      */
     protected $signature = 'module:migrate:refresh
-                            {module?* : Module name(s)}
+                            {module?* : Module name(s) or package name(s)}
                             {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
                             {--database= : The database connection to use}
                             {--force : Force the operation to run when in production}
