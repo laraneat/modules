@@ -7,6 +7,7 @@ use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFoundException;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModulesRepository;
+use Symfony\Component\Console\Exception\InvalidOptionException;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\select;
 
@@ -103,5 +104,61 @@ trait ModuleCommandHelpersTrait
 
 
         return $this->getModulesRepository()->findOrFail($selectedPackageName);
+    }
+
+    /**
+     * Checks if the option is set (via CLI), otherwise asks the user for a value
+     *
+     * @throws InvalidOptionException
+     */
+    protected function getOptionOrAsk(
+        string $optionName,
+        string $question,
+        ?string $default = null,
+        bool $required = true
+    ): string
+    {
+        $value = $this->option($optionName);
+
+        if ($value === '' || $value === null) {
+            $value = trim($this->ask($question, $default));
+        }
+
+        if ($required && ($value === '' || $value === null)) {
+            throw new InvalidOptionException(
+                sprintf("The «%s» option is required", $optionName)
+            );
+        }
+
+        return $value;
+    }
+
+    /**
+     * Checks if the option is set (via CLI), otherwise proposes choices to the user
+     *
+     * @throws InvalidOptionException
+     */
+    protected function getOptionOrChoice(
+        string $optionName,
+        string $question,
+        array $choices,
+        ?string $default = null
+    ): string
+    {
+        $value = $this->option($optionName);
+
+        if ($value === '' || $value === null) {
+            $value = $this->choice($question, $choices, $default);
+        } elseif (!in_array($value, $choices, true)) {
+            throw new InvalidOptionException(
+                sprintf(
+                    "Wrong «%s» option value provided. Value should be one of «%s».",
+                    $optionName,
+                    implode('» or «', $choices)
+                )
+            );
+        }
+
+        return $value;
     }
 }
