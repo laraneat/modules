@@ -1,203 +1,112 @@
 <?php
 
-namespace Laraneat\Modules\Tests\Commands\Generators;
+use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-use Illuminate\Filesystem\Filesystem;
-use Laraneat\Modules\Contracts\RepositoryInterface;
-use Laraneat\Modules\Tests\BaseTestCase;
-use Spatie\Snapshots\MatchesSnapshots;
-use Symfony\Component\Console\Exception\InvalidOptionException;
+beforeEach(function() {
+    $this->setAppModules([
+        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Article'),
+        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
+    ], $this->app->basePath('/app/Modules'));
 
-/**
- * @group command
- * @group generator
- */
-class ActionMakeCommandTest extends BaseTestCase
-{
-    use MatchesSnapshots;
+    $this->setVendorModules([
+        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/vendor/laraneat/foo'),
+        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/vendor/laraneat/bar'),
+    ]);
+});
 
-    private Filesystem $finder;
-    private string $modulePath;
+it('generates "plain" action for the module', function () {
+    $this->artisan('module:make:action', [
+        'name' => 'PlainArticleAction',
+        'module' => 'Article',
+        '--stub' => 'plain',
+    ])
+        ->assertSuccessful();
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->modulePath = base_path('app/Modules/Article');
-        $this->finder = $this->app['files'];
-        $this->artisan('module:make', ['name' => 'Article', '--plain' => true]);
-    }
+    $filePath = $this->app->basePath('/app/Modules/Article/Actions/PlainArticleAction.php');
+    expect(is_file($filePath))->toBeTrue();
+    assertMatchesFileSnapshot($filePath);
+});
 
-    protected function tearDown(): void
-    {
-        $this->app[RepositoryInterface::class]->delete('Article');
-        parent::tearDown();
-    }
+it('generates "create" action for the module', function () {
+    $this->artisan('module:make:action', [
+        'name' => 'CreateArticleAction',
+        'module' => 'Article',
+        '--stub' => 'create',
+        '--dto' => 'App\Modules\Article\DTO\CreateArticleDTO',
+        '--model' => 'App\Modules\Article\Models\Article',
+        '--request' => 'App\Modules\Article\UI\API\Requests\CreateArticleRequest',
+        '--resource' => 'App\Modules\Article\UI\API\Resources\ArticleResource',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_generates_action_file()
-    {
-        $code = $this->artisan('module:make:action', [
-            'name' => 'MyAwesomeAction',
-            'module' => 'Article',
-            '--stub' => 'plain'
-        ]);
+    $filePath = $this->app->basePath('/app/Modules/Article/Actions/CreateArticleAction.php');
+    expect(is_file($filePath))->toBeTrue();
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $this->assertTrue(is_file($this->modulePath . '/Actions/MyAwesomeAction.php'));
-        $this->assertSame(0, $code);
-    }
+it('generates "update" action for the module', function () {
+    $this->artisan('module:make:action', [
+        'name' => 'UpdateArticleAction',
+        'module' => 'Article',
+        '--stub' => 'update',
+        '--dto' => 'App\Modules\Article\DTO\UpdateArticleDTO',
+        '--model' => 'App\Modules\Article\Models\Article',
+        '--request' => 'App\Modules\Article\UI\API\Requests\UpdateArticleRequest',
+        '--resource' => 'App\Modules\Article\UI\API\Resources\ArticleResource',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_generated_correct_action_file_with_content()
-    {
-        $code = $this->artisan('module:make:action', [
-            'name' => 'MyAwesomeAction',
-            'module' => 'Article',
-            '--stub' => 'plain'
-        ]);
+    $filePath = $this->app->basePath('/app/Modules/Article/Actions/UpdateArticleAction.php');
+    expect(is_file($filePath))->toBeTrue();
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $file = $this->finder->get($this->modulePath . '/Actions/MyAwesomeAction.php');
+it('generates "delete" action for the module', function () {
+    $this->artisan('module:make:action', [
+        'name' => 'DeleteArticleAction',
+        'module' => 'Article',
+        '--stub' => 'delete',
+        '--model' => 'App\Modules\Article\Models\Article',
+        '--request' => 'App\Modules\Article\UI\API\Requests\DeleteArticleRequest',
+    ])
+        ->assertSuccessful();
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+    $filePath = $this->app->basePath('/app/Modules/Article/Actions/DeleteArticleAction.php');
+    expect(is_file($filePath))->toBeTrue();
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_can_change_the_default_path()
-    {
-        $this->app['config']->set('modules.generator.components.action.path', 'Foo/Bar\\NewActions');
+it('generates "view" action for the module', function () {
+    $this->artisan('module:make:action', [
+        'name' => 'ViewArticleAction',
+        'module' => 'Article',
+        '--stub' => 'view',
+        '--model' => 'App\Modules\Article\Models\Article',
+        '--request' => 'App\Modules\Article\UI\API\Requests\ViewArticleRequest',
+        '--resource' => 'App\Modules\Article\UI\API\Resources\ArticleResource',
+        '--wizard' => 'App\Modules\Article\UI\API\QueryWizards\ArticleQueryWizard',
+    ])
+        ->assertSuccessful();
 
-        $code = $this->artisan('module:make:action', [
-            'name' => 'Baz\\Bat/MyAwesomeAction',
-            'module' => 'Article',
-            '--stub' => 'plain'
-        ]);
+    $filePath = $this->app->basePath('/app/Modules/Article/Actions/ViewArticleAction.php');
+    expect(is_file($filePath))->toBeTrue();
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $file = $this->finder->get($this->modulePath . '/Foo/Bar/NewActions/Baz/Bat/MyAwesomeAction.php');
+it('generates "list" action for the module', function () {
+    $this->artisan('module:make:action', [
+        'name' => 'ListArticlesAction',
+        'module' => 'Article',
+        '--stub' => 'list',
+        '--model' => 'App\Modules\Article\Models\Article',
+        '--request' => 'App\Modules\Article\UI\API\Requests\ListArticlesRequest',
+        '--resource' => 'App\Modules\Article\UI\API\Resources\ArticleResource',
+        '--wizard' => 'App\Modules\Article\UI\API\QueryWizards\ArticlesQueryWizard',
+    ])
+        ->assertSuccessful();
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+    $filePath = $this->app->basePath('/app/Modules/Article/Actions/ListArticlesAction.php');
+    expect(is_file($filePath))->toBeTrue();
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_can_change_the_default_namespace()
-    {
-        $this->app['config']->set('modules.generator.components.action.namespace', 'Foo/Bar\\NewActions/');
-
-        $code = $this->artisan('module:make:action', [
-            'name' => 'Baz\\Bat/MyAwesomeAction',
-            'module' => 'Article',
-            '--stub' => 'plain'
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Actions/Baz/Bat/MyAwesomeAction.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_create_action_file()
-    {
-        $code = $this->artisan('module:make:action', [
-            'name' => 'Baz\\Bat/MyAwesomeCreateAction',
-            'module' => 'Article',
-            '--stub' => 'create',
-            '--dto' => 'Foo/Bar\\TestDTO',
-            '--model' => 'Bar/TestModel',
-            '--request' => 'Bat/TestRequest',
-            '--resource' => 'Baz\\TestResource',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Actions/Baz/Bat/MyAwesomeCreateAction.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_throws_exception_when_classes_not_provided_for_create_action_file()
-    {
-        $this->expectException(InvalidOptionException::class);
-
-        $this->artisan('module:make:action', [
-            'name' => 'Baz\\Bat/MyAwesomeCreateAction',
-            'module' => 'Article',
-            '--stub' => 'create',
-            '-n' => '',
-        ]);
-    }
-
-    /** @test */
-    public function it_can_generate_delete_action_file()
-    {
-        $code = $this->artisan('module:make:action', [
-            'name' => 'Baz\\Bat/MyAwesomeDeleteAction',
-            'module' => 'Article',
-            '--stub' => 'delete',
-            '--model' => 'Bar/TestModel',
-            '--request' => 'Bat/TestRequest',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Actions/Baz/Bat/MyAwesomeDeleteAction.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_list_action_file()
-    {
-        $code = $this->artisan('module:make:action', [
-            'name' => 'Baz\\Bat/MyAwesomeListAction',
-            'module' => 'Article',
-            '--stub' => 'list',
-            '--model' => 'Bar/TestModel',
-            '--request' => 'Bat/TestRequest',
-            '--resource' => 'Baz\\TestResource',
-            '--wizard' => 'Bat\\TestQueryWizard',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Actions/Baz/Bat/MyAwesomeListAction.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_update_action_file()
-    {
-        $code = $this->artisan('module:make:action', [
-            'name' => 'Baz\\Bat/MyAwesomeUpdateAction',
-            'module' => 'Article',
-            '--stub' => 'update',
-            '--dto' => 'Foo/Bar\\TestDTO',
-            '--model' => 'Bar/TestModel',
-            '--request' => 'Bat/TestRequest',
-            '--resource' => 'Baz\\TestResource',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Actions/Baz/Bat/MyAwesomeUpdateAction.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_view_action_file()
-    {
-        $code = $this->artisan('module:make:action', [
-            'name' => 'Baz\\Bat/MyAwesomeViewAction',
-            'module' => 'Article',
-            '--stub' => 'view',
-            '--model' => 'Bar/TestModel',
-            '--request' => 'Bat/TestRequest',
-            '--resource' => 'Baz\\TestResource',
-            '--wizard' => 'Bat\\TestQueryWizard',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Actions/Baz/Bat/MyAwesomeViewAction.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-}

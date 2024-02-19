@@ -207,7 +207,7 @@ abstract class TestCase extends OrchestraTestCase
      */
     public function setAppModules(array $paths, ?string $appModulesPath = null): void
     {
-        $appModulesPath = rtrim($appModulesPath ?? GeneratorHelper::path(), '/');
+        $appModulesPath = rtrim($appModulesPath ?? GeneratorHelper::getBasePath(), '/');
         $this->addModulesPath($appModulesPath);
         $this->filesystem->ensureDirectoryExists($appModulesPath);
 

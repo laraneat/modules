@@ -1,7 +1,0 @@
-<?php
-
-use App\Modules\Blog\Actions\ViewPostCommentAction;
-use Illuminate\Support\Facades\Route;
-
-Route::get('post-comments/{postComment}', ViewPostCommentAction::class)
-    ->name('api.post_comments.view');
