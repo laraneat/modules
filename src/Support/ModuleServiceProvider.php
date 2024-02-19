@@ -93,7 +93,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
         return $namespace . str_replace(
             ['/', '.php'],
             ['\\', ''],
-            Str::after($file->getRealPath(), realpath(app_path()) . DIRECTORY_SEPARATOR)
+            Str::after($file->getRealPath(), realpath(app_path()) . '/')
         );
     }
 
