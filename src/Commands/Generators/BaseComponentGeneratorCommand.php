@@ -2,16 +2,16 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Illuminate\Support\Facades\File;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Commands\BaseCommand;
-use Laraneat\Modules\Exceptions\FileAlreadyExistException;
-use Laraneat\Modules\Generators\FileGenerator;
+use Laraneat\Modules\Exceptions\NameIsReserved;
 use Laraneat\Modules\Module;
+use Laraneat\Modules\ModulesRepository;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use LogicException;
 
-abstract class ComponentGeneratorCommand extends BaseCommand
+abstract class BaseComponentGeneratorCommand extends BaseCommand
 {
     /**
      * Reserved names that cannot be used for generation.
@@ -89,96 +89,80 @@ abstract class ComponentGeneratorCommand extends BaseCommand
         'yield',
     ];
 
-    /**
-     * Get template contents.
-     *
-     * @return string
-     */
-    abstract protected function getTemplateContents(): string;
-
-    /**
-     * Get the destination file path.
-     *
-     * @return string
-     */
-    abstract protected function getDestinationFilePath(): string;
-
-    /**
-     * Get the console command arguments.
-     */
-    protected function getArguments(): array
+    public function __construct(
+        ModulesRepository $modulesRepository,
+        protected Filesystem $filesystem
+    )
     {
-        return [
-            ['name', InputArgument::REQUIRED, 'The name of the component.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
+        parent::__construct($modulesRepository);
     }
 
     /**
-     * Dummy 'prepare' method
+     * @param string $name
+     * @return void
      *
-     * @return mixed
+     * @throws NameIsReserved
      */
-    protected function prepare()
+    protected function ensureNameIsNotReserved(string $name): void
     {
-        //
+        $classBaseName = class_basename($name);
+
+        if ($this->isReservedName($classBaseName)) {
+            throw NameIsReserved::make($classBaseName);
+        }
     }
 
-    /**
-     * Execute the console command.
-     *
-     * @return int
-     */
-    public function handle(): int
+    protected function generate(string $path, string $contents, bool $force = false): int
     {
-        $this->prepare();
-
-        // First we need to ensure that the given name is not a reserved word within the PHP
-        // language and that the class name will actually be valid. If it is not valid we
-        // can error now and prevent from polluting the filesystem using invalid files.
-        if ($this->isReservedName($this->getClass($this->getTrimmedArgument('name')))) {
-            $this->error('The name "'.$this->getClass($this->getTrimmedArgument('name')).'" is reserved by PHP.');
+        if ($force === false && $this->filesystem->exists($path)) {
+            $this->components->error("File: `$path` already exists.");
 
             return self::FAILURE;
         }
 
-        $path = str_replace('\\', '/', $this->getDestinationFilePath());
-        $contents = $this->sortImports($this->getTemplateContents());
+        $path = str_replace('\\', '/', $path);
+        $contents = $this->sortImports($contents);
 
-        try {
-            $overwriteFile = $this->hasOption('force') && $this->option('force');
-
-            File::ensureDirectoryExists(dirname($path));
-            (new FileGenerator($path, $contents))->withFileOverwrite($overwriteFile)->generate();
-
-            $this->components->info("Created: `$path`");
-        } catch (FileAlreadyExistException $e) {
-            $this->error("File: `$path` already exists.");
-
-            return self::FAILURE;
-        }
+        $this->filesystem->ensureDirectoryExists(dirname($path));
+        $this->filesystem->put($path, $contents);
+        $this->components->info("Created: `$path`");
 
         return self::SUCCESS;
     }
 
     /**
-     * Get the class "basename" of the given class.
-     *
-     * @param string $class
-     *
-     * @return string
+     * Get full class name from option or ask
      */
-    protected function getClass(string $class): string
+    public function getFullClassFromOptionOrAsk(
+        string $optionName,
+        string $question,
+        string $componentType,
+        Module $module
+    ): string
     {
-        return class_basename($class);
+        return $this->getFullClass(
+            $this->getOptionOrAsk(
+                $optionName,
+                $question,
+            ),
+            GeneratorHelper::component($componentType)->getFullNamespace($module)
+        );
+    }
+
+    /**
+     * Get full class name with namespace
+     */
+    public function getFullClass(string $class, string $defaultNamespace): string
+    {
+        if (class_exists($class) || Str::contains($class, '\\')) {
+            return $class;
+        }
+
+        return trim($defaultNamespace, '\\') . '\\' . trim($class, '\\');
     }
 
     /**
      * Get the class "namespace" of the given class.
-     *
-     * @param string $class
-     *
-     * @return string
      */
     protected function getNamespaceOfClass(string $class): string
     {
@@ -191,32 +175,20 @@ abstract class ComponentGeneratorCommand extends BaseCommand
 
     /**
      * Get component namespace, without the class name.
-     *
-     * @param Module $module
-     * @param string $name
-     * @param string $componentType
-     *
-     * @return string
      */
     protected function getComponentNamespace(Module $module, string $name, string $componentType): string
     {
         $name = str_replace('/', '\\', $name);
         $componentNamespace = GeneratorHelper::component($componentType)->getFullNamespace($module);
-        $extraNamespace = $this->getNamespaceOfClass($name);
+        $subNamespace = $this->getNamespaceOfClass($name);
 
-        $namespace = $componentNamespace . '\\' . $extraNamespace;
+        $namespace = $componentNamespace . '\\' . $subNamespace;
 
         return trim($namespace, '\\');
     }
 
     /**
-     * Get component path, without the extension.
-     *
-     * @param Module $module
-     * @param string $name
-     * @param string $componentType
-     * @param string $extension
-     * @return string
+     * Get component path
      */
     protected function getComponentPath(
         Module $module,
@@ -230,12 +202,9 @@ abstract class ComponentGeneratorCommand extends BaseCommand
         return $componentPath . '/' . $fileName . $extension;
     }
 
-    /**
-     * @return string
-     */
     protected function getUserModelClass(): string
     {
-        $userModel = GeneratorHelper::userModel();
+        $userModel = GeneratorHelper::getUserModelClass();
 
         if (! $userModel) {
             $userModel = $this->ask('Enter the class name of the "User model"');
@@ -248,12 +217,9 @@ abstract class ComponentGeneratorCommand extends BaseCommand
         return $userModel;
     }
 
-    /**
-     * @return string
-     */
     protected function getCreatePermissionActionClass(): string
     {
-        $createPermissionAction = GeneratorHelper::createPermissionAction();
+        $createPermissionAction = GeneratorHelper::getCreatePermissionActionClass();
 
         if (! $createPermissionAction) {
             $createPermissionAction = $this->ask('Enter the class name of the "Create permission action"');
@@ -266,12 +232,9 @@ abstract class ComponentGeneratorCommand extends BaseCommand
         return $createPermissionAction;
     }
 
-    /**
-     * @return string
-     */
     protected function getCreatePermissionDTOClass(): string
     {
-        $createPermissionAction = GeneratorHelper::createPermissionDTO();
+        $createPermissionAction = GeneratorHelper::getCreatePermissionDTOClass();
 
         if (! $createPermissionAction) {
             $createPermissionAction = $this->ask('Enter the class name of the "Create permission DTO"');
@@ -286,10 +249,6 @@ abstract class ComponentGeneratorCommand extends BaseCommand
 
     /**
      * Convert namespace to path
-     *
-     * @param string $namespace
-     *
-     * @return string
      */
     protected function convertNamespaceToPath(string $namespace): string
     {
@@ -298,9 +257,6 @@ abstract class ComponentGeneratorCommand extends BaseCommand
 
     /**
      * Checks whether the given name is reserved.
-     *
-     * @param string $name
-     * @return bool
      */
     protected function isReservedName(string $name): bool
     {
@@ -311,10 +267,6 @@ abstract class ComponentGeneratorCommand extends BaseCommand
 
     /**
      * Alphabetically sorts the imports for the given stub.
-     *
-     * @param string $stubContent
-     *
-     * @return string
      */
     protected function sortImports(string $stubContent): string
     {

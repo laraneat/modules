@@ -35,7 +35,7 @@ class GeneratorPath
 
     public function getFullPath(Module|string $module): string
     {
-        return GeneratorHelper::modulePath($module, $this->path);
+        return GeneratorHelper::makeModulePath($module, $this->path);
     }
 
     public function getNamespace(): string
@@ -45,7 +45,7 @@ class GeneratorPath
 
     public function getFullNamespace(Module|string $module): string
     {
-        return GeneratorHelper::modulePackageNamespace($module, $this->namespace);
+        return GeneratorHelper::makeModuleNamespace($module, $this->namespace);
     }
 
     public function generate(): bool

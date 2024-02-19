@@ -2,26 +2,31 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Exception;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class ActionMakeCommand extends ComponentGeneratorCommand
+class ActionMakeCommand extends BaseComponentGeneratorCommand
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
     protected $signature = 'module:make:action
-                            ';
+                            {name : The name of the component}
+                            {module? : The name of the module}
+                            {--s|stub= : The stub name to load for this generator}
+                            {--dto= : The class name of the DTO to be used in the action}
+                            {--model= : The class name of the model to be used in the action}
+                            {--request= : The class name of the request to be used in the action}
+                            {--resource= : The class name of the resource to be used in the action}
+                            {--wizard= : The class name of the query wizard to be used in the action}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -31,128 +36,117 @@ class ActionMakeCommand extends ComponentGeneratorCommand
     protected $description = 'Generate new action for the specified module.';
 
     /**
-     * The stub name to load for this generator.
-     *
-     * @var string
-     */
-    protected string $stub = 'plain';
-
-    /**
-     * Module instance.
+     * The module instance
      *
      * @var Module
      */
     protected Module $module;
 
     /**
-     * Component type.
-     *
-     * @var string
+     * Execute the console command.
      */
-    protected string $componentType;
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
-     */
-    protected string $nameArgument;
-
-    /**
-     * Get the console command options.
-     */
-    protected function getOptions(): array
+    public function handle(): int
     {
-        return [
-            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
-            ['dto', null, InputOption::VALUE_REQUIRED, 'The class name of the DTO to be used in the action.'],
-            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the action.'],
-            ['request', null, InputOption::VALUE_REQUIRED, 'The class name of the request to be used in the action.'],
-            ['resource', null, InputOption::VALUE_REQUIRED, 'The class name of the resource to be used in the action.'],
-            ['wizard', null, InputOption::VALUE_REQUIRED, 'The class name of the wizard to be used in the action.'],
-        ];
+        try {
+            $name = $this->argument('name');
+            $this->ensureNameIsNotReserved($name);
+
+            $this->module = $this->getModuleArgumentOrFail();
+            $this->generate(
+                $this->getComponentPath($this->module, $name, 'action'),
+                $this->getContents(),
+                $this->option('force')
+            );
+        } catch (Exception $exception) {
+            $this->components->error($exception->getMessage());
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
     }
 
-    protected function prepare()
+    protected function getContents(): string
     {
-        $this->module = $this->getModule();
-        $this->stub = $this->getOptionOrChoice(
+        $stub = $this->getOptionOrChoice(
             'stub',
             'Select the stub you want to use for generator',
             ['plain', 'create', 'delete', 'list', 'update', 'view'],
             'plain'
         );
-        $this->componentType = 'action';
-        $this->nameArgument = $this->getTrimmedArgument('name');
+
+        return Stub::create("action/$stub.stub", $this->getStubReplaces($stub))->render();
     }
 
-    protected function getDestinationFilePath(): string
+    /**
+     * @param string $stub
+     * @return array<string, string>
+     */
+    protected function getStubReplaces(string $stub): array
     {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
+        $name = $this->argument('name');
 
-    protected function getTemplateContents(): string
-    {
         $stubReplaces = [
-            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument),
+            'namespace' => $this->getComponentNamespace($this->module, $name, 'action'),
+            'class' => class_basename($name),
         ];
 
-        if ($this->stub !== 'plain') {
-            if ($this->stub === 'create' || $this->stub === 'update') {
-                $dto = $this->getOptionOrAsk(
-                    'dto',
-                    'Enter the class name of the DTO to be used in the request',
-                    '',
-                    true
-                );
-                $stubReplaces['dto'] = $this->getClass($dto);
-                $stubReplaces['dtoEntity'] = Str::camel($stubReplaces['dto']);
-                $stubReplaces['dtoNamespace'] = $this->getComponentNamespace($this->module, $dto, 'dto');
-            }
-
-            if ($this->stub !== 'delete') {
-                $resource = $this->getOptionOrAsk(
-                    'resource',
-                    'Enter the class name of the resource to be used in the action',
-                    '',
-                    true
-                );
-                $stubReplaces['resource'] = $this->getClass($resource);
-                $stubReplaces['resourceNamespace'] = $this->getComponentNamespace($this->module, $resource, 'api-resource');
-
-                if (in_array($this->stub, ['list', 'view'], true)) {
-                    $wizard = $this->getOptionOrAsk(
-                        'wizard',
-                        'Enter the class name of the wizard to be used in the action',
-                        '',
-                        true
-                    );
-                    $stubReplaces['queryWizard'] = $this->getClass($wizard);
-                    $stubReplaces['queryWizardNamespace'] = $this->getComponentNamespace($this->module, $wizard, 'api-query-wizard');
-                }
-            }
-
-            $model = $this->getOptionOrAsk(
-                'model',
-                'Enter the class name of the model to be used in the action',
-                '',
-                true
-            );
-            $stubReplaces['model'] = $this->getClass($model);
-            $stubReplaces['modelEntity'] = Str::camel($stubReplaces['model']);
-            $stubReplaces['modelNamespace'] = $this->getComponentNamespace($this->module, $model, 'model');
-
-            $request = $this->getOptionOrAsk(
-                'request',
-                'Enter the class name of the request to be used in the action',
-                '',
-                true
-            );
-            $stubReplaces['request'] = $this->getClass($request);
-            $stubReplaces['requestNamespace'] = $this->getComponentNamespace($this->module, $request, 'api-request');
+        if ($stub === 'plain') {
+            return $stubReplaces;
         }
 
-        return Stub::create("action/{$this->stub}.stub", $stubReplaces)->render();
+        if ($stub === 'create' || $stub === 'update') {
+            $dtoClass = $this->getFullClassFromOptionOrAsk(
+                optionName: 'dto',
+                question: 'Enter the class name of the DTO to be used in the action',
+                componentType: 'dto',
+                module: $this->module
+            );
+            $stubReplaces['dto'] = class_basename($dtoClass);
+            $stubReplaces['dtoEntity'] = Str::camel($stubReplaces['dto']);
+            $stubReplaces['dtoNamespace'] = $this->getNamespaceOfClass($dtoClass);
+        }
+
+        if ($stub !== 'delete') {
+            $resourceClass = $this->getFullClassFromOptionOrAsk(
+                optionName: 'resource',
+                question: 'Enter the class name of the resource to be used in the action',
+                componentType: 'api-resource',
+                module: $this->module
+            );
+            $stubReplaces['resource'] = class_basename($resourceClass);
+            $stubReplaces['resourceNamespace'] = $this->getNamespaceOfClass($resourceClass);
+
+            if (in_array($stub, ['list', 'view'], true)) {
+                $wizardClass = $this->getFullClassFromOptionOrAsk(
+                    optionName: 'wizard',
+                    question: 'Enter the class name of the query wizard to be used in the action',
+                    componentType: 'api-query-wizard',
+                    module: $this->module
+                );
+                $stubReplaces['queryWizard'] = class_basename($wizardClass);
+                $stubReplaces['queryWizardNamespace'] = $this->getNamespaceOfClass($wizardClass);
+            }
+        }
+
+        $modelClass = $this->getFullClassFromOptionOrAsk(
+            optionName: 'model',
+            question: 'Enter the class name of the model to be used in the action',
+            componentType: 'model',
+            module: $this->module
+        );
+        $stubReplaces['model'] = class_basename($modelClass);
+        $stubReplaces['modelEntity'] = Str::camel($stubReplaces['model']);
+        $stubReplaces['modelNamespace'] = $this->getNamespaceOfClass($modelClass);
+
+        $requestClass = $this->getFullClassFromOptionOrAsk(
+            optionName: 'request',
+            question: 'Enter the class name of the request to be used in the action',
+            componentType: 'api-request',
+            module: $this->module
+        );
+        $stubReplaces['request'] = class_basename($requestClass);
+        $stubReplaces['requestNamespace'] = $this->getNamespaceOfClass($requestClass);
+
+        return $stubReplaces;
     }
 }

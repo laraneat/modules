@@ -1,8 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Support;
-
-use Laraneat\Modules\Support\Generator\GeneratorHelper;
+namespace Laraneat\Modules\Support\Generator;
 
 class Stub
 {
@@ -16,13 +14,13 @@ class Stub
     /**
      * The replacements array.
      *
-     * @var array
+     * @var array<string, string>
      */
     protected array $replaces = [];
 
     /**
      * @param string $path
-     * @param array  $replaces
+     * @param array<string, string> $replaces
      */
     public function __construct(string $path, array $replaces = [])
     {
@@ -34,13 +32,13 @@ class Stub
      * Create new self instance.
      *
      * @param string $path
-     * @param array  $replaces
+     * @param array<string, string> $replaces
      *
      * @return Stub
      */
     public static function create(string $path, array $replaces = []): Stub
     {
-        return new Stub($path, $replaces);
+        return new static($path, $replaces);
     }
 
     /**
@@ -59,27 +57,47 @@ class Stub
 
     /**
      * Get stub path.
-     *
-     * @return string
      */
     public function getPath(): string
     {
-        $customStubsFolderPath = GeneratorHelper::customStubsPath();
+        $customStubsFolderPath = GeneratorHelper::getCustomStubsPath();
         $customStubFilePath = $customStubsFolderPath . '/' . ltrim($this->path, '/');
 
         if (file_exists($customStubFilePath)) {
             return $customStubFilePath;
         }
 
-        return __DIR__ . '/../Commands/Generators/stubs/' . ltrim($this->path, '/');
+        return __DIR__ . '/../../Commands/Generators/stubs/' . ltrim($this->path, '/');
     }
 
     /**
-     * Get stub contents.
+     * Set replacements array.
      *
-     * @return string
+     * @param array<string, string> $replaces
+     *
+     * @return $this
      */
-    public function getContents(): string
+    public function setReplaces(array $replaces = []): static
+    {
+        $this->replaces = $replaces;
+
+        return $this;
+    }
+
+    /**
+     * Get replacements.
+     *
+     * @return array<string, string>
+     */
+    public function getReplaces(): array
+    {
+        return $this->replaces;
+    }
+
+    /**
+     * Render stub contents.
+     */
+    public function render(): string
     {
         $contents = file_get_contents($this->getPath());
 
@@ -95,56 +113,7 @@ class Stub
     }
 
     /**
-     * Get stub contents.
-     *
-     * @return string
-     */
-    public function render(): string
-    {
-        return $this->getContents();
-    }
-
-    /**
-     * Save stub to specific path.
-     *
-     * @param string $path
-     * @param string $filename
-     *
-     * @return int|false
-     */
-    public function saveTo(string $path, string $filename): bool|int
-    {
-        return file_put_contents($path . '/' . $filename, $this->getContents());
-    }
-
-    /**
-     * Set replacements array.
-     *
-     * @param array $replaces
-     *
-     * @return $this
-     */
-    public function replace(array $replaces = []): static
-    {
-        $this->replaces = $replaces;
-
-        return $this;
-    }
-
-    /**
-     * Get replacements.
-     *
-     * @return array
-     */
-    public function getReplaces(): array
-    {
-        return $this->replaces;
-    }
-
-    /**
      * Handle magic method __toString.
-     *
-     * @return string
      */
     public function __toString()
     {
