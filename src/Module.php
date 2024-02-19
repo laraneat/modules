@@ -211,11 +211,21 @@ class Module implements Arrayable
     }
 
     /**
-     * Get extra path.
+     * Get sub path.
      */
-    public function subPath(string $path): string
+    public function subPath(string $subPath): string
     {
-        return $this->getPath() . '/' . ltrim($path, '/');
+        $subPath = trim(str_replace('\\', '/', $subPath), '/');
+        return $this->getPath() . '/' . $subPath;
+    }
+
+    /**
+     * Get sub namespace.
+     */
+    public function subNamespace(string $subNamespace): string
+    {
+        $subNamespace = trim(str_replace('/', '\\', $subNamespace), '\\');
+        return $this->getNamespace() . '\\' . $subNamespace;
     }
 
     /**
