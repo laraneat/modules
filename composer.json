@@ -35,7 +35,7 @@
         "orchestra/testbench": "^8.2",
         "pestphp/pest": "^2.31",
         "pestphp/pest-plugin-laravel": "^2.0",
-        "phpstan/phpstan": "*",
+        "phpstan/phpstan": "^1.10.58",
         "roave/security-advisories": "dev-latest",
         "spatie/pest-plugin-snapshots": "^2.1"
     },
@@ -67,11 +67,11 @@
         }
     },
     "scripts": {
-        "analyse" : "vendor/bin/phpstan analyse --memory-limit=256M",
+        "analyse" : "./vendor/bin/phpstan analyse --memory-limit=256M",
         "test" : "./vendor/bin/pest --no-coverage",
-        "test-coverage" : "vendor/bin/pest --coverage-html coverage",
-        "update-snapshots": "./vendor/bin/phpunit --no-coverage -d --update-snapshots",
-        "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes",
+        "test-coverage" : "./vendor/bin/pest --coverage-html coverage",
+        "update-snapshots": "./vendor/bin/pest --no-coverage --update-snapshots",
+        "format": "./vendor/bin/php-cs-fixer fix --allow-risky=yes",
         "post-autoload-dump": [
             "@php ./vendor/bin/testbench package:discover --ansi"
         ]
