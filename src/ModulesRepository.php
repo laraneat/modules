@@ -7,6 +7,7 @@ use Illuminate\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Filesystem\Filesystem;
+use Laraneat\Modules\Enums\ModuleTypeEnum;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use function Illuminate\Filesystem\join_paths;
 use Illuminate\Support\Arr;
@@ -90,9 +91,9 @@ class ModulesRepository implements Arrayable
      *
      * @return array<int, class-string>
      */
-    public function getProviders(): array
+    public function getProviders(ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): array
     {
-        return collect($this->getModules())
+        return collect($this->getModules($typeEnum))
             ->map(static fn (Module $module) => $module->getProviders())
             ->collapse()
             ->all();
@@ -103,10 +104,10 @@ class ModulesRepository implements Arrayable
      *
      * @return array<string, class-string>
      */
-    public function getAliases(): array
+    public function getAliases(ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): array
     {
         /** @phpstan-ignore-next-line  */
-        return collect($this->getModules())
+        return collect($this->getModules($typeEnum))
             ->map(static fn (Module $module) => $module->getAliases())
             ->collapse()
             ->all();
@@ -316,7 +317,7 @@ class ModulesRepository implements Arrayable
      * @throws MissingModuleAttribute
      * @throws ModuleHasNonUniquePackageName
      */
-    public function getModules(): array
+    public function getAllModules(): array
     {
         if ($this->allModules !== null) {
             return $this->allModules;
@@ -327,6 +328,23 @@ class ModulesRepository implements Arrayable
         }
 
         return $this->allModules = array_merge($this->getVendorModules(), $this->getAppModules());
+    }
+
+    /**
+     * Get discovered modules by type
+     *
+     * @return array<string, Module>
+     *
+     * @throws MissingModuleAttribute
+     * @throws ModuleHasNonUniquePackageName
+     */
+    public function getModules(ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): array
+    {
+        return match ($typeEnum) {
+            ModuleTypeEnum::ALL => $this->getAllModules(),
+            ModuleTypeEnum::APP => $this->getAppModules(),
+            ModuleTypeEnum::VENDOR => $this->getVendorModules(),
+        };
     }
 
     /**
@@ -351,27 +369,27 @@ class ModulesRepository implements Arrayable
     /**
      * Determine whether the given module exist by its package name.
      */
-    public function has(string $modulePackageName): bool
+    public function has(string $modulePackageName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): bool
     {
-        return array_key_exists($modulePackageName, $this->getModules());
+        return array_key_exists($modulePackageName, $this->getModules($typeEnum));
     }
 
     /**
      * Get count from all modules.
      */
-    public function count(): int
+    public function count(ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): int
     {
-        return count($this->getModules());
+        return count($this->getModules($typeEnum));
     }
 
     /**
      * Find a specific module by its package name.
      */
-    public function find(string $modulePackageName): ?Module
+    public function find(string $modulePackageName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): ?Module
     {
         $modulePackageName = trim($modulePackageName);
 
-        return $this->getModules()[$modulePackageName] ?? null;
+        return $this->getModules($typeEnum)[$modulePackageName] ?? null;
     }
 
     /**
@@ -379,9 +397,9 @@ class ModulesRepository implements Arrayable
      *
      * @throws ModuleNotFoundException
      */
-    public function findOrFail(string $modulePackageName): Module
+    public function findOrFail(string $modulePackageName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): Module
     {
-        $module = $this->find($modulePackageName);
+        $module = $this->find($modulePackageName, $typeEnum);
 
         if ($module === null) {
             throw ModuleNotFoundException::make($modulePackageName);
@@ -393,9 +411,9 @@ class ModulesRepository implements Arrayable
     /**
      * Delete a specific module by its package name.
      */
-    public function delete(string $modulePackageName): bool
+    public function delete(string $modulePackageName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): bool
     {
-        return $this->findOrFail($modulePackageName)->delete();
+        return $this->findOrFail($modulePackageName, $typeEnum)->delete();
     }
 
     /**
@@ -403,12 +421,12 @@ class ModulesRepository implements Arrayable
      *
      * @return array<string, Module>
      */
-    public function filterByName(string $moduleName): array
+    public function filterByName(string $moduleName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): array
     {
         $moduleName = trim($moduleName);
         $modules = [];
 
-        foreach($this->getModules() as $modulePackageName => $module) {
+        foreach($this->getModules($typeEnum) as $modulePackageName => $module) {
             if ($module->getName() === $moduleName) {
                 $modules[$modulePackageName] = $module;
             }
@@ -424,9 +442,9 @@ class ModulesRepository implements Arrayable
      *
      * @throws ModuleNotFoundException
      */
-    public function filterByNameOrFail(string $moduleName): array
+    public function filterByNameOrFail(string $moduleName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): array
     {
-        $modules = $this->filterByName($moduleName);
+        $modules = $this->filterByName($moduleName, $typeEnum);
 
         if (!$modules) {
             throw ModuleNotFoundException::makeForName($moduleName);
@@ -454,9 +472,9 @@ class ModulesRepository implements Arrayable
      *     aliases: array<string, class-string>
      * }>
      */
-    public function toArray(): array
+    public function toArray(ModuleTypeEnum $typeEnum = ModuleTypeEnum::ALL): array
     {
-        return array_map(static fn(Module $module) => $module->toArray(), $this->getModules());
+        return array_map(static fn(Module $module) => $module->toArray(), $this->getModules($typeEnum));
     }
 
     /**
