@@ -46,7 +46,7 @@ return [
         | Place your custom stubs in this folder
         |
         */
-        'custom_stubs' => base_path('app/Ship/Generators/custom-stubs'),
+        'custom_stubs' => base_path('stubs/modules'),
 
         /*
         |--------------------------------------------------------------------------

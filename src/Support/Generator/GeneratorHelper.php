@@ -44,7 +44,7 @@ class GeneratorHelper
      */
     public static function getCustomStubsPath(): ?string
     {
-        $customStubsPath = config("modules.generator.custom_stubs", base_path('/stubs/modules'));
+        $customStubsPath = config('modules.generator.custom_stubs', base_path('/stubs/modules'));
 
         return $customStubsPath ? self::formatPath($customStubsPath) : null;
     }

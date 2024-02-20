@@ -56,7 +56,7 @@ abstract class TestCase extends OrchestraTestCase
         $app['config']->set('modules.generator', [
             'path' => base_path('app/Modules'),
             'namespace' => 'App\\Modules',
-            'custom_stubs' => base_path('app/Ship/Generators/custom-stubs'),
+            'custom_stubs' => base_path('stubs/modules'),
             'user_model' => 'App\\Modules\\User\\Models\\User',
             'create_permission' => [
                 'action' => "App\\Modules\\Authorization\\Actions\\CreatePermissionAction",
