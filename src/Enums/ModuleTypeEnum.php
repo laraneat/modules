@@ -4,7 +4,7 @@ namespace Laraneat\Modules\Enums;
 
 enum ModuleTypeEnum
 {
-    case ALL;
-    case APP;
-    case VENDOR;
+    case All;
+    case App;
+    case Vendor;
 }

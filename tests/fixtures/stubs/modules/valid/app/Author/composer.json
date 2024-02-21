@@ -21,7 +21,9 @@
                     "App\\Modules\\Author\\Providers\\AuthorServiceProvider",
                     "App\\Modules\\Author\\Providers\\RouteServiceProvider"
                 ],
-                "aliases": []
+                "aliases": {
+                    "AuthorFacade": "App\\Modules\\Author\\Facades\\SomeFacade"
+                }
             }
         }
     }
