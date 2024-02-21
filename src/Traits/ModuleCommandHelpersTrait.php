@@ -3,6 +3,7 @@
 namespace Laraneat\Modules\Traits;
 
 use Illuminate\Support\Str;
+use Laraneat\Modules\Enums\ModuleTypeEnum;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFoundException;
 use Laraneat\Modules\Module;
@@ -27,9 +28,9 @@ trait ModuleCommandHelpersTrait
      * @throws ModuleNotFoundException
      * @throws ModuleHasNonUniquePackageName
      */
-    protected function getModuleArgumentOrFail(): array|Module
+    protected function getModuleArgumentOrFail(ModuleTypeEnum $typeEnum = ModuleTypeEnum::All): array|Module
     {
-        $allPackageNames = array_keys($this->getModulesRepository()->getModules());
+        $allPackageNames = array_keys($this->getModulesRepository()->getModules($typeEnum));
         $moduleArgument = $this->input->getArgument('module');
         $multipleModuleMode = is_array($moduleArgument);
 
@@ -78,13 +79,13 @@ trait ModuleCommandHelpersTrait
      * @throws ModuleNotFoundException
      * @throws ModuleHasNonUniquePackageName
      */
-    protected function findModuleByNameOrPackageNameOrFail($moduleNameOrPackageName): Module
+    protected function findModuleByNameOrPackageNameOrFail($moduleNameOrPackageName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::All): Module
     {
-        if ($foundModule = $this->getModulesRepository()->find($moduleNameOrPackageName)) {
+        if ($foundModule = $this->getModulesRepository()->find($moduleNameOrPackageName, $typeEnum)) {
             return $foundModule;
         }
 
-        $foundModules = collect($this->getModulesRepository()->getModules())
+        $foundModules = collect($this->getModulesRepository()->getModules($typeEnum))
             ->filter(fn (Module $module) => Str::lower($module->getName()) === Str::lower($moduleNameOrPackageName));
 
         $numberOfFoundModules = $foundModules->count();
@@ -103,7 +104,7 @@ trait ModuleCommandHelpersTrait
         );
 
 
-        return $this->getModulesRepository()->findOrFail($selectedPackageName);
+        return $this->getModulesRepository()->findOrFail($selectedPackageName, $typeEnum);
     }
 
     /**
