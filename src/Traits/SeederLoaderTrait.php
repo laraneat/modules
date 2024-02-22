@@ -5,6 +5,7 @@ namespace Laraneat\Modules\Traits;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Enums\ModuleComponentTypeEnum;
 use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
@@ -47,7 +48,7 @@ trait SeederLoaderTrait
 
     protected function getSeederClassesFromModule(Module $module, array $subdirectories = []): array
     {
-        $moduleSeedersPath = GeneratorHelper::component('seeder')->getFullPath($module);
+        $moduleSeedersPath = GeneratorHelper::component(ModuleComponentTypeEnum::Seeder)->getFullPath($module);
         $paths = [$moduleSeedersPath];
 
         if (! empty($subdirectories)) {
