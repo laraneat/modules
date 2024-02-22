@@ -54,6 +54,9 @@
         }
     },
     "suggest": {
+        "lorisleiva/laravel-actions": "Laravel components that take care of one specific task",
+        "jackardios/laravel-query-wizard": "Easily build Eloquent queries from API requests",
+        "spatie/laravel-data": "Powerful data objects for Laravel",
         "wikimedia/composer-merge-plugin": "Allows the ability to create and merge composer.json files for your individual modules for module-specific dependency management."
     },
     "extra": {
