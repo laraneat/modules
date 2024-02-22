@@ -6,8 +6,10 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
+use Laraneat\Modules\Exceptions\CannotModifyVendorModule;
 use Symfony\Component\Process\Process;
 
 class Module implements Arrayable
@@ -187,6 +189,78 @@ class Module implements Arrayable
     }
 
     /**
+     * Set module providers.
+     *
+     * @var array<int, class-string> $providers
+     *
+     * @return $this
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws CannotModifyVendorModule
+     */
+    public function setProviders(array $providers): static
+    {
+        $this->providers = $providers;
+
+        return $this->save();
+    }
+
+    /**
+     * Set module aliases.
+     *
+     * @var array<string, class-string> $aliases
+     *
+     * @return $this
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws CannotModifyVendorModule
+     */
+    public function setAliases(array $aliases): static
+    {
+        $this->aliases = $aliases;
+
+        return $this->save();
+    }
+
+    /**
+     * Set module providers.
+     *
+     * @var class-string $providerClass
+     *
+     * @return $this
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws CannotModifyVendorModule
+     */
+    public function addProvider(string $providerClass): static
+    {
+        if (!in_array($providerClass, $this->providers)) {
+            $this->providers[] = $providerClass;
+            return $this->save();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set module providers.
+     *
+     * @var string $alias
+     * @var class-string $class
+     *
+     * @return $this
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws CannotModifyVendorModule
+     */
+    public function addAlias(string $alias, string $class): static
+    {
+        if (!isset($this->aliases[$alias]) || $this->aliases[$alias] !== $class) {
+            $this->aliases[$alias] = $class;
+
+            return $this->save();
+        }
+
+        return $this;
+    }
+
+    /**
      * Delete the current module.
      */
     public function delete(): bool
@@ -286,5 +360,33 @@ class Module implements Arrayable
     protected function fireEvent(string $event): void
     {
         $this->app['events']->dispatch(sprintf('modules.%s.' . $event, $this->getPackageName()), [$this]);
+    }
+
+    /**
+     * Save changes to composer.json
+     *
+     * @return $this
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws CannotModifyVendorModule
+     */
+    protected function save(): static
+    {
+        if ($this->isVendor()) {
+            throw CannotModifyVendorModule::make($this->getPackageName());
+        }
+
+        /** @var Filesystem $filesystem */
+        $filesystem = $this->app['files'];
+        $composerJsonPath = $this->path . '/composer.json';
+
+        $composerJsonContent = json_decode($filesystem->get($composerJsonPath), true);
+        Arr::set($composerJsonContent, 'extra.laraneat.module.providers', $this->providers);
+        Arr::set($composerJsonContent, 'extra.laraneat.module.aliases', $this->aliases);
+
+        $filesystem->put($composerJsonPath, json_encode($composerJsonContent, JSON_PRETTY_PRINT));
+
+        $this->modulesRepository->pruneAppModulesManifest();
+
+        return $this;
     }
 }
