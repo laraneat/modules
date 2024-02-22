@@ -2,7 +2,7 @@
 
 use Laraneat\Modules\Enums\ModuleTypeEnum;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
-use Laraneat\Modules\Exceptions\ModuleNotFoundException;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\ModulesRepository;
 
 beforeEach(function () {
@@ -621,7 +621,7 @@ it('throws an exception when the module is not found', function () {
     ]);
 
     expect($this->repository->findOrFail('laraneat/book')->toArray())->toBe(null);
-})->throws(ModuleNotFoundException::class);
+})->throws(ModuleNotFound::class);
 
 it('can delete app module', function () {
     $this->setVendorModules([
@@ -649,7 +649,7 @@ it('throws an exception when trying to remove a module that does not exist', fun
     ]);
 
     expect($this->repository->delete('laraneat/articles'));
-})->throws(ModuleNotFoundException::class);
+})->throws(ModuleNotFound::class);
 
 it('can filter modules by name', function () {
     $this->setVendorModules([
@@ -734,4 +734,4 @@ it('throws an exception when modules with the requested name are not found', fun
     ]);
 
     $this->repository->filterByNameOrFail('laraneat/book');
-})->throws(ModuleNotFoundException::class);
+})->throws(ModuleNotFound::class);

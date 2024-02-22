@@ -14,7 +14,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Env;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Exceptions\MissingModuleAttribute;
-use Laraneat\Modules\Exceptions\ModuleNotFoundException;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
 
 class ModulesRepository implements Arrayable
 {
@@ -395,14 +395,14 @@ class ModulesRepository implements Arrayable
     /**
      * Find a specific module by its package name, if there return that, otherwise throw exception.
      *
-     * @throws ModuleNotFoundException
+     * @throws ModuleNotFound
      */
     public function findOrFail(string $modulePackageName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::All): Module
     {
         $module = $this->find($modulePackageName, $typeEnum);
 
         if ($module === null) {
-            throw ModuleNotFoundException::make($modulePackageName);
+            throw ModuleNotFound::make($modulePackageName);
         }
 
         return $module;
@@ -411,7 +411,7 @@ class ModulesRepository implements Arrayable
     /**
      * Delete a specific module by its package name.
      *
-     * @throws ModuleNotFoundException
+     * @throws ModuleNotFound
      */
     public function delete(string $modulePackageName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::All): bool
     {
@@ -442,14 +442,14 @@ class ModulesRepository implements Arrayable
      *
      * @return array<string, Module>
      *
-     * @throws ModuleNotFoundException
+     * @throws ModuleNotFound
      */
     public function filterByNameOrFail(string $moduleName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::All): array
     {
         $modules = $this->filterByName($moduleName, $typeEnum);
 
         if (!$modules) {
-            throw ModuleNotFoundException::makeForName($moduleName);
+            throw ModuleNotFound::makeForName($moduleName);
         }
 
         return $modules;

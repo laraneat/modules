@@ -9,7 +9,6 @@ class GeneratorPath
     private string $path;
     private string $namespace;
     private bool $generate;
-    private bool $gitkeep;
 
     public function __construct(bool|array|string $config)
     {
@@ -25,7 +24,6 @@ class GeneratorPath
             $this->convertPathToNamespace((string) ($config['namespace'] ?? $this->path))
         );
         $this->generate = (bool) ($config['generate'] ?? true);
-        $this->gitkeep = (bool) ($config['gitkeep'] ?? false);
     }
 
     public function getPath(): string
@@ -51,11 +49,6 @@ class GeneratorPath
     public function generate(): bool
     {
         return $this->generate;
-    }
-
-    public function withGitKeep(): bool
-    {
-        return $this->gitkeep;
     }
 
     protected function formatPath(string $path): string

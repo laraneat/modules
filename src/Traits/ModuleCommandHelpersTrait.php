@@ -5,7 +5,7 @@ namespace Laraneat\Modules\Traits;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Enums\ModuleTypeEnum;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
-use Laraneat\Modules\Exceptions\ModuleNotFoundException;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModulesRepository;
 use Symfony\Component\Console\Exception\InvalidOptionException;
@@ -25,7 +25,7 @@ trait ModuleCommandHelpersTrait
     /**
      * @return array<int, Module>|Module
      *
-     * @throws ModuleNotFoundException
+     * @throws ModuleNotFound
      * @throws ModuleHasNonUniquePackageName
      */
     protected function getModuleArgumentOrFail(ModuleTypeEnum $typeEnum = ModuleTypeEnum::All): array|Module
@@ -76,7 +76,7 @@ trait ModuleCommandHelpersTrait
     }
 
     /**
-     * @throws ModuleNotFoundException
+     * @throws ModuleNotFound
      * @throws ModuleHasNonUniquePackageName
      */
     protected function findModuleByNameOrPackageNameOrFail($moduleNameOrPackageName, ModuleTypeEnum $typeEnum = ModuleTypeEnum::All): Module
@@ -91,7 +91,7 @@ trait ModuleCommandHelpersTrait
         $numberOfFoundModules = $foundModules->count();
 
         if ($numberOfFoundModules === 0) {
-            throw ModuleNotFoundException::makeForNameOrPackageName($moduleNameOrPackageName);
+            throw ModuleNotFound::makeForNameOrPackageName($moduleNameOrPackageName);
         }
 
         if ($numberOfFoundModules === 1) {
@@ -99,7 +99,7 @@ trait ModuleCommandHelpersTrait
         }
 
         $selectedPackageName = $this->choice(
-            "$numberOfFoundModules modules with name «{$moduleNameOrPackageName}» found, please select one module from those found",
+            "$numberOfFoundModules modules with name '{$moduleNameOrPackageName}' found, please select one module from those found",
             $foundModules->keys()->all(),
         );
 
@@ -117,7 +117,7 @@ trait ModuleCommandHelpersTrait
         string $question,
         ?string $default = null,
         bool $required = true
-    ): string
+    ): ?string
     {
         $value = $this->option($optionName);
 
@@ -127,7 +127,7 @@ trait ModuleCommandHelpersTrait
 
         if ($required && ($value === '' || $value === null)) {
             throw new InvalidOptionException(
-                sprintf("The «%s» option is required", $optionName)
+                sprintf("The '%s' option is required", $optionName)
             );
         }
 
@@ -144,7 +144,7 @@ trait ModuleCommandHelpersTrait
         string $question,
         array $choices,
         ?string $default = null
-    ): string
+    ): ?string
     {
         $value = $this->option($optionName);
 
@@ -153,9 +153,35 @@ trait ModuleCommandHelpersTrait
         } elseif (!in_array($value, $choices, true)) {
             throw new InvalidOptionException(
                 sprintf(
-                    "Wrong «%s» option value provided. Value should be one of «%s».",
+                    "Wrong '%s' option value provided. Value should be one of '%s'.",
                     $optionName,
-                    implode('» or «', $choices)
+                    implode("' or '", $choices)
+                )
+            );
+        }
+
+        return $value;
+    }
+
+    /**
+     * Checks if the option is set (via CLI)
+     *
+     * @throws InvalidOptionException
+     */
+    protected function getOptionOneOf(
+        string $optionName,
+        array $choices,
+        ?string $default = null
+    ): ?string
+    {
+        $value = $this->option($optionName) ?: $default;
+
+        if (!in_array($value, $choices, true)) {
+            throw new InvalidOptionException(
+                sprintf(
+                    "Wrong '%s' option value provided. Value should be one of '%s'.",
+                    $optionName,
+                    implode("' or '", $choices)
                 )
             );
         }

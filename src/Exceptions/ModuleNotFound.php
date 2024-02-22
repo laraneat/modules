@@ -2,7 +2,7 @@
 
 namespace Laraneat\Modules\Exceptions;
 
-class ModuleNotFoundException extends \Exception
+class ModuleNotFound extends \Exception
 {
     public static function make(string $packageName): static
     {

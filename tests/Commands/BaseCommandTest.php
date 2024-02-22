@@ -2,7 +2,7 @@
 
 use Illuminate\Contracts\Console\Kernel as ConsoleKernelContract;
 use Laraneat\Modules\Commands\BaseCommand;
-use Laraneat\Modules\Exceptions\ModuleNotFoundException;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\ModulesRepository;
 use Symfony\Component\Console\Exception\InvalidOptionException;
 
@@ -36,7 +36,7 @@ describe('single "module" argument', function () {
             try {
                 $moduleToHandle = $this->getModuleArgumentOrFail();
                 $this->line($moduleToHandle->getPackageName());
-            } catch (ModuleNotFoundException $exception) {
+            } catch (ModuleNotFound $exception) {
                 $this->error($exception->getMessage());
 
                 return self::FAILURE;
@@ -195,7 +195,7 @@ describe('multiple "module" argument', function () {
                         ->map(fn (\Laraneat\Modules\Module $module) => $module->getPackageName())
                         ->join(', ')
                 );
-            } catch (ModuleNotFoundException $exception) {
+            } catch (ModuleNotFound $exception) {
                 $this->error($exception->getMessage());
 
                 return self::FAILURE;
