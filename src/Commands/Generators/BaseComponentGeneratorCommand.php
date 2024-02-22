@@ -3,8 +3,10 @@
 namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Env;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Commands\BaseCommand;
+use Laraneat\Modules\Enums\ModuleComponentTypeEnum;
 use Laraneat\Modules\Exceptions\NameIsReserved;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModulesRepository;
@@ -92,8 +94,7 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
     public function __construct(
         ModulesRepository $modulesRepository,
         protected Filesystem $filesystem
-    )
-    {
+    ) {
         parent::__construct($modulesRepository);
     }
 
@@ -112,6 +113,10 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
         }
     }
 
+    /**
+     * Generate component file.
+     * @return int The function returns "0" on success and "1" on failure.
+     */
     protected function generate(string $path, string $contents, bool $force = false): int
     {
         if ($force === false && $this->filesystem->exists($path)) {
@@ -124,10 +129,16 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
         $contents = $this->sortImports($contents);
 
         $this->filesystem->ensureDirectoryExists(dirname($path));
-        $this->filesystem->put($path, $contents);
-        $this->components->info("Created: `$path`");
 
-        return self::SUCCESS;
+        if ($this->filesystem->put($path, $contents) !== false) {
+            $this->components->info("Created: `$path`");
+
+            return self::SUCCESS;
+        }
+
+        $this->components->error("Failed to create file: `$path`");
+
+        return self::FAILURE;
     }
 
     /**
@@ -136,10 +147,9 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
     public function getFullClassFromOptionOrAsk(
         string $optionName,
         string $question,
-        string $componentType,
+        ModuleComponentTypeEnum $componentType,
         Module $module
-    ): string
-    {
+    ): string {
         return $this->getFullClass(
             $this->getOptionOrAsk(
                 $optionName,
@@ -176,7 +186,7 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
     /**
      * Get component namespace, without the class name.
      */
-    protected function getComponentNamespace(Module $module, string $name, string $componentType): string
+    protected function getComponentNamespace(Module $module, string $name, ModuleComponentTypeEnum $componentType): string
     {
         $name = str_replace('/', '\\', $name);
         $componentNamespace = GeneratorHelper::component($componentType)->getFullNamespace($module);
@@ -193,7 +203,7 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
     protected function getComponentPath(
         Module $module,
         string $name,
-        string $componentType,
+        ModuleComponentTypeEnum $componentType,
         string $extension = '.php'
     ): string {
         $componentPath = GeneratorHelper::component($componentType)->getFullPath($module);
@@ -280,5 +290,47 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
         }
 
         return $stubContent;
+    }
+
+    /**
+     * Get the first view directory path from the application configuration.
+     */
+    protected function viewPath(string $path = ''): string
+    {
+        $views = $this->laravel['config']['view.paths'][0] ?? resource_path('views');
+
+        return $views.($path ? DIRECTORY_SEPARATOR.$path : $path);
+    }
+
+    /**
+     * Check if the package is installed
+     */
+    protected function packageIsInstalled(string $packageName): bool
+    {
+        $vendorPath = Env::get('COMPOSER_VENDOR_DIR') ?: $this->laravel->basePath('/vendor');
+        $installedJsonPath = $vendorPath . '/composer/installed.json';
+
+        if (! $this->filesystem->exists($installedJsonPath)) {
+            return false;
+        }
+
+        /** @var array{packages?: array} $installed */
+        $installed = json_decode($this->filesystem->get($installedJsonPath), true);
+
+        foreach($installed['packages'] ?? [] as $package) {
+            if ($package['name'] === $packageName) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function ensurePackageIsInstalledOrWarn(string $packageName): void
+    {
+        if ($this->packageIsInstalled($packageName)) {
+            $this->components->warn("Package '$packageName' is not installed!");
+            $this->components->warn("Please install by entering `composer require $packageName` on the command line");
+        }
     }
 }
