@@ -1,6 +1,6 @@
 <?php
 
-use Laraneat\Modules\Enums\ModuleTypeEnum;
+use Laraneat\Modules\Enums\ModuleType;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\ModulesRepository;
@@ -469,13 +469,13 @@ it('can return providers', function () {
         'App\Modules\Author\Providers\AuthorServiceProvider',
         'App\Modules\Author\Providers\RouteServiceProvider',
     ])
-        ->and($this->repository->getProviders(ModuleTypeEnum::Vendor))->toBe([
+        ->and($this->repository->getProviders(ModuleType::Vendor))->toBe([
             'Laraneat\Foo\Providers\FooServiceProvider',
             'Laraneat\Foo\Providers\RouteServiceProvider',
             'Laraneat\Bar\Providers\BarServiceProvider',
             'Laraneat\Bar\Providers\RouteServiceProvider',
         ])
-        ->and($this->repository->getProviders(ModuleTypeEnum::App))->toBe([
+        ->and($this->repository->getProviders(ModuleType::App))->toBe([
             'App\Modules\Article\Providers\ArticleServiceProvider',
             'App\Modules\Article\Providers\RouteServiceProvider',
             'App\Modules\Author\Providers\AuthorServiceProvider',
@@ -497,8 +497,8 @@ it('can return aliases', function () {
     expect($this->repository->getAliases())->toBe([
         'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade'
     ])
-        ->and($this->repository->getAliases(ModuleTypeEnum::Vendor))->toBe([])
-        ->and($this->repository->getAliases(ModuleTypeEnum::App))->toBe([
+        ->and($this->repository->getAliases(ModuleType::Vendor))->toBe([])
+        ->and($this->repository->getAliases(ModuleType::App))->toBe([
             'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade'
         ]);
 
@@ -521,10 +521,10 @@ it('can check the module for existence', function () {
         ->and($this->repository->has('laraneat/book'))->toBe(false)
         ->and($this->repository->has('laraneat/author/some'))->toBe(false)
         ->and($this->repository->has('laraneat'))->toBe(false)
-        ->and($this->repository->has('laraneat/foo', ModuleTypeEnum::Vendor))->toBe(true)
-        ->and($this->repository->has('laraneat/foo', ModuleTypeEnum::App))->toBe(false)
-        ->and($this->repository->has('laraneat/article', ModuleTypeEnum::Vendor))->toBe(false)
-        ->and($this->repository->has('laraneat/article', ModuleTypeEnum::App))->toBe(true);
+        ->and($this->repository->has('laraneat/foo', ModuleType::Vendor))->toBe(true)
+        ->and($this->repository->has('laraneat/foo', ModuleType::App))->toBe(false)
+        ->and($this->repository->has('laraneat/article', ModuleType::Vendor))->toBe(false)
+        ->and($this->repository->has('laraneat/article', ModuleType::App))->toBe(true);
 
 
 });
@@ -541,8 +541,8 @@ it('can count the number of modules', function () {
     ]);
 
     expect($this->repository->count())->toBe(5)
-        ->and($this->repository->count(ModuleTypeEnum::App))->toBe(3)
-        ->and($this->repository->count(ModuleTypeEnum::Vendor))->toBe(2);
+        ->and($this->repository->count(ModuleType::App))->toBe(3)
+        ->and($this->repository->count(ModuleType::Vendor))->toBe(2);
 });
 
 it('can find a module', function () {
@@ -567,8 +567,8 @@ it('can find a module', function () {
         ],
         'aliases' => [],
     ])
-        ->and($this->repository->find('laraneat/article', ModuleTypeEnum::Vendor)?->toArray())->toBe(null)
-        ->and($this->repository->find('laraneat/article', ModuleTypeEnum::App)?->toArray())->toBe([
+        ->and($this->repository->find('laraneat/article', ModuleType::Vendor)?->toArray())->toBe(null)
+        ->and($this->repository->find('laraneat/article', ModuleType::App)?->toArray())->toBe([
             'isVendor' => false,
             'packageName' => 'laraneat/article',
             'name' => 'Article',
@@ -592,8 +592,8 @@ it('can find a module', function () {
             ],
             'aliases' => [],
         ])
-        ->and($this->repository->find('laraneat/foo', ModuleTypeEnum::App)?->toArray())->toBe(null)
-        ->and($this->repository->find('laraneat/foo', ModuleTypeEnum::Vendor)?->toArray())->toBe([
+        ->and($this->repository->find('laraneat/foo', ModuleType::App)?->toArray())->toBe(null)
+        ->and($this->repository->find('laraneat/foo', ModuleType::Vendor)?->toArray())->toBe([
             'isVendor' => true,
             'packageName' => 'laraneat/foo',
             'name' => 'Foo',
@@ -675,8 +675,8 @@ it('can filter modules by name', function () {
             'aliases' => [],
         ]
     ])
-        ->and(collect($this->repository->filterByName('Article', ModuleTypeEnum::Vendor))->toArray())->toBe([])
-        ->and(collect($this->repository->filterByName('Article', ModuleTypeEnum::App))->toArray())->toBe([
+        ->and(collect($this->repository->filterByName('Article', ModuleType::Vendor))->toArray())->toBe([])
+        ->and(collect($this->repository->filterByName('Article', ModuleType::App))->toArray())->toBe([
             'laraneat/article' => [
                 'isVendor' => false,
                 'packageName' => 'laraneat/article',
@@ -704,8 +704,8 @@ it('can filter modules by name', function () {
                 'aliases' => [],
             ]
         ])
-        ->and(collect($this->repository->filterByName('Foo', ModuleTypeEnum::App))->toArray())->toBe([])
-        ->and(collect($this->repository->filterByName('Foo', ModuleTypeEnum::Vendor))->toArray())->toBe([
+        ->and(collect($this->repository->filterByName('Foo', ModuleType::App))->toArray())->toBe([])
+        ->and(collect($this->repository->filterByName('Foo', ModuleType::Vendor))->toArray())->toBe([
             'laraneat/foo' => [
                 'isVendor' => true,
                 'packageName' => 'laraneat/foo',

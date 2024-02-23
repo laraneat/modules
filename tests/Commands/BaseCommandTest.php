@@ -155,7 +155,7 @@ describe('single "module" argument', function () {
 
         $this->artisan('single-module-argument-command Foo')
             ->expectsChoice(
-                question: "2 modules with name «Foo» found, please select one module from those found",
+                question: "2 modules with name 'Foo' found, please select one module from those found",
                 answer: 'app/foo',
                 answers: $expectedChoiceOptions
             )
@@ -164,7 +164,7 @@ describe('single "module" argument', function () {
 
         $this->artisan('single-module-argument-command foo')
             ->expectsChoice(
-                question: "2 modules with name «foo» found, please select one module from those found",
+                question: "2 modules with name 'foo' found, please select one module from those found",
                 answer: 'laraneat/foo',
                 answers: $expectedChoiceOptions
             )
@@ -330,12 +330,12 @@ describe('multiple "module" argument', function () {
 
         $this->artisan('multiple-module-argument-command foo laraneat/article Author Foo')
             ->expectsChoice(
-                question: "2 modules with name «foo» found, please select one module from those found",
+                question: "2 modules with name 'foo' found, please select one module from those found",
                 answer: 'laraneat/foo',
                 answers: $expectedChoiceOptions
             )
             ->expectsChoice(
-                question: "2 modules with name «Foo» found, please select one module from those found",
+                question: "2 modules with name 'Foo' found, please select one module from those found",
                 answer: 'laraneat/foo',
                 answers: $expectedChoiceOptions
             )
@@ -344,12 +344,12 @@ describe('multiple "module" argument', function () {
 
         $this->artisan('multiple-module-argument-command foo laraneat/article Author Foo')
             ->expectsChoice(
-                question: "2 modules with name «foo» found, please select one module from those found",
+                question: "2 modules with name 'foo' found, please select one module from those found",
                 answer: 'laraneat/foo',
                 answers: $expectedChoiceOptions
             )
             ->expectsChoice(
-                question: "2 modules with name «Foo» found, please select one module from those found",
+                question: "2 modules with name 'Foo' found, please select one module from those found",
                 answer: 'app/foo',
                 answers: $expectedChoiceOptions
             )
@@ -412,7 +412,7 @@ describe('getOptionOrAsk', function() {
                 question: 'Enter "foo" option',
                 answer: '',
             )
-            ->expectsOutput('The «foo» option is required')
+            ->expectsOutput("The 'foo' option is required")
             ->assertFailed();
     });
 
@@ -485,7 +485,7 @@ describe('getOptionOrChoice', function() {
 
     it('shows an error if the passed option value is not valid', function() {
         $this->artisan('command-with-option-choice --foo=some-invalid-value')
-            ->expectsOutput('Wrong «foo» option value provided. Value should be one of «first» or «second» or «third».')
+            ->expectsOutput("Wrong 'foo' option value provided. Value should be one of 'first' or 'second' or 'third'.")
             ->assertFailed();
     });
 });

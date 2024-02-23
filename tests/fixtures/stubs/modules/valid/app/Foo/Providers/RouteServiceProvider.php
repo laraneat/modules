@@ -4,11 +4,11 @@ namespace App\Modules\Foo\Providers;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
-use Laraneat\Modules\Traits\RouteProviderHelpersTrait;
+use Laraneat\Modules\Concerns\CanLoadRoutesFromDirectory;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    use RouteProviderHelpersTrait;
+    use CanLoadRoutesFromDirectory;
 
     protected string $modulePackageName = 'laraneat/foo';
 

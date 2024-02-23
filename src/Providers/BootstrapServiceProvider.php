@@ -9,7 +9,7 @@ use Laraneat\Modules\ModulesRepository;
 class BootstrapServiceProvider extends ServiceProvider
 {
     /**
-     * Bootstrap any application services.
+     * Register module providers and aliases
      */
     public function register(): void
     {

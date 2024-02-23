@@ -1,6 +1,6 @@
 <?php
 
-use Laraneat\Modules\Enums\ModuleComponentTypeEnum;
+use Laraneat\Modules\Enums\ModuleComponentType;
 
 return [
     'paths' => [
@@ -112,135 +112,135 @@ return [
         |
         */
         'components' => [
-            ModuleComponentTypeEnum::Action->value => [
+            ModuleComponentType::Action->value => [
                 'path' => 'Actions',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::ApiController->value => [
+            ModuleComponentType::ApiController->value => [
                 'path' => 'UI/API/Controllers',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::ApiQueryWizard->value => [
+            ModuleComponentType::ApiQueryWizard->value => [
                 'path' => 'UI/API/QueryWizards',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::ApiRequest->value => [
+            ModuleComponentType::ApiRequest->value => [
                 'path' => 'UI/API/Requests',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::ApiResource->value => [
+            ModuleComponentType::ApiResource->value => [
                 'path' => 'UI/API/Resources',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::ApiRoute->value => [
+            ModuleComponentType::ApiRoute->value => [
                 'path' => 'UI/API/Routes',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::ApiTest->value => [
+            ModuleComponentType::ApiTest->value => [
                 'path' => 'UI/API/Tests',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::CliCommand->value => [
+            ModuleComponentType::CliCommand->value => [
                 'path' => 'UI/CLI/Commands',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::CliTest->value => [
+            ModuleComponentType::CliTest->value => [
                 'path' => 'UI/CLI/Tests',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Dto->value => [
+            ModuleComponentType::Dto->value => [
                 'path' => 'DTO',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::Event->value => [
+            ModuleComponentType::Event->value => [
                 'path' => 'Events',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Exception->value => [
+            ModuleComponentType::Exception->value => [
                 'path' => 'Exceptions',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Factory->value => [
+            ModuleComponentType::Factory->value => [
                 'path' => 'Data/Factories',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::FeatureTest->value => [
+            ModuleComponentType::FeatureTest->value => [
                 'path' => 'Tests/Feature',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Job->value => [
+            ModuleComponentType::Job->value => [
                 'path' => 'Jobs',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Lang->value => [
+            ModuleComponentType::Lang->value => [
                 'path' => 'lang',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Listener->value => [
+            ModuleComponentType::Listener->value => [
                 'path' => 'Listeners',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Mail->value => [
+            ModuleComponentType::Mail->value => [
                 'path' => 'Mails',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Middleware->value => [
+            ModuleComponentType::Middleware->value => [
                 'path' => 'Middleware',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Migration->value => [
+            ModuleComponentType::Migration->value => [
                 'path' => 'Data/Migrations',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::Model->value => [
+            ModuleComponentType::Model->value => [
                 'path' => 'Models',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::Notification->value => [
+            ModuleComponentType::Notification->value => [
                 'path' => 'Notifications',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Observer->value => [
+            ModuleComponentType::Observer->value => [
                 'path' => 'Observers',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Policy->value => [
+            ModuleComponentType::Policy->value => [
                 'path' => 'Policies',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::Provider->value => [
+            ModuleComponentType::Provider->value => [
                 'path' => 'Providers',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::Rule->value => [
+            ModuleComponentType::Rule->value => [
                 'path' => 'Rules',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::Seeder->value => [
+            ModuleComponentType::Seeder->value => [
                 'path' => 'Data/Seeders',
                 'generate' => true
             ],
-            ModuleComponentTypeEnum::WebController->value => [
+            ModuleComponentType::WebController->value => [
                 'path' => 'UI/WEB/Controllers',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::WebRequest->value => [
+            ModuleComponentType::WebRequest->value => [
                 'path' => 'UI/WEB/Requests',
                 'generate' => false,
             ],
-            ModuleComponentTypeEnum::WebRoute->value => [
+            ModuleComponentType::WebRoute->value => [
                 'path' => 'UI/WEB/Routes',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::WebTest->value => [
+            ModuleComponentType::WebTest->value => [
                 'path' => 'UI/WEB/Tests',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::View->value => [
+            ModuleComponentType::View->value => [
                 'path' => 'resources/views',
                 'generate' => false
             ],
-            ModuleComponentTypeEnum::UnitTest->value => [
+            ModuleComponentType::UnitTest->value => [
                 'path' => 'Tests/Unit',
                 'generate' => false
             ],

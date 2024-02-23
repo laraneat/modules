@@ -2,7 +2,7 @@
 
 namespace Laraneat\Modules\Enums;
 
-enum ModuleComponentTypeEnum: string
+enum ModuleComponentType: string
 {
     case Action = 'action';
     case ApiController = 'api-controller';

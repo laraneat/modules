@@ -6,8 +6,6 @@ class Stub
 {
     /**
      * The stub path.
-     *
-     * @var string
      */
     protected string $path;
 

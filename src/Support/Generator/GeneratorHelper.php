@@ -2,7 +2,7 @@
 
 namespace Laraneat\Modules\Support\Generator;
 
-use Laraneat\Modules\Enums\ModuleComponentTypeEnum;
+use Laraneat\Modules\Enums\ModuleComponentType;
 use Laraneat\Modules\Exceptions\InvalidConfigValue;
 use Laraneat\Modules\Module;
 
@@ -93,7 +93,7 @@ class GeneratorHelper
     /**
      * Get component config
      */
-    public static function component(ModuleComponentTypeEnum $componentType): ?GeneratorPath
+    public static function component(ModuleComponentType $componentType): ?GeneratorPath
     {
         $generatorComponent = config("modules.generator.components.{$componentType->value}");
 

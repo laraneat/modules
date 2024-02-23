@@ -191,7 +191,7 @@ class Module implements Arrayable
     /**
      * Set module providers.
      *
-     * @var array<int, class-string> $providers
+     * @param array<int, class-string> $providers
      *
      * @return $this
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
@@ -207,7 +207,7 @@ class Module implements Arrayable
     /**
      * Set module aliases.
      *
-     * @var array<string, class-string> $aliases
+     * @param array<string, class-string> $aliases
      *
      * @return $this
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
@@ -223,7 +223,7 @@ class Module implements Arrayable
     /**
      * Set module providers.
      *
-     * @var class-string $providerClass
+     * @param class-string $providerClass
      *
      * @return $this
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
@@ -242,8 +242,8 @@ class Module implements Arrayable
     /**
      * Set module providers.
      *
-     * @var string $alias
-     * @var class-string $class
+     * @param string $alias
+     * @param class-string $class
      *
      * @return $this
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException

@@ -2,7 +2,7 @@
 
 namespace Laraneat\Modules\Enums;
 
-enum ModuleTypeEnum
+enum ModuleType
 {
     case All;
     case App;
