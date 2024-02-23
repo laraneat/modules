@@ -1,22 +1,24 @@
 <?php
 
-namespace App\Modules\Article\Actions;
+namespace App\Modules\Author\Actions;
 
-use App\Modules\Article\Models\Article;
-use App\Modules\Article\UI\API\Requests\DeleteArticleRequest;
-use App\Ship\Abstracts\Actions\Action;
+use App\Modules\Author\Models\Author;
+use App\Modules\Author\UI\API\Requests\DeleteAuthorRequest;
 use Illuminate\Http\JsonResponse;
+use Lorisleiva\Actions\Concerns\AsAction;
 
-class DeleteArticleAction extends Action
+class DeleteAuthorAction
 {
-    public function handle(Article $article): bool
+    use AsAction;
+
+    public function handle(Author $author): bool
     {
-        return $article->delete();
+        return $author->delete();
     }
 
-    public function asController(DeleteArticleRequest $request, Article $article): JsonResponse
+    public function asController(DeleteAuthorRequest $request, Author $author): JsonResponse
     {
-        $this->handle($article);
+        $this->handle($author);
 
         return $this->noContent();
     }

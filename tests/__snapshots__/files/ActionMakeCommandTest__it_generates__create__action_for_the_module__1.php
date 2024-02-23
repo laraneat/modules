@@ -1,25 +1,27 @@
 <?php
 
-namespace App\Modules\Article\Actions;
+namespace App\Modules\Author\Actions;
 
-use App\Modules\Article\DTO\CreateArticleDTO;
-use App\Modules\Article\Models\Article;
-use App\Modules\Article\UI\API\Requests\CreateArticleRequest;
-use App\Modules\Article\UI\API\Resources\ArticleResource;
-use App\Ship\Abstracts\Actions\Action;
+use App\Modules\Author\DTO\CreateAuthorDTO;
+use App\Modules\Author\Models\Author;
+use App\Modules\Author\UI\API\Requests\CreateAuthorRequest;
+use App\Modules\Author\UI\API\Resources\AuthorResource;
 use Illuminate\Http\JsonResponse;
+use Lorisleiva\Actions\Concerns\AsAction;
 
-class CreateArticleAction extends Action
+class CreateAuthorAction
 {
-    public function handle(CreateArticleDTO $dto): Article
+    use AsAction;
+
+    public function handle(CreateAuthorDTO $dto): Author
     {
-        return Article::create($dto->all());
+        return Author::create($dto->all());
     }
 
-    public function asController(CreateArticleRequest $request): JsonResponse
+    public function asController(CreateAuthorRequest $request): JsonResponse
     {
-        $article = $this->handle($request->toDTO());
+        $author = $this->handle($request->toDTO());
 
-        return (new ArticleResource($article))->created();
+        return (new AuthorResource($author))->created();
     }
 }

@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Modules\Article\Actions;
+namespace App\Modules\Author\Actions;
 
-use App\Ship\Abstracts\Actions\Action;
+use Lorisleiva\Actions\Concerns\AsAction;
 
-class PlainArticleAction extends Action
+class PlainAuthorAction
 {
+    use AsAction;
+
     public function handle()
     {
         //

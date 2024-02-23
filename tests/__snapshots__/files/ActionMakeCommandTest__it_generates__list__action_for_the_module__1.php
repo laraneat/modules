@@ -1,26 +1,28 @@
 <?php
 
-namespace App\Modules\Article\Actions;
+namespace App\Modules\Author\Actions;
 
-use App\Modules\Article\Models\Article;
-use App\Modules\Article\UI\API\QueryWizards\ArticlesQueryWizard;
-use App\Modules\Article\UI\API\Requests\ListArticlesRequest;
-use App\Modules\Article\UI\API\Resources\ArticleResource;
-use App\Ship\Abstracts\Actions\Action;
+use App\Modules\Author\Models\Author;
+use App\Modules\Author\UI\API\QueryWizards\AuthorsQueryWizard;
+use App\Modules\Author\UI\API\Requests\ListAuthorsRequest;
+use App\Modules\Author\UI\API\Resources\AuthorResource;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Lorisleiva\Actions\Concerns\AsAction;
 
-class ListArticlesAction extends Action
+class ListAuthorsAction
 {
-    public function handle(ListArticlesRequest $request): LengthAwarePaginator
+    use AsAction;
+
+    public function handle(ListAuthorsRequest $request): LengthAwarePaginator
     {
-        return ArticlesQueryWizard::for(Article::query())
+        return AuthorsQueryWizard::for(Author::query())
             ->build()
-            ->jsonPaginate();
+            ->paginate();
     }
 
-    public function asController(ListArticlesRequest $request): ResourceCollection
+    public function asController(ListAuthorsRequest $request): ResourceCollection
     {
-        return ArticleResource::collection($this->handle($request));
+        return AuthorResource::collection($this->handle($request));
     }
 }

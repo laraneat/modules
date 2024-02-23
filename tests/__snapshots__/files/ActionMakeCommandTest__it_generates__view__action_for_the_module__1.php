@@ -1,23 +1,25 @@
 <?php
 
-namespace App\Modules\Article\Actions;
+namespace App\Modules\Author\Actions;
 
-use App\Modules\Article\Models\Article;
-use App\Modules\Article\UI\API\QueryWizards\ArticleQueryWizard;
-use App\Modules\Article\UI\API\Requests\ViewArticleRequest;
-use App\Modules\Article\UI\API\Resources\ArticleResource;
-use App\Ship\Abstracts\Actions\Action;
+use App\Modules\Author\Models\Author;
+use App\Modules\Author\UI\API\QueryWizards\AuthorQueryWizard;
+use App\Modules\Author\UI\API\Requests\ViewAuthorRequest;
+use App\Modules\Author\UI\API\Resources\AuthorResource;
 use Illuminate\Database\Eloquent\Model;
+use Lorisleiva\Actions\Concerns\AsAction;
 
-class ViewArticleAction extends Action
+class ViewAuthorAction
 {
-    public function handle(ViewArticleRequest $request, Article $article): Model
+    use AsAction;
+
+    public function handle(ViewAuthorRequest $request, Author $author): Model
     {
-        return ArticleQueryWizard::for($article)->build();
+        return AuthorQueryWizard::for($author)->build();
     }
 
-    public function asController(ViewArticleRequest $request, Article $article): ArticleResource
+    public function asController(ViewAuthorRequest $request, Author $author): AuthorResource
     {
-        return new ArticleResource($this->handle($request, $article));
+        return new AuthorResource($this->handle($request, $author));
     }
 }

@@ -1,33 +1,32 @@
 <?php
 
-namespace App\Modules\Article\Actions;
+namespace App\Modules\Author\Actions;
 
-use App\Modules\Article\DTO\UpdateArticleDTO;
-use App\Modules\Article\Models\Article;
-use App\Modules\Article\UI\API\Requests\UpdateArticleRequest;
-use App\Modules\Article\UI\API\Resources\ArticleResource;
-use App\Ship\Abstracts\Actions\Action;
-use App\Ship\Exceptions\UpdateResourceFailedException;
+use App\Modules\Author\DTO\UpdateAuthorDTO;
+use App\Modules\Author\Models\Author;
+use App\Modules\Author\UI\API\Requests\UpdateAuthorRequest;
+use App\Modules\Author\UI\API\Resources\AuthorResource;
+use Lorisleiva\Actions\Concerns\AsAction;
 
-class UpdateArticleAction extends Action
+class UpdateAuthorAction
 {
-    public function handle(Article $article, UpdateArticleDTO $dto): Article
+    use AsAction;
+
+    public function handle(Author $author, UpdateAuthorDTO $dto): Author
     {
         $data = $dto->all();
 
-        if (empty($data)) {
-            throw new UpdateResourceFailedException();
+        if ($data) {
+            $author->update($data);
         }
 
-        $article->update($data);
-
-        return $article;
+        return $author;
     }
 
-    public function asController(UpdateArticleRequest $request, Article $article): ArticleResource
+    public function asController(UpdateAuthorRequest $request, Author $author): AuthorResource
     {
-        $article = $this->handle($article, $request->toDTO());
+        $author = $this->handle($author, $request->toDTO());
 
-        return new ArticleResource($article);
+        return new AuthorResource($author);
     }
 }
