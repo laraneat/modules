@@ -2,25 +2,32 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
+use Laraneat\Modules\Exceptions\NameIsReserved;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class PolicyMakeCommand extends ComponentGeneratorCommand
+class PolicyMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'module:make:policy';
+    protected $signature = 'module:make:policy
+                            {name : The name of the policy}
+                            {module? : The name or package name of the app module}
+                            {--model= : The class name of the model to be used in the policy}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -30,13 +37,6 @@ class PolicyMakeCommand extends ComponentGeneratorCommand
     protected $description = 'Generate new policy for the specified module.';
 
     /**
-     * The stub name to load for this generator.
-     *
-     * @var string
-     */
-    protected string $stub = 'full';
-
-    /**
      * Module instance.
      *
      * @var Module
@@ -44,78 +44,82 @@ class PolicyMakeCommand extends ComponentGeneratorCommand
     protected Module $module;
 
     /**
-     * Component type.
-     *
-     * @var string
-     */
-    protected string $componentType;
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
+     * The 'name' argument
      */
     protected string $nameArgument;
 
     /**
-     * Get the console command options.
+     * The module component type.
      */
-    protected function getOptions(): array
+    protected ModuleComponentType $componentType = ModuleComponentType::Policy;
+
+    /**
+     * Prompt for missing input arguments using the returned questions.
+     */
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
-            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model.'],
+            'name' => 'Enter the policy class name',
         ];
     }
 
-    protected function prepare()
+    /**
+     * Execute the console command.
+     */
+    public function handle(): int
     {
-        $this->module = $this->getModule();
-        $this->stub = $this->getOptionOrChoice(
-            'stub',
-            'Select the stub you want to use for generator',
-            ['plain', 'full'],
-            'full'
+        try {
+            $this->nameArgument = $this->argument('name');
+            $this->ensureNameIsNotReserved($this->nameArgument);
+            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
+        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+            $this->components->error($exception->getMessage());
+            return self::FAILURE;
+        }
+
+        return $this->generate(
+            $this->getComponentPath($this->module, $this->nameArgument, $this->componentType),
+            $this->getContents(),
+            $this->option('force')
         );
-        $this->componentType = 'policy';
-        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    protected function getDestinationFilePath(): string
+    protected function getContents(): string
     {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
-    {
+        $stub = 'plain';
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument),
+            'class' => class_basename($this->nameArgument),
         ];
 
-        if ($this->stub === 'full') {
-            $model = $this->getOptionOrAsk(
-                'model',
-                'Enter the class name of the model',
-                '',
-                true
+        $modelOption = $this->getOptionOrAsk(
+            'model',
+            question: 'Enter the class name of the model to be used in the policy (optional)',
+            required: false
+        );
+
+        if ($modelOption) {
+            $modelClass = $this->getFullClass(
+                $modelOption,
+                GeneratorHelper::component(ModuleComponentType::Model)
+                    ->getFullNamespace($this->module)
             );
 
-            $stubReplaces['model'] = $this->getClass($model);
-            $stubReplaces['modelEntity'] = Str::camel($stubReplaces['model']);
-            if ($stubReplaces['modelEntity'] === 'user') {
-                $stubReplaces['modelEntity'] = 'model';
+            $stub = 'full';
+            $stubReplaces['model'] = class_basename($modelClass);
+            $stubReplaces['modelNamespace'] = $this->getNamespaceOfClass($modelClass);
+            $stubReplaces['modelKebabCase'] = Str::kebab($stubReplaces['model']);
+            $stubReplaces['modelsKebabCase'] = Str::kebab(Str::plural($stubReplaces['model']));
+            $stubReplaces['modelCamelCase'] = Str::camel($stubReplaces['model']);
+            if ($stubReplaces['modelCamelCase'] === 'user') {
+                $stubReplaces['modelCamelCase'] = 'model';
             }
-            $stubReplaces['modelPermissionEntity'] = Str::snake($stubReplaces['model'], '-');
-            $stubReplaces['modelPermissionEntities'] = Str::snake(Str::plural($stubReplaces['model']), '-');
-            $stubReplaces['modelNamespace'] = $this->getComponentNamespace($this->module, $model, 'model');
 
             $fullUserClass = $this->getUserModelClass();
-
-            $stubReplaces['user'] = $this->getClass($fullUserClass);
+            $stubReplaces['user'] = class_basename($fullUserClass);
             $stubReplaces['userNamespace'] = $this->getNamespaceOfClass($fullUserClass);
         }
 
-        return Stub::create("policy/{$this->stub}.stub", $stubReplaces)->render();
+        return Stub::create("policy/$stub.stub", $stubReplaces)->render();
     }
 }

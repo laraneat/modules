@@ -3,10 +3,10 @@
 namespace {{ namespace }};
 
 use {{ dtoNamespace }}\{{ dto }};
-use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 
-class {{ class }} extends Request
+class {{ class }} extends FormRequest
 {
     public function rules(): array
     {
@@ -17,8 +17,8 @@ class {{ class }} extends Request
 
     public function authorize(): bool
     {
-        ${{ modelEntity }} = $this->route('{{ modelEntity }}');
-        return ${{ modelEntity }} && Gate::check('update', ${{ modelEntity }});
+        ${{ modelCamelCase }} = $this->route('{{ modelCamelCase }}');
+        return ${{ modelCamelCase }} && Gate::check('update', ${{ modelCamelCase }});
     }
 
     public function toDTO(): {{ dto }}

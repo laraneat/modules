@@ -6,11 +6,13 @@ use {{ dtoNamespace }}\{{ dto }};
 use {{ modelNamespace }}\{{ model }};
 use {{ requestNamespace }}\{{ request }};
 use {{ resourceNamespace }}\{{ resource }};
-use App\Ship\Abstracts\Actions\Action;
 use Illuminate\Http\JsonResponse;
+use Lorisleiva\Actions\Concerns\AsAction;
 
-class {{ class }} extends Action
+class {{ class }}
 {
+    use AsAction;
+
     public function handle({{ dto }} $dto): {{ model }}
     {
         return {{ model }}::create($dto->all());
@@ -18,8 +20,8 @@ class {{ class }} extends Action
 
     public function asController({{ request }} $request): JsonResponse
     {
-        ${{ modelEntity }} = $this->handle($request->toDTO());
+        ${{ modelCamelCase }} = $this->handle($request->toDTO());
 
-        return (new {{ resource }}(${{ modelEntity }}))->created();
+        return (new {{ resource }}(${{ modelCamelCase }}))->created();
     }
 }

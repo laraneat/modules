@@ -3,7 +3,7 @@
 namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
-use App\Ship\Abstracts\Tests\TestCase;
+use Tests\TestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
@@ -15,8 +15,8 @@ class {{ class }} extends TestCase
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'create-{{ modelPermissionEntity }}',
+    protected array $testUserAccess = [
+        'permissions' => 'create-{{ modelKebabCase }}',
         'roles'       => '',
     ];
 
@@ -27,9 +27,9 @@ class {{ class }} extends TestCase
         ], $mergeData);
     }
 
-    public function test_create_{{ modelSnake }}(): void
+    public function test_create_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
         $data = $this->getTestData();
 
@@ -43,12 +43,12 @@ class {{ class }} extends TestCase
                     )
             );
 
-        $this->assertExistsModelWhereColumns({{ model }}::class, $data);
+        $this->assertDatabaseHas({{ model }}::class, $data);
     }
 
-    public function test_create_{{ modelSnake }}_without_access(): void
+    public function test_create_{{ modelSnakeCase }}_without_access(): void
     {
-        $this->getTestingUserWithoutAccess();
+        $this->actingAsTestUserWithoutAccess();
 
         $data = $this->getTestData();
 

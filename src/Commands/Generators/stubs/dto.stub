@@ -2,9 +2,9 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\DTO\DataTransferObject;
+use Spatie\LaravelData\Data;
 
-class {{ class }} extends DataTransferObject
+class {{ class }} extends Data
 {
     public function __construct(
         // TODO: add fields here

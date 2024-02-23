@@ -6,7 +6,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Env;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Commands\BaseCommand;
-use Laraneat\Modules\Enums\ModuleComponentTypeEnum;
+use Laraneat\Modules\Enums\ModuleComponentType;
 use Laraneat\Modules\Exceptions\NameIsReserved;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModulesRepository;
@@ -145,10 +145,10 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
      * Get full class name from option or ask
      */
     public function getFullClassFromOptionOrAsk(
-        string $optionName,
-        string $question,
-        ModuleComponentTypeEnum $componentType,
-        Module $module
+        string              $optionName,
+        string              $question,
+        ModuleComponentType $componentType,
+        Module              $module
     ): string {
         return $this->getFullClass(
             $this->getOptionOrAsk(
@@ -186,7 +186,7 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
     /**
      * Get component namespace, without the class name.
      */
-    protected function getComponentNamespace(Module $module, string $name, ModuleComponentTypeEnum $componentType): string
+    protected function getComponentNamespace(Module $module, string $name, ModuleComponentType $componentType): string
     {
         $name = str_replace('/', '\\', $name);
         $componentNamespace = GeneratorHelper::component($componentType)->getFullNamespace($module);
@@ -201,10 +201,10 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
      * Get component path
      */
     protected function getComponentPath(
-        Module $module,
-        string $name,
-        ModuleComponentTypeEnum $componentType,
-        string $extension = '.php'
+        Module              $module,
+        string              $name,
+        ModuleComponentType $componentType,
+        string              $extension = '.php'
     ): string {
         $componentPath = GeneratorHelper::component($componentType)->getFullPath($module);
         $fileName = $this->convertNamespaceToPath($name);

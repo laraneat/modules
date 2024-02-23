@@ -2,29 +2,37 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
+use Laraneat\Modules\Exceptions\NameIsReserved;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Generator\GeneratorHelper;
+use Laraneat\Modules\Support\Generator\Stub;
 use Laraneat\Modules\Support\Migrations\NameParser;
 use Laraneat\Modules\Support\Migrations\SchemaParser;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
 use LogicException;
-use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @group generator
  */
-class MigrationMakeCommand extends ComponentGeneratorCommand
+class MigrationMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'module:make:migration';
+    protected $signature = 'module:make:migration
+                            {name : The name of the migration}
+                            {module? : The name or package name of the app module}
+                            {--s|stub= : The stub name to load for this generator}
+                            {--f|fields= : The specified fields table}
+                            {--t1|tableOne= : The name of first table}
+                            {--t2|tableTwo= : The name of second table}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -34,13 +42,6 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
     protected $description = 'Generate new migration for the specified module.';
 
     /**
-     * The stub name to load for this generator.
-     *
-     * @var string|null
-     */
-    protected ?string $stub = null;
-
-    /**
      * Module instance.
      *
      * @var Module
@@ -48,61 +49,66 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
     protected Module $module;
 
     /**
-     * Component type.
-     *
-     * @var string
+     * The 'name' argument
      */
-    protected string $componentType;
+    protected string $nameArgument;
 
     /**
-     * Get the console command options.
+     * The module component type.
      */
-    protected function getOptions(): array
+    protected ModuleComponentType $componentType = ModuleComponentType::Migration;
+
+    /**
+     * Prompt for missing input arguments using the returned questions.
+     */
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.', ''],
-            ['fields', 'f', InputOption::VALUE_REQUIRED, 'The specified fields table.', null],
-            ['tableOne', 't1', InputOption::VALUE_REQUIRED, 'The name of first table.'],
-            ['tableTwo', 't2', InputOption::VALUE_REQUIRED, 'The name of second table.'],
+            'name' => 'Enter the migration name',
         ];
     }
 
-    protected function getSchemaParser(): SchemaParser
+    /**
+     * Execute the console command.
+     */
+    public function handle(): int
     {
-        return new SchemaParser($this->option('fields'));
-    }
+        try {
+            $this->nameArgument = $this->argument('name');
+            $this->ensureNameIsNotReserved($this->nameArgument);
+            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
+        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+            $this->components->error($exception->getMessage());
+            return self::FAILURE;
+        }
 
-    protected function getFileName(): string
-    {
-        return date('Y_m_d_His_') . Str::snake($this->getTrimmedArgument('name'));
-    }
-
-    protected function prepare()
-    {
-        $this->module = $this->getModule();
-        $this->stub = $this->getOptionOneOf(
-            'stub',
-            ['', 'plain', 'add', 'create', 'delete', 'pivot'],
+        return $this->generate(
+            $this->getComponentPath($this->module, $this->getFileName(), $this->componentType),
+            $this->getContents(),
+            $this->option('force')
         );
-        $this->componentType = 'migration';
     }
 
-    protected function getDestinationFilePath(): string
+    protected function getContents(): string
     {
-        $componentPath = GeneratorHelper::component($this->componentType)->getFullPath($this->module);
-
-        return $componentPath . '/' . $this->getFileName() . '.php';
-    }
-
-    protected function getTemplateContents(): string
-    {
+        $stub = $this->getOptionOneOf(
+            'stub',
+            choices: [
+                null,
+                'add',
+                'create',
+                'delete',
+                'pivot',
+                'plain'
+            ],
+        );
         $parser = new NameParser($this->argument('name'));
 
-        if ($this->stub === 'pivot') {
+        if ($stub === 'pivot') {
             return $this->generatePivotMigrationContent($parser);
         }
 
-        if ($this->stub === 'add' || (empty($this->stub) && $parser->isAdd())) {
+        if ($stub === 'add' || (empty($stub) && $parser->isAdd())) {
             return Stub::create('/migration/add.stub', [
                 'table' => $this->getTableName($parser),
                 'fieldsUp' => $this->getSchemaParser()->up(),
@@ -110,14 +116,14 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
             ])->render();
         }
 
-        if ($this->stub === 'create' || (empty($this->stub) && $parser->isCreate())) {
+        if ($stub === 'create' || (empty($stub) && $parser->isCreate())) {
             return Stub::create('/migration/create.stub', [
                 'table' => $this->getTableName($parser),
                 'fields' => $this->getSchemaParser()->render(),
             ])->render();
         }
 
-        if ($this->stub === 'delete' || (empty($this->stub) && $parser->isDelete())) {
+        if ($stub === 'delete' || (empty($stub) && $parser->isDelete())) {
             return Stub::create('/migration/delete.stub', [
                 'table' => $this->getTableName($parser),
                 'fieldsDown' => $this->getSchemaParser()->up(),
@@ -155,15 +161,13 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
 
         $tableOne = $this->getOptionOrAsk(
             'tableOne',
-            'Enter the name of first table.',
-            $tableOne ?? '',
-            true
+            'Enter the name of first table',
+            $tableOne ?? ''
         );
         $tableTwo = $this->getOptionOrAsk(
             'tableTwo',
-            'Enter the name of second table.',
-            $tableTwo ?? '',
-            true
+            'Enter the name of second table',
+            $tableTwo ?? ''
         );
 
         return Stub::create('/migration/pivot.stub', [
@@ -173,6 +177,16 @@ class MigrationMakeCommand extends ComponentGeneratorCommand
             'columnOne' => $this->convertTableNameToPrimaryColumnName($tableOne),
             'columnTwo' => $this->convertTableNameToPrimaryColumnName($tableTwo),
         ])->render();
+    }
+
+    protected function getSchemaParser(): SchemaParser
+    {
+        return new SchemaParser($this->option('fields'));
+    }
+
+    protected function getFileName(): string
+    {
+        return now()->format('Y_m_d_His_') . Str::snake($this->nameArgument);
     }
 
     protected function convertTableNameToPrimaryColumnName(string $tableName): string

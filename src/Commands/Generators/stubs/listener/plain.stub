@@ -2,11 +2,13 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Listeners\Listener;
 use {{ eventNamespace }}\{{ event }};
 
-class {{ class }} extends Listener
+class {{ class }}
 {
+    /**
+     * Create the event listener.
+     */
     public function __construct()
     {
         //

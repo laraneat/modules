@@ -3,7 +3,7 @@
 namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
-use App\Ship\Abstracts\Tests\TestCase;
+use Tests\TestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
@@ -15,19 +15,19 @@ class {{ class }} extends TestCase
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'view-{{ modelPermissionEntity }}',
+    protected array $testUserAccess = [
+        'permissions' => 'view-{{ modelKebabCase }}',
         'roles'       => '',
     ];
 
-    public function test_view_{{ modelSnake }}(): void
+    public function test_view_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
-        $expectedData = ${{ modelEntity }}->toArray();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
+        $expectedData = ${{ modelCamelCase }}->toArray();
 
-        $this->getJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]))
+        $this->getJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]))
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) =>
                 $json->has('data', fn (AssertableJson $json) =>
@@ -37,21 +37,21 @@ class {{ class }} extends TestCase
             );
     }
 
-    public function test_view_{{ modelSnake }}_without_access(): void
+    public function test_view_{{ modelSnakeCase }}_without_access(): void
     {
-        $this->getTestingUserWithoutAccess();
+        $this->actingAsTestUserWithoutAccess();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
 
-        $this->getJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]))
+        $this->getJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]))
             ->assertForbidden();
     }
 
-    public function test_view_not_existing_{{ modelSnake }}(): void
+    public function test_view_not_existing_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
-        $this->getJson(route('{{ routeName }}', ['{{ modelEntity }}' => 7777]))
+        $this->getJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => 7777]))
             ->assertNotFound();
     }
 }

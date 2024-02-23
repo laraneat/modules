@@ -4,10 +4,10 @@ namespace {{ namespace }};
 
 use {{ dtoNamespace }}\{{ dto }};
 use {{ modelNamespace }}\{{ model }};
-use App\Ship\Abstracts\Requests\Request;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 
-class {{ class }} extends Request
+class {{ class }} extends FormRequest
 {
     public function rules(): array
     {

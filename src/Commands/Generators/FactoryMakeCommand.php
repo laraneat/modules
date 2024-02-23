@@ -2,25 +2,31 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
+use Laraneat\Modules\Exceptions\NameIsReserved;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class FactoryMakeCommand extends ComponentGeneratorCommand
+class FactoryMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'module:make:factory';
+    protected $signature = 'module:make:factory
+                            {name : The name of the factory class}
+                            {module? : The name or package name of the app module}
+                            {--model= : The class name of the model to be used in the factory}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -30,62 +36,71 @@ class FactoryMakeCommand extends ComponentGeneratorCommand
     protected $description = 'Generate new factory for the specified module.';
 
     /**
-     * Module instance.
+     * The module instance
      *
      * @var Module
      */
     protected Module $module;
 
     /**
-     * Component type.
-     *
-     * @var string
-     */
-    protected string $componentType = 'factory';
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
+     * The 'name' argument
      */
     protected string $nameArgument;
 
     /**
-     * Get the console command options.
+     * The module component type.
      */
-    protected function getOptions(): array
+    protected ModuleComponentType $componentType = ModuleComponentType::Factory;
+
+    /**
+     * Prompt for missing input arguments using the returned questions.
+     */
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the factory.'],
+            'name' => 'Enter the factory class name',
         ];
     }
 
-    protected function prepare()
+    /**
+     * Execute the console command.
+     */
+    public function handle(): int
     {
-        $this->module = $this->getModule();
-        $this->nameArgument = $this->getTrimmedArgument('name');
-    }
+        try {
+            $this->nameArgument = $this->argument('name');
+            $this->ensureNameIsNotReserved($this->nameArgument);
+            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
+        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+            $this->components->error($exception->getMessage());
+            return self::FAILURE;
+        }
 
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
-    {
-        $model = $this->getOptionOrAsk(
-            'model',
-            'Enter the class name of the model to be used in the factory',
-            '',
-            true
+        return $this->generate(
+            $this->getComponentPath($this->module, $this->nameArgument, $this->componentType),
+            $this->getContents(),
+            $this->option('force')
         );
-        $modelClass = $this->getClass($model);
+    }
+
+    protected function getContents(): string
+    {
+        $modelClass = $this->getFullClassFromOptionOrAsk(
+            optionName: 'model',
+            question: 'Enter the class name of the model to be used in the factory',
+            componentType: ModuleComponentType::Model,
+            module: $this->module
+        );
         $stubReplaces = [
-            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument),
-            'model' => $modelClass,
-            'modelEntity' => Str::camel($modelClass),
-            'modelNamespace' => $this->getComponentNamespace($this->module, $model, 'model'),
+            'namespace' => $this->getComponentNamespace(
+                $this->module,
+                $this->nameArgument,
+                $this->componentType
+            ),
+            'class' => class_basename($this->nameArgument),
+            'model' => class_basename($modelClass),
+            'modelCamelCase' => Str::camel(class_basename($modelClass)),
+            'modelNamespace' => $this->getNamespaceOfClass($modelClass)
         ];
 
         return Stub::create("factory.stub", $stubReplaces)->render();

@@ -2,7 +2,7 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\QueryWizards\EloquentQueryWizard;
+use Jackardios\QueryWizard\Eloquent\EloquentQueryWizard;
 use Jackardios\QueryWizard\Eloquent\EloquentFilter;
 use Jackardios\QueryWizard\Eloquent\EloquentInclude;
 use Jackardios\QueryWizard\Eloquent\EloquentSort;

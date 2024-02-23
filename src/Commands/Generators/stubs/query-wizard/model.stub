@@ -2,7 +2,7 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\QueryWizards\ModelQueryWizard;
+use Jackardios\QueryWizard\Model\ModelQueryWizard;
 use Jackardios\QueryWizard\Model\ModelInclude;
 
 class {{ class }} extends ModelQueryWizard

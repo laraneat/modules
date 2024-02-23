@@ -2,7 +2,7 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Exceptions\Exception;
+use Exception;
 
 class {{ class }} extends Exception
 {

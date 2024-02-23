@@ -2,7 +2,7 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class {{ class }} extends ResourceCollection
 {

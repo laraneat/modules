@@ -2,8 +2,8 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Factories\Factory;
 use {{ modelNamespace }}\{{ model }};
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @method \Illuminate\Support\Collection<int, {{ model }}>|{{ model }} create($attributes = [], ?{{ model }} $parent = null)

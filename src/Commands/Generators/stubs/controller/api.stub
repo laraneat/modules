@@ -2,9 +2,13 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Controllers\ApiController;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller;
+use Laraneat\Modules\Concerns\WithJsonResponseHelpers;
 
-class {{ class }} extends ApiController
+class {{ class }} extends Controller
 {
-    //
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests, WithJsonResponseHelpers;
 }

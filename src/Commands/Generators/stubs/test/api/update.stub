@@ -3,7 +3,7 @@
 namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
-use App\Ship\Abstracts\Tests\TestCase;
+use Tests\TestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
@@ -15,8 +15,8 @@ class {{ class }} extends TestCase
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'update-{{ modelPermissionEntity }}',
+    protected array $testUserAccess = [
+        'permissions' => 'update-{{ modelKebabCase }}',
         'roles'       => '',
     ];
 
@@ -27,18 +27,18 @@ class {{ class }} extends TestCase
         ], $mergeData);
     }
 
-    public function test_update_{{ modelSnake }}(): void
+    public function test_update_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
 
         $data = $this->getTestData();
         $expectedData = array_merge($data, [
-            'id' => ${{ modelEntity }}->getKey(),
+            'id' => ${{ modelCamelCase }}->getKey(),
         ]);
 
-        $this->patchJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)
+        $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]), $data)
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) =>
                 $json->has('data', fn (AssertableJson $json) =>
@@ -47,28 +47,28 @@ class {{ class }} extends TestCase
                 )
             );
 
-        $this->assertExistsModelWhereColumns({{ model }}::class, $expectedData);
+        $this->assertDatabaseHas({{ model }}::class, $expectedData);
     }
 
-    public function test_update_{{ modelSnake }}_without_access(): void
+    public function test_update_{{ modelSnakeCase }}_without_access(): void
     {
-        $this->getTestingUserWithoutAccess();
+        $this->actingAsTestUserWithoutAccess();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
 
         $data = $this->getTestData();
 
-        $this->patchJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)
+        $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]), $data)
             ->assertForbidden();
     }
 
-    public function test_update_non_existing_{{ modelSnake }}(): void
+    public function test_update_non_existing_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
         $data = $this->getTestData();
 
-        $this->patchJson(route('{{ routeName }}', ['{{ modelEntity }}' => 7777]), $data)
+        $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => 7777]), $data)
             ->assertNotFound();
     }
 }

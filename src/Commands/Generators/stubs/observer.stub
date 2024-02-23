@@ -3,14 +3,13 @@
 namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
-use App\Ship\Abstracts\Observers\Observer;
 
-class {{ class }} extends Observer
+class {{ class }}
 {
     /**
      * Handle the {{ model }} "created" event.
      */
-    public function created({{ model }} ${{ modelEntity }}): void
+    public function created({{ model }} ${{ modelCamelCase }}): void
     {
         //
     }
@@ -18,7 +17,7 @@ class {{ class }} extends Observer
     /**
      * Handle the {{ model }} "updated" event.
      */
-    public function updated({{ model }} ${{ modelEntity }}): void
+    public function updated({{ model }} ${{ modelCamelCase }}): void
     {
         //
     }
@@ -26,7 +25,7 @@ class {{ class }} extends Observer
     /**
      * Handle the {{ model }} "deleted" event.
      */
-    public function deleted({{ model }} ${{ modelEntity }}): void
+    public function deleted({{ model }} ${{ modelCamelCase }}): void
     {
         //
     }
@@ -34,7 +33,7 @@ class {{ class }} extends Observer
     /**
      * Handle the {{ model }} "restored" event.
      */
-    public function restored({{ model }} ${{ modelEntity }}): void
+    public function restored({{ model }} ${{ modelCamelCase }}): void
     {
         //
     }
@@ -42,7 +41,7 @@ class {{ class }} extends Observer
     /**
      * Handle the {{ model }} "force deleted" event.
      */
-    public function forceDeleted({{ model }} ${{ modelEntity }}): void
+    public function forceDeleted({{ model }} ${{ modelCamelCase }}): void
     {
         //
     }

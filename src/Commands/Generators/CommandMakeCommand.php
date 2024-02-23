@@ -2,97 +2,108 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
+use Laraneat\Modules\Exceptions\NameIsReserved;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class CommandMakeCommand extends ComponentGeneratorCommand
+class CommandMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'module:make:command';
+    protected $signature = 'module:make:command
+                            {name : The name of the command class}
+                            {module? : The name or package name of the app module}
+                            {--s|signature= : The signature of the console command}
+                            {--description= : The console command description}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate new Artisan command for the specified module.';
+    protected $description = 'Generate new artisan command for the specified module.';
 
     /**
-     * Module instance.
+     * The module instance
      *
      * @var Module
      */
     protected Module $module;
 
     /**
-     * Component type.
-     *
-     * @var string
-     */
-    protected string $componentType = 'cli-command';
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
+     * The 'name' argument
      */
     protected string $nameArgument;
 
     /**
-     * Get the console command options.
+     * The module component type.
      */
-    protected function getOptions(): array
+    protected ModuleComponentType $componentType = ModuleComponentType::CliCommand;
+
+    /**
+     * Prompt for missing input arguments using the returned questions.
+     */
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['command', 'c', InputOption::VALUE_REQUIRED, 'The terminal command that should be assigned.'],
+            'name' => 'Enter the command class name',
         ];
     }
 
     /**
-     * Get the console command arguments.
+     * Execute the console command.
      */
-    protected function getArguments(): array
+    public function handle(): int
     {
-        return [
-            ['name', InputArgument::REQUIRED, 'The name of the command.'],
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
+        try {
+            $this->nameArgument = $this->argument('name');
+            $this->ensureNameIsNotReserved($this->nameArgument);
+            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
+        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+            $this->components->error($exception->getMessage());
+            return self::FAILURE;
+        }
 
-    protected function prepare()
-    {
-        $this->module = $this->getModule();
-        $this->nameArgument = $this->getTrimmedArgument('name');
-    }
-
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
-    {
-        $command = $this->getOptionOrAsk(
-            'command',
-            'Enter the terminal command signature that should be assigned',
-            'command:name',
-            true
+        return $this->generate(
+            $this->getComponentPath($this->module, $this->nameArgument, $this->componentType),
+            $this->getContents(),
+            $this->option('force')
         );
+    }
 
+    protected function getContents(): string
+    {
+        $signature = $this->getOptionOrAsk(
+            'signature',
+            'Enter the console command signature that should be assigned'
+        );
+        $description = $this->getOptionOrAsk(
+            'description',
+            'Enter the console command description',
+            '',
+            false
+        );
         $stubReplaces = [
-            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument),
-            'command' => $command,
+            'namespace' => $this->getComponentNamespace(
+                $this->module,
+                $this->nameArgument,
+                $this->componentType
+            ),
+            'class' => class_basename($this->nameArgument),
+            'signature' => $signature,
+            'description' => $description
         ];
 
         return Stub::create("command.stub", $stubReplaces)->render();

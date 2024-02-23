@@ -2,24 +2,30 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
+use Laraneat\Modules\Exceptions\NameIsReserved;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class ControllerMakeCommand extends ComponentGeneratorCommand
+class ControllerMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'module:make:controller';
+    protected $signature = 'module:make:controller
+                            {name : The name of the controller class}
+                            {module? : The name or package name of the app module}
+                            {--ui= : The UI for which the controller will be created}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -29,13 +35,6 @@ class ControllerMakeCommand extends ComponentGeneratorCommand
     protected $description = 'Generate new controller for the specified module.';
 
     /**
-     * The UI for which the request will be created.
-     *
-     * @var string
-     */
-    protected string $ui = 'api';
-
-    /**
      * Module instance.
      *
      * @var Module
@@ -43,52 +42,66 @@ class ControllerMakeCommand extends ComponentGeneratorCommand
     protected Module $module;
 
     /**
-     * Component type.
-     *
-     * @var string
-     */
-    protected string $componentType;
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
+     * The 'name' argument
      */
     protected string $nameArgument;
 
     /**
-     * Get the console command options.
+     * The module component type.
      */
-    protected function getOptions(): array
+    protected ModuleComponentType $componentType;
+
+    /**
+     * The UI for which the controller will be created.
+     * ('web' or 'api')
+     */
+    protected string $ui;
+
+    /**
+     * Prompt for missing input arguments using the returned questions.
+     */
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['ui', null, InputOption::VALUE_REQUIRED, 'The UI for which the request will be created.'],
+            'name' => 'Enter the controller class name',
         ];
     }
 
-    protected function prepare()
+    /**
+     * Execute the console command.
+     */
+    public function handle(): int
     {
-        $this->module = $this->getModule();
-        $this->ui = $this->getOptionOrChoice(
-            'ui',
-            'Select UI for which the request will be created',
-            ['api', 'web'],
-            'api'
+        try {
+            $this->nameArgument = $this->argument('name');
+            $this->ensureNameIsNotReserved($this->nameArgument);
+            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
+            $this->ui = $this->getOptionOrChoice(
+                'ui',
+                question: 'Enter the UI for which the controller will be created',
+                choices: ['api', 'web'],
+                default: 'api'
+            );
+            $this->componentType = $this->ui === 'api'
+                ? ModuleComponentType::ApiController
+                : ModuleComponentType::WebController;
+        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+            $this->components->error($exception->getMessage());
+            return self::FAILURE;
+        }
+
+        return $this->generate(
+            $this->getComponentPath($this->module, $this->nameArgument, $this->componentType),
+            $this->getContents(),
+            $this->option('force')
         );
-        $this->componentType = "{$this->ui}-controller";
-        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
+    protected function getContents(): string
     {
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument),
+            'class' => class_basename($this->nameArgument),
         ];
 
         return Stub::create("controller/{$this->ui}.stub", $stubReplaces)->render();

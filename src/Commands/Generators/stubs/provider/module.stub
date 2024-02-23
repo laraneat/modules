@@ -47,7 +47,7 @@ class {{ class }} extends ModuleServiceProvider
 
         $this->publishes([
             $sourcePath => $langPath,
-        ], '{{ moduleKebabName }}-translations');
+        ], '{{ moduleNameKebabCase }}-translations');
     }
 
     /**
@@ -65,7 +65,7 @@ class {{ class }} extends ModuleServiceProvider
 
         $this->publishes([
             $sourcePath => $viewsPath
-        ], '{{ moduleKebabName }}-views');
+        ], '{{ moduleNameKebabCase }}-views');
     }
 
     /**
@@ -80,7 +80,7 @@ class {{ class }} extends ModuleServiceProvider
 
         $this->publishes([
             $sourcePath => $migrationsPath
-        ], '{{ moduleKebabName }}-migrations');
+        ], '{{ moduleNameKebabCase }}-migrations');
     }
 
     /**

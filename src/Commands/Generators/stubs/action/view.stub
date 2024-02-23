@@ -6,18 +6,20 @@ use {{ modelNamespace }}\{{ model }};
 use {{ queryWizardNamespace }}\{{ queryWizard }};
 use {{ requestNamespace }}\{{ request }};
 use {{ resourceNamespace }}\{{ resource }};
-use App\Ship\Abstracts\Actions\Action;
 use Illuminate\Database\Eloquent\Model;
+use Lorisleiva\Actions\Concerns\AsAction;
 
-class {{ class }} extends Action
+class {{ class }}
 {
-    public function handle({{ request }} $request, {{ model }} ${{ modelEntity }}): Model
+    use AsAction;
+
+    public function handle({{ request }} $request, {{ model }} ${{ modelCamelCase }}): Model
     {
-        return {{ queryWizard }}::for(${{ modelEntity }})->build();
+        return {{ queryWizard }}::for(${{ modelCamelCase }})->build();
     }
 
-    public function asController({{ request }} $request, {{ model }} ${{ modelEntity }}): {{ resource }}
+    public function asController({{ request }} $request, {{ model }} ${{ modelCamelCase }}): {{ resource }}
     {
-        return new {{ resource }}($this->handle($request, ${{ modelEntity }}));
+        return new {{ resource }}($this->handle($request, ${{ modelCamelCase }}));
     }
 }

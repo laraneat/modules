@@ -2,25 +2,35 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
+use Laraneat\Modules\Exceptions\NameIsReserved;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class RouteMakeCommand extends ComponentGeneratorCommand
+class RouteMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'module:make:route';
+    protected $signature = 'module:make:route
+                            {name : The name of the route}
+                            {module? : The name or package name of the app module}
+                            {--ui= : The UI for which the route will be created}
+                            {--action= : The class name of the action to be used in the route}
+                            {--method= : HTTP request method}
+                            {--url= : Route URL}
+                            {--name= : Route name}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -37,65 +47,66 @@ class RouteMakeCommand extends ComponentGeneratorCommand
     protected Module $module;
 
     /**
-     * Component type.
-     *
-     * @var string
-     */
-    protected string $componentType;
-
-    /**
-     * The UI for which the request will be created.
-     *
-     * @var string
-     */
-    protected string $ui = 'api';
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
+     * The 'name' argument
      */
     protected string $nameArgument;
 
     /**
-     * Get the console command options.
+     * The module component type.
      */
-    protected function getOptions(): array
+    protected ModuleComponentType $componentType;
+
+    /**
+     * The UI for which the route will be created.
+     * ('web' or 'api')
+     */
+    protected string $ui;
+
+    /**
+     * Prompt for missing input arguments using the returned questions.
+     */
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['ui', null, InputOption::VALUE_REQUIRED, 'The UI for which the route will be created.'],
-            ['action', null, InputOption::VALUE_REQUIRED, 'The class name of the action to be used in the route.'],
-            ['method', 'm', InputOption::VALUE_REQUIRED, 'HTTP request method.'],
-            ['url', 'u', InputOption::VALUE_REQUIRED, 'Route URL.'],
-            ['name', null, InputOption::VALUE_REQUIRED, 'Route name.'],
+            'name' => 'Enter the route class name',
         ];
     }
 
-    protected function prepare()
+    /**
+     * Execute the console command.
+     */
+    public function handle(): int
     {
-        $this->module = $this->getModule();
-        $this->ui = $this->getOptionOrChoice(
-            'ui',
-            'Select the UI for which the request will be created',
-            ['api', 'web'],
-            'api'
+        try {
+            $this->nameArgument = $this->argument('name');
+            $this->ensureNameIsNotReserved($this->nameArgument);
+            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
+            $this->ui = $this->getOptionOrChoice(
+                'ui',
+                question: 'Enter the UI for which the route will be created',
+                choices: ['api', 'web'],
+                default: 'api'
+            );
+            $this->componentType = $this->ui === 'api'
+                ? ModuleComponentType::ApiRoute
+                : ModuleComponentType::WebRoute;
+        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+            $this->components->error($exception->getMessage());
+            return self::FAILURE;
+        }
+
+        return $this->generate(
+            $this->getComponentPath($this->module, $this->nameArgument, $this->componentType),
+            $this->getContents(),
+            $this->option('force')
         );
-        $this->componentType = "{$this->ui}-route";
-        $this->nameArgument = $this->getTrimmedArgument('name');
     }
 
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
+    protected function getContents(): string
     {
         $url = $this->getOptionOrAsk(
             'url',
             'Enter the route URL',
-            '',
-            true
         );
         $method = $this->getOptionOrChoice(
             'method',
@@ -103,25 +114,24 @@ class RouteMakeCommand extends ComponentGeneratorCommand
             ['get', 'post', 'put', 'patch', 'delete', 'options'],
             'get'
         );
-        $action = $this->getOptionOrAsk(
-            'action',
-            'Enter the class name of the action to be used in the route',
-            $this->generateDefaultActionName($url, $method),
-            true
-        );
         $name = $this->getOptionOrAsk(
             'name',
             'Enter the route name',
             $this->generateDefaultRouteName($url, $method),
-            true
+        );
+        $actionClass = $this->getFullClassFromOptionOrAsk(
+            optionName: 'action',
+            question: 'Enter the class name of the action to be used in the route',
+            componentType: ModuleComponentType::Action,
+            module: $this->module
         );
         $stubReplaces = [
-            'actionNamespace' => $this->getComponentNamespace($this->module, $action, 'action'),
-            'action' => $this->getClass($action),
             'method' => $method,
             'url' => $url,
             'name' => $name,
         ];
+        $stubReplaces['action'] = class_basename($actionClass);
+        $stubReplaces['actionNamespace'] = $this->getNamespaceOfClass($actionClass);
 
         return Stub::create("route.stub", $stubReplaces)->render();
     }

@@ -3,7 +3,7 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\ConfirmableTrait;
-use Laraneat\Modules\Exceptions\ModuleNotFoundException;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Module;
 
 class MigrateCommand extends BaseCommand
@@ -44,7 +44,7 @@ class MigrateCommand extends BaseCommand
 
         try {
             $modulesToHandle = $this->getModuleArgumentOrFail();
-        } catch (ModuleNotFoundException $exception) {
+        } catch (ModuleNotFound $exception) {
             $this->error($exception->getMessage());
 
             return self::FAILURE;

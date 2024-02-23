@@ -2,7 +2,7 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Tests\TestCase;
+use Tests\TestCase;
 
 /**
  * @group {{ modulePackageName }}
@@ -13,7 +13,7 @@ class {{ class }} extends TestCase
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
+    protected array $testUserAccess = [
         'permissions' => '',
         'roles'       => '',
     ];

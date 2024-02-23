@@ -3,7 +3,7 @@
 namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
-use App\Ship\Abstracts\Tests\TestCase;
+use Tests\TestCase;
 
 /**
  * @group {{ modulePackageName }}
@@ -14,16 +14,16 @@ class {{ class }} extends TestCase
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'view-{{ modelPermissionEntity }}',
+    protected array $testUserAccess = [
+        'permissions' => 'view-{{ modelKebabCase }}',
         'roles'       => '',
     ];
 
-    public function test_list_{{ modelsSnake }}(): void
+    public function test_list_{{ modelsSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
-        {{ model }}::factory()->count(2)->create();
+        {{ model }}::factory()->count(3)->create();
 
         $this->getJson(route('{{ routeName }}'))
             ->assertOk()
@@ -35,11 +35,11 @@ class {{ class }} extends TestCase
             ->assertJsonCount({{ model }}::query()->count(), 'data');
     }
 
-    public function test_list_{{ modelsSnake }}_without_access(): void
+    public function test_list_{{ modelsSnakeCase }}_without_access(): void
     {
-        $this->getTestingUserWithoutAccess();
+        $this->actingAsTestUserWithoutAccess();
 
-        {{ model }}::factory()->count(2)->create();
+        {{ model }}::factory()->count(3)->create();
 
         $this->getJson(route('{{ routeName }}'))
             ->assertForbidden();
