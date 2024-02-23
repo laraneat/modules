@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Traits;
+namespace Laraneat\Modules\Concerns;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
@@ -10,7 +10,7 @@ use Symfony\Component\Finder\SplFileInfo;
 /**
  * @mixin \Illuminate\Foundation\Support\Providers\RouteServiceProvider
  */
-trait RouteProviderHelpersTrait
+trait CanLoadRoutesFromDirectory
 {
     /**
      * Load routes from directory.

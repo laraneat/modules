@@ -1,10 +1,10 @@
 <?php
 
-namespace Laraneat\Modules\Traits;
+namespace Laraneat\Modules\Concerns;
 
 use Illuminate\Http\JsonResponse;
 
-trait ResponseHelpersTrait
+trait WithJsonResponseHelpers
 {
     public function json($data, int $status = 200, array $headers = [], int $options = 0): JsonResponse
     {

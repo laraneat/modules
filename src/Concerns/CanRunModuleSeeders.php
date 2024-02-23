@@ -1,11 +1,11 @@
 <?php
 
-namespace Laraneat\Modules\Traits;
+namespace Laraneat\Modules\Concerns;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Laraneat\Modules\Enums\ModuleComponentTypeEnum;
+use Laraneat\Modules\Enums\ModuleComponentType;
 use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
@@ -15,7 +15,7 @@ use Laraneat\Modules\Support\Generator\GeneratorHelper;
  *
  * @mixin \Illuminate\Database\Seeder
  */
-trait SeederLoaderTrait
+trait CanRunModuleSeeders
 {
     public function runSeedersFromModules(array|string $subdirectories = []): void
     {
@@ -48,7 +48,7 @@ trait SeederLoaderTrait
 
     protected function getSeederClassesFromModule(Module $module, array $subdirectories = []): array
     {
-        $moduleSeedersPath = GeneratorHelper::component(ModuleComponentTypeEnum::Seeder)->getFullPath($module);
+        $moduleSeedersPath = GeneratorHelper::component(ModuleComponentType::Seeder)->getFullPath($module);
         $paths = [$moduleSeedersPath];
 
         if (! empty($subdirectories)) {
