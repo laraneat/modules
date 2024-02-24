@@ -1,5 +1,6 @@
 <?php
 
+use function PHPUnit\Framework\assertFileExists;
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {
@@ -17,7 +18,7 @@ it('generates "plain" job for the module', function () {
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Jobs/PlainAuthorJob.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
 
@@ -30,6 +31,6 @@ it('generates "queued" job for the module', function () {
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Jobs/QueuedAuthorJob.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

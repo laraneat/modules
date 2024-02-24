@@ -1,5 +1,6 @@
 <?php
 
+use function PHPUnit\Framework\assertFileExists;
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {
@@ -18,7 +19,7 @@ it('generates "plain" listener for the module', function () {
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Listeners/PlainAuthorListener.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
 
@@ -32,6 +33,6 @@ it('generates "queued" listener for the module', function () {
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Listeners/QueuedAuthorListener.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

@@ -1,5 +1,6 @@
 <?php
 
+use function PHPUnit\Framework\assertFileExists;
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {
@@ -18,6 +19,6 @@ it('generates mail for the module', function () {
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Mails/SomeAuthorMail.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

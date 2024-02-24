@@ -1,5 +1,6 @@
 <?php
 
+use function PHPUnit\Framework\assertFileExists;
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {
@@ -17,7 +18,7 @@ it('generates "plain" action for the module', function () {
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Actions/PlainAuthorAction.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
 
@@ -26,15 +27,15 @@ it('generates "create" action for the module', function () {
         'name' => 'CreateAuthorAction',
         'module' => 'Author',
         '--stub' => 'create',
-        '--dto' => 'App\Modules\Author\DTO\CreateAuthorDTO',
-        '--model' => 'App\Modules\Author\Models\Author',
-        '--request' => 'App\Modules\Author\UI\API\Requests\CreateAuthorRequest',
-        '--resource' => 'App\Modules\Author\UI\API\Resources\AuthorResource',
+        '--dto' => 'CreateAuthorDTO',
+        '--model' => 'Author',
+        '--request' => 'CreateAuthorRequest',
+        '--resource' => 'AuthorResource',
     ])
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Actions/CreateAuthorAction.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
 
@@ -43,15 +44,15 @@ it('generates "update" action for the module', function () {
         'name' => 'UpdateAuthorAction',
         'module' => 'Author',
         '--stub' => 'update',
-        '--dto' => 'App\Modules\Author\DTO\UpdateAuthorDTO',
-        '--model' => 'App\Modules\Author\Models\Author',
-        '--request' => 'App\Modules\Author\UI\API\Requests\UpdateAuthorRequest',
-        '--resource' => 'App\Modules\Author\UI\API\Resources\AuthorResource',
+        '--dto' => 'UpdateAuthorDTO',
+        '--model' => 'Author',
+        '--request' => 'UpdateAuthorRequest',
+        '--resource' => 'AuthorResource',
     ])
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Actions/UpdateAuthorAction.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
 
@@ -60,13 +61,13 @@ it('generates "delete" action for the module', function () {
         'name' => 'DeleteAuthorAction',
         'module' => 'Author',
         '--stub' => 'delete',
-        '--model' => 'App\Modules\Author\Models\Author',
-        '--request' => 'App\Modules\Author\UI\API\Requests\DeleteAuthorRequest',
+        '--model' => 'Author',
+        '--request' => 'DeleteAuthorRequest',
     ])
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Actions/DeleteAuthorAction.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
 
@@ -75,15 +76,15 @@ it('generates "view" action for the module', function () {
         'name' => 'ViewAuthorAction',
         'module' => 'Author',
         '--stub' => 'view',
-        '--model' => 'App\Modules\Author\Models\Author',
-        '--request' => 'App\Modules\Author\UI\API\Requests\ViewAuthorRequest',
-        '--resource' => 'App\Modules\Author\UI\API\Resources\AuthorResource',
-        '--wizard' => 'App\Modules\Author\UI\API\QueryWizards\AuthorQueryWizard',
+        '--model' => 'Author',
+        '--request' => 'ViewAuthorRequest',
+        '--resource' => 'AuthorResource',
+        '--wizard' => 'AuthorQueryWizard',
     ])
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Actions/ViewAuthorAction.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
 
@@ -92,14 +93,14 @@ it('generates "list" action for the module', function () {
         'name' => 'ListAuthorsAction',
         'module' => 'Author',
         '--stub' => 'list',
-        '--model' => 'App\Modules\Author\Models\Author',
-        '--request' => 'App\Modules\Author\UI\API\Requests\ListAuthorsRequest',
-        '--resource' => 'App\Modules\Author\UI\API\Resources\AuthorResource',
-        '--wizard' => 'App\Modules\Author\UI\API\QueryWizards\AuthorsQueryWizard',
+        '--model' => 'Author',
+        '--request' => 'ListAuthorsRequest',
+        '--resource' => 'AuthorResource',
+        '--wizard' => 'AuthorsQueryWizard',
     ])
         ->assertSuccessful();
 
     $filePath = $this->app->basePath('/app/Modules/Author/Actions/ListAuthorsAction.php');
-    expect(is_file($filePath))->toBeTrue();
+    assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
