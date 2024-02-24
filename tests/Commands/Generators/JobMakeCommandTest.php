@@ -2,7 +2,7 @@
 
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
     ], $this->app->basePath('/app/Modules'));
@@ -12,7 +12,7 @@ it('generates "plain" job for the module', function () {
     $this->artisan('module:make:job', [
         'name' => 'PlainAuthorJob',
         'module' => 'Author',
-        '--stub' => 'plain'
+        '--stub' => 'plain',
     ])
         ->assertSuccessful();
 
@@ -25,7 +25,7 @@ it('generates "queued" job for the module', function () {
     $this->artisan('module:make:job', [
         'name' => 'QueuedAuthorJob',
         'module' => 'Author',
-        '--stub' => 'queued'
+        '--stub' => 'queued',
     ])
         ->assertSuccessful();
 

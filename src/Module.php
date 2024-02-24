@@ -231,8 +231,9 @@ class Module implements Arrayable
      */
     public function addProvider(string $providerClass): static
     {
-        if (!in_array($providerClass, $this->providers)) {
+        if (! in_array($providerClass, $this->providers)) {
             $this->providers[] = $providerClass;
+
             return $this->save();
         }
 
@@ -251,7 +252,7 @@ class Module implements Arrayable
      */
     public function addAlias(string $alias, string $class): static
     {
-        if (!isset($this->aliases[$alias]) || $this->aliases[$alias] !== $class) {
+        if (! isset($this->aliases[$alias]) || $this->aliases[$alias] !== $class) {
             $this->aliases[$alias] = $class;
 
             return $this->save();
@@ -290,6 +291,7 @@ class Module implements Arrayable
     public function subPath(string $subPath): string
     {
         $subPath = trim(str_replace('\\', '/', $subPath), '/');
+
         return $this->getPath() . '/' . $subPath;
     }
 
@@ -299,6 +301,7 @@ class Module implements Arrayable
     public function subNamespace(string $subNamespace): string
     {
         $subNamespace = trim(str_replace('/', '\\', $subNamespace), '\\');
+
         return $this->getNamespace() . '\\' . $subNamespace;
     }
 

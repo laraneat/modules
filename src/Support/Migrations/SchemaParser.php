@@ -122,7 +122,7 @@ class SchemaParser implements Arrayable
         if (in_array($column, $this->relationshipKeys, true)) {
             if ($type === 'add') {
                 $results .= $this->addRelationColumn($attributes, $column);
-            } else if ($type === 'remove') {
+            } elseif ($type === 'remove') {
                 $results .= $this->removeRelationColumn($attributes, $column);
             }
         } else {
@@ -148,11 +148,11 @@ class SchemaParser implements Arrayable
             if ($key === 0) {
                 $relatedColumn = Str::snake(class_basename($field)) . '_id';
                 $result .= "->integer('$relatedColumn')->unsigned();" . PHP_EOL . "\t\t\t" . "\$table->foreign('$relatedColumn')";
-            } else if ($key === 1) {
+            } elseif ($key === 1) {
                 $result .= "->references('$field')";
-            } else if ($key === 2) {
+            } elseif ($key === 2) {
                 $result .= "->on('$field')";
-            } else if (Str::contains($field, '(')) {
+            } elseif (Str::contains($field, '(')) {
                 $result .= '->' . $field;
             } else {
                 $result .= '->' . $field . '()';
@@ -167,11 +167,12 @@ class SchemaParser implements Arrayable
      */
     protected function removeRelationColumn(array $attributes, string $column): string
     {
-        if (!($attributes[0] ?? null)) {
+        if (! ($attributes[0] ?? null)) {
             return "";
         }
 
         $relatedColumn = Str::snake(class_basename($attributes[0])) . '_id';
+
         return "->dropColumn('$relatedColumn');" . PHP_EOL . "\t\t\t" . "\$table->dropForeign(['$relatedColumn'])";
     }
 

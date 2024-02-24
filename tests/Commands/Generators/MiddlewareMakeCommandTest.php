@@ -2,7 +2,7 @@
 
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
     ], $this->app->basePath('/app/Modules'));

@@ -72,7 +72,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
     public function handle(ModulesRepository $modulesRepository): int
     {
         $this->moduleName = Str::studly($this->argument('name'));
-        if (!$this->validateModuleName($this->moduleName)) {
+        if (! $this->validateModuleName($this->moduleName)) {
             $this->components->error("Module name can only consist of letters!");
 
             return self::FAILURE;
@@ -96,7 +96,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             choices: [
                 'plain',
                 'base',
-                'api'
+                'api',
             ],
             default: 'plain'
         );
@@ -159,7 +159,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             $statuses[] = $this->call('module:make:factory', [
                 'name' => "{$entityName}Factory",
                 'module' => $modulePackageName,
-                '--model' => $entityName
+                '--model' => $entityName,
             ]);
         }
 
@@ -167,7 +167,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             $statuses[] = $this->call('module:make:migration', [
                 'name' => "create_{$snakePluralEntityName}_table",
                 'module' => $modulePackageName,
-                '--stub' => 'create'
+                '--stub' => 'create',
             ]);
         }
 
@@ -176,7 +176,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
                 'name' => "{$entityName}PermissionsSeeder_1",
                 'module' => $modulePackageName,
                 '--stub' => 'permissions',
-                '--model' => $entityName
+                '--model' => $entityName,
             ]);
         }
 
@@ -195,7 +195,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             $statuses[] = $this->call('module:make:model', [
                 'name' => $entityName,
                 'module' => $modulePackageName,
-                '--factory' => "{$entityName}Factory"
+                '--factory' => "{$entityName}Factory",
             ]);
         }
 
@@ -203,7 +203,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             $statuses[] = $this->call('module:make:policy', [
                 'name' => "{$entityName}Policy",
                 'module' => $modulePackageName,
-                '--model' => $entityName
+                '--model' => $entityName,
             ]);
         }
 
@@ -239,7 +239,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             $statuses[] = $this->call('module:make:resource', [
                 'name' => "{$entityName}Resource",
                 'module' => $modulePackageName,
-                '--stub' => 'single'
+                '--stub' => 'single',
             ]);
         }
 
@@ -269,7 +269,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
                     '--model' => $entityName,
                     '--request' => $requestClass,
                     '--resource' => $resourceClass,
-                    '--wizard' => $wizardClass
+                    '--wizard' => $wizardClass,
                 ]);
             }
 
@@ -290,7 +290,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
                     'update' => 'patch',
                     'delete' => 'delete',
                     'list' => 'get',
-                    'view' => 'get'
+                    'view' => 'get',
                 ];
 
                 $url = $kebabPluralEntityName;
@@ -308,7 +308,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
                     '--action' => $actionClass,
                     '--method' => $actionMethodsMap[$actionVerb],
                     '--url' => $url,
-                    '--name' => $routeName
+                    '--name' => $routeName,
                 ]);
             }
 
@@ -323,7 +323,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
                     '--stub' => $actionVerb,
                     '--type' => 'api',
                     '--model' => $entityName,
-                    '--route' => $routeName
+                    '--route' => $routeName,
                 ]);
             }
         }
@@ -333,7 +333,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
 
     protected function generateProviders(Module $module): int
     {
-        if (!GeneratorHelper::component(ModuleComponentType::Provider)->generate()) {
+        if (! GeneratorHelper::component(ModuleComponentType::Provider)->generate()) {
             return self::SUCCESS;
         }
 
@@ -341,12 +341,12 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             $this->call('module:make:provider', [
                 'name' => "{$module->getStudlyName()}ServiceProvider",
                 'module' => $module->getPackageName(),
-                '--stub' => 'module'
+                '--stub' => 'module',
             ]),
             $this->call('module:make:provider', [
                 'name' => 'RouteServiceProvider',
                 'module' => $module->getPackageName(),
-                '--stub' => 'route'
+                '--stub' => 'route',
             ])
         ) ? self::FAILURE : self::SUCCESS;
     }

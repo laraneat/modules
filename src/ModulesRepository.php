@@ -7,13 +7,15 @@ use Illuminate\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Filesystem\Filesystem;
-use Laraneat\Modules\Enums\ModuleType;
-use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
+
 use function Illuminate\Filesystem\join_paths;
+
 use Illuminate\Support\Arr;
 use Illuminate\Support\Env;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Enums\ModuleType;
 use Laraneat\Modules\Exceptions\MissingModuleAttribute;
+use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 
 class ModulesRepository implements Arrayable
@@ -241,6 +243,7 @@ class ModulesRepository implements Arrayable
     {
         $appModuleIsPruned = $this->pruneAppModulesManifest();
         $vendorModuleIsPruned = $this->pruneVendorModulesManifest();
+
         return $appModuleIsPruned || $vendorModuleIsPruned;
     }
 
@@ -250,6 +253,7 @@ class ModulesRepository implements Arrayable
     public function pruneAppModulesManifest(): bool
     {
         $this->allModules = $this->appModules = null;
+
         return $this->filesystem->delete($this->appModulesManifestPath);
     }
 
@@ -259,6 +263,7 @@ class ModulesRepository implements Arrayable
     public function pruneVendorModulesManifest(): bool
     {
         $this->allModules = $this->vendorModules = null;
+
         return $this->filesystem->delete($this->vendorModulesManifestPath);
     }
 
@@ -364,6 +369,7 @@ class ModulesRepository implements Arrayable
         }
 
         $composerArray = json_decode(file_get_contents($composerPath), true);
+
         return $this->packagesToIgnore = $composerArray['extra']['laraneat']['dont-discover'] ?? [];
     }
 
@@ -449,7 +455,7 @@ class ModulesRepository implements Arrayable
     {
         $modules = $this->filterByName($moduleName, $type);
 
-        if (!$modules) {
+        if (! $modules) {
             throw ModuleNotFound::makeForName($moduleName);
         }
 

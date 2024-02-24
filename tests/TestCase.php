@@ -16,7 +16,7 @@ abstract class TestCase extends OrchestraTestCase
 {
     public Filesystem $filesystem;
 
-    /** @var string[] $modulesPaths */
+    /** @var string[] */
     protected array $modulesPaths = [];
 
     protected ?string $composerJsonBackupPath = null;
@@ -155,7 +155,7 @@ abstract class TestCase extends OrchestraTestCase
             namespace: $attributes['namespace'] ?? 'SomeVendor\\TestingModule\\',
             providers: $attributes['providers'] ?? [
                 'SomeVendor\\TestingModule\\Providers\\TestingModuleServiceProvider',
-                'SomeVendor\\TestingModule\\Providers\\RouteServiceProvider'
+                'SomeVendor\\TestingModule\\Providers\\RouteServiceProvider',
             ],
             aliases: $attributes['aliases'] ?? [
                 'testing-module' => 'SomeVendor\\TestingModule\\Facades\\TestingModule',

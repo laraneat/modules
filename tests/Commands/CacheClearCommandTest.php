@@ -4,7 +4,7 @@ use Laraneat\Modules\ModulesRepository;
 use Mockery\MockInterface;
 
 it('clears vendor modules cache', function () {
-    $this->mock(ModulesRepository::class, function(MockInterface $mock) {
+    $this->mock(ModulesRepository::class, function (MockInterface $mock) {
         $mock->shouldReceive('pruneVendorModulesManifest')->once();
     });
     $this->artisan('module:clear --vendor')
@@ -13,7 +13,7 @@ it('clears vendor modules cache', function () {
 });
 
 it('clears app modules cache', function () {
-    $this->mock(ModulesRepository::class, function(MockInterface $mock) {
+    $this->mock(ModulesRepository::class, function (MockInterface $mock) {
         $mock->shouldReceive('pruneAppModulesManifest')->once();
     });
     $this->artisan('module:clear --app')
@@ -22,7 +22,7 @@ it('clears app modules cache', function () {
 });
 
 it('clears app and vendor modules cache', function () {
-    $this->mock(ModulesRepository::class, function(MockInterface $mock) {
+    $this->mock(ModulesRepository::class, function (MockInterface $mock) {
         $mock->shouldReceive('pruneVendorModulesManifest')->once();
         $mock->shouldReceive('pruneAppModulesManifest')->once();
     });

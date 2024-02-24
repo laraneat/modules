@@ -43,7 +43,7 @@ class StubPublishCommand extends Command
             $force = $this->option('force');
             $toIsExists = $filesystem->exists($to);
 
-            if (($onlyExisting && $toIsExists) || (!$onlyExisting && (!$toIsExists || $force))) {
+            if (($onlyExisting && $toIsExists) || (! $onlyExisting && (! $toIsExists || $force))) {
                 $filesystem->ensureDirectoryExists(dirname($to));
                 $filesystem->put($to, $filesystem->get($from));
             }

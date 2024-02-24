@@ -30,9 +30,9 @@ class ListCommand extends BaseCommand
         $listVendorModules = $this->option('vendor');
         $listAppModules = $this->option('app');
 
-        if (!$listAppModules && !$listVendorModules || $listAppModules && $listVendorModules) {
+        if (! $listAppModules && ! $listVendorModules || $listAppModules && $listVendorModules) {
             $modules = $this->modulesRepository->getModules();
-        } else if ($listVendorModules) {
+        } elseif ($listVendorModules) {
             $modules = $this->modulesRepository->getVendorModules();
         } else {
             $modules = $this->modulesRepository->getAppModules();

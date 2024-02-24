@@ -2,7 +2,7 @@
 
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
     ], $this->app->basePath('/app/Modules'));
@@ -12,7 +12,7 @@ it('generates "api" controller for the module', function () {
     $this->artisan('module:make:controller', [
         'name' => 'ApiAuthorController',
         'module' => 'Author',
-        '--ui' => 'api'
+        '--ui' => 'api',
     ])
         ->assertSuccessful();
 
@@ -25,7 +25,7 @@ it('generates "web" controller for the module', function () {
     $this->artisan('module:make:controller', [
         'name' => 'WebAuthorController',
         'module' => 'Author',
-        '--ui' => 'web'
+        '--ui' => 'web',
     ])
         ->assertSuccessful();
 

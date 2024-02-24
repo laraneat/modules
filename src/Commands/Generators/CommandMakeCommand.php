@@ -73,6 +73,7 @@ class CommandMakeCommand extends BaseComponentGeneratorCommand implements Prompt
             $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
         } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
             $this->components->error($exception->getMessage());
+
             return self::FAILURE;
         }
 
@@ -103,7 +104,7 @@ class CommandMakeCommand extends BaseComponentGeneratorCommand implements Prompt
             ),
             'class' => class_basename($this->nameArgument),
             'signature' => $signature,
-            'description' => $description
+            'description' => $description,
         ];
 
         return Stub::create("command.stub", $stubReplaces)->render();

@@ -17,7 +17,7 @@ class GeneratorHelper
     {
         $generatorPath = config("modules.generator.path");
 
-        if (!$generatorPath) {
+        if (! $generatorPath) {
             throw InvalidConfigValue::makeForNullValue("modules.generator.path");
         }
 
@@ -33,7 +33,7 @@ class GeneratorHelper
     {
         $generatorNamespace = config("modules.generator.namespace");
 
-        if (!$generatorNamespace) {
+        if (! $generatorNamespace) {
             throw InvalidConfigValue::makeForNullValue("modules.generator.namespace");
         }
 
@@ -113,7 +113,7 @@ class GeneratorHelper
 
         $modulePart = self::formatPath($moduleOrName);
 
-        if (!$modulePart) {
+        if (! $modulePart) {
             return null;
         }
 
@@ -135,7 +135,7 @@ class GeneratorHelper
 
         $modulePart = self::formatNamespace($moduleOrName);
 
-        if (!$modulePart) {
+        if (! $modulePart) {
             return null;
         }
 

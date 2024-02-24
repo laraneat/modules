@@ -6,7 +6,7 @@ use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\ModulesRepository;
 use Symfony\Component\Console\Exception\InvalidOptionException;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Article'),
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Author'),
@@ -46,13 +46,13 @@ describe('single "module" argument', function () {
         }
     }
 
-    beforeEach(function() {
+    beforeEach(function () {
         /** @var Illuminate\Foundation\Console\Kernel $console */
         $console = $this->app[ConsoleKernelContract::class];
         $console->registerCommand(new CommandWithSingleModuleArgument($this->app[ModulesRepository::class]));
     });
 
-    it('can accept a package name as a single "module" argument', function() {
+    it('can accept a package name as a single "module" argument', function () {
         $this->artisan('single-module-argument-command laraneat/article')
             ->expectsOutput('laraneat/article')
             ->assertSuccessful();
@@ -74,7 +74,7 @@ describe('single "module" argument', function () {
             ->assertSuccessful();
     });
 
-    it('can accept a case-insensitive module name as a single "module" argument', function() {
+    it('can accept a case-insensitive module name as a single "module" argument', function () {
         $this->artisan('single-module-argument-command Article')
             ->expectsOutput('laraneat/article')
             ->assertSuccessful();
@@ -108,7 +108,7 @@ describe('single "module" argument', function () {
             ->assertSuccessful();
     });
 
-    it('displays an error message when passing an invalid single "module" argument', function() {
+    it('displays an error message when passing an invalid single "module" argument', function () {
         $this->artisan('single-module-argument-command laraneat/articlee')
             ->expectsOutput("Module with 'laraneat/articlee' name or package name does not exist!")
             ->assertFailed();
@@ -130,7 +130,7 @@ describe('single "module" argument', function () {
             ->assertFailed();
     });
 
-    it('gives a module selection if the "module" argument is not passed', function() {
+    it('gives a module selection if the "module" argument is not passed', function () {
         $this->artisan('single-module-argument-command')
             ->expectsChoice(
                 question: 'Select one module',
@@ -140,17 +140,17 @@ describe('single "module" argument', function () {
                     'laraneat/author' => 'laraneat/author',
                     'app/foo' => 'app/foo',
                     'laraneat/foo' => 'laraneat/foo',
-                    'laraneat/bar' => 'laraneat/bar'
+                    'laraneat/bar' => 'laraneat/bar',
                 ]
             )
             ->expectsOutput('laraneat/author')
             ->assertSuccessful();
     });
 
-    it('gives a module selection if 2 or more modules with the same names are found', function() {
+    it('gives a module selection if 2 or more modules with the same names are found', function () {
         $expectedChoiceOptions = [
             'app/foo' => 'app/foo',
-            'laraneat/foo' => 'laraneat/foo'
+            'laraneat/foo' => 'laraneat/foo',
         ];
 
         $this->artisan('single-module-argument-command Foo')
@@ -205,13 +205,13 @@ describe('multiple "module" argument', function () {
         }
     }
 
-    beforeEach(function() {
+    beforeEach(function () {
         /** @var Illuminate\Foundation\Console\Kernel $console */
         $console = $this->app[ConsoleKernelContract::class];
         $console->registerCommand(new CommandWithMultipleModuleArgument($this->app[ModulesRepository::class]));
     });
 
-    it('can accept a package name as a multiple "module" argument', function() {
+    it('can accept a package name as a multiple "module" argument', function () {
         $this->artisan('multiple-module-argument-command laraneat/article laraneat/author')
             ->expectsOutput('laraneat/article, laraneat/author')
             ->assertSuccessful();
@@ -233,7 +233,7 @@ describe('multiple "module" argument', function () {
             ->assertSuccessful();
     });
 
-    it('can accept "all" as a multiple "module" argument', function() {
+    it('can accept "all" as a multiple "module" argument', function () {
         $this->artisan('multiple-module-argument-command all')
             ->expectsOutput('laraneat/foo, laraneat/bar, laraneat/article, laraneat/author, app/foo')
             ->assertSuccessful();
@@ -251,7 +251,7 @@ describe('multiple "module" argument', function () {
             ->assertSuccessful();
     });
 
-    it('can accept a case-insensitive module name as a multiple "module" argument', function() {
+    it('can accept a case-insensitive module name as a multiple "module" argument', function () {
         $this->artisan('multiple-module-argument-command Article BAR author Author arTicLe Bar')
             ->expectsOutput('laraneat/article, laraneat/bar, laraneat/author')
             ->assertSuccessful();
@@ -265,7 +265,7 @@ describe('multiple "module" argument', function () {
             ->assertSuccessful();
     });
 
-    it('can accept a case-insensitive module name and package name as a multiple "module" argument', function() {
+    it('can accept a case-insensitive module name and package name as a multiple "module" argument', function () {
         $this->artisan('multiple-module-argument-command Article BAR author app/foo Author arTicLe Bar')
             ->expectsOutput('laraneat/article, laraneat/bar, laraneat/author, app/foo')
             ->assertSuccessful();
@@ -279,7 +279,7 @@ describe('multiple "module" argument', function () {
             ->assertSuccessful();
     });
 
-    it('displays an error message when passing an invalid multiple "module" argument', function() {
+    it('displays an error message when passing an invalid multiple "module" argument', function () {
         $this->artisan('multiple-module-argument-command laraneat/foo laraneat/articlee laraneat/barr')
             ->expectsOutput("Module with 'laraneat/articlee' name or package name does not exist!")
             ->assertFailed();
@@ -297,7 +297,7 @@ describe('multiple "module" argument', function () {
             ->assertFailed();
     });
 
-    it('gives a module selection if the multiple "module" argument is not passed', function() {
+    it('gives a module selection if the multiple "module" argument is not passed', function () {
         $choices = collect([
             'None' => '',
             'all' => 'All modules',
@@ -305,7 +305,7 @@ describe('multiple "module" argument', function () {
             'laraneat/author' => 'laraneat/author',
             'app/foo' => 'app/foo',
             'laraneat/foo' => 'laraneat/foo',
-            'laraneat/bar' => 'laraneat/bar'
+            'laraneat/bar' => 'laraneat/bar',
         ]);
 
         $this->artisan('multiple-module-argument-command')
@@ -322,10 +322,10 @@ describe('multiple "module" argument', function () {
             ->assertSuccessful();
     });
 
-    it('gives a module selection if 2 or more modules with the same names are found', function() {
+    it('gives a module selection if 2 or more modules with the same names are found', function () {
         $expectedChoiceOptions = [
             'app/foo' => 'app/foo',
-            'laraneat/foo' => 'laraneat/foo'
+            'laraneat/foo' => 'laraneat/foo',
         ];
 
         $this->artisan('multiple-module-argument-command foo laraneat/article Author Foo')
@@ -358,7 +358,7 @@ describe('multiple "module" argument', function () {
     });
 });
 
-describe('getOptionOrAsk', function() {
+describe('getOptionOrAsk', function () {
     class CommandWithOptionAsking extends BaseCommand
     {
         /**
@@ -377,6 +377,7 @@ describe('getOptionOrAsk', function() {
                 $this->line($this->getOptionOrAsk('foo', 'Enter "foo" option'));
             } catch (InvalidOptionException $exception) {
                 $this->line($exception->getMessage());
+
                 return self::FAILURE;
             }
 
@@ -384,13 +385,13 @@ describe('getOptionOrAsk', function() {
         }
     }
 
-    beforeEach(function() {
+    beforeEach(function () {
         /** @var Illuminate\Foundation\Console\Kernel $console */
         $console = $this->app[ConsoleKernelContract::class];
         $console->registerCommand(new CommandWithOptionAsking($this->app[ModulesRepository::class]));
     });
 
-    it('asks for the option value if it is not specified', function() {
+    it('asks for the option value if it is not specified', function () {
         $this->artisan('command-with-option-asking')
             ->expectsQuestion(
                 question: 'Enter "foo" option',
@@ -416,14 +417,14 @@ describe('getOptionOrAsk', function() {
             ->assertFailed();
     });
 
-    it('does not ask for an option value if it specified', function() {
+    it('does not ask for an option value if it specified', function () {
         $this->artisan('command-with-option-asking --foo=some-foo-value')
             ->expectsOutput('some-foo-value')
             ->assertSuccessful();
     });
 });
 
-describe('getOptionOrChoice', function() {
+describe('getOptionOrChoice', function () {
     class CommandWithOptionChoice extends BaseCommand
     {
         public const CHOICES = ['first', 'second', 'third'];
@@ -444,6 +445,7 @@ describe('getOptionOrChoice', function() {
                 $this->line($this->getOptionOrChoice('foo', 'Choice the "foo" option', self::CHOICES));
             } catch (InvalidOptionException $exception) {
                 $this->line($exception->getMessage());
+
                 return self::FAILURE;
             }
 
@@ -451,13 +453,13 @@ describe('getOptionOrChoice', function() {
         }
     }
 
-    beforeEach(function() {
+    beforeEach(function () {
         /** @var Illuminate\Foundation\Console\Kernel $console */
         $console = $this->app[ConsoleKernelContract::class];
         $console->registerCommand(new CommandWithOptionChoice($this->app[ModulesRepository::class]));
     });
 
-    it('let you choose an option value if it is not specified', function() {
+    it('let you choose an option value if it is not specified', function () {
         $this->artisan('command-with-option-choice')
             ->expectsChoice(
                 question: 'Choice the "foo" option',
@@ -477,13 +479,13 @@ describe('getOptionOrChoice', function() {
             ->assertSuccessful();
     });
 
-    it('doesnt let you choose an option value if it specified', function() {
+    it('doesnt let you choose an option value if it specified', function () {
         $this->artisan('command-with-option-choice --foo=first')
             ->expectsOutput('first')
             ->assertSuccessful();
     });
 
-    it('shows an error if the passed option value is not valid', function() {
+    it('shows an error if the passed option value is not valid', function () {
         $this->artisan('command-with-option-choice --foo=some-invalid-value')
             ->expectsOutput("Wrong 'foo' option value provided. Value should be one of 'first' or 'second' or 'third'.")
             ->assertFailed();

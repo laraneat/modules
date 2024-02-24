@@ -142,7 +142,7 @@ trait InteractsWithTestUser
      */
     private function factoryCreateUser(?array $userDetails = null): UserContract
     {
-        if (!method_exists($this->testUserClass, 'factory')) {
+        if (! method_exists($this->testUserClass, 'factory')) {
             throw new LogicException("class `$this->testUserClass` does not have method `factory()`");
         }
 
@@ -168,14 +168,14 @@ trait InteractsWithTestUser
         $access = $access ?: $this->testUserAccess;
 
         if ($access['permissions'] ?? false) {
-            if (!method_exists($user, 'givePermissionTo')) {
+            if (! method_exists($user, 'givePermissionTo')) {
                 throw new LogicException("user instance does not have method `givePermissionTo()`, make sure the user class uses `spatie/laravel-permission`");
             }
             $user->givePermissionTo($access['permissions']);
         }
 
         if ($access['roles'] ?? false) {
-            if (!method_exists($user, 'assignRole')) {
+            if (! method_exists($user, 'assignRole')) {
                 throw new LogicException("user instance does not have method `assignRole()`, make sure the user class uses `spatie/laravel-permission`");
             }
             $user->assignRole($access['roles']);

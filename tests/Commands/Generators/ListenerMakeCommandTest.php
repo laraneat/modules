@@ -2,7 +2,7 @@
 
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
     ], $this->app->basePath('/app/Modules'));
@@ -13,7 +13,7 @@ it('generates "plain" listener for the module', function () {
         'name' => 'PlainAuthorListener',
         'module' => 'Author',
         '--stub' => 'plain',
-        '--event' => 'SomeAuthorEvent'
+        '--event' => 'SomeAuthorEvent',
     ])
         ->assertSuccessful();
 
@@ -27,7 +27,7 @@ it('generates "queued" listener for the module', function () {
         'name' => 'QueuedAuthorListener',
         'module' => 'Author',
         '--stub' => 'queued',
-        '--event' => 'SomeAuthorEvent'
+        '--event' => 'SomeAuthorEvent',
     ])
         ->assertSuccessful();
 

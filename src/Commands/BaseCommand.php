@@ -9,9 +9,11 @@ use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModulesRepository;
-use Symfony\Component\Console\Exception\InvalidOptionException;
+
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\select;
+
+use Symfony\Component\Console\Exception\InvalidOptionException;
 
 abstract class BaseCommand extends Command
 {
@@ -40,7 +42,7 @@ abstract class BaseCommand extends Command
                     label: 'Select one or more module',
                     options: [
                         'all' => 'All modules',
-                        ...array_combine($allPackageNames, $allPackageNames)
+                        ...array_combine($allPackageNames, $allPackageNames),
                     ],
                     required: 'You must select at least one module',
                 );
@@ -61,7 +63,7 @@ abstract class BaseCommand extends Command
 
         $this->input->setArgument('module', value: $moduleArgument);
 
-        if (!$multipleModuleMode) {
+        if (! $multipleModuleMode) {
             return $this->findModuleByNameOrPackageNameOrFail($moduleArgument);
         }
 
@@ -115,8 +117,7 @@ abstract class BaseCommand extends Command
         string $question,
         ?string $default = null,
         bool $required = true
-    ): ?string
-    {
+    ): ?string {
         $value = $this->option($optionName);
 
         if ($value === '' || $value === null) {
@@ -142,13 +143,12 @@ abstract class BaseCommand extends Command
         string $question,
         array $choices,
         ?string $default = null
-    ): ?string
-    {
+    ): ?string {
         $value = $this->option($optionName);
 
         if ($value === '' || $value === null) {
             $value = $this->choice($question, $choices, $default);
-        } elseif (!in_array($value, $choices, true)) {
+        } elseif (! in_array($value, $choices, true)) {
             throw new InvalidOptionException(
                 sprintf(
                     "Wrong '%s' option value provided. Value should be one of '%s'.",
@@ -170,11 +170,10 @@ abstract class BaseCommand extends Command
         string $optionName,
         array $choices,
         ?string $default = null
-    ): ?string
-    {
+    ): ?string {
         $value = $this->option($optionName) ?: $default;
 
-        if (!in_array($value, $choices, true)) {
+        if (! in_array($value, $choices, true)) {
             throw new InvalidOptionException(
                 sprintf(
                     "Wrong '%s' option value provided. Value should be one of '%s'.",

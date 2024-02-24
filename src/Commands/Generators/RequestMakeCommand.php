@@ -91,6 +91,7 @@ class RequestMakeCommand extends BaseComponentGeneratorCommand implements Prompt
                 : ModuleComponentType::WebRequest;
         } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
             $this->components->error($exception->getMessage());
+
             return self::FAILURE;
         }
 

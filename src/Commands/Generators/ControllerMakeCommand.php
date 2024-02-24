@@ -87,6 +87,7 @@ class ControllerMakeCommand extends BaseComponentGeneratorCommand implements Pro
                 : ModuleComponentType::WebController;
         } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
             $this->components->error($exception->getMessage());
+
             return self::FAILURE;
         }
 

@@ -28,7 +28,7 @@ class CacheCommand extends BaseCommand
         $buildVendorModules = $this->option('vendor');
         $buildAppModules = $this->option('app');
 
-        if (!$buildAppModules && !$buildVendorModules) {
+        if (! $buildAppModules && ! $buildVendorModules) {
             $buildAppModules = $buildVendorModules = true;
         }
 

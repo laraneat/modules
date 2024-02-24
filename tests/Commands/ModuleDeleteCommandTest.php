@@ -2,7 +2,7 @@
 
 use Laraneat\Modules\ModulesRepository;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Article'),
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Author'),

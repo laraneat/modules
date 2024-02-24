@@ -72,6 +72,7 @@ class ResourceMakeCommand extends BaseComponentGeneratorCommand implements Promp
             $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
         } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
             $this->components->error($exception->getMessage());
+
             return self::FAILURE;
         }
 

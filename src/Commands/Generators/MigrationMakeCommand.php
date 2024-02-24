@@ -79,6 +79,7 @@ class MigrationMakeCommand extends BaseComponentGeneratorCommand implements Prom
             $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
         } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
             $this->components->error($exception->getMessage());
+
             return self::FAILURE;
         }
 
@@ -99,7 +100,7 @@ class MigrationMakeCommand extends BaseComponentGeneratorCommand implements Prom
                 'create',
                 'delete',
                 'pivot',
-                'plain'
+                'plain',
             ],
         );
         $parser = new NameParser($this->argument('name'));

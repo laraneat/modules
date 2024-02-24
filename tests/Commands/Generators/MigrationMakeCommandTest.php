@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Support\Carbon;
+
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Article'),
     ], $this->app->basePath('/app/Modules'));
@@ -17,7 +18,7 @@ it('generates "plain" migration for the module', function () {
     $this->artisan('module:make:migration', [
         'name' => 'some_plain_migration',
         'module' => 'Article',
-        '--stub' => 'plain'
+        '--stub' => 'plain',
     ])
         ->assertSuccessful();
 
@@ -43,7 +44,7 @@ it('generates "create" migration for the module', function () {
         'name' => 'new_articles_table',
         'module' => 'Article',
         '--stub' => 'create',
-        '--fields' => 'title:string,excerpt:text,content:text,belongsTo:user:id:users'
+        '--fields' => 'title:string,excerpt:text,content:text,belongsTo:user:id:users',
     ])
         ->assertSuccessful();
 
@@ -69,7 +70,7 @@ it('automatically detects and generates "create" migration for the module', func
     $this->artisan('module:make:migration', [
         'name' => 'create_articles_table',
         'module' => 'Article',
-        '--fields' => 'title:string,excerpt:text,content:text,belongsTo:user:id:users'
+        '--fields' => 'title:string,excerpt:text,content:text,belongsTo:user:id:users',
     ])
         ->assertSuccessful();
 
@@ -83,7 +84,7 @@ it('generates "add" migration for the module', function () {
         'name' => 'modify_articles_table',
         'module' => 'Article',
         '--stub' => 'add',
-        '--fields' => 'title:string,excerpt:text,belongsTo:user:id:users'
+        '--fields' => 'title:string,excerpt:text,belongsTo:user:id:users',
     ])
         ->assertSuccessful();
 
@@ -109,7 +110,7 @@ it('automatically detects and generates "add" migration for the module', functio
     $this->artisan('module:make:migration', [
         'name' => 'add_title_to_articles_table',
         'module' => 'Article',
-        '--fields' => 'title:string'
+        '--fields' => 'title:string',
     ])
         ->assertSuccessful();
 
@@ -123,7 +124,7 @@ it('generates "delete" migration for the module', function () {
         'name' => 'modify_articles_table',
         'module' => 'Article',
         '--stub' => 'delete',
-        '--fields' => 'title:string,excerpt:text,belongsTo:user:id:users'
+        '--fields' => 'title:string,excerpt:text,belongsTo:user:id:users',
     ])
         ->assertSuccessful();
 
@@ -149,7 +150,7 @@ it('automatically detects and generates "delete" migration for the module', func
     $this->artisan('module:make:migration', [
         'name' => 'delete_title_from_articles_table',
         'module' => 'Article',
-        '--fields' => 'title:string'
+        '--fields' => 'title:string',
     ])
         ->assertSuccessful();
 

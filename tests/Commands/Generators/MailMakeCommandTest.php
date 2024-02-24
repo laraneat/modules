@@ -2,7 +2,7 @@
 
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
     ], $this->app->basePath('/app/Modules'));
@@ -13,7 +13,7 @@ it('generates mail for the module', function () {
         'name' => 'SomeAuthorMail',
         'module' => 'Author',
         '--subject' => 'Some testing subject',
-        '--view' => 'author.mail.some-view'
+        '--view' => 'author.mail.some-view',
     ])
         ->assertSuccessful();
 

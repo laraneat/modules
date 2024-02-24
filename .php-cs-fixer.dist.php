@@ -7,6 +7,10 @@ $finder = Symfony\Component\Finder\Finder::create()
     ])
     ->name('*.php')
     ->notName('*.blade.php')
+    ->exclude([
+        '__snapshots__',
+        '.pest',
+    ])
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);
 

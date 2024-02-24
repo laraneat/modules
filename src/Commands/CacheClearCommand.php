@@ -27,7 +27,7 @@ class CacheClearCommand extends BaseCommand
     {
         $clearVendorModules = $this->option('vendor');
         $clearAppModules = $this->option('app');
-        if (!$clearAppModules && !$clearVendorModules) {
+        if (! $clearAppModules && ! $clearVendorModules) {
             $clearAppModules = $clearVendorModules = true;
         }
 

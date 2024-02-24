@@ -2,7 +2,7 @@
 
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
     ], $this->app->basePath('/app/Modules'));
@@ -103,4 +103,3 @@ it('generates "list" action for the module', function () {
     expect(is_file($filePath))->toBeTrue();
     assertMatchesFileSnapshot($filePath);
 });
-

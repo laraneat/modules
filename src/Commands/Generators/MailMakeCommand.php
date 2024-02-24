@@ -74,6 +74,7 @@ class MailMakeCommand extends BaseComponentGeneratorCommand implements PromptsFo
             $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
         } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
             $this->components->error($exception->getMessage());
+
             return self::FAILURE;
         }
 
@@ -106,7 +107,7 @@ class MailMakeCommand extends BaseComponentGeneratorCommand implements PromptsFo
             ),
             'class' => $classBaseName,
             'subject' => $subject,
-            'view' => $view
+            'view' => $view,
         ];
 
         return Stub::create("mail.stub", $stubReplaces)->render();

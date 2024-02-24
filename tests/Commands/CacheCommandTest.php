@@ -4,7 +4,7 @@ use Laraneat\Modules\ModulesRepository;
 use Mockery\MockInterface;
 
 it('caches vendor modules', function () {
-    $this->mock(ModulesRepository::class, function(MockInterface $mock) {
+    $this->mock(ModulesRepository::class, function (MockInterface $mock) {
         $mock->shouldReceive('buildVendorModulesManifest')->once();
     });
     $this->artisan('module:cache --vendor')
@@ -13,7 +13,7 @@ it('caches vendor modules', function () {
 });
 
 it('caches app modules', function () {
-    $this->mock(ModulesRepository::class, function(MockInterface $mock) {
+    $this->mock(ModulesRepository::class, function (MockInterface $mock) {
         $mock->shouldReceive('buildAppModulesManifest')->once();
     });
     $this->artisan('module:cache --app')
@@ -22,7 +22,7 @@ it('caches app modules', function () {
 });
 
 it('caches app and vendor modules', function () {
-    $this->mock(ModulesRepository::class, function(MockInterface $mock) {
+    $this->mock(ModulesRepository::class, function (MockInterface $mock) {
         $mock->shouldReceive('buildVendorModulesManifest')->once();
         $mock->shouldReceive('buildAppModulesManifest')->once();
     });

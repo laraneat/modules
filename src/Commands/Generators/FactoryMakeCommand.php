@@ -73,6 +73,7 @@ class FactoryMakeCommand extends BaseComponentGeneratorCommand implements Prompt
             $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
         } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
             $this->components->error($exception->getMessage());
+
             return self::FAILURE;
         }
 
@@ -100,7 +101,7 @@ class FactoryMakeCommand extends BaseComponentGeneratorCommand implements Prompt
             'class' => class_basename($this->nameArgument),
             'model' => class_basename($modelClass),
             'modelCamelCase' => Str::camel(class_basename($modelClass)),
-            'modelNamespace' => $this->getNamespaceOfClass($modelClass)
+            'modelNamespace' => $this->getNamespaceOfClass($modelClass),
         ];
 
         return Stub::create("factory.stub", $stubReplaces)->render();

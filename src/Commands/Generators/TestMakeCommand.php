@@ -95,6 +95,7 @@ class TestMakeCommand extends BaseComponentGeneratorCommand implements PromptsFo
             };
         } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
             $this->components->error($exception->getMessage());
+
             return self::FAILURE;
         }
 

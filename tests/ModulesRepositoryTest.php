@@ -132,7 +132,7 @@ describe('modules manifest', function () {
                     'App\Modules\Author\Providers\RouteServiceProvider',
                 ],
                 'aliases' => [
-                    'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade'
+                    'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
                 ],
                 'path' => $this->app->basePath('/app/Modules/Author'),
                 'isVendor' => false,
@@ -261,7 +261,7 @@ it('can return app modules', function () {
                 'App\Modules\Author\Providers\RouteServiceProvider',
             ],
             'aliases' => [
-                'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade'
+                'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
             ],
         ],
     ]);
@@ -372,7 +372,7 @@ it('can return all modules', function () {
                 'App\Modules\Author\Providers\RouteServiceProvider',
             ],
             'aliases' => [
-                'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade'
+                'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
             ],
         ],
     ]);
@@ -392,7 +392,7 @@ it('throws an exception when app and vendor modules have the same package names'
 it('takes into account ignored modules', function () {
     $this->setLaraneatDontDiscover([
         'laraneat/article',
-        'laraneat/bar'
+        'laraneat/bar',
     ]);
 
     $this->setVendorModules([
@@ -428,7 +428,7 @@ it('takes into account ignored modules', function () {
                 'App\Modules\Author\Providers\RouteServiceProvider',
             ],
             'aliases' => [
-                'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade'
+                'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
             ],
         ],
     ]);
@@ -495,11 +495,11 @@ it('can return aliases', function () {
     ]);
 
     expect($this->repository->getAliases())->toBe([
-        'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade'
+        'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
     ])
         ->and($this->repository->getAliases(ModuleType::Vendor))->toBe([])
         ->and($this->repository->getAliases(ModuleType::App))->toBe([
-            'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade'
+            'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
         ]);
 
 });
@@ -673,7 +673,7 @@ it('can filter modules by name', function () {
                 'App\Modules\Article\Providers\RouteServiceProvider',
             ],
             'aliases' => [],
-        ]
+        ],
     ])
         ->and(collect($this->repository->filterByName('Article', ModuleType::Vendor))->toArray())->toBe([])
         ->and(collect($this->repository->filterByName('Article', ModuleType::App))->toArray())->toBe([
@@ -688,7 +688,7 @@ it('can filter modules by name', function () {
                     'App\Modules\Article\Providers\RouteServiceProvider',
                 ],
                 'aliases' => [],
-            ]
+            ],
         ])
         ->and(collect($this->repository->filterByName('Foo'))->toArray())->toBe([
             'laraneat/foo' => [
@@ -702,7 +702,7 @@ it('can filter modules by name', function () {
                     'Laraneat\Foo\Providers\RouteServiceProvider',
                 ],
                 'aliases' => [],
-            ]
+            ],
         ])
         ->and(collect($this->repository->filterByName('Foo', ModuleType::App))->toArray())->toBe([])
         ->and(collect($this->repository->filterByName('Foo', ModuleType::Vendor))->toArray())->toBe([
@@ -717,7 +717,7 @@ it('can filter modules by name', function () {
                     'Laraneat\Foo\Providers\RouteServiceProvider',
                 ],
                 'aliases' => [],
-            ]
+            ],
         ])
         ->and(collect($this->repository->filterByName('Book'))->toArray())->toBe([]);
 

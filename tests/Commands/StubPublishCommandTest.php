@@ -6,6 +6,7 @@
 function getFilePathsInDirectory(string $directory): array
 {
     $filesystem = new Illuminate\Filesystem\Filesystem();
+
     return array_map(fn (SplFileInfo $fileInfo) => $fileInfo->getRealPath(), $filesystem->allFiles($directory));
 }
 

@@ -92,6 +92,7 @@ class RouteMakeCommand extends BaseComponentGeneratorCommand implements PromptsF
                 : ModuleComponentType::WebRoute;
         } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
             $this->components->error($exception->getMessage());
+
             return self::FAILURE;
         }
 

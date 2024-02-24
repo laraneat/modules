@@ -71,6 +71,7 @@ class MiddlewareMakeCommand extends BaseComponentGeneratorCommand implements Pro
             $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
         } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
             $this->components->error($exception->getMessage());
+
             return self::FAILURE;
         }
 
