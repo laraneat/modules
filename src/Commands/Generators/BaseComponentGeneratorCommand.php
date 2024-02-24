@@ -164,7 +164,7 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
      */
     public function getFullClass(string $class, string $defaultNamespace): string
     {
-        if (class_exists($class) || Str::contains($class, '\\')) {
+        if (Str::startsWith($class, '\\')) {
             return $class;
         }
 
