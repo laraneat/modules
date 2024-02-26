@@ -55,8 +55,8 @@ it('can return the snake name', function () {
 
 it('can return the path', function () {
     expect($this->createModule([
-        'path' => $this->app->basePath('/app/Modules/SomeTestingModule'),
-    ])->getPath())->toBe($this->app->basePath('/app/Modules/SomeTestingModule'));
+        'path' => $this->app->basePath('/modules/SomeTestingModule'),
+    ])->getPath())->toBe($this->app->basePath('/modules/SomeTestingModule'));
 });
 
 it('can return the namespace', function () {
@@ -95,28 +95,28 @@ it('can return aliases', function () {
 });
 
 it('can make sub path', function () {
-    expect($this->createModule(['path' => $this->app->basePath('/app/Modules/SomeTestingModule')])
+    expect($this->createModule(['path' => $this->app->basePath('/modules/SomeTestingModule')])
         ->subPath('resources/views/index.blade.php'))
-        ->toBe($this->app->basePath('/app/Modules/SomeTestingModule/resources/views/index.blade.php'));
+        ->toBe($this->app->basePath('/modules/SomeTestingModule/resources/views/index.blade.php'));
 
-    expect($this->createModule(['path' => $this->app->basePath('/app/Modules/SomeTestingModule')])
+    expect($this->createModule(['path' => $this->app->basePath('/modules/SomeTestingModule')])
         ->subPath('///resources/views/index.blade.php'))
-        ->toBe($this->app->basePath('/app/Modules/SomeTestingModule/resources/views/index.blade.php'));
+        ->toBe($this->app->basePath('/modules/SomeTestingModule/resources/views/index.blade.php'));
 });
 
 it('can return module migration paths', function () {
-    $module = $this->createModule(['path' => $this->app->basePath('/app/Modules/SomeTestingModule')]);
+    $module = $this->createModule(['path' => $this->app->basePath('/modules/SomeTestingModule')]);
 
     expect($module->getMigrationPaths())->toBe([]);
 
     /** @var Migrator|null $migrator */
     $migrator = $this->app['migrator'];
-    $migrator->path($this->app->basePath('/app/Modules/AnotherTestingModule/Data/Migrations'));
-    $migrator->path($this->app->basePath('/app/Modules/SomeTestingModule/Data/Migrations'));
+    $migrator->path($this->app->basePath('/modules/AnotherTestingModule/database/migrations'));
+    $migrator->path($this->app->basePath('/modules/SomeTestingModule/database/migrations'));
     $migrator->path($this->app->basePath('/migrations'));
 
     expect($module->getMigrationPaths())->toBe([
-        $this->app->basePath('/app/Modules/SomeTestingModule/Data/Migrations'),
+        $this->app->basePath('/modules/SomeTestingModule/database/migrations'),
     ]);
 });
 
@@ -125,7 +125,7 @@ it('can return module as array', function () {
         'isVendor' => false,
         'packageName' => 'some-vendor/testing-module',
         'name' => 'TestingModule',
-        'path' => $this->app->basePath('app/Modules/TestingModule'),
+        'path' => $this->app->basePath('modules/TestingModule'),
         'namespace' => '\\\\\\SomeVendor\\TestingModule\\\\',
         'providers' => [
             'SomeVendor\\TestingModule\\Providers\\TestingModuleServiceProvider',
@@ -139,7 +139,7 @@ it('can return module as array', function () {
         'isVendor' => false,
         'packageName' => 'some-vendor/testing-module',
         'name' => 'TestingModule',
-        'path' => $this->app->basePath('app/Modules/TestingModule'),
+        'path' => $this->app->basePath('modules/TestingModule'),
         'namespace' => 'SomeVendor\\TestingModule',
         'providers' => [
             'SomeVendor\\TestingModule\\Providers\\TestingModuleServiceProvider',

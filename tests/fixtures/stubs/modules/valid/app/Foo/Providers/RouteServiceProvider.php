@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Foo\Providers;
+namespace Modules\Foo\Providers;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
@@ -37,9 +37,9 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapWebRoutes(): void
     {
         Route::middleware('web')
-            // ->namespace('App\\Modules\\Foo\\UI\\WEB\\Controllers')
+            // ->namespace('Modules\\Foo\\UI\\WEB\\Controllers')
             ->group(function () {
-                $this->loadRoutesFromDirectory(module_path($this->modulePackageName, 'UI/WEB/Routes'));
+                $this->loadRoutesFromDirectory(module_path($this->modulePackageName, 'src/UI/WEB/Routes'));
             });
     }
 
@@ -51,9 +51,9 @@ class RouteServiceProvider extends ServiceProvider
     {
         Route::prefix('api')
             ->middleware('api')
-            // ->namespace('App\\Modules\\Foo\\UI\\API\\Controllers')
+            // ->namespace('Modules\\Foo\\UI\\API\\Controllers')
             ->group(function () {
-                $this->loadRoutesFromDirectory(module_path($this->modulePackageName, 'UI/API/Routes'));
+                $this->loadRoutesFromDirectory(module_path($this->modulePackageName, 'src/UI/API/Routes'));
             });
     }
 }

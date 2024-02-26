@@ -24,6 +24,7 @@
         ],
         "psr-4": {
             "App\\": "app/",
+            "Modules\\": "modules/",
             "Laraneat\\": "vendor/laraneat"
         }
     },
@@ -33,13 +34,15 @@
         },
         "merge-plugin": {
             "include": [
-                "app/Modules/*/composer.json"
+                "modules/*/composer.json"
             ],
             "recurse": true,
             "replace": false,
+            "ignore-duplicates": false,
             "merge-dev": true,
             "merge-extra": false,
             "merge-extra-deep": false,
+            "merge-replace": true,
             "merge-scripts": true
         }
     },

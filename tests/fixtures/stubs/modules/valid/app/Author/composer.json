@@ -9,20 +9,25 @@
     ],
     "autoload": {
         "psr-4": {
-            "App\\Modules\\Author\\": ""
+            "Modules\\Author\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Author\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laraneat": {
             "module": {
                 "name": "Author",
-                "namespace": "App\\Modules\\Author\\",
+                "namespace": "Modules\\Author\\",
                 "providers": [
-                    "App\\Modules\\Author\\Providers\\AuthorServiceProvider",
-                    "App\\Modules\\Author\\Providers\\RouteServiceProvider"
+                    "Modules\\Author\\Providers\\AuthorServiceProvider",
+                    "Modules\\Author\\Providers\\RouteServiceProvider"
                 ],
                 "aliases": {
-                    "AuthorFacade": "App\\Modules\\Author\\Facades\\SomeFacade"
+                    "AuthorFacade": "Modules\\Author\\Facades\\SomeFacade"
                 }
             }
         }

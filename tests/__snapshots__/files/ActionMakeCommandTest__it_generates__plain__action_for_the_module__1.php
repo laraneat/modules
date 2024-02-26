@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Author\Actions;
+namespace Modules\Author\Actions;
 
 use Lorisleiva\Actions\Concerns\AsAction;
 

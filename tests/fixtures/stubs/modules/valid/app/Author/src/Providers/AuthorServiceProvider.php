@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Modules\Article\Providers;
+namespace Modules\Author\Providers;
 
 use Laraneat\Modules\Support\ModuleServiceProvider;
 
-class ArticleServiceProvider extends ModuleServiceProvider
+class AuthorServiceProvider extends ModuleServiceProvider
 {
-    protected string $modulePackageName = 'laraneat/article';
+    protected string $modulePackageName = 'laraneat/author';
 
     /**
      * Register services.
@@ -47,7 +47,7 @@ class ArticleServiceProvider extends ModuleServiceProvider
 
         $this->publishes([
             $sourcePath => $langPath,
-        ], 'article-translations');
+        ], 'author-translations');
     }
 
     /**
@@ -65,7 +65,7 @@ class ArticleServiceProvider extends ModuleServiceProvider
 
         $this->publishes([
             $sourcePath => $viewsPath,
-        ], 'article-views');
+        ], 'author-views');
     }
 
     /**
@@ -73,14 +73,14 @@ class ArticleServiceProvider extends ModuleServiceProvider
      */
     public function registerMigrations(): void
     {
-        $sourcePath = $this->getModule()->subPath('Data/Migrations');
+        $sourcePath = $this->getModule()->subPath('database/migrations');
         $migrationsPath = database_path('migrations');
 
         $this->loadMigrationsFrom($sourcePath);
 
         $this->publishes([
             $sourcePath => $migrationsPath,
-        ], 'article-migrations');
+        ], 'author-migrations');
     }
 
     /**
@@ -89,7 +89,7 @@ class ArticleServiceProvider extends ModuleServiceProvider
     public function registerCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommandsFrom($this->getModule()->subPath('UI/CLI/Commands'));
+            $this->loadCommandsFrom($this->getModule()->subPath('src/UI/CLI/Commands'));
         }
     }
 }

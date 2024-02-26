@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Modules\Author\Actions;
+namespace Modules\Author\Actions;
 
-use App\Modules\Author\Models\Author;
-use App\Modules\Author\UI\API\QueryWizards\AuthorQueryWizard;
-use App\Modules\Author\UI\API\Requests\ViewAuthorRequest;
-use App\Modules\Author\UI\API\Resources\AuthorResource;
 use Illuminate\Database\Eloquent\Model;
 use Lorisleiva\Actions\Concerns\AsAction;
+use Modules\Author\Models\Author;
+use Modules\Author\UI\API\QueryWizards\AuthorQueryWizard;
+use Modules\Author\UI\API\Requests\ViewAuthorRequest;
+use Modules\Author\UI\API\Resources\AuthorResource;
 
 class ViewAuthorAction
 {

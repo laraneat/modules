@@ -6,7 +6,7 @@ use function Spatie\Snapshots\assertMatchesFileSnapshot;
 beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
-    ], $this->app->basePath('/app/Modules'));
+    ], $this->app->basePath('/modules'));
 });
 
 it('generates "plain" job for the module', function () {
@@ -17,7 +17,7 @@ it('generates "plain" job for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/app/Modules/Author/Jobs/PlainAuthorJob.php');
+    $filePath = $this->app->basePath('/modules/Author/src/Jobs/PlainAuthorJob.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -30,7 +30,7 @@ it('generates "queued" job for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/app/Modules/Author/Jobs/QueuedAuthorJob.php');
+    $filePath = $this->app->basePath('/modules/Author/src/Jobs/QueuedAuthorJob.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

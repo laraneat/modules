@@ -4,7 +4,7 @@ beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Article'),
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Author'),
-    ], $this->app->basePath('/app/Modules'));
+    ], $this->app->basePath('/modules'));
     $this->setVendorModules([
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/vendor/laraneat/foo'),
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/vendor/laraneat/bar'),
@@ -14,8 +14,8 @@ beforeEach(function () {
 it('outputs a table of app modules', function () {
     $this->artisan('module:list --app')
         ->expectsTable(['Package Name', 'Namespace', 'Path'], [
-            ['laraneat/article', 'App\\Modules\\Article', $this->app->basePath('/app/Modules/Article')],
-            ['laraneat/author', 'App\\Modules\\Author', $this->app->basePath('/app/Modules/Author')],
+            ['laraneat/article', 'Modules\\Article', $this->app->basePath('/modules/Article')],
+            ['laraneat/author', 'Modules\\Author', $this->app->basePath('/modules/Author')],
         ])
         ->assertSuccessful();
 });
@@ -34,8 +34,8 @@ it('outputs a table of all modules', function () {
         ->expectsTable(['Package Name', 'Namespace', 'Path'], [
             ['laraneat/foo', 'Laraneat\\Foo', $this->app->basePath('/vendor/laraneat/foo')],
             ['laraneat/bar', 'Laraneat\\Bar', $this->app->basePath('/vendor/laraneat/bar')],
-            ['laraneat/article', 'App\\Modules\\Article', $this->app->basePath('/app/Modules/Article')],
-            ['laraneat/author', 'App\\Modules\\Author', $this->app->basePath('/app/Modules/Author')],
+            ['laraneat/article', 'Modules\\Article', $this->app->basePath('/modules/Article')],
+            ['laraneat/author', 'Modules\\Author', $this->app->basePath('/modules/Author')],
         ])
         ->assertSuccessful();
 });

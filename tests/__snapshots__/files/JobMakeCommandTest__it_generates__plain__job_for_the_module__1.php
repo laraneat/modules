@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Author\Jobs;
+namespace Modules\Author\Jobs;
 
 use Illuminate\Foundation\Bus\Dispatchable;
 

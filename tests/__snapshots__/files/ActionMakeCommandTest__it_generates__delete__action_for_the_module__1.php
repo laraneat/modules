@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Modules\Author\Actions;
+namespace Modules\Author\Actions;
 
-use App\Modules\Author\Models\Author;
-use App\Modules\Author\UI\API\Requests\DeleteAuthorRequest;
 use Illuminate\Http\JsonResponse;
 use Lorisleiva\Actions\Concerns\AsAction;
+use Modules\Author\Models\Author;
+use Modules\Author\UI\API\Requests\DeleteAuthorRequest;
 
 class DeleteAuthorAction
 {

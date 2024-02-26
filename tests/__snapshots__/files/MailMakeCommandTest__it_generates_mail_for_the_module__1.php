@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Author\Mails;
+namespace Modules\Author\Mails;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;

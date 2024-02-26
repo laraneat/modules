@@ -151,7 +151,7 @@ abstract class TestCase extends OrchestraTestCase
             isVendor: $attributes['isVendor'] ?? false,
             packageName: $attributes['packageName'] ?? 'some-vendor/testing-module',
             name: $attributes['name'] ?? null,
-            path: $attributes['path'] ?? $this->app->basePath('app/Modules/TestingModule'),
+            path: $attributes['path'] ?? $this->app->basePath('modules/TestingModule'),
             namespace: $attributes['namespace'] ?? 'SomeVendor\\TestingModule\\',
             providers: $attributes['providers'] ?? [
                 'SomeVendor\\TestingModule\\Providers\\TestingModuleServiceProvider',

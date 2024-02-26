@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Modules\Author\Data\Factories;
+namespace Modules\Author\Exceptions;
 
-use App\Modules\Author\Models\Author;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Author\Models\Author;
 
 /**
  * @method \Illuminate\Support\Collection<int, Author>|Author create($attributes = [], ?Author $parent = null)

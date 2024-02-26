@@ -6,7 +6,7 @@ use function Spatie\Snapshots\assertMatchesFileSnapshot;
 beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
-    ], $this->app->basePath('/app/Modules'));
+    ], $this->app->basePath('/modules'));
 });
 
 it('generates dto for the module', function () {
@@ -16,7 +16,7 @@ it('generates dto for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/app/Modules/Author/DTO/SomeAuthorDTO.php');
+    $filePath = $this->app->basePath('/modules/Author/src/DTO/SomeAuthorDTO.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

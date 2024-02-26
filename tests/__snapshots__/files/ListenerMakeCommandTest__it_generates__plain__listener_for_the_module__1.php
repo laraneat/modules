@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Modules\Author\Listeners;
+namespace Modules\Author\Listeners;
 
-use App\Modules\Author\Events\SomeAuthorEvent;
+use Modules\Author\Events\SomeAuthorEvent;
 
 class PlainAuthorListener
 {

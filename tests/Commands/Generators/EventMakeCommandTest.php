@@ -6,7 +6,7 @@ use function Spatie\Snapshots\assertMatchesFileSnapshot;
 beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
-    ], $this->app->basePath('/app/Modules'));
+    ], $this->app->basePath('/modules'));
 });
 
 it('generates event for the module', function () {
@@ -16,7 +16,7 @@ it('generates event for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/app/Modules/Author/Events/SomeAuthorEvent.php');
+    $filePath = $this->app->basePath('/modules/Author/src/Events/SomeAuthorEvent.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Modules\Author\Listeners;
+namespace Modules\Author\Listeners;
 
-use App\Modules\Author\Events\SomeAuthorEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Modules\Author\Events\SomeAuthorEvent;
 
 class QueuedAuthorListener implements ShouldQueue
 {

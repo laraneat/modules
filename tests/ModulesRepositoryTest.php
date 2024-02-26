@@ -23,14 +23,14 @@ afterEach(function () {
 describe('scan paths', function () {
     it('sets the initial scan paths from the configuration', function () {
         expect($this->repository->getScanPaths())->toBe([
-            $this->app->basePath('/app/Modules/*'),
+            $this->app->basePath('/modules/*'),
         ]);
     });
 
     it('can add one scan path', function () {
         $this->repository->addScanPath($this->app->basePath('/foo_bar'));
         expect($this->repository->getScanPaths())->toBe([
-            $this->app->basePath('/app/Modules/*'),
+            $this->app->basePath('/modules/*'),
             $this->app->basePath('/foo_bar/*'),
         ]);
     });
@@ -42,7 +42,7 @@ describe('scan paths', function () {
         ]);
 
         expect($this->repository->getScanPaths())->toBe([
-            $this->app->basePath('/app/Modules/*'),
+            $this->app->basePath('/modules/*'),
             $this->app->basePath('/foo/bar/test folder/*'),
             $this->app->basePath('/foo/test/*'),
         ]);
@@ -57,7 +57,7 @@ describe('scan paths', function () {
         ]);
 
         expect($this->repository->getScanPaths())->toBe([
-            $this->app->basePath('/app/Modules/*'),
+            $this->app->basePath('/modules/*'),
             $this->app->basePath('/foo/bar/some1/*'),
             $this->app->basePath('/foo/bar/some2/*'),
             $this->app->basePath('/foo/bar/some3/*'),
@@ -79,27 +79,27 @@ describe('scan paths', function () {
         ]);
 
         expect($this->repository->getScanPaths())->toBe([
-            $this->app->basePath('/app/Modules/*'),
+            $this->app->basePath('/modules/*'),
         ]);
     });
 
     it('rejects adding a path that is already in the scan paths', function () {
         $this->repository->addScanPath([
-            $this->app->basePath('/app/Modules'),
-            $this->app->basePath('/app/Modules/'),
-            $this->app->basePath('/app/Modules////'),
-            $this->app->basePath('/app/Modules/*'),
-            $this->app->basePath('/app/Modules/Nested'),
-            $this->app->basePath('/app/Modules/Nested/'),
-            $this->app->basePath('/app/Modules/Nested////'),
-            $this->app->basePath('/app/Modules/Nested/*'),
+            $this->app->basePath('/modules'),
+            $this->app->basePath('/modules/'),
+            $this->app->basePath('/modules////'),
+            $this->app->basePath('/modules/*'),
+            $this->app->basePath('/modules/Nested'),
+            $this->app->basePath('/modules/Nested/'),
+            $this->app->basePath('/modules/Nested////'),
+            $this->app->basePath('/modules/Nested/*'),
             $this->app->basePath('/foo/test/'),
             $this->app->basePath('/foo/test////'),
         ]);
 
         expect($this->repository->getScanPaths())->toBe([
-            $this->app->basePath('/app/Modules/*'),
-            $this->app->basePath('/app/Modules/Nested/*'),
+            $this->app->basePath('/modules/*'),
+            $this->app->basePath('/modules/Nested/*'),
             $this->app->basePath('/foo/test/*'),
         ]);
     });
@@ -115,26 +115,26 @@ describe('modules manifest', function () {
         $expectedManifest = [
             'laraneat/article' => [
                 'name' => 'Article',
-                'namespace' => 'App\Modules\Article\\',
+                'namespace' => 'Modules\Article\\',
                 'providers' => [
-                    'App\Modules\Article\Providers\ArticleServiceProvider',
-                    'App\Modules\Article\Providers\RouteServiceProvider',
+                    'Modules\Article\Providers\ArticleServiceProvider',
+                    'Modules\Article\Providers\RouteServiceProvider',
                 ],
                 'aliases' => [],
-                'path' => $this->app->basePath('/app/Modules/Article'),
+                'path' => $this->app->basePath('/modules/Article'),
                 'isVendor' => false,
             ],
             'laraneat/author' => [
                 'name' => 'Author',
-                'namespace' => 'App\Modules\Author\\',
+                'namespace' => 'Modules\Author\\',
                 'providers' => [
-                    'App\Modules\Author\Providers\AuthorServiceProvider',
-                    'App\Modules\Author\Providers\RouteServiceProvider',
+                    'Modules\Author\Providers\AuthorServiceProvider',
+                    'Modules\Author\Providers\RouteServiceProvider',
                 ],
                 'aliases' => [
-                    'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
+                    'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
                 ],
-                'path' => $this->app->basePath('/app/Modules/Author'),
+                'path' => $this->app->basePath('/modules/Author'),
                 'isVendor' => false,
             ],
         ];
@@ -242,11 +242,11 @@ it('can return app modules', function () {
             'isVendor' => false,
             'packageName' => 'laraneat/article',
             'name' => 'Article',
-            'path' => $this->app->basePath('/app/Modules/Article'),
-            'namespace' => 'App\Modules\Article',
+            'path' => $this->app->basePath('/modules/Article'),
+            'namespace' => 'Modules\Article',
             'providers' => [
-                'App\Modules\Article\Providers\ArticleServiceProvider',
-                'App\Modules\Article\Providers\RouteServiceProvider',
+                'Modules\Article\Providers\ArticleServiceProvider',
+                'Modules\Article\Providers\RouteServiceProvider',
             ],
             'aliases' => [],
         ],
@@ -254,14 +254,14 @@ it('can return app modules', function () {
             'isVendor' => false,
             'packageName' => 'laraneat/author',
             'name' => 'Author',
-            'path' => $this->app->basePath('app/Modules/Author'),
-            'namespace' => 'App\Modules\Author',
+            'path' => $this->app->basePath('modules/Author'),
+            'namespace' => 'Modules\Author',
             'providers' => [
-                'App\Modules\Author\Providers\AuthorServiceProvider',
-                'App\Modules\Author\Providers\RouteServiceProvider',
+                'Modules\Author\Providers\AuthorServiceProvider',
+                'Modules\Author\Providers\RouteServiceProvider',
             ],
             'aliases' => [
-                'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
+                'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
             ],
         ],
     ]);
@@ -353,11 +353,11 @@ it('can return all modules', function () {
             'isVendor' => false,
             'packageName' => 'laraneat/article',
             'name' => 'Article',
-            'path' => $this->app->basePath('/app/Modules/Article'),
-            'namespace' => 'App\Modules\Article',
+            'path' => $this->app->basePath('/modules/Article'),
+            'namespace' => 'Modules\Article',
             'providers' => [
-                'App\Modules\Article\Providers\ArticleServiceProvider',
-                'App\Modules\Article\Providers\RouteServiceProvider',
+                'Modules\Article\Providers\ArticleServiceProvider',
+                'Modules\Article\Providers\RouteServiceProvider',
             ],
             'aliases' => [],
         ],
@@ -365,14 +365,14 @@ it('can return all modules', function () {
             'isVendor' => false,
             'packageName' => 'laraneat/author',
             'name' => 'Author',
-            'path' => $this->app->basePath('app/Modules/Author'),
-            'namespace' => 'App\Modules\Author',
+            'path' => $this->app->basePath('modules/Author'),
+            'namespace' => 'Modules\Author',
             'providers' => [
-                'App\Modules\Author\Providers\AuthorServiceProvider',
-                'App\Modules\Author\Providers\RouteServiceProvider',
+                'Modules\Author\Providers\AuthorServiceProvider',
+                'Modules\Author\Providers\RouteServiceProvider',
             ],
             'aliases' => [
-                'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
+                'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
             ],
         ],
     ]);
@@ -421,14 +421,14 @@ it('takes into account ignored modules', function () {
             'isVendor' => false,
             'packageName' => 'laraneat/author',
             'name' => 'Author',
-            'path' => $this->app->basePath('/app/Modules/Author'),
-            'namespace' => 'App\Modules\Author',
+            'path' => $this->app->basePath('/modules/Author'),
+            'namespace' => 'Modules\Author',
             'providers' => [
-                'App\Modules\Author\Providers\AuthorServiceProvider',
-                'App\Modules\Author\Providers\RouteServiceProvider',
+                'Modules\Author\Providers\AuthorServiceProvider',
+                'Modules\Author\Providers\RouteServiceProvider',
             ],
             'aliases' => [
-                'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
+                'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
             ],
         ],
     ]);
@@ -464,10 +464,10 @@ it('can return providers', function () {
         'Laraneat\Foo\Providers\RouteServiceProvider',
         'Laraneat\Bar\Providers\BarServiceProvider',
         'Laraneat\Bar\Providers\RouteServiceProvider',
-        'App\Modules\Article\Providers\ArticleServiceProvider',
-        'App\Modules\Article\Providers\RouteServiceProvider',
-        'App\Modules\Author\Providers\AuthorServiceProvider',
-        'App\Modules\Author\Providers\RouteServiceProvider',
+        'Modules\Article\Providers\ArticleServiceProvider',
+        'Modules\Article\Providers\RouteServiceProvider',
+        'Modules\Author\Providers\AuthorServiceProvider',
+        'Modules\Author\Providers\RouteServiceProvider',
     ])
         ->and($this->repository->getProviders(ModuleType::Vendor))->toBe([
             'Laraneat\Foo\Providers\FooServiceProvider',
@@ -476,10 +476,10 @@ it('can return providers', function () {
             'Laraneat\Bar\Providers\RouteServiceProvider',
         ])
         ->and($this->repository->getProviders(ModuleType::App))->toBe([
-            'App\Modules\Article\Providers\ArticleServiceProvider',
-            'App\Modules\Article\Providers\RouteServiceProvider',
-            'App\Modules\Author\Providers\AuthorServiceProvider',
-            'App\Modules\Author\Providers\RouteServiceProvider',
+            'Modules\Article\Providers\ArticleServiceProvider',
+            'Modules\Article\Providers\RouteServiceProvider',
+            'Modules\Author\Providers\AuthorServiceProvider',
+            'Modules\Author\Providers\RouteServiceProvider',
         ]);
 
 });
@@ -495,11 +495,11 @@ it('can return aliases', function () {
     ]);
 
     expect($this->repository->getAliases())->toBe([
-        'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
+        'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
     ])
         ->and($this->repository->getAliases(ModuleType::Vendor))->toBe([])
         ->and($this->repository->getAliases(ModuleType::App))->toBe([
-            'AuthorFacade' => 'App\Modules\Author\Facades\SomeFacade',
+            'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
         ]);
 
 });
@@ -559,11 +559,11 @@ it('can find a module', function () {
         'isVendor' => false,
         'packageName' => 'laraneat/article',
         'name' => 'Article',
-        'path' => $this->app->basePath('/app/Modules/Article'),
-        'namespace' => 'App\Modules\Article',
+        'path' => $this->app->basePath('/modules/Article'),
+        'namespace' => 'Modules\Article',
         'providers' => [
-            'App\Modules\Article\Providers\ArticleServiceProvider',
-            'App\Modules\Article\Providers\RouteServiceProvider',
+            'Modules\Article\Providers\ArticleServiceProvider',
+            'Modules\Article\Providers\RouteServiceProvider',
         ],
         'aliases' => [],
     ])
@@ -572,11 +572,11 @@ it('can find a module', function () {
             'isVendor' => false,
             'packageName' => 'laraneat/article',
             'name' => 'Article',
-            'path' => $this->app->basePath('/app/Modules/Article'),
-            'namespace' => 'App\Modules\Article',
+            'path' => $this->app->basePath('/modules/Article'),
+            'namespace' => 'Modules\Article',
             'providers' => [
-                'App\Modules\Article\Providers\ArticleServiceProvider',
-                'App\Modules\Article\Providers\RouteServiceProvider',
+                'Modules\Article\Providers\ArticleServiceProvider',
+                'Modules\Article\Providers\RouteServiceProvider',
             ],
             'aliases' => [],
         ])
@@ -666,11 +666,11 @@ it('can filter modules by name', function () {
             'isVendor' => false,
             'packageName' => 'laraneat/article',
             'name' => 'Article',
-            'path' => $this->app->basePath('/app/Modules/Article'),
-            'namespace' => 'App\Modules\Article',
+            'path' => $this->app->basePath('/modules/Article'),
+            'namespace' => 'Modules\Article',
             'providers' => [
-                'App\Modules\Article\Providers\ArticleServiceProvider',
-                'App\Modules\Article\Providers\RouteServiceProvider',
+                'Modules\Article\Providers\ArticleServiceProvider',
+                'Modules\Article\Providers\RouteServiceProvider',
             ],
             'aliases' => [],
         ],
@@ -681,11 +681,11 @@ it('can filter modules by name', function () {
                 'isVendor' => false,
                 'packageName' => 'laraneat/article',
                 'name' => 'Article',
-                'path' => $this->app->basePath('/app/Modules/Article'),
-                'namespace' => 'App\Modules\Article',
+                'path' => $this->app->basePath('/modules/Article'),
+                'namespace' => 'Modules\Article',
                 'providers' => [
-                    'App\Modules\Article\Providers\ArticleServiceProvider',
-                    'App\Modules\Article\Providers\RouteServiceProvider',
+                    'Modules\Article\Providers\ArticleServiceProvider',
+                    'Modules\Article\Providers\RouteServiceProvider',
                 ],
                 'aliases' => [],
             ],

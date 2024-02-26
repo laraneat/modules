@@ -9,17 +9,22 @@
     ],
     "autoload": {
         "psr-4": {
-            "App\\Modules\\Foo\\": ""
+            "Modules\\Foo\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Foo\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laraneat": {
             "module": {
                 "name": "Foo",
-                "namespace": "App\\Modules\\Foo\\",
+                "namespace": "Modules\\Foo\\",
                 "providers": [
-                    "App\\Modules\\Foo\\Providers\\FooServiceProvider",
-                    "App\\Modules\\Foo\\Providers\\RouteServiceProvider"
+                    "Modules\\Foo\\Providers\\FooServiceProvider",
+                    "Modules\\Foo\\Providers\\RouteServiceProvider"
                 ],
                 "aliases": []
             }

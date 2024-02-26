@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Author\Providers;
+namespace Modules\Article\Providers;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
@@ -10,7 +10,7 @@ class RouteServiceProvider extends ServiceProvider
 {
     use CanLoadRoutesFromDirectory;
 
-    protected string $modulePackageName = 'laraneat/author';
+    protected string $modulePackageName = 'laraneat/article';
 
     /**
      * Called before routes are registered.
@@ -37,9 +37,9 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapWebRoutes(): void
     {
         Route::middleware('web')
-            // ->namespace('App\\Modules\\Author\\UI\\WEB\\Controllers')
+            // ->namespace('Modules\\Article\\UI\\WEB\\Controllers')
             ->group(function () {
-                $this->loadRoutesFromDirectory(module_path($this->modulePackageName, 'UI/WEB/Routes'));
+                $this->loadRoutesFromDirectory(module_path($this->modulePackageName, 'src/UI/WEB/Routes'));
             });
     }
 
@@ -51,9 +51,9 @@ class RouteServiceProvider extends ServiceProvider
     {
         Route::prefix('api')
             ->middleware('api')
-            // ->namespace('App\\Modules\\Author\\UI\\API\\Controllers')
+            // ->namespace('Modules\\Article\\UI\\API\\Controllers')
             ->group(function () {
-                $this->loadRoutesFromDirectory(module_path($this->modulePackageName, 'UI/API/Routes'));
+                $this->loadRoutesFromDirectory(module_path($this->modulePackageName, 'src/UI/API/Routes'));
             });
     }
 }

@@ -9,7 +9,7 @@ use Laraneat\Modules\ModulesRepository;
 beforeEach(function () {
     $this->setAppModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
-    ], $this->app->basePath('/app/Modules'));
+    ], $this->app->basePath('/modules'));
     $this->setVendorModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/vendor/laraneat/foo'),
     ]);
@@ -51,25 +51,25 @@ describe('getFullClassFromOptionOrAsk()', function () {
             'module' => 'Author',
             '--model' => 'SomeAuthorModel',
         ])
-            ->expectsOutput('App\\Modules\\Author\\Models\\SomeAuthorModel');
+            ->expectsOutput('Modules\\Author\\Models\\SomeAuthorModel');
 
         $this->artisan('test:command', [
             'module' => 'Author',
             '--model' => 'Some\\AuthorModel',
         ])
-            ->expectsOutput('App\\Modules\\Author\\Models\\Some\\AuthorModel');
+            ->expectsOutput('Modules\\Author\\Models\\Some\\AuthorModel');
 
         $this->artisan('test:command', [
             'module' => 'Author',
         ])
             ->expectsQuestion('Enter "model" class name', 'SomeAuthorModel')
-            ->expectsOutput('App\\Modules\\Author\\Models\\SomeAuthorModel');
+            ->expectsOutput('Modules\\Author\\Models\\SomeAuthorModel');
 
         $this->artisan('test:command', [
             'module' => 'Author',
         ])
             ->expectsQuestion('Enter "model" class name', 'Some\\AuthorModel')
-            ->expectsOutput('App\\Modules\\Author\\Models\\Some\\AuthorModel');
+            ->expectsOutput('Modules\\Author\\Models\\Some\\AuthorModel');
 
         // vendor
         $this->artisan('test:command', [
@@ -96,38 +96,38 @@ describe('getFullClassFromOptionOrAsk()', function () {
         $this->artisan('test:command', [
             'module' => 'Author',
         ])
-            ->expectsQuestion('Enter "model" class name', '\\App\\Modules\\Article\\Models\\Article')
-            ->expectsOutput('\\App\\Modules\\Article\\Models\\Article');
+            ->expectsQuestion('Enter "model" class name', '\\Modules\\Article\\Models\\Article')
+            ->expectsOutput('\\Modules\\Article\\Models\\Article');
 
         $this->artisan('test:command', [
             'module' => 'Author',
-            '--model' => '\\App\\Modules\\Article\\Models\\Article',
+            '--model' => '\\Modules\\Article\\Models\\Article',
         ])
-            ->expectsOutput('\\App\\Modules\\Article\\Models\\Article');
+            ->expectsOutput('\\Modules\\Article\\Models\\Article');
 
         $this->artisan('test:command', [
             'module' => 'Author',
         ])
-            ->expectsQuestion('Enter "model" class name', '\\App\\Modules\\Author\\Models\\Author')
-            ->expectsOutput('\\App\\Modules\\Author\\Models\\Author');
+            ->expectsQuestion('Enter "model" class name', '\\Modules\\Author\\Models\\Author')
+            ->expectsOutput('\\Modules\\Author\\Models\\Author');
 
         $this->artisan('test:command', [
             'module' => 'Author',
-            '--model' => '\\App\\Modules\\Author\\Models\\Author',
+            '--model' => '\\Modules\\Author\\Models\\Author',
         ])
-            ->expectsOutput('\\App\\Modules\\Author\\Models\\Author');
+            ->expectsOutput('\\Modules\\Author\\Models\\Author');
 
         // vendor
         $this->artisan('test:command', [
             'module' => 'foo',
         ])
-            ->expectsQuestion('Enter "model" class name', '\\App\\Modules\\Author\\Models\\Author')
-            ->expectsOutput('\\App\\Modules\\Author\\Models\\Author');
+            ->expectsQuestion('Enter "model" class name', '\\Modules\\Author\\Models\\Author')
+            ->expectsOutput('\\Modules\\Author\\Models\\Author');
 
         $this->artisan('test:command', [
             'module' => 'foo',
-            '--model' => '\\App\\Modules\\Author\\Models\\Author',
+            '--model' => '\\Modules\\Author\\Models\\Author',
         ])
-            ->expectsOutput('\\App\\Modules\\Author\\Models\\Author');
+            ->expectsOutput('\\Modules\\Author\\Models\\Author');
     });
 });

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Article\Providers;
+namespace Modules\Article\Providers;
 
 use Laraneat\Modules\Support\ModuleServiceProvider;
 
@@ -73,7 +73,7 @@ class ArticleServiceProvider extends ModuleServiceProvider
      */
     public function registerMigrations(): void
     {
-        $sourcePath = $this->getModule()->subPath('Data/Migrations');
+        $sourcePath = $this->getModule()->subPath('database/migrations');
         $migrationsPath = database_path('migrations');
 
         $this->loadMigrationsFrom($sourcePath);
@@ -89,7 +89,7 @@ class ArticleServiceProvider extends ModuleServiceProvider
     public function registerCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommandsFrom($this->getModule()->subPath('UI/CLI/Commands'));
+            $this->loadCommandsFrom($this->getModule()->subPath('src/UI/CLI/Commands'));
         }
     }
 }

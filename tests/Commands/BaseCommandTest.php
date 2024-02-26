@@ -11,7 +11,7 @@ beforeEach(function () {
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Article'),
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Author'),
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Foo'),
-    ], $this->app->basePath('/app/Modules'));
+    ], $this->app->basePath('/modules'));
     $this->setVendorModules([
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/vendor/laraneat/foo'),
         realpath(__DIR__ . '/../fixtures/stubs/modules/valid/vendor/laraneat/bar'),
