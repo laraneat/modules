@@ -6,24 +6,15 @@ use Laraneat\Modules\Module;
 
 class GeneratorPath
 {
-    private string $path;
-    private string $namespace;
-    private bool $generate;
+    protected string $path;
+    protected string $namespace;
 
-    public function __construct(bool|array|string $config)
+    public function __construct(array $config)
     {
-        if (! is_array($config)) {
-            $config = [
-                'path' => (string) $config,
-                'generate' => (bool) $config,
-            ];
-        }
-
         $this->path = $this->formatPath((string) $config['path']);
         $this->namespace = $this->formatNamespace(
-            $this->convertPathToNamespace((string) ($config['namespace'] ?? $this->path))
+            $this->convertPathToNamespace($config['namespace'] ?? $this->path)
         );
-        $this->generate = (bool) ($config['generate'] ?? true);
     }
 
     public function getPath(): string
@@ -45,12 +36,6 @@ class GeneratorPath
     {
         return GeneratorHelper::makeModuleNamespace($module, $this->namespace);
     }
-
-    public function generate(): bool
-    {
-        return $this->generate;
-    }
-
     protected function formatPath(string $path): string
     {
         return trim($path, '/');

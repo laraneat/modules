@@ -4,7 +4,6 @@ namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
-use Laraneat\Modules\Enums\ModuleComponentType;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModulesRepository;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
@@ -71,17 +70,24 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
      */
     public function handle(ModulesRepository $modulesRepository): int
     {
-        $this->moduleName = Str::studly($this->argument('name'));
+        $nameArgument = trim($this->argument('name'), '/\\');
+        $explodedNameArgument = explode('/', $nameArgument, 2);
+
+        [$rawVendor, $rawModuleName] = empty($explodedNameArgument[1])
+            ? ['', $explodedNameArgument[0]]
+            : $explodedNameArgument;
+
+        $this->moduleName = Str::studly($rawModuleName);
         if (! $this->validateModuleName($this->moduleName)) {
-            $this->components->error("Module name can only consist of letters!");
+            $this->components->error("The module name passed is not valid!");
 
             return self::FAILURE;
         }
 
         $this->modulePackageName = sprintf(
             '%s/%s',
-            Str::kebab(config('modules.generator.composer.vendor', 'app')),
-            Str::kebab(Str::after($this->moduleName, '/'))
+            Str::kebab($rawVendor ?: config('modules.generator.composer.vendor', 'app')),
+            Str::kebab($this->moduleName)
         );
 
         if ($modulesRepository->has($this->modulePackageName)) {
@@ -106,6 +112,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
         }
 
         $this->modulesRepository->pruneAppModulesManifest();
+        // TODO: composer update
 
         if ($this->isFailure($this->generateComponents($this->modulesRepository->find($this->modulePackageName)))) {
             return self::FAILURE;
@@ -149,70 +156,51 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
 
     protected function generateBaseComponents(Module $module): int
     {
-        $statuses = [];
         $modulePackageName = $module->getPackageName();
         $entityName = $this->getEntityName();
         $snakeEntityName = Str::snake($entityName);
         $snakePluralEntityName = Str::plural($snakeEntityName);
 
-        if (GeneratorHelper::component(ModuleComponentType::Factory)->generate()) {
-            $statuses[] = $this->call('module:make:factory', [
+        return $this->isFailure(
+            $this->call('module:make:factory', [
                 'name' => "{$entityName}Factory",
                 'module' => $modulePackageName,
                 '--model' => $entityName,
-            ]);
-        }
-
-        if (GeneratorHelper::component(ModuleComponentType::Migration)->generate()) {
-            $statuses[] = $this->call('module:make:migration', [
+            ]),
+            $this->call('module:make:migration', [
                 'name' => "create_{$snakePluralEntityName}_table",
                 'module' => $modulePackageName,
                 '--stub' => 'create',
-            ]);
-        }
-
-        if (GeneratorHelper::component(ModuleComponentType::Seeder)->generate()) {
-            $statuses[] = $this->call('module:make:seeder', [
+            ]),
+            $this->call('module:make:seeder', [
                 'name' => "{$entityName}PermissionsSeeder_1",
                 'module' => $modulePackageName,
                 '--stub' => 'permissions',
                 '--model' => $entityName,
-            ]);
-        }
-
-        if (GeneratorHelper::component(ModuleComponentType::Dto)->generate()) {
-            $statuses[] = $this->call('module:make:dto', [
+            ]),
+            $this->call('module:make:dto', [
                 'name' => "Create{$entityName}DTO",
                 'module' => $modulePackageName,
-            ]);
-            $statuses[] = $this->call('module:make:dto', [
+            ]),
+            $this->call('module:make:dto', [
                 'name' => "Update{$entityName}DTO",
                 'module' => $modulePackageName,
-            ]);
-        }
-
-        if (GeneratorHelper::component(ModuleComponentType::Model)->generate()) {
-            $statuses[] = $this->call('module:make:model', [
+            ]),
+            $this->call('module:make:model', [
                 'name' => $entityName,
                 'module' => $modulePackageName,
                 '--factory' => "{$entityName}Factory",
-            ]);
-        }
-
-        if (GeneratorHelper::component(ModuleComponentType::Policy)->generate()) {
-            $statuses[] = $this->call('module:make:policy', [
+            ]),
+            $this->call('module:make:policy', [
                 'name' => "{$entityName}Policy",
                 'module' => $modulePackageName,
                 '--model' => $entityName,
-            ]);
-        }
-
-        return $this->isFailure(...$statuses) ? self::FAILURE : self::SUCCESS;
+            ])
+        ) ? self::FAILURE : self::SUCCESS;
     }
 
     protected function generateApiComponents(Module $module): int
     {
-        $statuses = [];
         $actionVerbs = ['create', 'update', 'delete', 'list', 'view'];
 
         $modulePackageName = $module->getPackageName();
@@ -222,26 +210,23 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
         $kebabPluralEntityName = Str::kebab($pluralEntityName);
         $snakePluralEntityName = Str::snake($pluralEntityName);
 
-        if (GeneratorHelper::component(ModuleComponentType::ApiQueryWizard)->generate()) {
-            $statuses[] = $this->call('module:make:query-wizard', [
+        $statuses = [
+            $this->call('module:make:query-wizard', [
                 'name' => "{$pluralEntityName}QueryWizard",
                 'module' => $modulePackageName,
                 '--stub' => 'eloquent',
-            ]);
-            $statuses[] = $this->call('module:make:query-wizard', [
+            ]),
+            $this->call('module:make:query-wizard', [
                 'name' => "{$entityName}QueryWizard",
                 'module' => $modulePackageName,
                 '--stub' => 'model',
-            ]);
-        }
-
-        if (GeneratorHelper::component(ModuleComponentType::ApiResource)->generate()) {
-            $statuses[] = $this->call('module:make:resource', [
+            ]),
+            $this->call('module:make:resource', [
                 'name' => "{$entityName}Resource",
                 'module' => $modulePackageName,
                 '--stub' => 'single',
-            ]);
-        }
+            ]),
+        ];
 
         foreach ($actionVerbs as $actionVerb) {
             $studlyActionVerb = Str::studly($actionVerb);
@@ -259,73 +244,63 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
                 $requestClass = "{$studlyActionVerb}{$entityName}Request";
                 $wizardClass = "{$entityName}QueryWizard";
             }
+            $statuses[] = $this->call('module:make:action', [
+                'name' => $actionClass,
+                'module' => $modulePackageName,
+                '--stub' => $actionVerb,
+                '--dto' => $dtoClass,
+                '--model' => $entityName,
+                '--request' => $requestClass,
+                '--resource' => $resourceClass,
+                '--wizard' => $wizardClass,
+            ]);
+            $statuses[] = $this->call('module:make:request', [
+                'name' => $requestClass,
+                'module' => $modulePackageName,
+                '--stub' => $actionVerb,
+                '--ui' => 'api',
+                '--dto' => $dtoClass,
+                '--model' => $entityName,
+            ]);
 
-            if (GeneratorHelper::component(ModuleComponentType::Action)->generate()) {
-                $statuses[] = $this->call('module:make:action', [
-                    'name' => $actionClass,
-                    'module' => $modulePackageName,
-                    '--stub' => $actionVerb,
-                    '--dto' => $dtoClass,
-                    '--model' => $entityName,
-                    '--request' => $requestClass,
-                    '--resource' => $resourceClass,
-                    '--wizard' => $wizardClass,
-                ]);
+            $actionMethodsMap = [
+                'create' => 'post',
+                'update' => 'patch',
+                'delete' => 'delete',
+                'list' => 'get',
+                'view' => 'get',
+            ];
+
+            $url = $kebabPluralEntityName;
+            if (in_array($actionVerb, ['update', 'delete', 'view'])) {
+                $url .= '/{' . $camelEntityName . '}';
             }
 
-            if (GeneratorHelper::component(ModuleComponentType::ApiRequest)->generate()) {
-                $statuses[] = $this->call('module:make:request', [
-                    'name' => $requestClass,
-                    'module' => $modulePackageName,
-                    '--stub' => $actionVerb,
-                    '--ui' => 'api',
-                    '--dto' => $dtoClass,
-                    '--model' => $entityName,
-                ]);
-            }
+            $filePath = Str::snake(str_replace('Action', '', $actionClass), '_');
+            $filePath = 'v1/' . $filePath;
 
-            if (GeneratorHelper::component(ModuleComponentType::ApiRoute)->generate()) {
-                $actionMethodsMap = [
-                    'create' => 'post',
-                    'update' => 'patch',
-                    'delete' => 'delete',
-                    'list' => 'get',
-                    'view' => 'get',
-                ];
+            $statuses[] = $this->call('module:make:route', [
+                'name' => $filePath,
+                'module' => $modulePackageName,
+                '--ui' => 'api',
+                '--action' => $actionClass,
+                '--method' => $actionMethodsMap[$actionVerb],
+                '--url' => $url,
+                '--name' => $routeName,
+            ]);
 
-                $url = $kebabPluralEntityName;
-                if (in_array($actionVerb, ['update', 'delete', 'view'])) {
-                    $url .= '/{' . $camelEntityName . '}';
-                }
+            $testClass = $actionVerb === 'list'
+                ? "{$studlyActionVerb}{$pluralEntityName}Test"
+                : "{$studlyActionVerb}{$entityName}Test";
 
-                $filePath = Str::snake(str_replace('Action', '', $actionClass), '_');
-                $filePath = 'v1/' . $filePath;
-
-                $statuses[] = $this->call('module:make:route', [
-                    'name' => $filePath,
-                    'module' => $modulePackageName,
-                    '--ui' => 'api',
-                    '--action' => $actionClass,
-                    '--method' => $actionMethodsMap[$actionVerb],
-                    '--url' => $url,
-                    '--name' => $routeName,
-                ]);
-            }
-
-            if (GeneratorHelper::component(ModuleComponentType::ApiTest)->generate()) {
-                $testClass = $actionVerb === 'list'
-                    ? "{$studlyActionVerb}{$pluralEntityName}Test"
-                    : "{$studlyActionVerb}{$entityName}Test";
-
-                $statuses[] = $this->call('module:make:test', [
-                    'name' => $testClass,
-                    'module' => $modulePackageName,
-                    '--stub' => $actionVerb,
-                    '--type' => 'api',
-                    '--model' => $entityName,
-                    '--route' => $routeName,
-                ]);
-            }
+            $statuses[] = $this->call('module:make:test', [
+                'name' => $testClass,
+                'module' => $modulePackageName,
+                '--stub' => $actionVerb,
+                '--type' => 'api',
+                '--model' => $entityName,
+                '--route' => $routeName,
+            ]);
         }
 
         return $this->isFailure(...$statuses) ? self::FAILURE : self::SUCCESS;
@@ -333,10 +308,6 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
 
     protected function generateProviders(Module $module): int
     {
-        if (! GeneratorHelper::component(ModuleComponentType::Provider)->generate()) {
-            return self::SUCCESS;
-        }
-
         return $this->isFailure(
             $this->call('module:make:provider', [
                 'name' => "{$module->getStudlyName()}ServiceProvider",
@@ -362,7 +333,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
 
     protected function validateModuleName(string $name): bool
     {
-        return preg_match('/^[a-zA-Z]+$/', $name);
+        return preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $name);
     }
 
     protected function getEntityName(): string

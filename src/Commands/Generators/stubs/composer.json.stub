@@ -9,7 +9,12 @@
     ],
     "autoload": {
         "psr-4": {
-            "{{ moduleNamespace }}\\": ""
+            "{{ moduleNamespace }}\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "{{ moduleNamespace }}\\Tests\\": "tests/"
         }
     },
     "extra": {

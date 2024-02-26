@@ -15,7 +15,7 @@ return [
         |
         */
         'modules' => [
-            base_path('app/Modules'),
+            base_path('modules'),
         ],
     ],
 
@@ -40,7 +40,7 @@ return [
         | This path used for save the generated module.
         |
         */
-        'path' => base_path('app/Modules'),
+        'path' => base_path('modules'),
 
         /*
         |--------------------------------------------------------------------------
@@ -50,7 +50,7 @@ return [
         | Default module namespace.
         |
         */
-        'namespace' => 'App\\Modules',
+        'namespace' => 'Modules',
 
         /*
         |--------------------------------------------------------------------------
@@ -74,7 +74,7 @@ return [
             'vendor' => 'app',
             'author' => [
                 'name' => 'Example',
-                'email' => 'example@example.com',
+                'email' => 'example@example.com'
             ],
         ],
 
@@ -107,142 +107,137 @@ return [
         |--------------------------------------------------------------------------
         |
         | Customize the paths where the folders will be generated.
-        | Set the generate key to `false` to not generate that folder when creating
-        | a module
         |
         */
         'components' => [
             ModuleComponentType::Action->value => [
-                'path' => 'Actions',
-                'generate' => true
+                'path' => 'src/Actions',
+                'namespace' => 'Actions'
             ],
             ModuleComponentType::ApiController->value => [
-                'path' => 'UI/API/Controllers',
-                'generate' => false
+                'path' => 'src/UI/API/Controllers',
+                'namespace' => 'UI\\API\\Controllers'
             ],
             ModuleComponentType::ApiQueryWizard->value => [
-                'path' => 'UI/API/QueryWizards',
-                'generate' => true
+                'path' => 'src/UI/API/QueryWizards',
+                'namespace' => 'UI\\API\\QueryWizards'
             ],
             ModuleComponentType::ApiRequest->value => [
-                'path' => 'UI/API/Requests',
-                'generate' => true
+                'path' => 'src/UI/API/Requests',
+                'namespace' => 'UI\\API\\Requests'
             ],
             ModuleComponentType::ApiResource->value => [
-                'path' => 'UI/API/Resources',
-                'generate' => true
+                'path' => 'src/UI/API/Resources',
+                'namespace' => 'UI\\API\\Resources'
             ],
             ModuleComponentType::ApiRoute->value => [
-                'path' => 'UI/API/Routes',
-                'generate' => true
+                'path' => 'src/UI/API/routes',
+                'namespace' => 'UI\\API\\Routes'
             ],
             ModuleComponentType::ApiTest->value => [
-                'path' => 'UI/API/Tests',
-                'generate' => true
+                'path' => 'tests/UI/API',
+                'namespace' => 'Tests\\UI\\API'
             ],
             ModuleComponentType::CliCommand->value => [
-                'path' => 'UI/CLI/Commands',
-                'generate' => false
+                'path' => 'src/UI/CLI/Commands',
+                'namespace' => 'UI\\CLI\\Commands'
             ],
             ModuleComponentType::CliTest->value => [
-                'path' => 'UI/CLI/Tests',
-                'generate' => false
+                'path' => 'tests/UI/CLI',
+                'namespace' => 'Tests\\UI\\CLI'
             ],
             ModuleComponentType::Dto->value => [
-                'path' => 'DTO',
-                'generate' => true
+                'path' => 'src/DTO',
+                'namespace' => 'DTO'
             ],
             ModuleComponentType::Event->value => [
-                'path' => 'Events',
-                'generate' => false
+                'path' => 'src/Events',
+                'namespace' => 'Events'
             ],
             ModuleComponentType::Exception->value => [
-                'path' => 'Exceptions',
-                'generate' => false
+                'path' => 'src/Exceptions',
+                'namespace' => 'Exceptions'
             ],
             ModuleComponentType::Factory->value => [
-                'path' => 'Data/Factories',
-                'generate' => true
+                'path' => 'src/Factories',
+                'namespace' => 'Exceptions'
             ],
             ModuleComponentType::FeatureTest->value => [
-                'path' => 'Tests/Feature',
-                'generate' => false
+                'path' => 'tests/Feature',
+                'namespace' => 'Tests\\Feature'
             ],
             ModuleComponentType::Job->value => [
-                'path' => 'Jobs',
-                'generate' => false
+                'path' => 'src/Jobs',
+                'namespace' => 'Jobs'
             ],
             ModuleComponentType::Lang->value => [
-                'path' => 'lang',
-                'generate' => false
+                'path' => 'lang'
             ],
             ModuleComponentType::Listener->value => [
-                'path' => 'Listeners',
-                'generate' => false
+                'path' => 'src/Listeners',
+                'namespace' => 'Listeners'
             ],
             ModuleComponentType::Mail->value => [
-                'path' => 'Mails',
-                'generate' => false
+                'path' => 'src/Mails',
+                'namespace' => 'Mails'
             ],
             ModuleComponentType::Middleware->value => [
-                'path' => 'Middleware',
-                'generate' => false
+                'path' => 'src/Middleware',
+                'namespace' => 'Middleware'
             ],
             ModuleComponentType::Migration->value => [
-                'path' => 'Data/Migrations',
-                'generate' => true
+                'path' => 'database/migrations'
             ],
             ModuleComponentType::Model->value => [
-                'path' => 'Models',
-                'generate' => true
+                'path' => 'src/Models',
+                'namespace' => 'Models'
             ],
             ModuleComponentType::Notification->value => [
-                'path' => 'Notifications',
-                'generate' => false
+                'path' => 'src/Notifications',
+                'namespace' => 'Notification'
             ],
             ModuleComponentType::Observer->value => [
-                'path' => 'Observers',
-                'generate' => false
+                'path' => 'src/Observers',
+                'namespace' => 'Observers'
             ],
             ModuleComponentType::Policy->value => [
-                'path' => 'Policies',
-                'generate' => true
+                'path' => 'src/Policies',
+                'namespace' => 'Policies'
             ],
             ModuleComponentType::Provider->value => [
-                'path' => 'Providers',
-                'generate' => true
+                'path' => 'src/Providers',
+                'namespace' => 'Providers'
             ],
             ModuleComponentType::Rule->value => [
-                'path' => 'Rules',
-                'generate' => false
+                'path' => 'src/Rules',
+                'namespace' => 'Rules'
             ],
             ModuleComponentType::Seeder->value => [
-                'path' => 'Data/Seeders',
-                'generate' => true
-            ],
-            ModuleComponentType::WebController->value => [
-                'path' => 'UI/WEB/Controllers',
-                'generate' => false
-            ],
-            ModuleComponentType::WebRequest->value => [
-                'path' => 'UI/WEB/Requests',
-                'generate' => false,
-            ],
-            ModuleComponentType::WebRoute->value => [
-                'path' => 'UI/WEB/Routes',
-                'generate' => false
-            ],
-            ModuleComponentType::WebTest->value => [
-                'path' => 'UI/WEB/Tests',
-                'generate' => false
-            ],
-            ModuleComponentType::View->value => [
-                'path' => 'resources/views',
-                'generate' => false
+                'path' => 'database/seeders',
+                'namespace' => 'Database\\Seeders'
             ],
             ModuleComponentType::UnitTest->value => [
-                'path' => 'Tests/Unit',
-                'generate' => false
+                'path' => 'tests/Unit',
+                'namespace' => 'Tests\\Unit'
+            ],
+            ModuleComponentType::View->value => [
+                'path' => 'resources/views'
+            ],
+            ModuleComponentType::WebController->value => [
+                'path' => 'src/UI/WEB/Controllers',
+                'namespace' => 'UI\\WEB\\Controllers'
+            ],
+            ModuleComponentType::WebRequest->value => [
+                'path' => 'src/UI/WEB/Requests',
+                'namespace' => 'UI\\WEB\\Requests'
+            ],
+            ModuleComponentType::WebRoute->value => [
+                'path' => 'src/UI/WEB/routes',
+                'namespace' => 'UI\\WEB\\Routes'
+            ],
+            ModuleComponentType::WebTest->value => [
+                'path' => 'tests/UI/WEB',
+                'namespace' => 'Tests\\UI\\WEB'
             ],
         ],
     ],

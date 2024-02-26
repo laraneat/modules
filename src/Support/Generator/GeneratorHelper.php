@@ -92,12 +92,19 @@ class GeneratorHelper
 
     /**
      * Get component config
+     *
+     *  @throws InvalidConfigValue
      */
-    public static function component(ModuleComponentType $componentType): ?GeneratorPath
+    public static function component(ModuleComponentType $componentType): GeneratorPath
     {
-        $generatorComponent = config("modules.generator.components.{$componentType->value}");
+        $configPath = "modules.generator.components.{$componentType->value}";
+        $generatorComponent = config($configPath);
 
-        return $generatorComponent ? new GeneratorPath($generatorComponent) : null;
+        if (! is_array($generatorComponent) || empty($generatorComponent['path'])) {
+            throw InvalidConfigValue::make($configPath);
+        };
+
+        return new GeneratorPath($generatorComponent);
     }
 
     /**
