@@ -98,7 +98,7 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
             'class' => class_basename($this->nameArgument),
         ];
 
-        $providerDir = GeneratorHelper::component(ModuleComponentType::Provider)->getPath();
+        $providerDir = GeneratorHelper::component(ModuleComponentType::Provider)->getFullPath($this->module);
 
         if ($stub === 'module') {
             $stubReplaces = array_merge($stubReplaces, [
@@ -106,19 +106,19 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
                 'moduleNameKebabCase' => $this->module->getKebabName(),
                 'commandsPath' => GeneratorHelper::makeRelativePath(
                     $providerDir,
-                    GeneratorHelper::component(ModuleComponentType::CliCommand)->getPath()
+                    GeneratorHelper::component(ModuleComponentType::CliCommand)->getFullPath($this->module)
                 ),
                 'langPath' => GeneratorHelper::makeRelativePath(
                     $providerDir,
-                    GeneratorHelper::component(ModuleComponentType::Lang)->getPath()
+                    GeneratorHelper::component(ModuleComponentType::Lang)->getFullPath($this->module)
                 ),
                 'viewsPath' => GeneratorHelper::makeRelativePath(
                     $providerDir,
-                    GeneratorHelper::component(ModuleComponentType::View)->getPath()
+                    GeneratorHelper::component(ModuleComponentType::View)->getFullPath($this->module)
                 ),
                 'migrationsPath' => GeneratorHelper::makeRelativePath(
                     $providerDir,
-                    GeneratorHelper::component(ModuleComponentType::Migration)->getPath()
+                    GeneratorHelper::component(ModuleComponentType::Migration)->getFullPath($this->module)
                 ),
             ]);
         } elseif ($stub === 'route') {
@@ -128,11 +128,11 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
                 'apiControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component(ModuleComponentType::ApiController)->getFullNamespace($this->module)),
                 'webRoutesPath' => GeneratorHelper::makeRelativePath(
                     $providerDir,
-                    GeneratorHelper::component(ModuleComponentType::WebRoute)->getPath()
+                    GeneratorHelper::component(ModuleComponentType::WebRoute)->getFullPath($this->module)
                 ),
                 'apiRoutesPath' => GeneratorHelper::makeRelativePath(
                     $providerDir,
-                    GeneratorHelper::component(ModuleComponentType::ApiRoute)->getPath()
+                    GeneratorHelper::component(ModuleComponentType::ApiRoute)->getFullPath($this->module)
                 ),
             ]);
         }
