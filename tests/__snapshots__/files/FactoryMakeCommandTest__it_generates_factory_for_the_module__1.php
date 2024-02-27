@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Author\Exceptions;
+namespace Modules\Author\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Author\Models\Author;

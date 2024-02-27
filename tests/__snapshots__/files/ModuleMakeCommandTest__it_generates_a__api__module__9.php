@@ -2,24 +2,31 @@
 
 namespace Modules\ArticleComment\Actions;
 
-use Illuminate\Database\Eloquent\Model;
 use Lorisleiva\Actions\Concerns\AsAction;
+use Modules\ArticleComment\DTO\UpdateArticleCommentDTO;
 use Modules\ArticleComment\Models\ArticleComment;
-use Modules\ArticleComment\UI\API\QueryWizards\ArticleCommentQueryWizard;
-use Modules\ArticleComment\UI\API\Requests\ViewArticleCommentRequest;
+use Modules\ArticleComment\UI\API\Requests\UpdateArticleCommentRequest;
 use Modules\ArticleComment\UI\API\Resources\ArticleCommentResource;
 
-class ViewArticleCommentAction
+class UpdateArticleCommentAction
 {
     use AsAction;
 
-    public function handle(ViewArticleCommentRequest $request, ArticleComment $articleComment): Model
+    public function handle(ArticleComment $articleComment, UpdateArticleCommentDTO $dto): ArticleComment
     {
-        return ArticleCommentQueryWizard::for($articleComment)->build();
+        $data = $dto->all();
+
+        if ($data) {
+            $articleComment->update($data);
+        }
+
+        return $articleComment;
     }
 
-    public function asController(ViewArticleCommentRequest $request, ArticleComment $articleComment): ArticleCommentResource
+    public function asController(UpdateArticleCommentRequest $request, ArticleComment $articleComment): ArticleCommentResource
     {
-        return new ArticleCommentResource($this->handle($request, $articleComment));
+        $articleComment = $this->handle($articleComment, $request->toDTO());
+
+        return new ArticleCommentResource($articleComment);
     }
 }

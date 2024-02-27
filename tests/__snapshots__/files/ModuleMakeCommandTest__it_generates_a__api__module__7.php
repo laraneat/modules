@@ -2,27 +2,24 @@
 
 namespace Modules\ArticleComment\Actions;
 
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\JsonResponse;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\ArticleComment\Models\ArticleComment;
-use Modules\ArticleComment\UI\API\QueryWizards\ArticleCommentsQueryWizard;
-use Modules\ArticleComment\UI\API\Requests\ListArticleCommentsRequest;
-use Modules\ArticleComment\UI\API\Resources\ArticleCommentResource;
+use Modules\ArticleComment\UI\API\Requests\DeleteArticleCommentRequest;
 
-class ListArticleCommentsAction
+class DeleteArticleCommentAction
 {
     use AsAction;
 
-    public function handle(ListArticleCommentsRequest $request): LengthAwarePaginator
+    public function handle(ArticleComment $articleComment): bool
     {
-        return ArticleCommentsQueryWizard::for(ArticleComment::query())
-            ->build()
-            ->paginate();
+        return $articleComment->delete();
     }
 
-    public function asController(ListArticleCommentsRequest $request): ResourceCollection
+    public function asController(DeleteArticleCommentRequest $request, ArticleComment $articleComment): JsonResponse
     {
-        return ArticleCommentResource::collection($this->handle($request));
+        $this->handle($articleComment);
+
+        return $this->noContent();
     }
 }

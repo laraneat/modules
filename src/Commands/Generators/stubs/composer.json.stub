@@ -9,7 +9,9 @@
     ],
     "autoload": {
         "psr-4": {
-            "{{ moduleNamespace }}\\": "src/"
+            "{{ moduleNamespace }}\\": "src/",
+            "{{ moduleNamespace }}\\Database\\Factories\\": "database/factories/",
+            "{{ moduleNamespace }}\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {

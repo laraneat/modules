@@ -2,31 +2,27 @@
 
 namespace Modules\ArticleComment\Actions;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Lorisleiva\Actions\Concerns\AsAction;
-use Modules\ArticleComment\DTO\UpdateArticleCommentDTO;
 use Modules\ArticleComment\Models\ArticleComment;
-use Modules\ArticleComment\UI\API\Requests\UpdateArticleCommentRequest;
+use Modules\ArticleComment\UI\API\QueryWizards\ArticleCommentsQueryWizard;
+use Modules\ArticleComment\UI\API\Requests\ListArticleCommentsRequest;
 use Modules\ArticleComment\UI\API\Resources\ArticleCommentResource;
 
-class UpdateArticleCommentAction
+class ListArticleCommentsAction
 {
     use AsAction;
 
-    public function handle(ArticleComment $articleComment, UpdateArticleCommentDTO $dto): ArticleComment
+    public function handle(ListArticleCommentsRequest $request): LengthAwarePaginator
     {
-        $data = $dto->all();
-
-        if ($data) {
-            $articleComment->update($data);
-        }
-
-        return $articleComment;
+        return ArticleCommentsQueryWizard::for(ArticleComment::query())
+            ->build()
+            ->paginate();
     }
 
-    public function asController(UpdateArticleCommentRequest $request, ArticleComment $articleComment): ArticleCommentResource
+    public function asController(ListArticleCommentsRequest $request): ResourceCollection
     {
-        $articleComment = $this->handle($articleComment, $request->toDTO());
-
-        return new ArticleCommentResource($articleComment);
+        return ArticleCommentResource::collection($this->handle($request));
     }
 }

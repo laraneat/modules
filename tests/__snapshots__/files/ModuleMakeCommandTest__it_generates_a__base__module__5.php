@@ -1,34 +1,45 @@
 <?php
 
-namespace Modules\ArticleComment\Exceptions;
+namespace Modules\ArticleComment\Database\Seeders;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Modules\ArticleComment\Models\ArticleComment;
+use Illuminate\Database\Seeder;
+use Modules\Authorization\Actions\CreatePermissionAction;
+use Modules\Authorization\DTO\CreatePermissionDTO;
 
-/**
- * @method \Illuminate\Support\Collection<int, ArticleComment>|ArticleComment create($attributes = [], ?ArticleComment $parent = null)
- * @method \Illuminate\Support\Collection<int, ArticleComment> createMany(iterable $records)
- * @method ArticleComment createOne($attributes = [])
- * @method \Illuminate\Support\Collection<int, ArticleComment>|ArticleComment make($attributes = [], ?ArticleComment $parent = null)
- * @method ArticleComment makeOne($attributes = [])
- */
-class ArticleCommentFactory extends Factory
+class ArticleCommentPermissionsSeeder_1 extends Seeder
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var class-string
-     */
-    protected $model = ArticleComment::class;
-
-    /**
-     * Define the model's default state.
-     */
-    public function definition(): array
+    public function run(): void
     {
-        return [
-            // TODO: add fields here
-        ];
+        $createPermissionAction = CreatePermissionAction::make();
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'view-article-comment',
+            display_name: 'View any "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'create-article-comment',
+            display_name: 'Create "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'update-article-comment',
+            display_name: 'Update any "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'delete-article-comment',
+            display_name: 'Delete any "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'force-delete-article-comment',
+            display_name: 'Force delete any "article-comments"',
+            group: 'article-comments'
+        ));
     }
 }
-

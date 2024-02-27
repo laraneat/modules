@@ -17,7 +17,7 @@ it('generates factory for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/modules/author/src/Factories/SomeAuthorFactory.php');
+    $filePath = $this->app->basePath('/modules/author/database/factories/SomeAuthorFactory.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

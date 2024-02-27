@@ -5,7 +5,7 @@ namespace Modules\Author\Models;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Author\Exceptions\AuthorEmailFactory;
+use Modules\Author\Database\Factories\AuthorEmailFactory;
 
 class AuthorEmail extends Model
 {

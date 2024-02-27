@@ -9,7 +9,9 @@
     ],
     "autoload": {
         "psr-4": {
-            "Modules\\ArticleComment\\": "src/"
+            "Modules\\ArticleComment\\": "src/",
+            "Modules\\ArticleComment\\Database\\Factories\\": "database/factories/",
+            "Modules\\ArticleComment\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {

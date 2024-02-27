@@ -130,8 +130,8 @@ return [
             'namespace' => 'Exceptions'
         ],
         ModuleComponentType::Factory->value => [
-            'path' => 'src/Factories',
-            'namespace' => 'Exceptions'
+            'path' => 'database/factories',
+            'namespace' => 'Database\\Factories'
         ],
         ModuleComponentType::FeatureTest->value => [
             'path' => 'tests/Feature',

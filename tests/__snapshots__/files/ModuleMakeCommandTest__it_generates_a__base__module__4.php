@@ -1,45 +1,28 @@
 <?php
 
-namespace Modules\ArticleComment\Database\Seeders;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Seeder;
-use Modules\Authorization\Actions\CreatePermissionAction;
-use Modules\Authorization\DTO\CreatePermissionDTO;
-
-class ArticleCommentPermissionsSeeder_1 extends Seeder
+return new class extends Migration
 {
-    public function run(): void
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        $createPermissionAction = CreatePermissionAction::make();
+        Schema::create('article_comments', static function (Blueprint $table) {
+            $table->id();
 
-        $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'view-article-comment',
-            display_name: 'View any "article-comments"',
-            group: 'article-comments'
-        ));
-
-        $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'create-article-comment',
-            display_name: 'Create "article-comments"',
-            group: 'article-comments'
-        ));
-
-        $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'update-article-comment',
-            display_name: 'Update any "article-comments"',
-            group: 'article-comments'
-        ));
-
-        $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'delete-article-comment',
-            display_name: 'Delete any "article-comments"',
-            group: 'article-comments'
-        ));
-
-        $createPermissionAction->handle(new CreatePermissionDTO(
-            name: 'force-delete-article-comment',
-            display_name: 'Force delete any "article-comments"',
-            group: 'article-comments'
-        ));
+            $table->timestamps();
+        });
     }
-}
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('article_comments');
+    }
+};

@@ -5,7 +5,7 @@ namespace Modules\ArticleComment\Models;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Modules\ArticleComment\Exceptions\ArticleCommentFactory;
+use Modules\ArticleComment\Database\Factories\ArticleCommentFactory;
 
 class ArticleComment extends Model
 {

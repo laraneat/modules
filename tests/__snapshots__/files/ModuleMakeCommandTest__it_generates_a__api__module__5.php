@@ -1,27 +1,45 @@
 <?php
 
-namespace Modules\ArticleComment\Actions;
+namespace Modules\ArticleComment\Database\Seeders;
 
-use Illuminate\Http\JsonResponse;
-use Lorisleiva\Actions\Concerns\AsAction;
-use Modules\ArticleComment\DTO\CreateArticleCommentDTO;
-use Modules\ArticleComment\Models\ArticleComment;
-use Modules\ArticleComment\UI\API\Requests\CreateArticleCommentRequest;
-use Modules\ArticleComment\UI\API\Resources\ArticleCommentResource;
+use Illuminate\Database\Seeder;
+use Modules\Authorization\Actions\CreatePermissionAction;
+use Modules\Authorization\DTO\CreatePermissionDTO;
 
-class CreateArticleCommentAction
+class ArticleCommentPermissionsSeeder_1 extends Seeder
 {
-    use AsAction;
-
-    public function handle(CreateArticleCommentDTO $dto): ArticleComment
+    public function run(): void
     {
-        return ArticleComment::create($dto->all());
-    }
+        $createPermissionAction = CreatePermissionAction::make();
 
-    public function asController(CreateArticleCommentRequest $request): JsonResponse
-    {
-        $articleComment = $this->handle($request->toDTO());
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'view-article-comment',
+            display_name: 'View any "article-comments"',
+            group: 'article-comments'
+        ));
 
-        return (new ArticleCommentResource($articleComment))->created();
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'create-article-comment',
+            display_name: 'Create "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'update-article-comment',
+            display_name: 'Update any "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'delete-article-comment',
+            display_name: 'Delete any "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'force-delete-article-comment',
+            display_name: 'Force delete any "article-comments"',
+            group: 'article-comments'
+        ));
     }
 }
