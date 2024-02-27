@@ -11,10 +11,8 @@ class GeneratorPath
 
     public function __construct(array $config)
     {
-        $this->path = $this->formatPath((string) $config['path']);
-        $this->namespace = $this->formatNamespace(
-            $this->convertPathToNamespace($config['namespace'] ?? $this->path)
-        );
+        $this->path = GeneratorHelper::normalizePath((string) $config['path']);
+        $this->namespace = GeneratorHelper::normalizeNamespace($config['namespace'] ?? $this->path);
     }
 
     public function getPath(): string
@@ -35,24 +33,5 @@ class GeneratorPath
     public function getFullNamespace(Module|string $module): string
     {
         return GeneratorHelper::makeModuleNamespace($module, $this->namespace);
-    }
-    protected function formatPath(string $path): string
-    {
-        return trim($path, '/');
-    }
-
-    protected function formatNamespace(string $namespace): string
-    {
-        return trim($namespace, '\\');
-    }
-
-    protected function convertPathToNamespace(string $path): string
-    {
-        return str_replace('/', '\\', $path);
-    }
-
-    protected function convertNamespaceToPath(string $path): string
-    {
-        return str_replace('\\', '/', $path);
     }
 }

@@ -11,7 +11,7 @@ function getFilePathsInDirectory(string $directory): array
 }
 
 beforeEach(function () {
-    $this->customStubsPath = $this->app['config']->get('modules.generator.custom_stubs');
+    $this->customStubsPath = $this->app['config']->get('modules.custom_stubs');
 });
 
 afterEach(function () {

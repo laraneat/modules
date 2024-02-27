@@ -2,10 +2,14 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Composer\Factory;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Exceptions\ComposerException;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModulesRepository;
+use Laraneat\Modules\Support\Composer;
+use Laraneat\Modules\Support\ComposerJsonFile;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use Laraneat\Modules\Support\Generator\Stub;
 
@@ -35,6 +39,11 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
      * The name of the module to be created
      */
     protected string $moduleName;
+
+    /**
+     * Studly name of the module to be created
+     */
+    protected string $moduleStudlyName;
 
     /**
      * The package name of the module to be created
@@ -77,8 +86,9 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             ? ['', $explodedNameArgument[0]]
             : $explodedNameArgument;
 
-        $this->moduleName = Str::studly($rawModuleName);
-        if (! $this->validateModuleName($this->moduleName)) {
+        $this->moduleStudlyName = Str::studly($rawModuleName);
+        $this->moduleName = Str::kebab($this->moduleStudlyName);
+        if (! $this->validateModuleStudlyName($this->moduleStudlyName)) {
             $this->components->error("The module name passed is not valid!");
 
             return self::FAILURE;
@@ -86,8 +96,8 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
 
         $this->modulePackageName = sprintf(
             '%s/%s',
-            Str::kebab($rawVendor ?: config('modules.generator.composer.vendor', 'app')),
-            Str::kebab($this->moduleName)
+            Str::kebab($rawVendor ?: config('modules.composer.vendor', 'app')),
+            $this->moduleName
         );
 
         if ($modulesRepository->has($this->modulePackageName)) {
@@ -111,14 +121,41 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             return self::FAILURE;
         }
 
-        $this->modulesRepository->pruneAppModulesManifest();
-        // TODO: composer update
+        $this->modulesRepository->pruneModulesManifest();
 
         if ($this->isFailure($this->generateComponents($this->modulesRepository->find($this->modulePackageName)))) {
             return self::FAILURE;
         }
 
+        try {
+            $this->addModuleToComposer();
+        } catch (ComposerException $exception) {
+            $this->components->error($exception->getMessage());
+            $this->components->info("Please run <kbd>composer update {$this->modulePackageName}</kbd> manually");
+        }
+
         return self::SUCCESS;
+    }
+
+    protected function addModuleToComposer(): void
+    {
+        $initialWorkingDir = getcwd();
+        $appBasePath = $this->laravel->basePath();
+        chdir($appBasePath);
+        $moduleRelativePath = Str::after($appBasePath, GeneratorHelper::makeModulePath($this->moduleName));
+        ComposerJsonFile::create(Factory::getComposerFile())
+            ->addModule($this->modulePackageName, $moduleRelativePath)
+            ->save();
+        chdir($initialWorkingDir);
+
+        $composerClass = Composer::class;
+        $composer = $this->laravel[$composerClass];
+        if (!($composer instanceof Composer)) {
+            throw ComposerException::make("$composerClass not registered in your app.");
+        }
+        if (!$composer->updatePackages([$this->modulePackageName], false, $this->output)) {
+            throw ComposerException::make("Failed to update package with composer.");
+        }
     }
 
     protected function generateComposerJsonFile(): int
@@ -132,8 +169,8 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
                 '\\\\',
                 GeneratorHelper::makeModuleNamespace($this->moduleName)
             ),
-            'authorName' => config('modules.generator.composer.author.name', 'Example'),
-            'authorEmail' => config('modules.generator.composer.author.email', 'example@example.com'),
+            'authorName' => config('modules.composer.author.name', 'Example'),
+            'authorEmail' => config('modules.composer.author.email', 'example@example.com'),
         ])->render();
 
         return $this->generate($path, $contents);
@@ -328,10 +365,16 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
      */
     protected function isFailure(...$statuses): bool
     {
-        return in_array(self::FAILURE, $statuses, true);
+        foreach ($statuses as $status) {
+            if ($status !== self::SUCCESS) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    protected function validateModuleName(string $name): bool
+    protected function validateModuleStudlyName(string $name): bool
     {
         return preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $name);
     }

@@ -10,8 +10,6 @@ class {{ class }} extends ServiceProvider
 {
     use CanLoadRoutesFromDirectory;
 
-    protected string $modulePackageName = '{{ modulePackageName }}';
-
     /**
      * Called before routes are registered.
      * Register any model bindings or pattern based filters.
@@ -39,7 +37,7 @@ class {{ class }} extends ServiceProvider
         Route::middleware('web')
             // ->namespace('{{ webControllerNamespace }}')
             ->group(function () {
-                $this->loadRoutesFromDirectory(module_path($this->modulePackageName, '{{ webRoutesPath }}'));
+                $this->loadRoutesFromDirectory(realpath('{{ webRoutesPath }}'));
             });
     }
 
@@ -53,7 +51,7 @@ class {{ class }} extends ServiceProvider
             ->middleware('api')
             // ->namespace('{{ apiControllerNamespace }}')
             ->group(function () {
-                $this->loadRoutesFromDirectory(module_path($this->modulePackageName, '{{ apiRoutesPath }}'));
+                $this->loadRoutesFromDirectory(realpath('{{ apiRoutesPath }}'));
             });
     }
 }

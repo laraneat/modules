@@ -1,0 +1,29 @@
+{
+    "name": "laraneat/location",
+    "description": "GeoLocation module for testing",
+    "authors": [
+        {
+            "name": "Salavat Salakhutdinov",
+            "email": "salahutdinov.salavat@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Modules\\GeoLocation\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\GeoLocation\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\GeoLocation\\Providers\\GeoLocationServiceProvider",
+                "Modules\\GeoLocation\\Providers\\RouteServiceProvider"
+            ],
+            "aliases": []
+        }
+    }
+}

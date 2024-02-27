@@ -4,8 +4,8 @@ use function PHPUnit\Framework\assertFileExists;
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {
-    $this->setAppModules([
-        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
+    $this->setModules([
+        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/author'),
     ], $this->app->basePath('/modules'));
 });
 
@@ -17,7 +17,7 @@ it('generates "plain" action for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/modules/Author/src/Actions/PlainAuthorAction.php');
+    $filePath = $this->app->basePath('/modules/author/src/Actions/PlainAuthorAction.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -34,7 +34,7 @@ it('generates "create" action for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/modules/Author/src/Actions/CreateAuthorAction.php');
+    $filePath = $this->app->basePath('/modules/author/src/Actions/CreateAuthorAction.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -51,7 +51,7 @@ it('generates "update" action for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/modules/Author/src/Actions/UpdateAuthorAction.php');
+    $filePath = $this->app->basePath('/modules/author/src/Actions/UpdateAuthorAction.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -66,7 +66,7 @@ it('generates "delete" action for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/modules/Author/src/Actions/DeleteAuthorAction.php');
+    $filePath = $this->app->basePath('/modules/author/src/Actions/DeleteAuthorAction.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -83,7 +83,7 @@ it('generates "view" action for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/modules/Author/src/Actions/ViewAuthorAction.php');
+    $filePath = $this->app->basePath('/modules/author/src/Actions/ViewAuthorAction.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -100,7 +100,7 @@ it('generates "list" action for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/modules/Author/src/Actions/ListAuthorsAction.php');
+    $filePath = $this->app->basePath('/modules/author/src/Actions/ListAuthorsAction.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

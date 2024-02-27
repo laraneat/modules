@@ -18,13 +18,9 @@
         }
     },
     "extra": {
-        "laraneat": {
-            "module": {
-                "name": "{{ moduleName }}",
-                "namespace": "{{ moduleNamespace }}",
-                "providers": [],
-                "aliases": []
-            }
+        "laravel": {
+            "providers": [],
+            "aliases": []
         }
     }
 }

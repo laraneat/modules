@@ -5,7 +5,7 @@ namespace Laraneat\Modules\Commands\Generators;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Enums\ModuleComponentType;
-use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Exceptions\NameIsReserved;
@@ -79,7 +79,7 @@ class RequestMakeCommand extends BaseComponentGeneratorCommand implements Prompt
         try {
             $this->nameArgument = $this->argument('name');
             $this->ensureNameIsNotReserved($this->nameArgument);
-            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
+            $this->module = $this->getModuleArgumentOrFail();
             $this->ui = $this->getOptionOrChoice(
                 'ui',
                 question: 'Enter the UI for which the request will be created',
@@ -89,7 +89,7 @@ class RequestMakeCommand extends BaseComponentGeneratorCommand implements Prompt
             $this->componentType = $this->ui === 'api'
                 ? ModuleComponentType::ApiRequest
                 : ModuleComponentType::WebRequest;
-        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+        } catch (NameIsReserved|ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
             $this->components->error($exception->getMessage());
 
             return self::FAILURE;

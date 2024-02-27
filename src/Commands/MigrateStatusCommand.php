@@ -2,6 +2,8 @@
 
 namespace Laraneat\Modules\Commands;
 
+use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
+use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Module;
 
@@ -32,7 +34,7 @@ class MigrateStatusCommand extends BaseCommand
     {
         try {
             $modulesToHandle = $this->getModuleArgumentOrFail();
-        } catch (ModuleNotFound $exception) {
+        } catch (ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
             $this->error($exception->getMessage());
 
             return self::FAILURE;

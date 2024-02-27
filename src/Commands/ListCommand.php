@@ -11,9 +11,7 @@ class ListCommand extends BaseCommand
      *
      * @var string
      */
-    protected $signature = 'module:list
-                            {--vendor : Outputs vendor modules}
-                            {--app : Outputs app modules}';
+    protected $signature = 'module:list';
 
     /**
      * The console command description.
@@ -27,20 +25,9 @@ class ListCommand extends BaseCommand
      */
     public function handle(): int
     {
-        $listVendorModules = $this->option('vendor');
-        $listAppModules = $this->option('app');
-
-        if (! $listAppModules && ! $listVendorModules || $listAppModules && $listVendorModules) {
-            $modules = $this->modulesRepository->getModules();
-        } elseif ($listVendorModules) {
-            $modules = $this->modulesRepository->getVendorModules();
-        } else {
-            $modules = $this->modulesRepository->getAppModules();
-        }
-
         $this->table(
             ['Package Name', 'Namespace', 'Path'],
-            collect($modules)
+            collect($this->modulesRepository->getModules())
                 ->map(fn (Module $module) => [$module->getPackageName(), $module->getNamespace(), $module->getPath()])
                 ->values()
                 ->toArray()

@@ -1,0 +1,15 @@
+{
+    "name": "laraneat/empty",
+    "description": "Empty module for testing",
+    "authors": [
+        {
+            "name": "Salavat Salakhutdinov",
+            "email": "salahutdinov.salavat@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Modules\\Empty\\": "src/"
+        }
+    }
+}

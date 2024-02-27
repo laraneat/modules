@@ -4,7 +4,7 @@ namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Module;
@@ -27,10 +27,11 @@ abstract class BaseCommand extends Command
      *
      * @throws ModuleNotFound
      * @throws ModuleHasNonUniquePackageName
+     * @throws ModuleHasNoNamespace
      */
-    protected function getModuleArgumentOrFail(ModuleType $type = ModuleType::All): array|Module
+    protected function getModuleArgumentOrFail(): array|Module
     {
-        $allPackageNames = array_keys($this->modulesRepository->getModules($type));
+        $allPackageNames = array_keys($this->modulesRepository->getModules());
         $moduleArgument = $this->input->getArgument('module');
         $multipleModuleMode = is_array($moduleArgument);
 
@@ -78,16 +79,15 @@ abstract class BaseCommand extends Command
     /**
      * @throws ModuleNotFound
      * @throws ModuleHasNonUniquePackageName
+     * @throws ModuleHasNoNamespace
      */
-    protected function findModuleByNameOrPackageNameOrFail($moduleNameOrPackageName, ModuleType $type = ModuleType::All): Module
+    protected function findModuleByNameOrPackageNameOrFail($moduleNameOrPackageName): Module
     {
-        if ($foundModule = $this->modulesRepository->find($moduleNameOrPackageName, $type)) {
+        if ($foundModule = $this->modulesRepository->find($moduleNameOrPackageName)) {
             return $foundModule;
         }
 
-        $foundModules = collect($this->modulesRepository->getModules($type))
-            ->filter(fn (Module $module) => Str::lower($module->getName()) === Str::lower($moduleNameOrPackageName));
-
+        $foundModules = collect($this->modulesRepository->filterByName($moduleNameOrPackageName));
         $numberOfFoundModules = $foundModules->count();
 
         if ($numberOfFoundModules === 0) {
@@ -104,7 +104,7 @@ abstract class BaseCommand extends Command
         );
 
 
-        return $this->modulesRepository->findOrFail($selectedPackageName, $type);
+        return $this->modulesRepository->findOrFail($selectedPackageName);
     }
 
     /**

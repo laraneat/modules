@@ -6,8 +6,8 @@ use function PHPUnit\Framework\assertFileExists;
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {
-    $this->setAppModules([
-        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Article'),
+    $this->setModules([
+        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/article'),
     ], $this->app->basePath('/modules'));
 
     $date = Carbon::parse('2024-01-01');
@@ -23,7 +23,7 @@ it('generates "plain" migration for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}some_plain_migration.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}some_plain_migration.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -35,7 +35,7 @@ it('generates "plain" migration for the module if the stub is not recognized by 
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}some_plain_migration.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}some_plain_migration.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -49,7 +49,7 @@ it('generates "create" migration for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}new_articles_table.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}new_articles_table.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -62,7 +62,7 @@ it('generates "create" migration for the module without fields', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}new_articles_table.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}new_articles_table.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -75,7 +75,7 @@ it('automatically detects and generates "create" migration for the module', func
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}create_articles_table.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}create_articles_table.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -89,7 +89,7 @@ it('generates "add" migration for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}modify_articles_table.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}modify_articles_table.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -102,7 +102,7 @@ it('generates "add" migration for the module without fields', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}modify_articles_table.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}modify_articles_table.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -115,7 +115,7 @@ it('automatically detects and generates "add" migration for the module', functio
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}add_title_to_articles_table.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}add_title_to_articles_table.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -129,7 +129,7 @@ it('generates "delete" migration for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}modify_articles_table.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}modify_articles_table.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -142,7 +142,7 @@ it('generates "delete" migration for the module without fields', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}modify_articles_table.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}modify_articles_table.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -155,7 +155,7 @@ it('automatically detects and generates "delete" migration for the module', func
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}delete_title_from_articles_table.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}delete_title_from_articles_table.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -170,7 +170,7 @@ it('generates "pivot" migration for the module', function () {
         ->expectsQuestion('Enter the name of second table', 'authors')
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath("/modules/Article/database/migrations/{$this->dateStamp}create_article_author_table.php");
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}create_article_author_table.php");
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

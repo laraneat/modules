@@ -7,8 +7,8 @@ use Laraneat\Modules\Enums\ModuleComponentType;
 use Laraneat\Modules\ModulesRepository;
 
 beforeEach(function () {
-    $this->setAppModules([
-        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
+    $this->setModules([
+        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/author'),
     ], $this->app->basePath('/modules'));
     $this->setVendorModules([
         realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/vendor/laraneat/foo'),

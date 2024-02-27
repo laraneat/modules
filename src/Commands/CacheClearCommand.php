@@ -9,9 +9,7 @@ class CacheClearCommand extends BaseCommand
      *
      * @var string
      */
-    protected $signature = 'module:clear
-                            {--vendor : Clear vendor modules cache}
-                            {--app : Clear app modules cache}';
+    protected $signature = 'module:clear';
 
     /**
      * The console command description.
@@ -25,20 +23,8 @@ class CacheClearCommand extends BaseCommand
      */
     public function handle(): int
     {
-        $clearVendorModules = $this->option('vendor');
-        $clearAppModules = $this->option('app');
-        if (! $clearAppModules && ! $clearVendorModules) {
-            $clearAppModules = $clearVendorModules = true;
-        }
-
-        if ($clearVendorModules) {
-            $this->modulesRepository->pruneVendorModulesManifest();
-            $this->components->info("Vendor modules cache cleared!");
-        }
-        if ($clearAppModules) {
-            $this->modulesRepository->pruneAppModulesManifest();
-            $this->components->info("App modules cache cleared!");
-        }
+        $this->modulesRepository->pruneModulesManifest();
+        $this->components->info("Modules manifest cache cleared!");
 
         return self::SUCCESS;
     }

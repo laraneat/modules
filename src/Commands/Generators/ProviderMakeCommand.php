@@ -4,7 +4,7 @@ namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Laraneat\Modules\Enums\ModuleComponentType;
-use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Exceptions\NameIsReserved;
@@ -70,8 +70,8 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
         try {
             $this->nameArgument = $this->argument('name');
             $this->ensureNameIsNotReserved($this->nameArgument);
-            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
-        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+            $this->module = $this->getModuleArgumentOrFail();
+        } catch (NameIsReserved|ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
             $this->components->error($exception->getMessage());
 
             return self::FAILURE;
@@ -98,22 +98,42 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
             'class' => class_basename($this->nameArgument),
         ];
 
+        $providerDir = GeneratorHelper::component(ModuleComponentType::Provider)->getPath();
+
         if ($stub === 'module') {
             $stubReplaces = array_merge($stubReplaces, [
                 'modulePackageName' => $this->module->getPackageName(),
                 'moduleNameKebabCase' => $this->module->getKebabName(),
-                'commandsPath' => GeneratorHelper::component(ModuleComponentType::CliCommand)->getPath(),
-                'langPath' => GeneratorHelper::component(ModuleComponentType::Lang)->getPath(),
-                'viewsPath' => GeneratorHelper::component(ModuleComponentType::View)->getPath(),
-                'migrationsPath' => GeneratorHelper::component(ModuleComponentType::Migration)->getPath(),
+                'commandsPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::CliCommand)->getPath()
+                ),
+                'langPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::Lang)->getPath()
+                ),
+                'viewsPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::View)->getPath()
+                ),
+                'migrationsPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::Migration)->getPath()
+                ),
             ]);
         } elseif ($stub === 'route') {
             $stubReplaces = array_merge($stubReplaces, [
                 'modulePackageName' => $this->module->getPackageName(),
                 'webControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component(ModuleComponentType::WebController)->getFullNamespace($this->module)),
                 'apiControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component(ModuleComponentType::ApiController)->getFullNamespace($this->module)),
-                'webRoutesPath' => GeneratorHelper::component(ModuleComponentType::WebRoute)->getPath(),
-                'apiRoutesPath' => GeneratorHelper::component(ModuleComponentType::ApiRoute)->getPath(),
+                'webRoutesPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::WebRoute)->getPath()
+                ),
+                'apiRoutesPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::ApiRoute)->getPath()
+                ),
             ]);
         }
 

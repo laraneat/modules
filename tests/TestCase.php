@@ -2,15 +2,22 @@
 
 namespace Laraneat\Modules\Tests;
 
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModulesRepository;
-use Laraneat\Modules\ModulesServiceProvider;
+use Laraneat\Modules\Providers\ComposerServiceProvider;
+use Laraneat\Modules\Providers\ConsoleServiceProvider;
+use Laraneat\Modules\Providers\ModulesRepositoryServiceProvider;
+use Laraneat\Modules\Providers\ModulesServiceProvider;
+use Laraneat\Modules\Support\Composer;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
+use Mockery;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\Process\Process;
 
 abstract class TestCase extends OrchestraTestCase
 {
@@ -33,10 +40,27 @@ abstract class TestCase extends OrchestraTestCase
         $this->filesystem = $this->app['files'];
     }
 
+    protected function tearDown() : void
+    {
+        parent::tearDown();
+
+        Mockery::close();
+    }
+
     protected function getPackageProviders($app): array
     {
         return [
+            ComposerServiceProvider::class,
+            ConsoleServiceProvider::class,
+            ModulesRepositoryServiceProvider::class,
             ModulesServiceProvider::class,
+        ];
+    }
+
+    protected function getPackageAliases($app): array
+    {
+        return [
+            'Modules' => Modules::class,
         ];
     }
 
@@ -56,50 +80,18 @@ abstract class TestCase extends OrchestraTestCase
     /**
      * @param string[] $paths
      */
-    public function setAppModules(array $paths, ?string $appModulesPath = null): void
+    public function setModules(array $paths, ?string $modulesPath = null): void
     {
-        $appModulesPath = rtrim($appModulesPath ?? GeneratorHelper::getBasePath(), '/');
-        $this->addModulesPath($appModulesPath);
-        $this->filesystem->ensureDirectoryExists($appModulesPath);
+        $modulesPath = rtrim($modulesPath ?? GeneratorHelper::getBasePath(), '/');
+        $this->addModulesPath($modulesPath);
+        $this->filesystem->ensureDirectoryExists($modulesPath);
 
         foreach($paths as $modulePath) {
             $modulePath = rtrim($modulePath, '/');
-            $this->filesystem->copyDirectory($modulePath, $appModulesPath . '/' . Str::afterLast($modulePath, '/'));
-        }
-        $this->app['modules']->pruneAppModulesManifest();
-    }
-
-    /**
-     * @param string[] $paths
-     * @throws FileNotFoundException
-     */
-    public function setVendorModules(array $paths): void
-    {
-        $vendorPath = $this->app->basePath('/vendor');
-        $this->addModulesPath($vendorPath);
-        $this->filesystem->ensureDirectoryExists($vendorPath . '/composer');
-
-        $packages = [];
-        foreach ($paths as $modulePath) {
-            $modulePath = rtrim($modulePath, '/');
-            $composerJson = json_decode($this->filesystem->get($modulePath . '/composer.json'), true);
-
-            $segments = explode('/', $modulePath);
-            $packagePath = implode('/', array_slice($segments, -2, 2));
-            if ($composerJson['name'] !== $packagePath) {
-                $packagePath = Str::afterLast($modulePath, '/');
-            }
-
-            $this->filesystem->copyDirectory($modulePath, $vendorPath . '/' . $packagePath);
-            $composerJson['install-path'] = '../' . $packagePath;
-            $packages[] = $composerJson;
+            $this->filesystem->copyDirectory($modulePath, $modulesPath . '/' . Str::afterLast($modulePath, '/'));
         }
 
-        $this->filesystem->ensureDirectoryExists($vendorPath . '/composer');
-        $this->filesystem->replace($vendorPath . '/composer/installed.json', json_encode([
-            'packages' => $packages,
-        ]));
-        $this->app['modules']->pruneVendorModulesManifest();
+        $this->app[ModulesRepository::class]->pruneModulesManifest();
     }
 
     public function pruneModulesPaths(): void
@@ -111,26 +103,22 @@ abstract class TestCase extends OrchestraTestCase
                 }
             }
             $this->modulesPaths = [];
-            $this->app['modules']->pruneModulesManifest();
+            $this->app[ModulesRepository::class]->pruneModulesManifest();
         }
     }
 
-    /**
-     * @param string[] $dontDiscover
-     * @return void
-     */
-    public function setLaraneatDontDiscover(array $dontDiscover): void
+    public function backupComposerJson(): void
     {
-        $composerJsonPath = $this->app->basePath('/composer.json');
-        if ($this->composerJsonBackupPath === null) {
-            $this->composerJsonBackupPath = $this->app->basePath('/composer.json.bak');
-            $this->filesystem->copy($composerJsonPath, $this->composerJsonBackupPath);
+        if ($this->composerJsonBackupPath !== null) {
+            return;
         }
 
-        $composerJson = json_decode($this->filesystem->get($composerJsonPath), true);
-        $composerJson['extra']['laraneat']['dont-discover'] = $dontDiscover;
-
-        $this->filesystem->put($composerJsonPath, json_encode($composerJson, JSON_PRETTY_PRINT));
+        $this->composerJsonBackupPath = $this->app->basePath('/composer.backup.json');
+        if ($this->filesystem->isFile($this->composerJsonBackupPath)) {
+            $this->resetComposerJson();
+            $this->composerJsonBackupPath = $this->app->basePath('/composer.backup.json');
+        }
+        $this->filesystem->copy($this->app->basePath('/composer.json'), $this->composerJsonBackupPath);
     }
 
     public function resetComposerJson(): void
@@ -139,7 +127,11 @@ abstract class TestCase extends OrchestraTestCase
             return;
         }
 
-        $this->filesystem->move($this->composerJsonBackupPath, $this->app->basePath('/composer.json'));
+        if ($this->filesystem->isFile($this->composerJsonBackupPath)) {
+            $this->filesystem->delete($this->app->basePath('/composer.json'));
+            $this->filesystem->copy($this->composerJsonBackupPath, $this->app->basePath('/composer.json'));
+            $this->filesystem->delete($this->composerJsonBackupPath);
+        }
         $this->composerJsonBackupPath = null;
     }
 
@@ -148,7 +140,6 @@ abstract class TestCase extends OrchestraTestCase
         return new Module(
             app: $this->app,
             modulesRepository: $this->app[ModulesRepository::class],
-            isVendor: $attributes['isVendor'] ?? false,
             packageName: $attributes['packageName'] ?? 'some-vendor/testing-module',
             name: $attributes['name'] ?? null,
             path: $attributes['path'] ?? $this->app->basePath('modules/TestingModule'),
@@ -161,6 +152,32 @@ abstract class TestCase extends OrchestraTestCase
                 'testing-module' => 'SomeVendor\\TestingModule\\Facades\\TestingModule',
             ],
         );
+    }
+
+    /**
+     * @return MockObject&Composer
+     */
+    public function mockComposer(array $expectedProcessArguments, bool $customComposerPhar = false, array $environmentVariables = []): MockObject
+    {
+        $directory = __DIR__;
+
+        $files = Mockery::mock(Filesystem::class);
+        $files->shouldReceive('exists')->once()->with($directory.'/composer.phar')->andReturn($customComposerPhar);
+
+        $process = Mockery::mock(Process::class);
+        $process->shouldReceive('run')->once();
+
+        $composer = $this->getMockBuilder(Composer::class)
+            ->onlyMethods(['getProcess'])
+            ->setConstructorArgs([$files, $directory, $environmentVariables])
+            ->getMock();
+
+        $composer->expects($this->once())
+            ->method('getProcess')
+            ->with($expectedProcessArguments)
+            ->willReturn($process);
+
+        return $composer;
     }
 
     private function addModulesPath(string $path): void

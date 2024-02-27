@@ -8,8 +8,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
-use Laraneat\Modules\Module;
-use Laraneat\Modules\ModulesRepository;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Finder\Finder;
@@ -17,25 +15,6 @@ use Symfony\Component\Finder\SplFileInfo;
 
 abstract class ModuleServiceProvider extends ServiceProvider
 {
-    protected string $modulePackageName;
-
-    private ?Module $module = null;
-
-    /**
-     * Get current module
-     */
-    public function getModule(): Module
-    {
-        if ($this->module !== null) {
-            return $this->module;
-        }
-
-        /** @var ModulesRepository $modules */
-        $modules = $this->app[ModulesRepository::class];
-
-        return $this->module = $modules->findOrFail($this->modulePackageName);
-    }
-
     /**
      * Get publishable view paths
      */

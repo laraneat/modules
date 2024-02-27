@@ -4,8 +4,8 @@ use function PHPUnit\Framework\assertFileExists;
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {
-    $this->setAppModules([
-        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/app/Author'),
+    $this->setModules([
+        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/author'),
     ], $this->app->basePath('/modules'));
 });
 
@@ -18,7 +18,7 @@ it('generates "plain" listener for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/modules/Author/src/Listeners/PlainAuthorListener.php');
+    $filePath = $this->app->basePath('/modules/author/src/Listeners/PlainAuthorListener.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
@@ -32,7 +32,7 @@ it('generates "queued" listener for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/modules/Author/src/Listeners/QueuedAuthorListener.php');
+    $filePath = $this->app->basePath('/modules/author/src/Listeners/QueuedAuthorListener.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

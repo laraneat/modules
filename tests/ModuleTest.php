@@ -1,11 +1,10 @@
 <?php
 
 use Illuminate\Database\Migrations\Migrator;
-
-it('can return is the vendor', function () {
-    expect($this->createModule(['isVendor' => false])->isVendor())->toBe(false);
-    expect($this->createModule(['isVendor' => true])->isVendor())->toBe(true);
-});
+use Laraneat\Modules\Support\Composer;
+use Laraneat\Modules\Support\ComposerJsonFile;
+use function PHPUnit\Framework\assertFileExists;
+use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 it('can return the package name', function () {
     expect($this->createModule(['packageName' => 'some-vendor/testing-module'])->getPackageName())->toBe('some-vendor/testing-module');
@@ -104,6 +103,16 @@ it('can make sub path', function () {
         ->toBe($this->app->basePath('/modules/SomeTestingModule/resources/views/index.blade.php'));
 });
 
+it('can make sub namespace', function () {
+    expect($this->createModule(['namespace' => 'SomeVendor\\SomeTestingModule'])
+        ->subNamespace('Models\\SomeModel'))
+        ->toBe('SomeVendor\\SomeTestingModule\\Models\\SomeModel');
+
+    expect($this->createModule(['namespace' => 'SomeVendor\\SomeTestingModule'])
+        ->subNamespace('\\\\Models\\SomeModel\\\\'))
+        ->toBe('SomeVendor\\SomeTestingModule\\Models\\SomeModel');
+});
+
 it('can return module migration paths', function () {
     $module = $this->createModule(['path' => $this->app->basePath('/modules/SomeTestingModule')]);
 
@@ -122,10 +131,9 @@ it('can return module migration paths', function () {
 
 it('can return module as array', function () {
     expect($this->createModule([
-        'isVendor' => false,
+        'path' => $this->app->basePath('modules/TestingModule'),
         'packageName' => 'some-vendor/testing-module',
         'name' => 'TestingModule',
-        'path' => $this->app->basePath('modules/TestingModule'),
         'namespace' => '\\\\\\SomeVendor\\TestingModule\\\\',
         'providers' => [
             'SomeVendor\\TestingModule\\Providers\\TestingModuleServiceProvider',
@@ -136,10 +144,9 @@ it('can return module as array', function () {
             'some' => 'SomeVendor\\TestingModule\\Facades\\Some',
         ],
     ])->toArray())->toBe([
-        'isVendor' => false,
+        'path' => $this->app->basePath('modules/TestingModule'),
         'packageName' => 'some-vendor/testing-module',
         'name' => 'TestingModule',
-        'path' => $this->app->basePath('modules/TestingModule'),
         'namespace' => 'SomeVendor\\TestingModule',
         'providers' => [
             'SomeVendor\\TestingModule\\Providers\\TestingModuleServiceProvider',
@@ -150,4 +157,147 @@ it('can return module as array', function () {
             'some' => 'SomeVendor\\TestingModule\\Facades\\Some',
         ],
     ]);
+});
+
+it('can set providers', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+    ]);
+
+    $module = $this->createModule([
+        'path' => $this->app->basePath('/modules/author'),
+        'packageName' => 'laraneat/author',
+        'name' => 'author',
+        'namespace' => 'Modules\\Author',
+        'providers' => [
+            'Modules\\Author\\Providers\\AuthorServiceProvider',
+            'Modules\\Author\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
+        ]
+    ]);
+
+    $composerJsonPath = $module->subPath('composer.json');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+    $module->setProviders([
+        'Modules\\Author\\Providers\\FooServiceProvider',
+        'Modules\\Foo\\Providers\\BarServiceProvider',
+    ]);
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+});
+
+it('can set aliases', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+    ]);
+
+    $module = $this->createModule([
+        'path' => $this->app->basePath('/modules/author'),
+        'packageName' => 'laraneat/author',
+        'name' => 'author',
+        'namespace' => 'Modules\\Author',
+        'providers' => [
+            'Modules\\Author\\Providers\\AuthorServiceProvider',
+            'Modules\\Author\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
+        ]
+    ]);
+
+    $composerJsonPath = $module->subPath('composer.json');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+    $module->setAliases([
+        'foo' => 'Modules\\Author\\Services\\Foo',
+        'bar' => 'Modules\\Bar\\Services\\Bar',
+    ]);
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+});
+
+it('can add providers', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+    ]);
+
+    $module = $this->createModule([
+        'path' => $this->app->basePath('/modules/author'),
+        'packageName' => 'laraneat/author',
+        'name' => 'author',
+        'namespace' => 'Modules\\Author',
+        'providers' => [
+            'Modules\\Author\\Providers\\AuthorServiceProvider',
+            'Modules\\Author\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
+        ]
+    ]);
+
+    $composerJsonPath = $module->subPath('composer.json');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+    $module->addProvider('Modules\\Author\\Providers\\FooServiceProvider');
+    $module->addProvider('Modules\\Author\\Providers\\RouteServiceProvider');
+    $module->addProvider('Modules\\Foo\\Providers\\BarServiceProvider');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+});
+
+it('can add aliases', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+    ]);
+
+    $module = $this->createModule([
+        'path' => $this->app->basePath('/modules/author'),
+        'packageName' => 'laraneat/author',
+        'name' => 'author',
+        'namespace' => 'Modules\\Author',
+        'providers' => [
+            'Modules\\Author\\Providers\\AuthorServiceProvider',
+            'Modules\\Author\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
+        ]
+    ]);
+
+    $composerJsonPath = $module->subPath('composer.json');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+    $module->addAlias('foo','Modules\\Author\\Services\\Foo');
+    $module->addAlias('bar','Modules\\Bar\\Services\\Bar');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+});
+
+it('can delete module', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+    ]);
+
+    $module = $this->createModule([
+        'path' => $this->app->basePath('/modules/author'),
+        'packageName' => 'laraneat/author',
+        'name' => 'author',
+        'namespace' => 'Modules\\Author',
+        'providers' => [
+            'Modules\\Author\\Providers\\AuthorServiceProvider',
+            'Modules\\Author\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
+        ]
+    ]);
+
+    $this->instance(Composer::class, $this->mockComposer(['composer', 'remove', 'laraneat/author']));
+
+    expect($module->getPath())->toBeDirectory();
+    expect($module->delete())->toBe(true);
+    expect($module->getPath())->not()->toBeDirectory();
 });

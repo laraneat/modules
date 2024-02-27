@@ -1,10 +1,10 @@
 {
     "name": "laraneat/modules",
     "description": "Laraneat modules.",
-    "homepage": "https://github.com/laraneat/core/",
+    "homepage": "https://github.com/laraneat/modules/",
     "support": {
-        "issues": "https://github.com/laraneat/core/issues",
-        "source": "https://github.com/laraneat/core"
+        "issues": "https://github.com/laraneat/modules/issues",
+        "source": "https://github.com/laraneat/modules"
     },
     "authors": [
         {
@@ -26,6 +26,7 @@
     "require": {
         "php": "^8.1",
         "ext-json": "*",
+        "composer/composer": "^2.1",
         "laravel/framework": "^10.0"
     },
     "require-dev": {
@@ -42,27 +43,27 @@
     "autoload": {
         "psr-4": {
             "Laraneat\\Modules\\": "src"
-        },
-        "files": [
-            "src/helpers.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
             "Laraneat\\Modules\\Tests\\": "tests",
-            "App\\": "tests/fixtures/laravel/app"
+            "App\\": "tests/fixtures/laravel/app",
+            "Modules\\": "tests/fixtures/laravel/modules"
         }
     },
     "suggest": {
         "lorisleiva/laravel-actions": "Laravel components that take care of one specific task",
         "jackardios/laravel-query-wizard": "Easily build Eloquent queries from API requests",
-        "spatie/laravel-data": "Powerful data objects for Laravel",
-        "wikimedia/composer-merge-plugin": "Allows the ability to create and merge composer.json files for your individual modules for module-specific dependency management."
+        "spatie/laravel-data": "Powerful data objects for Laravel"
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Laraneat\\Modules\\ModulesServiceProvider"
+                "Laraneat\\Modules\\Providers\\ComposerServiceProvider",
+                "Laraneat\\Modules\\Providers\\ConsoleServiceProvider",
+                "Laraneat\\Modules\\Providers\\ModulesRepositoryServiceProvider",
+                "Laraneat\\Modules\\Providers\\ModulesServiceProvider"
             ],
             "aliases": {
                 "Modules": "Laraneat\\Modules\\Facades\\Modules"

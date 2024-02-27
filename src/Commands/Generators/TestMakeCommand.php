@@ -5,7 +5,7 @@ namespace Laraneat\Modules\Commands\Generators;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Enums\ModuleComponentType;
-use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Exceptions\NameIsReserved;
@@ -78,7 +78,7 @@ class TestMakeCommand extends BaseComponentGeneratorCommand implements PromptsFo
         try {
             $this->nameArgument = $this->argument('name');
             $this->ensureNameIsNotReserved($this->nameArgument);
-            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
+            $this->module = $this->getModuleArgumentOrFail();
             $this->type = $this->getOptionOrChoice(
                 'type',
                 question: 'Enter the type of test to be created',
@@ -93,7 +93,7 @@ class TestMakeCommand extends BaseComponentGeneratorCommand implements PromptsFo
                 'cli' => ModuleComponentType::CliTest,
                 default => ModuleComponentType::UnitTest,
             };
-        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+        } catch (NameIsReserved|ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
             $this->components->error($exception->getMessage());
 
             return self::FAILURE;

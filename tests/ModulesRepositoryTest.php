@@ -1,23 +1,23 @@
 <?php
 
-use Laraneat\Modules\Enums\ModuleType;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\ModulesRepository;
+use Laraneat\Modules\Support\Composer;
+use function PHPUnit\Framework\assertFileExists;
+use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {
-    $this->appModulesManifestPath = $this->app->bootstrapPath('cache/testing-laraneat-app-modules.php');
-    $this->vendorModulesManifestPath = $this->app->bootstrapPath('cache/testing-laraneat-vendor-modules.php');
+    $this->modulesManifestPath = $this->app->bootstrapPath('cache/testing-laraneat-modules.php');
     $this->repository = new ModulesRepository(
         app: $this->app,
-        basePath: $this->app->basePath(),
-        appModulesManifestPath: $this->appModulesManifestPath,
-        vendorModulesManifestPath: $this->vendorModulesManifestPath,
+        modulesPath: $this->app['config']->get('modules.path'),
+        modulesManifestPath: $this->modulesManifestPath,
     );
 });
 
 afterEach(function () {
-    $this->filesystem->delete([$this->appModulesManifestPath, $this->vendorModulesManifestPath]);
+    $this->filesystem->delete($this->modulesManifestPath);
 });
 
 describe('scan paths', function () {
@@ -65,24 +65,6 @@ describe('scan paths', function () {
         ]);
     });
 
-    it('rejects vendor path', function () {
-        $this->repository->addScanPath([
-            $this->app->basePath('/vendor'),
-            $this->app->basePath('/vendor/'),
-            $this->app->basePath('/vendor////'),
-            $this->app->basePath('/vendor/*'),
-            $this->app->basePath('/vendor/*//'),
-            $this->app->basePath('/vendor/some/nested'),
-            $this->app->basePath('/vendor/some/nested/'),
-            $this->app->basePath('/vendor/some/nested/*'),
-            $this->app->basePath('/vendor/some/nested/*////'),
-        ]);
-
-        expect($this->repository->getScanPaths())->toBe([
-            $this->app->basePath('/modules/*'),
-        ]);
-    });
-
     it('rejects adding a path that is already in the scan paths', function () {
         $this->repository->addScanPath([
             $this->app->basePath('/modules'),
@@ -106,632 +88,378 @@ describe('scan paths', function () {
 });
 
 describe('modules manifest', function () {
-    it('can build app modules manifest without caching', function () {
-        $this->setAppModules([
-            __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-            __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
+    it('can build modules manifest', function () {
+        $this->setModules([
+            __DIR__ . '/fixtures/stubs/modules/valid/article',
+            __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+            __DIR__ . '/fixtures/stubs/modules/valid/author',
+            __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+            __DIR__ . '/fixtures/stubs/modules/valid/navigation',
         ]);
 
         $expectedManifest = [
-            'laraneat/article' => [
-                'name' => 'Article',
-                'namespace' => 'Modules\Article\\',
+            'laraneat/article-category' => [
+                'path' => $this->app->basePath('/modules/article-category'),
+                'name' => 'article-category',
+                'namespace' => 'Modules\\ArticleCategory\\',
                 'providers' => [
-                    'Modules\Article\Providers\ArticleServiceProvider',
-                    'Modules\Article\Providers\RouteServiceProvider',
+                    'Modules\\ArticleCategory\\Providers\\ArticleCategoryServiceProvider',
+                    'Modules\\ArticleCategory\\Providers\\RouteServiceProvider',
                 ],
                 'aliases' => [],
-                'path' => $this->app->basePath('/modules/Article'),
-                'isVendor' => false,
+            ],
+            'laraneat/article' => [
+            'path' => $this->app->basePath('/modules/article'),
+                'name' => 'article',
+                'namespace' => 'Modules\\Article\\',
+                'providers' => [
+                    'Modules\\Article\\Providers\\ArticleServiceProvider',
+                    'Modules\\Article\\Providers\\RouteServiceProvider',
+                ],
+                'aliases' => [],
             ],
             'laraneat/author' => [
-                'name' => 'Author',
-                'namespace' => 'Modules\Author\\',
+                'path' => $this->app->basePath('/modules/author'),
+                'name' => 'author',
+                'namespace' => 'Modules\\Author\\',
                 'providers' => [
-                    'Modules\Author\Providers\AuthorServiceProvider',
-                    'Modules\Author\Providers\RouteServiceProvider',
+                    'Modules\\Author\\Providers\\AuthorServiceProvider',
+                    'Modules\\Author\\Providers\\RouteServiceProvider',
                 ],
                 'aliases' => [
-                    'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
+                    'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
                 ],
-                'path' => $this->app->basePath('/modules/Author'),
-                'isVendor' => false,
+            ],
+            'laraneat/empty' => [
+                'path' => $this->app->basePath('/modules/empty-module'),
+                'name' => 'empty-module',
+                'namespace' => 'Modules\\Empty\\',
+                'providers' => [],
+                'aliases' => [],
+            ],
+            'laraneat/location' => [
+                'path' => $this->app->basePath('/modules/navigation'),
+                'name' => 'navigation',
+                'namespace' => 'Modules\\GeoLocation\\',
+                'providers' => [
+                    'Modules\\GeoLocation\\Providers\\GeoLocationServiceProvider',
+                    'Modules\\GeoLocation\\Providers\\RouteServiceProvider'
+                ],
+                'aliases' => [],
             ],
         ];
 
-        expect($this->repository->buildAppModulesManifest(false))
+        expect($this->repository->buildModulesManifest())
             ->toBe($expectedManifest)
-            ->and($this->appModulesManifestPath)->not->toBeFile()
-            ->and($this->repository->buildAppModulesManifest(true))
-            ->toBe($expectedManifest)
-            ->and($this->appModulesManifestPath)->toBeFile();
-
+            ->and($this->modulesManifestPath)->toBeFile();
     });
 
-    it('throws an exception when app modules have the same package names', function () {
-        $this->setAppModules([
-            __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-            __DIR__ . '/fixtures/stubs/modules/valid/app/ArticleCopy',
+    it('throws an exception when modules have the same package names', function () {
+        $this->setModules([
+            __DIR__ . '/fixtures/stubs/modules/valid/article',
+            __DIR__ . '/fixtures/stubs/modules/valid/article-copy',
         ]);
 
-        $this->repository->buildAppModulesManifest();
+        $this->repository->buildModulesManifest();
     })->throws(ModuleHasNonUniquePackageName::class);
 
-    it('can build vendor modules manifest', function () {
-        $this->setVendorModules([
-            __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/article',
-            __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-            __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
+    it('can prune modules manifest', function () {
+        $this->setModules([
+            __DIR__ . '/fixtures/stubs/modules/valid/article',
+            __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+            __DIR__ . '/fixtures/stubs/modules/valid/author',
+            __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+            __DIR__ . '/fixtures/stubs/modules/valid/navigation',
         ]);
 
-        expect($this->repository->buildVendorModulesManifest())
-            ->toBe([
-                'laraneat/article' => [
-                    'name' => 'Article',
-                    'namespace' => 'Laraneat\Article\\',
-                    'providers' => [
-                        'Laraneat\Article\Providers\ArticleServiceProvider',
-                        'Laraneat\Article\Providers\RouteServiceProvider',
-                    ],
-                    'aliases' => [],
-                    'path' => $this->app->basePath('/vendor/laraneat/article'),
-                    'isVendor' => true,
-                ],
-                'laraneat/foo' => [
-                    'name' => 'Foo',
-                    'namespace' => 'Laraneat\Foo\\',
-                    'providers' => [
-                        'Laraneat\Foo\Providers\FooServiceProvider',
-                        'Laraneat\Foo\Providers\RouteServiceProvider',
-                    ],
-                    'aliases' => [],
-                    'path' => $this->app->basePath('/vendor/laraneat/foo'),
-                    'isVendor' => true,
-                ],
-                'laraneat/bar' => [
-                    'name' => 'Bar',
-                    'namespace' => 'Laraneat\Bar\\',
-                    'providers' => [
-                        'Laraneat\Bar\Providers\BarServiceProvider',
-                        'Laraneat\Bar\Providers\RouteServiceProvider',
-                    ],
-                    'aliases' => [],
-                    'path' => $this->app->basePath('/vendor/laraneat/bar'),
-                    'isVendor' => true,
-                ],
-            ])
-            ->and($this->vendorModulesManifestPath)
-            ->toBeFile();
-
-    });
-
-    it('can prune app modules manifest', function () {
-        $this->setAppModules([
-            __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-            __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
-        ]);
-
-        $this->repository->buildAppModulesManifest(true);
-        expect($this->appModulesManifestPath)->toBeFile();
-        $this->repository->pruneAppModulesManifest();
-        expect($this->appModulesManifestPath)->not->toBeFile();
-    });
-
-    it('can prune vendor modules manifest', function () {
-        $this->setVendorModules([
-            __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/article',
-            __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-            __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-        ]);
-
-        $this->repository->buildVendorModulesManifest();
-        expect($this->vendorModulesManifestPath)->toBeFile();
-        $this->repository->pruneVendorModulesManifest();
-        expect($this->vendorModulesManifestPath)->not->toBeFile();
+        $this->repository->buildModulesManifest();
+        expect($this->modulesManifestPath)->toBeFile();
+        $this->repository->pruneModulesManifest();
+        expect($this->modulesManifestPath)->not->toBeFile();
     });
 });
 
-it('can return app modules', function () {
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
+it('can return modules as array', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/article',
+        __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+        __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/fixtures/stubs/modules/valid/navigation',
     ]);
 
     expect($this->repository->toArray())->toBe([
-        'laraneat/article' => [
-            'isVendor' => false,
-            'packageName' => 'laraneat/article',
-            'name' => 'Article',
-            'path' => $this->app->basePath('/modules/Article'),
-            'namespace' => 'Modules\Article',
+        'laraneat/article-category' => [
+            'path' => $this->app->basePath('/modules/article-category'),
+            'packageName' => 'laraneat/article-category',
+            'name' => 'article-category',
+            'namespace' => 'Modules\\ArticleCategory',
             'providers' => [
-                'Modules\Article\Providers\ArticleServiceProvider',
-                'Modules\Article\Providers\RouteServiceProvider',
+                'Modules\\ArticleCategory\\Providers\\ArticleCategoryServiceProvider',
+                'Modules\\ArticleCategory\\Providers\\RouteServiceProvider',
+            ],
+            'aliases' => []
+        ],
+        'laraneat/article' => [
+            'path' => $this->app->basePath('/modules/article'),
+            'packageName' => 'laraneat/article',
+            'name' => 'article',
+            'namespace' => 'Modules\\Article',
+            'providers' => [
+                'Modules\\Article\\Providers\\ArticleServiceProvider',
+                'Modules\\Article\\Providers\\RouteServiceProvider',
             ],
             'aliases' => [],
         ],
         'laraneat/author' => [
-            'isVendor' => false,
+            'path' => $this->app->basePath('/modules/author'),
             'packageName' => 'laraneat/author',
-            'name' => 'Author',
-            'path' => $this->app->basePath('modules/Author'),
-            'namespace' => 'Modules\Author',
+            'name' => 'author',
+            'namespace' => 'Modules\\Author',
             'providers' => [
-                'Modules\Author\Providers\AuthorServiceProvider',
-                'Modules\Author\Providers\RouteServiceProvider',
+                'Modules\\Author\\Providers\\AuthorServiceProvider',
+                'Modules\\Author\\Providers\\RouteServiceProvider',
             ],
             'aliases' => [
-                'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
-            ],
+                'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
+            ]
         ],
-    ]);
-});
-
-it('can return vendor modules', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/article',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-
-    expect($this->repository->toArray())->toBe([
-        'laraneat/article' => [
-            'isVendor' => true,
-            'packageName' => 'laraneat/article',
-            'name' => 'Article',
-            'path' => $this->app->basePath('/vendor/laraneat/article'),
-            'namespace' => 'Laraneat\Article',
+        'laraneat/empty' => [
+            'path' => $this->app->basePath('/modules/empty-module'),
+            'packageName' => 'laraneat/empty',
+            'name' => 'empty-module',
+            'namespace' => 'Modules\\Empty',
+            'providers' => [],
+            'aliases' => []
+        ],
+        'laraneat/location' => [
+            'path' => $this->app->basePath('/modules/navigation'),
+            'packageName' => 'laraneat/location',
+            'name' => 'navigation',
+            'namespace' => 'Modules\\GeoLocation',
             'providers' => [
-                'Laraneat\Article\Providers\ArticleServiceProvider',
-                'Laraneat\Article\Providers\RouteServiceProvider',
+                'Modules\\GeoLocation\\Providers\\GeoLocationServiceProvider',
+                'Modules\\GeoLocation\\Providers\\RouteServiceProvider'
             ],
-            'aliases' => [],
-        ],
-        'laraneat/foo' => [
-            'isVendor' => true,
-            'packageName' => 'laraneat/foo',
-            'name' => 'Foo',
-            'path' => $this->app->basePath('/vendor/laraneat/foo'),
-            'namespace' => 'Laraneat\Foo',
-            'providers' => [
-                'Laraneat\Foo\Providers\FooServiceProvider',
-                'Laraneat\Foo\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [],
-        ],
-        'laraneat/bar' => [
-            'isVendor' => true,
-            'packageName' => 'laraneat/bar',
-            'name' => 'Bar',
-            'path' => $this->app->basePath('/vendor/laraneat/bar'),
-            'namespace' => 'Laraneat\Bar',
-            'providers' => [
-                'Laraneat\Bar\Providers\BarServiceProvider',
-                'Laraneat\Bar\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [],
+            'aliases' => []
         ],
     ]);
-});
-
-it('can return all modules', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
-    ]);
-
-    expect($this->repository->toArray())->toBe([
-        'laraneat/foo' => [
-            'isVendor' => true,
-            'packageName' => 'laraneat/foo',
-            'name' => 'Foo',
-            'path' => $this->app->basePath('/vendor/laraneat/foo'),
-            'namespace' => 'Laraneat\Foo',
-            'providers' => [
-                'Laraneat\Foo\Providers\FooServiceProvider',
-                'Laraneat\Foo\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [],
-        ],
-        'laraneat/bar' => [
-            'isVendor' => true,
-            'packageName' => 'laraneat/bar',
-            'name' => 'Bar',
-            'path' => $this->app->basePath('/vendor/laraneat/bar'),
-            'namespace' => 'Laraneat\Bar',
-            'providers' => [
-                'Laraneat\Bar\Providers\BarServiceProvider',
-                'Laraneat\Bar\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [],
-        ],
-        'laraneat/article' => [
-            'isVendor' => false,
-            'packageName' => 'laraneat/article',
-            'name' => 'Article',
-            'path' => $this->app->basePath('/modules/Article'),
-            'namespace' => 'Modules\Article',
-            'providers' => [
-                'Modules\Article\Providers\ArticleServiceProvider',
-                'Modules\Article\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [],
-        ],
-        'laraneat/author' => [
-            'isVendor' => false,
-            'packageName' => 'laraneat/author',
-            'name' => 'Author',
-            'path' => $this->app->basePath('modules/Author'),
-            'namespace' => 'Modules\Author',
-            'providers' => [
-                'Modules\Author\Providers\AuthorServiceProvider',
-                'Modules\Author\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [
-                'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
-            ],
-        ],
-    ]);
-});
-
-it('throws an exception when app and vendor modules have the same package names', function () {
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-    ]);
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/article',
-    ]);
-
-    $this->repository->getModules();
-})->throws(ModuleHasNonUniquePackageName::class);
-
-it('takes into account ignored modules', function () {
-    $this->setLaraneatDontDiscover([
-        'laraneat/article',
-        'laraneat/bar',
-    ]);
-
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
-    ]);
-
-    expect($this->repository->toArray())->toBe([
-        'laraneat/foo' => [
-            'isVendor' => true,
-            'packageName' => 'laraneat/foo',
-            'name' => 'Foo',
-            'path' => $this->app->basePath('/vendor/laraneat/foo'),
-            'namespace' => 'Laraneat\Foo',
-            'providers' => [
-                'Laraneat\Foo\Providers\FooServiceProvider',
-                'Laraneat\Foo\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [],
-        ],
-        'laraneat/author' => [
-            'isVendor' => false,
-            'packageName' => 'laraneat/author',
-            'name' => 'Author',
-            'path' => $this->app->basePath('/modules/Author'),
-            'namespace' => 'Modules\Author',
-            'providers' => [
-                'Modules\Author\Providers\AuthorServiceProvider',
-                'Modules\Author\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [
-                'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
-            ],
-        ],
-    ]);
-});
-
-it('takes into account ignored all modules', function () {
-    $this->setLaraneatDontDiscover(['*']);
-
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
-    ]);
-
-    expect($this->repository->toArray())->toBe([]);
-});
-
-it('can return providers', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
-    ]);
-
-    expect($this->repository->getProviders())->toBe([
-        'Laraneat\Foo\Providers\FooServiceProvider',
-        'Laraneat\Foo\Providers\RouteServiceProvider',
-        'Laraneat\Bar\Providers\BarServiceProvider',
-        'Laraneat\Bar\Providers\RouteServiceProvider',
-        'Modules\Article\Providers\ArticleServiceProvider',
-        'Modules\Article\Providers\RouteServiceProvider',
-        'Modules\Author\Providers\AuthorServiceProvider',
-        'Modules\Author\Providers\RouteServiceProvider',
-    ])
-        ->and($this->repository->getProviders(ModuleType::Vendor))->toBe([
-            'Laraneat\Foo\Providers\FooServiceProvider',
-            'Laraneat\Foo\Providers\RouteServiceProvider',
-            'Laraneat\Bar\Providers\BarServiceProvider',
-            'Laraneat\Bar\Providers\RouteServiceProvider',
-        ])
-        ->and($this->repository->getProviders(ModuleType::App))->toBe([
-            'Modules\Article\Providers\ArticleServiceProvider',
-            'Modules\Article\Providers\RouteServiceProvider',
-            'Modules\Author\Providers\AuthorServiceProvider',
-            'Modules\Author\Providers\RouteServiceProvider',
-        ]);
-
-});
-
-it('can return aliases', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
-    ]);
-
-    expect($this->repository->getAliases())->toBe([
-        'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
-    ])
-        ->and($this->repository->getAliases(ModuleType::Vendor))->toBe([])
-        ->and($this->repository->getAliases(ModuleType::App))->toBe([
-            'AuthorFacade' => 'Modules\Author\Facades\SomeFacade',
-        ]);
-
 });
 
 it('can check the module for existence', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/article',
+        __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+        __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/fixtures/stubs/modules/valid/navigation',
     ]);
 
-    expect($this->repository->has('laraneat/foo'))->toBe(true)
-        ->and($this->repository->has('laraneat/bar'))->toBe(true)
+    expect($this->repository->has('laraneat/foo'))->toBe(false)
         ->and($this->repository->has('laraneat/article'))->toBe(true)
         ->and($this->repository->has('laraneat/author'))->toBe(true)
+        ->and($this->repository->has('laraneat/location'))->toBe(true)
+        ->and($this->repository->has('laraneat/navigation'))->toBe(false)
         ->and($this->repository->has('laraneat/book'))->toBe(false)
         ->and($this->repository->has('laraneat/author/some'))->toBe(false)
-        ->and($this->repository->has('laraneat'))->toBe(false)
-        ->and($this->repository->has('laraneat/foo', ModuleType::Vendor))->toBe(true)
-        ->and($this->repository->has('laraneat/foo', ModuleType::App))->toBe(false)
-        ->and($this->repository->has('laraneat/article', ModuleType::Vendor))->toBe(false)
-        ->and($this->repository->has('laraneat/article', ModuleType::App))->toBe(true);
-
-
+        ->and($this->repository->has('laraneat'))->toBe(false);
 });
 
 it('can count the number of modules', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Foo',
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/article',
+        __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+        __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/fixtures/stubs/modules/valid/navigation',
     ]);
 
-    expect($this->repository->count())->toBe(5)
-        ->and($this->repository->count(ModuleType::App))->toBe(3)
-        ->and($this->repository->count(ModuleType::Vendor))->toBe(2);
+    expect($this->repository->count())->toBe(5);
 });
 
 it('can find a module', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/article',
+        __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+        __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/fixtures/stubs/modules/valid/navigation',
     ]);
 
     expect($this->repository->find('laraneat/article')?->toArray())->toBe([
-        'isVendor' => false,
+        'path' => $this->app->basePath('/modules/article'),
         'packageName' => 'laraneat/article',
-        'name' => 'Article',
-        'path' => $this->app->basePath('/modules/Article'),
-        'namespace' => 'Modules\Article',
+        'name' => 'article',
+        'namespace' => 'Modules\\Article',
         'providers' => [
-            'Modules\Article\Providers\ArticleServiceProvider',
-            'Modules\Article\Providers\RouteServiceProvider',
+            'Modules\\Article\\Providers\\ArticleServiceProvider',
+            'Modules\\Article\\Providers\\RouteServiceProvider',
         ],
         'aliases' => [],
     ])
-        ->and($this->repository->find('laraneat/article', ModuleType::Vendor)?->toArray())->toBe(null)
-        ->and($this->repository->find('laraneat/article', ModuleType::App)?->toArray())->toBe([
-            'isVendor' => false,
-            'packageName' => 'laraneat/article',
-            'name' => 'Article',
-            'path' => $this->app->basePath('/modules/Article'),
-            'namespace' => 'Modules\Article',
-            'providers' => [
-                'Modules\Article\Providers\ArticleServiceProvider',
-                'Modules\Article\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [],
-        ])
-        ->and($this->repository->find('laraneat/foo')?->toArray())->toBe([
-            'isVendor' => true,
-            'packageName' => 'laraneat/foo',
-            'name' => 'Foo',
-            'path' => $this->app->basePath('/vendor/laraneat/foo'),
-            'namespace' => 'Laraneat\Foo',
-            'providers' => [
-                'Laraneat\Foo\Providers\FooServiceProvider',
-                'Laraneat\Foo\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [],
-        ])
-        ->and($this->repository->find('laraneat/foo', ModuleType::App)?->toArray())->toBe(null)
-        ->and($this->repository->find('laraneat/foo', ModuleType::Vendor)?->toArray())->toBe([
-            'isVendor' => true,
-            'packageName' => 'laraneat/foo',
-            'name' => 'Foo',
-            'path' => $this->app->basePath('/vendor/laraneat/foo'),
-            'namespace' => 'Laraneat\Foo',
-            'providers' => [
-                'Laraneat\Foo\Providers\FooServiceProvider',
-                'Laraneat\Foo\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [],
-        ])
         ->and($this->repository->find('laraneat')?->toArray())->toBe(null)
-        ->and($this->repository->find('laraneat/foo/bar')?->toArray())->toBe(null)
+        ->and($this->repository->find('laraneat/article/bar')?->toArray())->toBe(null)
+        ->and($this->repository->find('laraneat/location')?->toArray())->toBe([
+            'path' => $this->app->basePath('/modules/navigation'),
+            'packageName' => 'laraneat/location',
+            'name' => 'navigation',
+            'namespace' => 'Modules\\GeoLocation',
+            'providers' => [
+                'Modules\\GeoLocation\\Providers\\GeoLocationServiceProvider',
+                'Modules\\GeoLocation\\Providers\\RouteServiceProvider'
+            ],
+            'aliases' => []
+        ])
+        ->and($this->repository->find('laraneat/navigation')?->toArray())->toBe(null)
         ->and($this->repository->find('laraneat/book')?->toArray())->toBe(null);
 });
 
 it('throws an exception when the module is not found', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/article',
+        __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+        __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/fixtures/stubs/modules/valid/navigation',
     ]);
 
-    expect($this->repository->findOrFail('laraneat/book')->toArray())->toBe(null);
+    $this->repository->findOrFail('laraneat/book');
 })->throws(ModuleNotFound::class);
 
-it('can delete app module', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
+it('throws an exception when trying to remove a module that does not exist', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/article',
+        __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+        __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/fixtures/stubs/modules/valid/navigation',
     ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
+
+    expect($this->repository->delete('laraneat/book'));
+})->throws(ModuleNotFound::class);
+
+it('can filter modules by name', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/article',
+        __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+        __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/fixtures/stubs/modules/valid/navigation',
     ]);
+
+    $articleModuleMatch = [
+        'laraneat/article' => [
+            'path' => $this->app->basePath('/modules/article'),
+            'packageName' => 'laraneat/article',
+            'name' => 'article',
+            'namespace' => 'Modules\\Article',
+            'providers' => [
+                'Modules\\Article\\Providers\\ArticleServiceProvider',
+                'Modules\\Article\\Providers\\RouteServiceProvider',
+            ],
+            'aliases' => [],
+        ],
+    ];
+
+    $locationModuleMatch = [
+        'laraneat/location' => [
+            'path' => $this->app->basePath('/modules/navigation'),
+            'packageName' => 'laraneat/location',
+            'name' => 'navigation',
+            'namespace' => 'Modules\\GeoLocation',
+            'providers' => [
+                'Modules\\GeoLocation\\Providers\\GeoLocationServiceProvider',
+                'Modules\\GeoLocation\\Providers\\RouteServiceProvider'
+            ],
+            'aliases' => []
+        ],
+    ];
+
+    expect(collect($this->repository->filterByName('article'))->toArray())->toBe($articleModuleMatch)
+        ->and(collect($this->repository->filterByName('Article'))->toArray())->toBe($articleModuleMatch)
+        ->and(collect($this->repository->filterByName('ARTICLE'))->toArray())->toBe([])
+        ->and(collect($this->repository->filterByName('aarticle'))->toArray())->toBe([])
+        ->and(collect($this->repository->filterByName('location'))->toArray())->toBe($locationModuleMatch)
+        ->and(collect($this->repository->filterByName('navigation'))->toArray())->toBe($locationModuleMatch)
+        ->and(collect($this->repository->filterByName('Navigation'))->toArray())->toBe($locationModuleMatch)
+        ->and(collect($this->repository->filterByName('GeoLocation'))->toArray())->toBe([])
+        ->and(collect($this->repository->filterByName('foo'))->toArray())->toBe([])
+        ->and(collect($this->repository->filterByName('laraneat'))->toArray())->toBe([]);
+
+});
+
+it('throws an exception when modules with the requested name are not found', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/article',
+        __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+        __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/fixtures/stubs/modules/valid/navigation',
+    ]);
+
+    $articleModuleMatch = [
+        'laraneat/article' => [
+            'path' => $this->app->basePath('/modules/article'),
+            'packageName' => 'laraneat/article',
+            'name' => 'article',
+            'namespace' => 'Modules\\Article',
+            'providers' => [
+                'Modules\\Article\\Providers\\ArticleServiceProvider',
+                'Modules\\Article\\Providers\\RouteServiceProvider',
+            ],
+            'aliases' => [],
+        ],
+    ];
+
+    expect(collect($this->repository->filterByNameOrFail('article'))->toArray())->toBe($articleModuleMatch);
+    expect(fn() => $this->repository->filterByNameOrFail('book'))->toThrow(ModuleNotFound::class);
+});
+
+it('can delete a module', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/article',
+        __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+        __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/fixtures/stubs/modules/valid/navigation',
+    ]);
+
+    $this->instance(Composer::class, $this->mockComposer(['composer', 'remove', 'laraneat/article']));
 
     expect($this->repository->has('laraneat/article'))->toBe(true)
         ->and($this->repository->delete('laraneat/article'))->toBe(true)
         ->and($this->repository->has('laraneat/article'))->toBe(false);
 });
 
-it('throws an exception when trying to remove a module that does not exist', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
-    ]);
-
-    expect($this->repository->delete('laraneat/articles'));
-})->throws(ModuleNotFound::class);
-
-it('can filter modules by name', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
+it('can sync modules with composer', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/article',
+        __DIR__ . '/fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+        __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/fixtures/stubs/modules/valid/navigation',
     ]);
 
-    expect(collect($this->repository->filterByName('Article'))->toArray())->toBe([
-        'laraneat/article' => [
-            'isVendor' => false,
-            'packageName' => 'laraneat/article',
-            'name' => 'Article',
-            'path' => $this->app->basePath('/modules/Article'),
-            'namespace' => 'Modules\Article',
-            'providers' => [
-                'Modules\Article\Providers\ArticleServiceProvider',
-                'Modules\Article\Providers\RouteServiceProvider',
-            ],
-            'aliases' => [],
-        ],
-    ])
-        ->and(collect($this->repository->filterByName('Article', ModuleType::Vendor))->toArray())->toBe([])
-        ->and(collect($this->repository->filterByName('Article', ModuleType::App))->toArray())->toBe([
-            'laraneat/article' => [
-                'isVendor' => false,
-                'packageName' => 'laraneat/article',
-                'name' => 'Article',
-                'path' => $this->app->basePath('/modules/Article'),
-                'namespace' => 'Modules\Article',
-                'providers' => [
-                    'Modules\Article\Providers\ArticleServiceProvider',
-                    'Modules\Article\Providers\RouteServiceProvider',
-                ],
-                'aliases' => [],
-            ],
+    $this->instance(
+        Composer::class,
+        $this->mockComposer([
+            'composer',
+            'update',
+            'laraneat/article-category',
+            'laraneat/article',
+            'laraneat/author',
+            'laraneat/empty',
+            'laraneat/location'
         ])
-        ->and(collect($this->repository->filterByName('Foo'))->toArray())->toBe([
-            'laraneat/foo' => [
-                'isVendor' => true,
-                'packageName' => 'laraneat/foo',
-                'name' => 'Foo',
-                'path' => $this->app->basePath('/vendor/laraneat/foo'),
-                'namespace' => 'Laraneat\Foo',
-                'providers' => [
-                    'Laraneat\Foo\Providers\FooServiceProvider',
-                    'Laraneat\Foo\Providers\RouteServiceProvider',
-                ],
-                'aliases' => [],
-            ],
-        ])
-        ->and(collect($this->repository->filterByName('Foo', ModuleType::App))->toArray())->toBe([])
-        ->and(collect($this->repository->filterByName('Foo', ModuleType::Vendor))->toArray())->toBe([
-            'laraneat/foo' => [
-                'isVendor' => true,
-                'packageName' => 'laraneat/foo',
-                'name' => 'Foo',
-                'path' => $this->app->basePath('/vendor/laraneat/foo'),
-                'namespace' => 'Laraneat\Foo',
-                'providers' => [
-                    'Laraneat\Foo\Providers\FooServiceProvider',
-                    'Laraneat\Foo\Providers\RouteServiceProvider',
-                ],
-                'aliases' => [],
-            ],
-        ])
-        ->and(collect($this->repository->filterByName('Book'))->toArray())->toBe([]);
+    );
+
+    $this->backupComposerJson();
+    $composerJsonPath = $this->app->basePath('/composer.json');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+    $this->repository->syncWithComposer();
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+    $this->resetComposerJson();
 
 });
-
-it('throws an exception when modules with the requested name are not found', function () {
-    $this->setVendorModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/foo',
-        __DIR__ . '/fixtures/stubs/modules/valid/vendor/laraneat/bar',
-    ]);
-    $this->setAppModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Article',
-        __DIR__ . '/fixtures/stubs/modules/valid/app/Author',
-    ]);
-
-    $this->repository->filterByNameOrFail('laraneat/book');
-})->throws(ModuleNotFound::class);

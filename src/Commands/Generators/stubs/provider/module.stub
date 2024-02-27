@@ -40,10 +40,10 @@ class {{ class }} extends ModuleServiceProvider
      */
     public function registerTranslations(): void
     {
-        $sourcePath = $this->getModule()->subPath('{{ langPath }}');
-        $langPath = lang_path('modules/' .$this->modulePackageName);
+        $sourcePath = realpath('{{ langPath }}');
+        $langPath = lang_path('modules/{{ modulePackageName }}');
 
-        $this->loadTranslationsFrom($sourcePath, $this->modulePackageName);
+        $this->loadTranslationsFrom($sourcePath, '{{ modulePackageName }}');
 
         $this->publishes([
             $sourcePath => $langPath,
@@ -55,8 +55,8 @@ class {{ class }} extends ModuleServiceProvider
      */
     public function registerViews(): void
     {
-        $sourcePath = $this->getModule()->subPath('{{ viewsPath }}');
-        $viewsPath = resource_path('views/modules/' . $this->modulePackageName);
+        $sourcePath = realpath('{{ viewsPath }}');
+        $viewsPath = resource_path('views/modules/{{ modulePackageName }}');
 
         $this->loadViewsFrom(
             array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
@@ -73,7 +73,7 @@ class {{ class }} extends ModuleServiceProvider
      */
     public function registerMigrations(): void
     {
-        $sourcePath = $this->getModule()->subPath('{{ migrationsPath }}');
+        $sourcePath = realpath('{{ migrationsPath }}');
         $migrationsPath = database_path('migrations');
 
         $this->loadMigrationsFrom($sourcePath);
@@ -89,7 +89,7 @@ class {{ class }} extends ModuleServiceProvider
     public function registerCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommandsFrom($this->getModule()->subPath('{{ commandsPath }}'));
+            $this->loadCommandsFrom(realpath('{{ commandsPath }}'));
         }
     }
 }

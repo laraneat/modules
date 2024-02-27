@@ -4,7 +4,7 @@ namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Laraneat\Modules\Enums\ModuleComponentType;
-use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Exceptions\NameIsReserved;
@@ -70,8 +70,8 @@ class ModelMakeCommand extends BaseComponentGeneratorCommand implements PromptsF
         try {
             $this->nameArgument = $this->argument('name');
             $this->ensureNameIsNotReserved($this->nameArgument);
-            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
-        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+            $this->module = $this->getModuleArgumentOrFail();
+        } catch (NameIsReserved|ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
             $this->components->error($exception->getMessage());
 
             return self::FAILURE;

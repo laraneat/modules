@@ -3,6 +3,9 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\ConfirmableTrait;
+use Laraneat\Modules\Exceptions\ComposerException;
+use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
+use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 
 class ModuleDeleteCommand extends BaseCommand
@@ -33,15 +36,24 @@ class ModuleDeleteCommand extends BaseCommand
 
         try {
             $modulesToDelete = $this->getModuleArgumentOrFail();
-        } catch (ModuleNotFound $exception) {
+        } catch (ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
             $this->error($exception->getMessage());
 
             return self::FAILURE;
         }
 
         foreach($modulesToDelete as $moduleToDelete) {
-            $moduleToDelete->delete();
-            $this->components->info("Module [{$moduleToDelete->getPackageName()}] has been deleted.");
+            try {
+                $status = $moduleToDelete->delete($this->output);
+                if ($status) {
+                    $this->components->info("Module [{$moduleToDelete->getPackageName()}] has been deleted.");
+                } else {
+                    $this->components->error("Failed to remove module [{$moduleToDelete->getPackageName()}].");
+                }
+            } catch (ComposerException $exception) {
+                $this->components->error($exception->getMessage());
+                $this->components->info("Please run <kbd>composer remove {$moduleToDelete->getPackageName()}</kbd> manually");
+            }
         }
 
         return self::SUCCESS;

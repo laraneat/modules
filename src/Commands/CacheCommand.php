@@ -9,9 +9,7 @@ class CacheCommand extends BaseCommand
      *
      * @var string
      */
-    protected $signature = 'module:cache
-                            {--vendor : Cache vendor modules}
-                            {--app : Cache app modules}';
+    protected $signature = 'module:cache';
 
     /**
      * The console command description.
@@ -25,21 +23,8 @@ class CacheCommand extends BaseCommand
      */
     public function handle(): int
     {
-        $buildVendorModules = $this->option('vendor');
-        $buildAppModules = $this->option('app');
-
-        if (! $buildAppModules && ! $buildVendorModules) {
-            $buildAppModules = $buildVendorModules = true;
-        }
-
-        if ($buildVendorModules) {
-            $this->modulesRepository->buildVendorModulesManifest();
-            $this->components->info("Vendor modules cached!");
-        }
-        if ($buildAppModules) {
-            $this->modulesRepository->buildAppModulesManifest();
-            $this->components->info("App modules cached!");
-        }
+        $this->modulesRepository->buildModulesManifest();
+        $this->components->info("Modules manifest cached!");
 
         return self::SUCCESS;
     }

@@ -124,7 +124,7 @@ trait InteractsWithTestUser
      */
     public function createTestUser(?array $userDetails = null, ?array $access = null): UserContract
     {
-        $this->testUserClass = $this->testUserClass ?? config('modules.generator.user_model');
+        $this->testUserClass = $this->testUserClass ?? config('modules.user_model');
 
         if (! $this->testUserClass) {
             throw new LogicException("User class was not provided!");

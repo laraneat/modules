@@ -201,10 +201,10 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
      * Get component path
      */
     protected function getComponentPath(
-        Module              $module,
-        string              $name,
+        Module $module,
+        string $name,
         ModuleComponentType $componentType,
-        string              $extension = '.php'
+        string $extension = '.php'
     ): string {
         $componentPath = GeneratorHelper::component($componentType)->getFullPath($module);
         $fileName = $this->convertNamespaceToPath($name);
@@ -255,14 +255,6 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
         }
 
         return $createPermissionAction;
-    }
-
-    /**
-     * Convert namespace to path
-     */
-    protected function convertNamespaceToPath(string $namespace): string
-    {
-        return trim(str_replace('\\', '/', $namespace), '/');
     }
 
     /**

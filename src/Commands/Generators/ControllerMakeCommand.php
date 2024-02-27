@@ -4,7 +4,7 @@ namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Laraneat\Modules\Enums\ModuleComponentType;
-use Laraneat\Modules\Enums\ModuleType;
+use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Exceptions\NameIsReserved;
@@ -75,7 +75,7 @@ class ControllerMakeCommand extends BaseComponentGeneratorCommand implements Pro
         try {
             $this->nameArgument = $this->argument('name');
             $this->ensureNameIsNotReserved($this->nameArgument);
-            $this->module = $this->getModuleArgumentOrFail(ModuleType::App);
+            $this->module = $this->getModuleArgumentOrFail();
             $this->ui = $this->getOptionOrChoice(
                 'ui',
                 question: 'Enter the UI for which the controller will be created',
@@ -85,7 +85,7 @@ class ControllerMakeCommand extends BaseComponentGeneratorCommand implements Pro
             $this->componentType = $this->ui === 'api'
                 ? ModuleComponentType::ApiController
                 : ModuleComponentType::WebController;
-        } catch (ModuleNotFound|NameIsReserved|ModuleHasNonUniquePackageName $exception) {
+        } catch (NameIsReserved|ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
             $this->components->error($exception->getMessage());
 
             return self::FAILURE;

@@ -6,11 +6,13 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use Laraneat\Modules\Exceptions\CannotModifyVendorModule;
-use Symfony\Component\Process\Process;
+use Laraneat\Modules\Exceptions\ComposerException;
+use Laraneat\Modules\Support\Composer;
+use Laraneat\Modules\Support\ComposerJsonFile;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Module implements Arrayable
 {
@@ -30,11 +32,6 @@ class Module implements Arrayable
      * The laraneat modules repository instance.
      */
     protected ModulesRepository $modulesRepository;
-
-    /**
-     * Determines the module is a vendor package.
-     */
-    protected bool $isVendor;
 
     /**
      * The module package name.
@@ -73,7 +70,6 @@ class Module implements Arrayable
     /**
      * @param Application $app The laravel application instance.
      * @param ModulesRepository $modulesRepository The laraneat modules repository instance.
-     * @param bool $isVendor Determines whether the module is a vendor package.
      * @param string $packageName The module package name.
      * @param string|null $name The module name.
      * @param string $path The module path.
@@ -84,7 +80,6 @@ class Module implements Arrayable
     public function __construct(
         Application $app,
         ModulesRepository $modulesRepository,
-        bool $isVendor,
         string $packageName,
         ?string $name,
         string $path,
@@ -93,23 +88,14 @@ class Module implements Arrayable
         array $aliases,
     ) {
         $this->app = $app;
-        $this->filesystem = $app['files'];
+        $this->filesystem = $app['files'] ?: new Filesystem();
         $this->modulesRepository = $modulesRepository;
-        $this->isVendor = $isVendor;
         $this->packageName = trim($packageName);
-        $this->name = $name ? trim($name) : Str::afterLast($this->packageName, '/');
+        $this->name = trim($name ?? "") ?: Str::afterLast($this->packageName, '/');
         $this->path = rtrim($path, '/');
         $this->namespace = trim($namespace, '\\');
         $this->providers = $providers;
         $this->aliases = $aliases;
-    }
-
-    /**
-     * Determines the module is a vendor package.
-     */
-    public function isVendor(): bool
-    {
-        return $this->isVendor;
     }
 
     /**
@@ -195,7 +181,6 @@ class Module implements Arrayable
      *
      * @return $this
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     * @throws CannotModifyVendorModule
      */
     public function setProviders(array $providers): static
     {
@@ -211,7 +196,6 @@ class Module implements Arrayable
      *
      * @return $this
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     * @throws CannotModifyVendorModule
      */
     public function setAliases(array $aliases): static
     {
@@ -227,7 +211,6 @@ class Module implements Arrayable
      *
      * @return $this
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     * @throws CannotModifyVendorModule
      */
     public function addProvider(string $providerClass): static
     {
@@ -248,7 +231,6 @@ class Module implements Arrayable
      *
      * @return $this
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     * @throws CannotModifyVendorModule
      */
     public function addAlias(string $alias, string $class): static
     {
@@ -263,24 +245,23 @@ class Module implements Arrayable
 
     /**
      * Delete the current module.
+     *
+     * @throws ComposerException
      */
-    public function delete(): bool
+    public function delete(\Closure|OutputInterface $output = null): bool
     {
-        $this->fireEvent('deleting');
+        $status = $this->filesystem->deleteDirectory($this->getPath());
+        $this->modulesRepository->pruneModulesManifest();
 
-        if ($this->isVendor()) {
-            $this->modulesRepository->pruneVendorModulesManifest();
-            $status = Process::fromShellCommandline(sprintf(
-                'cd %s && composer remove %s',
-                base_path(),
-                $this->getPackageName()
-            ))->run() === 0;
-        } else {
-            $status = $this->filesystem->deleteDirectory($this->getPath());
-            $this->modulesRepository->pruneAppModulesManifest();
+        $composerClass = Composer::class;
+        $composer = $this->app[$composerClass];
+        if (!($composer instanceof Composer)) {
+            throw ComposerException::make("$composerClass not registered in your app.");
         }
 
-        $this->fireEvent('deleted');
+        if (!$composer->removePackages([$this->getPackageName()], false, $output)) {
+            throw ComposerException::make("Failed to remove package with composer.");
+        }
 
         return $status;
     }
@@ -290,9 +271,7 @@ class Module implements Arrayable
      */
     public function subPath(string $subPath): string
     {
-        $subPath = trim(str_replace('\\', '/', $subPath), '/');
-
-        return $this->getPath() . '/' . $subPath;
+        return $this->getPath() . '/' . GeneratorHelper::normalizePath($subPath);
     }
 
     /**
@@ -300,9 +279,7 @@ class Module implements Arrayable
      */
     public function subNamespace(string $subNamespace): string
     {
-        $subNamespace = trim(str_replace('/', '\\', $subNamespace), '\\');
-
-        return $this->getNamespace() . '\\' . $subNamespace;
+        return $this->getNamespace() . '\\' . GeneratorHelper::normalizeNamespace($subNamespace);
     }
 
     /**
@@ -335,10 +312,9 @@ class Module implements Arrayable
 
     /**
      * @return array{
-     *     isVendor: bool,
+     *     path: string,
      *     packageName: string,
      *     name: string,
-     *     path: string,
      *     namespace: string,
      *     providers: array<int, class-string>,
      *     aliases: array<string, class-string>
@@ -347,10 +323,9 @@ class Module implements Arrayable
     public function toArray(): array
     {
         return [
-            'isVendor' => $this->isVendor,
+            'path' => $this->path,
             'packageName' => $this->packageName,
             'name' => $this->name,
-            'path' => $this->path,
             'namespace' => $this->namespace,
             'providers' => $this->providers,
             'aliases' => $this->aliases,
@@ -358,37 +333,20 @@ class Module implements Arrayable
     }
 
     /**
-     * Register the module event.
-     */
-    protected function fireEvent(string $event): void
-    {
-        $this->app['events']->dispatch(sprintf('modules.%s.' . $event, $this->getPackageName()), [$this]);
-    }
-
-    /**
      * Save changes to composer.json
      *
      * @return $this
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     * @throws CannotModifyVendorModule
+     *
+     * @throws \Exception
      */
     protected function save(): static
     {
-        if ($this->isVendor()) {
-            throw CannotModifyVendorModule::make($this->getPackageName());
-        }
+        ComposerJsonFile::create($this->path . '/composer.json')
+            ->set('extra.laravel.providers', $this->providers)
+            ->set('extra.laravel.aliases', $this->aliases)
+            ->save();
 
-        /** @var Filesystem $filesystem */
-        $filesystem = $this->app['files'];
-        $composerJsonPath = $this->path . '/composer.json';
-
-        $composerJsonContent = json_decode($filesystem->get($composerJsonPath), true);
-        Arr::set($composerJsonContent, 'extra.laraneat.module.providers', $this->providers);
-        Arr::set($composerJsonContent, 'extra.laraneat.module.aliases', $this->aliases);
-
-        $filesystem->put($composerJsonPath, json_encode($composerJsonContent, JSON_PRETTY_PRINT));
-
-        $this->modulesRepository->pruneAppModulesManifest();
+        $this->modulesRepository->pruneModulesManifest();
 
         return $this;
     }

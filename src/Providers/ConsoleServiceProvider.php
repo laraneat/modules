@@ -24,6 +24,7 @@ class ConsoleServiceProvider extends ServiceProvider implements DeferrableProvid
         Commands\MigrateStatusCommand::class,
         Commands\ModuleDeleteCommand::class,
         Commands\StubPublishCommand::class,
+        Commands\SyncCommand::class,
         Commands\Generators\ActionMakeCommand::class,
         Commands\Generators\CommandMakeCommand::class,
         Commands\Generators\ControllerMakeCommand::class,

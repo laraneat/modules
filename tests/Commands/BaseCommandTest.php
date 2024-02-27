@@ -7,15 +7,14 @@ use Laraneat\Modules\ModulesRepository;
 use Symfony\Component\Console\Exception\InvalidOptionException;
 
 beforeEach(function () {
-    $this->setAppModules([
-        realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Article'),
-        realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Author'),
-        realpath(__DIR__ . '/../fixtures/stubs/modules/valid/app/Foo'),
+    $this->setModules([
+        __DIR__ . '/../fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/../fixtures/stubs/modules/valid/article',
+        __DIR__ . '/../fixtures/stubs/modules/valid/author',
+        __DIR__ . '/../fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/../fixtures/stubs/modules/valid/empty',
+        __DIR__ . '/../fixtures/stubs/modules/valid/navigation',
     ], $this->app->basePath('/modules'));
-    $this->setVendorModules([
-        realpath(__DIR__ . '/../fixtures/stubs/modules/valid/vendor/laraneat/foo'),
-        realpath(__DIR__ . '/../fixtures/stubs/modules/valid/vendor/laraneat/bar'),
-    ]);
 });
 
 describe('single "module" argument', function () {
@@ -53,6 +52,10 @@ describe('single "module" argument', function () {
     });
 
     it('can accept a package name as a single "module" argument', function () {
+        $this->artisan('single-module-argument-command laraneat/article-category')
+            ->expectsOutput('laraneat/article-category')
+            ->assertSuccessful();
+
         $this->artisan('single-module-argument-command laraneat/article')
             ->expectsOutput('laraneat/article')
             ->assertSuccessful();
@@ -61,20 +64,20 @@ describe('single "module" argument', function () {
             ->expectsOutput('laraneat/author')
             ->assertSuccessful();
 
-        $this->artisan('single-module-argument-command app/foo')
-            ->expectsOutput('app/foo')
+        $this->artisan('single-module-argument-command laraneat/empty')
+            ->expectsOutput('laraneat/empty')
             ->assertSuccessful();
 
-        $this->artisan('single-module-argument-command laraneat/foo')
-            ->expectsOutput('laraneat/foo')
+        $this->artisan('single-module-argument-command empty/empty')
+            ->expectsOutput('empty/empty')
             ->assertSuccessful();
 
-        $this->artisan('single-module-argument-command laraneat/bar')
-            ->expectsOutput('laraneat/bar')
+        $this->artisan('single-module-argument-command laraneat/location')
+            ->expectsOutput('laraneat/location')
             ->assertSuccessful();
     });
 
-    it('can accept a case-insensitive module name as a single "module" argument', function () {
+    it('can accept a module name as a single "module" argument', function () {
         $this->artisan('single-module-argument-command Article')
             ->expectsOutput('laraneat/article')
             ->assertSuccessful();
@@ -83,28 +86,28 @@ describe('single "module" argument', function () {
             ->expectsOutput('laraneat/article')
             ->assertSuccessful();
 
-        $this->artisan('single-module-argument-command ARTICLE')
-            ->expectsOutput('laraneat/article')
+        $this->artisan('single-module-argument-command article-category')
+            ->expectsOutput('laraneat/article-category')
             ->assertSuccessful();
 
-        $this->artisan('single-module-argument-command ArTiCLE')
-            ->expectsOutput('laraneat/article')
+        $this->artisan('single-module-argument-command ArticleCategory')
+            ->expectsOutput('laraneat/article-category')
             ->assertSuccessful();
 
-        $this->artisan('single-module-argument-command Author')
-            ->expectsOutput('laraneat/author')
+        $this->artisan('single-module-argument-command location')
+            ->expectsOutput('laraneat/location')
             ->assertSuccessful();
 
-        $this->artisan('single-module-argument-command author')
-            ->expectsOutput('laraneat/author')
+        $this->artisan('single-module-argument-command Location')
+            ->expectsOutput('laraneat/location')
             ->assertSuccessful();
 
-        $this->artisan('single-module-argument-command Bar')
-            ->expectsOutput('laraneat/bar')
+        $this->artisan('single-module-argument-command navigation')
+            ->expectsOutput('laraneat/location')
             ->assertSuccessful();
 
-        $this->artisan('single-module-argument-command bar')
-            ->expectsOutput('laraneat/bar')
+        $this->artisan('single-module-argument-command Navigation')
+            ->expectsOutput('laraneat/location')
             ->assertSuccessful();
     });
 
@@ -134,41 +137,42 @@ describe('single "module" argument', function () {
         $this->artisan('single-module-argument-command')
             ->expectsChoice(
                 question: 'Select one module',
-                answer: 'laraneat/author',
+                answer: 'laraneat/empty',
                 answers: [
-                    'laraneat/article' => 'laraneat/article',
-                    'laraneat/author' => 'laraneat/author',
-                    'app/foo' => 'app/foo',
-                    'laraneat/foo' => 'laraneat/foo',
-                    'laraneat/bar' => 'laraneat/bar',
+                    'laraneat/article-category',
+                    'laraneat/article',
+                    'laraneat/author',
+                    'laraneat/empty',
+                    'empty/empty',
+                    'laraneat/location',
                 ]
             )
-            ->expectsOutput('laraneat/author')
+            ->expectsOutput('laraneat/empty')
             ->assertSuccessful();
     });
 
     it('gives a module selection if 2 or more modules with the same names are found', function () {
         $expectedChoiceOptions = [
-            'app/foo' => 'app/foo',
-            'laraneat/foo' => 'laraneat/foo',
+            'laraneat/empty',
+            'empty/empty',
         ];
 
-        $this->artisan('single-module-argument-command Foo')
+        $this->artisan('single-module-argument-command Empty')
             ->expectsChoice(
-                question: "2 modules with name 'Foo' found, please select one module from those found",
-                answer: 'app/foo',
+                question: "2 modules with name 'Empty' found, please select one module from those found",
+                answer: 'empty/empty',
                 answers: $expectedChoiceOptions
             )
-            ->expectsOutput('app/foo')
+            ->expectsOutput('empty/empty')
             ->assertSuccessful();
 
-        $this->artisan('single-module-argument-command foo')
+        $this->artisan('single-module-argument-command empty')
             ->expectsChoice(
-                question: "2 modules with name 'foo' found, please select one module from those found",
-                answer: 'laraneat/foo',
+                question: "2 modules with name 'empty' found, please select one module from those found",
+                answer: 'laraneat/empty',
                 answers: $expectedChoiceOptions
             )
-            ->expectsOutput('laraneat/foo')
+            ->expectsOutput('laraneat/empty')
             ->assertSuccessful();
     });
 });
@@ -212,12 +216,12 @@ describe('multiple "module" argument', function () {
     });
 
     it('can accept a package name as a multiple "module" argument', function () {
-        $this->artisan('multiple-module-argument-command laraneat/article laraneat/author')
-            ->expectsOutput('laraneat/article, laraneat/author')
+        $this->artisan('multiple-module-argument-command laraneat/article laraneat/empty empty/empty')
+            ->expectsOutput('laraneat/article, laraneat/empty, empty/empty')
             ->assertSuccessful();
 
-        $this->artisan('multiple-module-argument-command laraneat/article laraneat/article laraneat/author')
-            ->expectsOutput('laraneat/article, laraneat/author')
+        $this->artisan('multiple-module-argument-command laraneat/article laraneat/article laraneat/empty empty/empty laraneat/empty')
+            ->expectsOutput('laraneat/article, laraneat/empty, empty/empty')
             ->assertSuccessful();
 
         $this->artisan('multiple-module-argument-command laraneat/author')
@@ -227,69 +231,57 @@ describe('multiple "module" argument', function () {
         $this->artisan('multiple-module-argument-command laraneat/author laraneat/author laraneat/author')
             ->expectsOutput('laraneat/author')
             ->assertSuccessful();
-
-        $this->artisan('multiple-module-argument-command laraneat/bar app/foo app/foo laraneat/foo laraneat/bar')
-            ->expectsOutput('laraneat/bar, app/foo, laraneat/foo')
-            ->assertSuccessful();
     });
 
     it('can accept "all" as a multiple "module" argument', function () {
         $this->artisan('multiple-module-argument-command all')
-            ->expectsOutput('laraneat/foo, laraneat/bar, laraneat/article, laraneat/author, app/foo')
+            ->expectsOutput('laraneat/article-category, laraneat/article, laraneat/author, laraneat/empty, empty/empty, laraneat/location')
             ->assertSuccessful();
 
-        $this->artisan('multiple-module-argument-command all laraneat/bar laraneat/author')
-            ->expectsOutput('laraneat/foo, laraneat/bar, laraneat/article, laraneat/author, app/foo')
+        $this->artisan('multiple-module-argument-command all laraneat/empty laraneat/author')
+            ->expectsOutput('laraneat/article-category, laraneat/article, laraneat/author, laraneat/empty, empty/empty, laraneat/location')
             ->assertSuccessful();
 
-        $this->artisan('multiple-module-argument-command laraneat/bar all laraneat/author')
-            ->expectsOutput('laraneat/foo, laraneat/bar, laraneat/article, laraneat/author, app/foo')
+        $this->artisan('multiple-module-argument-command laraneat/empty all laraneat/author')
+            ->expectsOutput('laraneat/article-category, laraneat/article, laraneat/author, laraneat/empty, empty/empty, laraneat/location')
             ->assertSuccessful();
 
-        $this->artisan('multiple-module-argument-command laraneat/author laraneat/bar all')
-            ->expectsOutput('laraneat/foo, laraneat/bar, laraneat/article, laraneat/author, app/foo')
-            ->assertSuccessful();
-    });
-
-    it('can accept a case-insensitive module name as a multiple "module" argument', function () {
-        $this->artisan('multiple-module-argument-command Article BAR author Author arTicLe Bar')
-            ->expectsOutput('laraneat/article, laraneat/bar, laraneat/author')
-            ->assertSuccessful();
-
-        $this->artisan('multiple-module-argument-command ARTICLE bar')
-            ->expectsOutput('laraneat/article, laraneat/bar')
-            ->assertSuccessful();
-
-        $this->artisan('multiple-module-argument-command ARTICLE article Article')
-            ->expectsOutput('laraneat/article')
+        $this->artisan('multiple-module-argument-command laraneat/author laraneat/empty all')
+            ->expectsOutput('laraneat/article-category, laraneat/article, laraneat/author, laraneat/empty, empty/empty, laraneat/location')
             ->assertSuccessful();
     });
 
-    it('can accept a case-insensitive module name and package name as a multiple "module" argument', function () {
-        $this->artisan('multiple-module-argument-command Article BAR author app/foo Author arTicLe Bar')
-            ->expectsOutput('laraneat/article, laraneat/bar, laraneat/author, app/foo')
+    it('can accept a module name as a multiple "module" argument', function () {
+        $this->artisan('multiple-module-argument-command Article location Navigation ArticleCategory Location article-category')
+            ->expectsOutput('laraneat/article, laraneat/location, laraneat/article-category')
             ->assertSuccessful();
 
-        $this->artisan('multiple-module-argument-command laraneat/article ARTICLE bar')
-            ->expectsOutput('laraneat/article, laraneat/bar')
+        $this->artisan('multiple-module-argument-command ArticleCategory articleCategory article-category article_category')
+            ->expectsOutput('laraneat/article-category')
+            ->assertSuccessful();
+    });
+
+    it('can accept a module name and package name as a multiple "module" argument', function () {
+        $this->artisan('multiple-module-argument-command Article location Navigation empty/empty ArticleCategory Location article-category')
+            ->expectsOutput('laraneat/article, laraneat/location, empty/empty, laraneat/article-category')
             ->assertSuccessful();
 
-        $this->artisan('multiple-module-argument-command ARTICLE article Article laraneat/article')
-            ->expectsOutput('laraneat/article')
+        $this->artisan('multiple-module-argument-command ArticleCategory articleCategory laraneat/article-category article-category article_category')
+            ->expectsOutput('laraneat/article-category')
             ->assertSuccessful();
     });
 
     it('displays an error message when passing an invalid multiple "module" argument', function () {
-        $this->artisan('multiple-module-argument-command laraneat/foo laraneat/articlee laraneat/barr')
+        $this->artisan('multiple-module-argument-command laraneat/empty laraneat/articlee laraneat/navigation')
             ->expectsOutput("Module with 'laraneat/articlee' name or package name does not exist!")
             ->assertFailed();
 
-        $this->artisan('multiple-module-argument-command laraneat laraneat/article')
+        $this->artisan('multiple-module-argument-command laraneat laraneat/navigation')
             ->expectsOutput("Module with 'laraneat' name or package name does not exist!")
             ->assertFailed();
 
-        $this->artisan('multiple-module-argument-command Bar laraneat/article/')
-            ->expectsOutput("Module with 'laraneat/article/' name or package name does not exist!")
+        $this->artisan('multiple-module-argument-command Author laraneat/navigation')
+            ->expectsOutput("Module with 'laraneat/navigation' name or package name does not exist!")
             ->assertFailed();
 
         $this->artisan('multiple-module-argument-command article /article')
@@ -301,59 +293,60 @@ describe('multiple "module" argument', function () {
         $choices = collect([
             'None' => '',
             'all' => 'All modules',
+            'laraneat/article-category' => 'laraneat/article-category',
             'laraneat/article' => 'laraneat/article',
             'laraneat/author' => 'laraneat/author',
-            'app/foo' => 'app/foo',
-            'laraneat/foo' => 'laraneat/foo',
-            'laraneat/bar' => 'laraneat/bar',
+            'laraneat/empty' => 'laraneat/empty',
+            'empty/empty' => 'empty/empty',
+            'laraneat/location' => 'laraneat/location',
         ]);
 
         $this->artisan('multiple-module-argument-command')
             ->expectsChoice(
                 question: 'Select one or more module',
-                answer: ['laraneat/author', 'app/foo', 'laraneat/bar'],
+                answer: ['laraneat/article', 'empty/empty', 'laraneat/location'],
                 answers: collect()
                     ->merge($choices->keys())
                     ->merge($choices->values())
                     ->sort()
                     ->all()
             )
-            ->expectsOutput('laraneat/author, app/foo, laraneat/bar')
+            ->expectsOutput('laraneat/article, empty/empty, laraneat/location')
             ->assertSuccessful();
     });
 
     it('gives a module selection if 2 or more modules with the same names are found', function () {
         $expectedChoiceOptions = [
-            'app/foo' => 'app/foo',
-            'laraneat/foo' => 'laraneat/foo',
+            'laraneat/empty',
+            'empty/empty',
         ];
 
-        $this->artisan('multiple-module-argument-command foo laraneat/article Author Foo')
+        $this->artisan('multiple-module-argument-command empty laraneat/article Author Empty')
             ->expectsChoice(
-                question: "2 modules with name 'foo' found, please select one module from those found",
-                answer: 'laraneat/foo',
+                question: "2 modules with name 'empty' found, please select one module from those found",
+                answer: 'laraneat/empty',
                 answers: $expectedChoiceOptions
             )
             ->expectsChoice(
-                question: "2 modules with name 'Foo' found, please select one module from those found",
-                answer: 'laraneat/foo',
+                question: "2 modules with name 'Empty' found, please select one module from those found",
+                answer: 'laraneat/empty',
                 answers: $expectedChoiceOptions
             )
-            ->expectsOutput('laraneat/foo, laraneat/article, laraneat/author')
+            ->expectsOutput('laraneat/empty, laraneat/article, laraneat/author')
             ->assertSuccessful();
 
-        $this->artisan('multiple-module-argument-command foo laraneat/article Author Foo')
+        $this->artisan('multiple-module-argument-command empty laraneat/article Author Empty')
             ->expectsChoice(
-                question: "2 modules with name 'foo' found, please select one module from those found",
-                answer: 'laraneat/foo',
+                question: "2 modules with name 'empty' found, please select one module from those found",
+                answer: 'laraneat/empty',
                 answers: $expectedChoiceOptions
             )
             ->expectsChoice(
-                question: "2 modules with name 'Foo' found, please select one module from those found",
-                answer: 'app/foo',
+                question: "2 modules with name 'Empty' found, please select one module from those found",
+                answer: 'empty/empty',
                 answers: $expectedChoiceOptions
             )
-            ->expectsOutput('laraneat/foo, laraneat/article, laraneat/author, app/foo')
+            ->expectsOutput('laraneat/empty, laraneat/article, laraneat/author, empty/empty')
             ->assertSuccessful();
     });
 });
