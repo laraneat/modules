@@ -5,7 +5,7 @@ use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {
     $this->setModules([
-        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/author'),
+        __DIR__ . '/../../fixtures/stubs/modules/valid/author',
     ], $this->app->basePath('/modules'));
 });
 

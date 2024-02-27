@@ -8,11 +8,13 @@ use Laraneat\Modules\ModulesRepository;
 
 beforeEach(function () {
     $this->setModules([
-        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/author'),
+        __DIR__ . '/../../fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/../../fixtures/stubs/modules/valid/article',
+        __DIR__ . '/../../fixtures/stubs/modules/valid/author',
+        __DIR__ . '/../../fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/../../fixtures/stubs/modules/valid/empty',
+        __DIR__ . '/../../fixtures/stubs/modules/valid/navigation',
     ], $this->app->basePath('/modules'));
-    $this->setVendorModules([
-        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/vendor/laraneat/foo'),
-    ]);
 });
 
 describe('getFullClassFromOptionOrAsk()', function () {
@@ -46,88 +48,54 @@ describe('getFullClassFromOptionOrAsk()', function () {
 
 
     it('returns the full class of component if only the base class name is specified', function () {
-        // app
         $this->artisan('test:command', [
-            'module' => 'Author',
-            '--model' => 'SomeAuthorModel',
+            'module' => 'navigation',
+            '--model' => 'SomeGeoLocationModel',
         ])
-            ->expectsOutput('Modules\\Author\\Models\\SomeAuthorModel');
+            ->expectsOutput('Modules\\GeoLocation\\Models\\SomeGeoLocationModel');
 
         $this->artisan('test:command', [
-            'module' => 'Author',
-            '--model' => 'Some\\AuthorModel',
+            'module' => 'navigation',
+            '--model' => 'Some\\GeoLocationModel',
         ])
-            ->expectsOutput('Modules\\Author\\Models\\Some\\AuthorModel');
+            ->expectsOutput('Modules\\GeoLocation\\Models\\Some\\GeoLocationModel');
 
         $this->artisan('test:command', [
-            'module' => 'Author',
+            'module' => 'navigation',
         ])
-            ->expectsQuestion('Enter "model" class name', 'SomeAuthorModel')
-            ->expectsOutput('Modules\\Author\\Models\\SomeAuthorModel');
+            ->expectsQuestion('Enter "model" class name', 'SomeGeoLocationModel')
+            ->expectsOutput('Modules\\GeoLocation\\Models\\SomeGeoLocationModel');
 
         $this->artisan('test:command', [
-            'module' => 'Author',
+            'module' => 'navigation',
         ])
-            ->expectsQuestion('Enter "model" class name', 'Some\\AuthorModel')
-            ->expectsOutput('Modules\\Author\\Models\\Some\\AuthorModel');
-
-        // vendor
-        $this->artisan('test:command', [
-            'module' => 'foo',
-            '--model' => 'SomeAuthorModel',
-        ])
-            ->expectsOutput('Laraneat\\Foo\\Models\\SomeAuthorModel');
-
-        $this->artisan('test:command', [
-            'module' => 'foo',
-            '--model' => 'Some\\AuthorModel',
-        ])
-            ->expectsOutput('Laraneat\\Foo\\Models\\Some\\AuthorModel');
-
-        $this->artisan('test:command', [
-            'module' => 'foo',
-        ])
-            ->expectsQuestion('Enter "model" class name', 'Some\\AuthorModel')
-            ->expectsOutput('Laraneat\\Foo\\Models\\Some\\AuthorModel');
+            ->expectsQuestion('Enter "model" class name', 'Some\\GeoLocationModel')
+            ->expectsOutput('Modules\\GeoLocation\\Models\\Some\\GeoLocationModel');
     });
 
     it('returns the specified class if it begins with a backslash', function () {
-        // app
         $this->artisan('test:command', [
-            'module' => 'Author',
+            'module' => 'navigation',
         ])
             ->expectsQuestion('Enter "model" class name', '\\Modules\\Article\\Models\\Article')
             ->expectsOutput('\\Modules\\Article\\Models\\Article');
 
         $this->artisan('test:command', [
-            'module' => 'Author',
+            'module' => 'navigation',
             '--model' => '\\Modules\\Article\\Models\\Article',
         ])
             ->expectsOutput('\\Modules\\Article\\Models\\Article');
 
         $this->artisan('test:command', [
-            'module' => 'Author',
+            'module' => 'navigation',
         ])
-            ->expectsQuestion('Enter "model" class name', '\\Modules\\Author\\Models\\Author')
-            ->expectsOutput('\\Modules\\Author\\Models\\Author');
+            ->expectsQuestion('Enter "model" class name', '\\Modules\\GeoLocation\\Models\\GeoLocation')
+            ->expectsOutput('\\Modules\\GeoLocation\\Models\\GeoLocation');
 
         $this->artisan('test:command', [
-            'module' => 'Author',
-            '--model' => '\\Modules\\Author\\Models\\Author',
+            'module' => 'navigation',
+            '--model' => '\\Modules\\GeoLocation\\Models\\GeoLocation',
         ])
-            ->expectsOutput('\\Modules\\Author\\Models\\Author');
-
-        // vendor
-        $this->artisan('test:command', [
-            'module' => 'foo',
-        ])
-            ->expectsQuestion('Enter "model" class name', '\\Modules\\Author\\Models\\Author')
-            ->expectsOutput('\\Modules\\Author\\Models\\Author');
-
-        $this->artisan('test:command', [
-            'module' => 'foo',
-            '--model' => '\\Modules\\Author\\Models\\Author',
-        ])
-            ->expectsOutput('\\Modules\\Author\\Models\\Author');
+            ->expectsOutput('\\Modules\\GeoLocation\\Models\\GeoLocation');
     });
 });

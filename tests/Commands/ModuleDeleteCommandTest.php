@@ -1,6 +1,7 @@
 <?php
 
 use Laraneat\Modules\ModulesRepository;
+use Laraneat\Modules\Support\Composer;
 
 beforeEach(function () {
     $this->setModules([
@@ -17,22 +18,13 @@ beforeEach(function () {
     $this->modulesRepository = $modulesRepository;
 });
 
-it('deletes one module', function () {
+it('deletes a module', function () {
     expect($this->modulesRepository->has('laraneat/article'))->toBe(true);
+
+    $this->instance(Composer::class, $this->mockComposer(['composer', 'remove', 'laraneat/article']));
 
     $this->artisan('module:delete article')
         ->assertSuccessful();
 
     expect($this->modulesRepository->has('laraneat/article'))->toBe(false);
-});
-
-it('deletes multiple module', function () {
-    expect($this->modulesRepository->has('laraneat/article'))->toBe(true);
-    expect($this->modulesRepository->has('laraneat/empty'))->toBe(true);
-
-    $this->artisan('module:delete article laraneat/empty')
-        ->assertSuccessful();
-
-    expect($this->modulesRepository->has('laraneat/article'))->toBe(false);
-    expect($this->modulesRepository->has('laraneat/empty'))->toBe(false);
 });
