@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Carbon;
 use Laraneat\Modules\Support\Composer;
 
 beforeEach(function () {
@@ -12,6 +13,8 @@ beforeEach(function () {
         __DIR__ . '/../../fixtures/stubs/modules/valid/empty',
         __DIR__ . '/../../fixtures/stubs/modules/valid/navigation',
     ]);
+
+    $this->travelTo(Carbon::parse('2024-01-01'));
 });
 
 it('generates a "plain" module', function () {

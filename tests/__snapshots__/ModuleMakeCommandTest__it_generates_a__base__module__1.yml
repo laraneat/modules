@@ -1,5 +1,5 @@
 - composer.json
-- database/migrations/2024_02_27_094735_create_article_comments_table.php
+- database/migrations/2024_01_01_000000_create_article_comments_table.php
 - database/seeders/ArticleCommentPermissionsSeeder_1.php
 - src/Factories/ArticleCommentFactory.php
 - src/Models/ArticleComment.php
