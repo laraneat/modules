@@ -207,7 +207,7 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
         string $extension = '.php'
     ): string {
         $componentPath = GeneratorHelper::component($componentType)->getFullPath($module);
-        $fileName = $this->convertNamespaceToPath($name);
+        $fileName = GeneratorHelper::normalizePath($name);
 
         return $componentPath . '/' . $fileName . $extension;
     }
