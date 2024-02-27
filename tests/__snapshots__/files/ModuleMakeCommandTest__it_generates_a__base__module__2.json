@@ -1,0 +1,29 @@
+{
+    "name": "demo/article-comment",
+    "description": "article-comment module",
+    "authors": [
+        {
+            "name": "Example",
+            "email": "example@example.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Modules\\ArticleComment\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\ArticleComment\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\ArticleComment\\Providers\\ArticleCommentServiceProvider",
+                "Modules\\ArticleComment\\Providers\\RouteServiceProvider"
+            ],
+            "aliases": []
+        }
+    }
+}

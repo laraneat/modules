@@ -1,0 +1,8 @@
+- composer.json
+- database/migrations/2024_02_27_094735_create_article_comments_table.php
+- database/seeders/ArticleCommentPermissionsSeeder_1.php
+- src/Factories/ArticleCommentFactory.php
+- src/Models/ArticleComment.php
+- src/Policies/ArticleCommentPolicy.php
+- src/Providers/ArticleCommentServiceProvider.php
+- src/Providers/RouteServiceProvider.php
