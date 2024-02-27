@@ -104,12 +104,8 @@ class ModulesRepository implements Arrayable
 
             foreach ($packagePaths as $packagePath) {
                 $packagePath = GeneratorHelper::normalizePath($packagePath, true);
-                try {
-                    $package = json_decode($this->filesystem->get($packagePath), true);
-                } catch (FileNotFoundException) {
-                    continue;
-                }
-                $packageName = trim($package['name'] ?? "");
+                $composerJsonFile = ComposerJsonFile::create($packagePath);
+                $packageName = trim($composerJsonFile->get('name') ?? "");
 
                 if (!$packageName) {
                     continue;
@@ -124,9 +120,9 @@ class ModulesRepository implements Arrayable
                 $moduleData = [
                     'path' => $path,
                     'name' => basename($path),
-                    'namespace' => array_key_first($package['autoload']['psr-4'] ?? []),
-                    'providers' => $package['extra']['laravel']['providers'] ?? [],
-                    'aliases' => $package['extra']['laravel']['aliases'] ?? [],
+                    'namespace' => array_key_first($composerJsonFile->get('autoload.psr-4') ?? []),
+                    'providers' => $composerJsonFile->get('extra.laravel.providers') ?? [],
+                    'aliases' => $composerJsonFile->get('extra.laravel.aliases') ?? [],
                 ];
 
                 $modulesManifest[$packageName] = $this->validateModuleData($packageName, $moduleData);
