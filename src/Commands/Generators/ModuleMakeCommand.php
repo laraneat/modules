@@ -215,14 +215,6 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
                 '--stub' => 'permissions',
                 '--model' => $entityName,
             ]),
-            $this->call('module:make:dto', [
-                'name' => "Create{$entityName}DTO",
-                'module' => $modulePackageName,
-            ]),
-            $this->call('module:make:dto', [
-                'name' => "Update{$entityName}DTO",
-                'module' => $modulePackageName,
-            ]),
             $this->call('module:make:model', [
                 'name' => $entityName,
                 'module' => $modulePackageName,
@@ -262,6 +254,14 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
                 'name' => "{$entityName}Resource",
                 'module' => $modulePackageName,
                 '--stub' => 'single',
+            ]),
+            $this->call('module:make:dto', [
+                'name' => "Create{$entityName}DTO",
+                'module' => $modulePackageName,
+            ]),
+            $this->call('module:make:dto', [
+                'name' => "Update{$entityName}DTO",
+                'module' => $modulePackageName,
             ]),
         ];
 
@@ -367,11 +367,11 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
     {
         foreach ($statuses as $status) {
             if ($status !== self::SUCCESS) {
-                return false;
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 
     protected function validateModuleStudlyName(string $name): bool
@@ -388,7 +388,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
         return $this->entityName = Str::studly($this->getOptionOrAsk(
             optionName: 'entity',
             question: 'Enter the entity name (used to create module components)',
-            default: $this->moduleName
+            default: $this->moduleStudlyName
         ));
     }
 }
