@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migrator;
 use Laraneat\Modules\Support\Composer;
-use Laraneat\Modules\Support\ComposerJsonFile;
+
 use function PHPUnit\Framework\assertFileExists;
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
@@ -175,7 +175,7 @@ it('can set providers', function () {
         ],
         'aliases' => [
             'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
-        ]
+        ],
     ]);
 
     $composerJsonPath = $module->subPath('composer.json');
@@ -205,7 +205,7 @@ it('can set aliases', function () {
         ],
         'aliases' => [
             'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
-        ]
+        ],
     ]);
 
     $composerJsonPath = $module->subPath('composer.json');
@@ -235,7 +235,7 @@ it('can add providers', function () {
         ],
         'aliases' => [
             'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
-        ]
+        ],
     ]);
 
     $composerJsonPath = $module->subPath('composer.json');
@@ -264,14 +264,14 @@ it('can add aliases', function () {
         ],
         'aliases' => [
             'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
-        ]
+        ],
     ]);
 
     $composerJsonPath = $module->subPath('composer.json');
     assertFileExists($composerJsonPath);
     assertMatchesFileSnapshot($composerJsonPath);
-    $module->addAlias('foo','Modules\\Author\\Services\\Foo');
-    $module->addAlias('bar','Modules\\Bar\\Services\\Bar');
+    $module->addAlias('foo', 'Modules\\Author\\Services\\Foo');
+    $module->addAlias('bar', 'Modules\\Bar\\Services\\Bar');
     assertFileExists($composerJsonPath);
     assertMatchesFileSnapshot($composerJsonPath);
 });
@@ -292,7 +292,7 @@ it('can delete module', function () {
         ],
         'aliases' => [
             'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
-        ]
+        ],
     ]);
 
     $this->instance(Composer::class, $this->mockComposer(['composer', 'remove', 'laraneat/author']));

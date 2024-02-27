@@ -32,6 +32,7 @@ function getRelativeFilePathsInDirectory(string $directory): array
 function makeAbsolutePaths(array $paths, string $basePath): array
 {
     $basePath = rtrim($basePath, '\\/');
+
     return array_map(fn (string $path) => realpath($basePath . '/' . $path), $paths);
 }
 

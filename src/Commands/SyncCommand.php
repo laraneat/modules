@@ -28,6 +28,7 @@ class SyncCommand extends BaseCommand
     public function handle(): int
     {
         $this->modulesRepository->pruneModulesManifest();
+
         try {
             $this->modulesRepository->syncWithComposer($this->output);
             $this->components->info("Modules completed successfully!");

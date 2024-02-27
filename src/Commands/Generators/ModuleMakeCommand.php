@@ -150,10 +150,10 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
 
         $composerClass = Composer::class;
         $composer = $this->laravel[$composerClass];
-        if (!($composer instanceof Composer)) {
+        if (! ($composer instanceof Composer)) {
             throw ComposerException::make("$composerClass not registered in your app.");
         }
-        if (!$composer->updatePackages([$this->modulePackageName], false, $this->output)) {
+        if (! $composer->updatePackages([$this->modulePackageName], false, $this->output)) {
             throw ComposerException::make("Failed to update package with composer.");
         }
     }

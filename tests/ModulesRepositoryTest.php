@@ -4,6 +4,7 @@ use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\ModulesRepository;
 use Laraneat\Modules\Support\Composer;
+
 use function PHPUnit\Framework\assertFileExists;
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
@@ -143,7 +144,7 @@ describe('modules manifest', function () {
                 'namespace' => 'Modules\\GeoLocation\\',
                 'providers' => [
                     'Modules\\GeoLocation\\Providers\\GeoLocationServiceProvider',
-                    'Modules\\GeoLocation\\Providers\\RouteServiceProvider'
+                    'Modules\\GeoLocation\\Providers\\RouteServiceProvider',
                 ],
                 'aliases' => [],
             ],
@@ -198,7 +199,7 @@ it('can return modules as array', function () {
                 'Modules\\ArticleCategory\\Providers\\ArticleCategoryServiceProvider',
                 'Modules\\ArticleCategory\\Providers\\RouteServiceProvider',
             ],
-            'aliases' => []
+            'aliases' => [],
         ],
         'laraneat/article' => [
             'path' => $this->app->basePath('/modules/article'),
@@ -222,7 +223,7 @@ it('can return modules as array', function () {
             ],
             'aliases' => [
                 'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
-            ]
+            ],
         ],
         'laraneat/empty' => [
             'path' => $this->app->basePath('/modules/empty-module'),
@@ -230,7 +231,7 @@ it('can return modules as array', function () {
             'name' => 'empty-module',
             'namespace' => 'Modules\\Empty',
             'providers' => [],
-            'aliases' => []
+            'aliases' => [],
         ],
         'laraneat/location' => [
             'path' => $this->app->basePath('/modules/navigation'),
@@ -239,9 +240,9 @@ it('can return modules as array', function () {
             'namespace' => 'Modules\\GeoLocation',
             'providers' => [
                 'Modules\\GeoLocation\\Providers\\GeoLocationServiceProvider',
-                'Modules\\GeoLocation\\Providers\\RouteServiceProvider'
+                'Modules\\GeoLocation\\Providers\\RouteServiceProvider',
             ],
-            'aliases' => []
+            'aliases' => [],
         ],
     ]);
 });
@@ -306,9 +307,9 @@ it('can find a module', function () {
             'namespace' => 'Modules\\GeoLocation',
             'providers' => [
                 'Modules\\GeoLocation\\Providers\\GeoLocationServiceProvider',
-                'Modules\\GeoLocation\\Providers\\RouteServiceProvider'
+                'Modules\\GeoLocation\\Providers\\RouteServiceProvider',
             ],
-            'aliases' => []
+            'aliases' => [],
         ])
         ->and($this->repository->find('laraneat/navigation')?->toArray())->toBe(null)
         ->and($this->repository->find('laraneat/book')?->toArray())->toBe(null);
@@ -369,9 +370,9 @@ it('can filter modules by name', function () {
             'namespace' => 'Modules\\GeoLocation',
             'providers' => [
                 'Modules\\GeoLocation\\Providers\\GeoLocationServiceProvider',
-                'Modules\\GeoLocation\\Providers\\RouteServiceProvider'
+                'Modules\\GeoLocation\\Providers\\RouteServiceProvider',
             ],
-            'aliases' => []
+            'aliases' => [],
         ],
     ];
 
@@ -412,7 +413,7 @@ it('throws an exception when modules with the requested name are not found', fun
     ];
 
     expect(collect($this->repository->filterByNameOrFail('article'))->toArray())->toBe($articleModuleMatch);
-    expect(fn() => $this->repository->filterByNameOrFail('book'))->toThrow(ModuleNotFound::class);
+    expect(fn () => $this->repository->filterByNameOrFail('book'))->toThrow(ModuleNotFound::class);
 });
 
 it('can delete a module', function () {
@@ -449,7 +450,7 @@ it('can sync modules with composer', function () {
             'laraneat/article',
             'laraneat/author',
             'laraneat/empty',
-            'laraneat/location'
+            'laraneat/location',
         ])
     );
 

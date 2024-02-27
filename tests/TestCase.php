@@ -40,7 +40,7 @@ abstract class TestCase extends OrchestraTestCase
         $this->filesystem = $this->app['files'];
     }
 
-    protected function tearDown() : void
+    protected function tearDown(): void
     {
         parent::tearDown();
 

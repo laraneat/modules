@@ -107,7 +107,7 @@ class ModulesRepository implements Arrayable
                 $composerJsonFile = ComposerJsonFile::create($packagePath);
                 $packageName = trim($composerJsonFile->get('name') ?? "");
 
-                if (!$packageName) {
+                if (! $packageName) {
                     continue;
                 }
 
@@ -289,16 +289,16 @@ class ModulesRepository implements Arrayable
         chdir($initialWorkingDir);
 
         $modulePackageNames = array_keys($this->getModules());
-        if (!$modulePackageNames) {
+        if (! $modulePackageNames) {
             return;
         }
 
         $composerClass = Composer::class;
         $composer = $this->app[$composerClass];
-        if (!($composer instanceof Composer)) {
+        if (! ($composer instanceof Composer)) {
             throw ComposerException::make("$composerClass not registered in your app.");
         }
-        if (!$composer->updatePackages($modulePackageNames, false, $output)) {
+        if (! $composer->updatePackages($modulePackageNames, false, $output)) {
             throw ComposerException::make("Failed to update package with composer.");
         }
     }

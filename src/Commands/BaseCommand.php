@@ -3,7 +3,6 @@
 namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
 use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
 use Laraneat\Modules\Exceptions\ModuleNotFound;

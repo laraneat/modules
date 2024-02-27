@@ -4,8 +4,8 @@ use Laraneat\Modules\Enums\ModuleComponentType;
 use Laraneat\Modules\Exceptions\InvalidConfigValue;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
 
-describe('normalizePath()', function() {
-    it('correctly normalizes path', function() {
+describe('normalizePath()', function () {
+    it('correctly normalizes path', function () {
         expect(GeneratorHelper::normalizePath('src/some/Actions'))->toBe('src/some/Actions');
         expect(GeneratorHelper::normalizePath('/src/some/Actions'))->toBe('src/some/Actions');
         expect(GeneratorHelper::normalizePath('/src/some\\Actions/'))->toBe('src/some/Actions');
@@ -16,7 +16,7 @@ describe('normalizePath()', function() {
         expect(GeneratorHelper::normalizePath('\\\\src\\some\\Actions\\\\'))->toBe('src/some/Actions');
     });
 
-    it('correctly normalizes path using rtrim', function() {
+    it('correctly normalizes path using rtrim', function () {
         expect(GeneratorHelper::normalizePath('src/some/Actions', true))->toBe('src/some/Actions');
         expect(GeneratorHelper::normalizePath('/src/some/Actions', true))->toBe('/src/some/Actions');
         expect(GeneratorHelper::normalizePath('/src/some\\Actions/', true))->toBe('/src/some/Actions');
@@ -28,8 +28,8 @@ describe('normalizePath()', function() {
     });
 });
 
-describe('normalizeNamespace()', function() {
-    it('correctly normalizes namespace', function() {
+describe('normalizeNamespace()', function () {
+    it('correctly normalizes namespace', function () {
         expect(GeneratorHelper::normalizeNamespace('src/some/Actions'))->toBe('src\\some\\Actions');
         expect(GeneratorHelper::normalizeNamespace('/src/some/Actions'))->toBe('src\\some\\Actions');
         expect(GeneratorHelper::normalizeNamespace('/src/some\\Actions/'))->toBe('src\\some\\Actions');
@@ -40,7 +40,7 @@ describe('normalizeNamespace()', function() {
         expect(GeneratorHelper::normalizeNamespace('\\\\src\\some\\Actions\\\\'))->toBe('src\\some\\Actions');
     });
 
-    it('correctly normalizes namespace using rtrim', function() {
+    it('correctly normalizes namespace using rtrim', function () {
         expect(GeneratorHelper::normalizeNamespace('src/some/Actions', true))->toBe('src\\some\\Actions');
         expect(GeneratorHelper::normalizeNamespace('/src/some/Actions', true))->toBe('\\src\\some\\Actions');
         expect(GeneratorHelper::normalizeNamespace('/src/some\\Actions/', true))->toBe('\\src\\some\\Actions');
@@ -52,8 +52,8 @@ describe('normalizeNamespace()', function() {
     });
 });
 
-describe('makeRelativePath()', function() {
-    it('correctly make relative', function() {
+describe('makeRelativePath()', function () {
+    it('correctly make relative', function () {
         expect(GeneratorHelper::makeRelativePath('', ''))->toBe('');
         expect(GeneratorHelper::makeRelativePath('/', ''))->toBe(null);
         expect(GeneratorHelper::makeRelativePath('', '/'))->toBe(null);
@@ -74,8 +74,8 @@ describe('makeRelativePath()', function() {
     });
 });
 
-describe('getBasePath()', function() {
-    it('returns base path', function() {
+describe('getBasePath()', function () {
+    it('returns base path', function () {
         $this->app['config']->set('modules.path', $this->app->basePath('/foo/bar'));
 
         expect(GeneratorHelper::getBasePath())->toBe($this->app->basePath('/foo/bar'));
@@ -85,29 +85,29 @@ describe('getBasePath()', function() {
         expect(GeneratorHelper::getBasePath())->toBe($this->app->basePath('/foo/bar'));
     });
 
-    it('throws an error when the modules path is not defined', function() {
+    it('throws an error when the modules path is not defined', function () {
         $this->app['config']->set('modules.path', '');
 
-        expect(fn() => GeneratorHelper::getBasePath())->toThrow(InvalidConfigValue::class);
+        expect(fn () => GeneratorHelper::getBasePath())->toThrow(InvalidConfigValue::class);
     });
 });
 
-describe('getBaseNamespace()', function() {
-    it('returns base namespace', function() {
+describe('getBaseNamespace()', function () {
+    it('returns base namespace', function () {
         $this->app['config']->set('modules.namespace', '\\Foo\\Bar\\');
 
         expect(GeneratorHelper::getBaseNamespace())->toBe('Foo\\Bar');
     });
 
-    it('throws an error when the modules namespace is not defined', function() {
+    it('throws an error when the modules namespace is not defined', function () {
         $this->app['config']->set('modules.namespace', '');
 
-        expect(fn() => GeneratorHelper::getBaseNamespace())->toThrow(InvalidConfigValue::class);
+        expect(fn () => GeneratorHelper::getBaseNamespace())->toThrow(InvalidConfigValue::class);
     });
 });
 
-describe('component(ModuleComponentType $componentType)', function() {
-    it('returns component config by type', function() {
+describe('component(ModuleComponentType $componentType)', function () {
+    it('returns component config by type', function () {
         $this->app['config']->set('modules.components.' . ModuleComponentType::Action->value, [
             'path' => '///Some/Actions///',
         ]);
@@ -117,18 +117,18 @@ describe('component(ModuleComponentType $componentType)', function() {
 
         $this->app['config']->set('modules.components.' . ModuleComponentType::Action->value, [
             'path' => '///src/Some/Actions///',
-            'namespace' => '\\\\\\Some\\Actions\\\\\\'
+            'namespace' => '\\\\\\Some\\Actions\\\\\\',
         ]);
 
         expect(GeneratorHelper::component(ModuleComponentType::Action)->getPath())->toBe('src/Some/Actions');
         expect(GeneratorHelper::component(ModuleComponentType::Action)->getNamespace())->toBe('Some\\Actions');
     });
 
-    it('throws an error when the component has invalid config', function() {
+    it('throws an error when the component has invalid config', function () {
         $this->app['config']->set('modules.components.' . ModuleComponentType::Action->value, 'foo');
-        expect(fn() => GeneratorHelper::component(ModuleComponentType::Action))->toThrow(InvalidConfigValue::class);
+        expect(fn () => GeneratorHelper::component(ModuleComponentType::Action))->toThrow(InvalidConfigValue::class);
 
         $this->app['config']->set('modules.components.' . ModuleComponentType::Action->value, ['namespace' => 'Some\\Actions']);
-        expect(fn() => GeneratorHelper::component(ModuleComponentType::Action))->toThrow(InvalidConfigValue::class);
+        expect(fn () => GeneratorHelper::component(ModuleComponentType::Action))->toThrow(InvalidConfigValue::class);
     });
 });

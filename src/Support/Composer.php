@@ -2,8 +2,8 @@
 
 namespace Laraneat\Modules\Support;
 
-use Illuminate\Support\Composer as BaseComposer;
 use Closure;
+use Illuminate\Support\Composer as BaseComposer;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Composer extends BaseComposer
@@ -22,8 +22,7 @@ class Composer extends BaseComposer
         bool $dev = false,
         Closure|OutputInterface $output = null,
         ?string $composerBinary = null
-    ): bool
-    {
+    ): bool {
         $command = collect([
             ...$this->findComposer($composerBinary),
             'update',
@@ -37,8 +36,8 @@ class Composer extends BaseComposer
                 ->run(
                     $output instanceof OutputInterface
                         ? function ($type, $line) use ($output) {
-                        $output->write('    '.$line);
-                    } : $output
+                            $output->write('    '.$line);
+                        } : $output
                 );
     }
 }

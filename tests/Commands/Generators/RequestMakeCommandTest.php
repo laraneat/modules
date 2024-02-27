@@ -14,7 +14,7 @@ it('generates "plain" web request for the module', function () {
         'name' => 'PlainAuthorRequest',
         'module' => 'Author',
         '--stub' => 'plain',
-        '--ui' => 'web'
+        '--ui' => 'web',
     ])
         ->assertSuccessful();
 
@@ -30,7 +30,7 @@ it('generates "create" web request for the module', function () {
         '--stub' => 'create',
         '--ui' => 'web',
         '--dto' => 'CreateAuthorDTO',
-        '--model' => 'Author'
+        '--model' => 'Author',
     ])
         ->assertSuccessful();
 
@@ -46,7 +46,7 @@ it('generates "update" web request for the module', function () {
         '--stub' => 'update',
         '--ui' => 'web',
         '--dto' => 'UpdateAuthorDTO',
-        '--model' => 'Author'
+        '--model' => 'Author',
     ])
         ->assertSuccessful();
 
@@ -61,7 +61,7 @@ it('generates "delete" web request for the module', function () {
         'module' => 'Author',
         '--stub' => 'delete',
         '--ui' => 'web',
-        '--model' => 'Author'
+        '--model' => 'Author',
     ])
         ->assertSuccessful();
 
@@ -75,7 +75,7 @@ it('generates "plain" api request for the module', function () {
         'name' => 'PlainAuthorRequest',
         'module' => 'Author',
         '--stub' => 'plain',
-        '--ui' => 'api'
+        '--ui' => 'api',
     ])
         ->assertSuccessful();
 
@@ -91,7 +91,7 @@ it('generates "create" api request for the module', function () {
         '--stub' => 'create',
         '--ui' => 'api',
         '--dto' => 'CreateAuthorDTO',
-        '--model' => 'Author'
+        '--model' => 'Author',
     ])
         ->assertSuccessful();
 
@@ -107,7 +107,7 @@ it('generates "update" api request for the module', function () {
         '--stub' => 'update',
         '--ui' => 'api',
         '--dto' => 'UpdateAuthorDTO',
-        '--model' => 'Author'
+        '--model' => 'Author',
     ])
         ->assertSuccessful();
 
@@ -122,7 +122,7 @@ it('generates "delete" api request for the module', function () {
         'module' => 'Author',
         '--stub' => 'delete',
         '--ui' => 'api',
-        '--model' => 'Author'
+        '--model' => 'Author',
     ])
         ->assertSuccessful();
 
@@ -137,7 +137,7 @@ it('generates "view" api request for the module', function () {
         'module' => 'Author',
         '--stub' => 'view',
         '--ui' => 'api',
-        '--model' => 'Author'
+        '--model' => 'Author',
     ])
         ->assertSuccessful();
 
@@ -152,7 +152,7 @@ it('generates "list" api request for the module', function () {
         'module' => 'Author',
         '--stub' => 'list',
         '--ui' => 'api',
-        '--model' => 'Author'
+        '--model' => 'Author',
     ])
         ->assertSuccessful();
 

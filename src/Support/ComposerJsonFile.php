@@ -61,7 +61,7 @@ class ComposerJsonFile
 
         $packages = $this->get('require');
 
-        if (!isset($packages[$modulePackageName])) {
+        if (! isset($packages[$modulePackageName])) {
             $packages[$modulePackageName] = '*';
             $this->set('require', $this->sortPackages($packages));
         }
@@ -140,7 +140,7 @@ class ComposerJsonFile
                 $requirement
             );
 
-        uksort($packages, function($a, $b) use ($prefix) {
+        uksort($packages, function ($a, $b) use ($prefix) {
             return strnatcmp($prefix($a), $prefix($b));
         });
 

@@ -13,7 +13,7 @@ it('generates "unit" test for the module', function () {
     $this->artisan('module:make:test', [
         'name' => 'ExampleTest',
         'module' => 'Author',
-        '--type' => 'unit'
+        '--type' => 'unit',
     ])
         ->assertSuccessful();
 
@@ -26,7 +26,7 @@ it('generates plain "feature" test for the module', function () {
     $this->artisan('module:make:test', [
         'name' => 'ExampleTest',
         'module' => 'Author',
-        '--type' => 'feature'
+        '--type' => 'feature',
     ])
         ->assertSuccessful();
 
@@ -39,7 +39,7 @@ it('generates plain "cli" test for the module', function () {
     $this->artisan('module:make:test', [
         'name' => 'ExampleTest',
         'module' => 'Author',
-        '--type' => 'cli'
+        '--type' => 'cli',
     ])
         ->assertSuccessful();
 
@@ -55,7 +55,7 @@ it('generates plain "web" test for the module', function () {
         '--type' => 'web',
         '--stub' => 'plain',
         '--model' => 'Author',
-        '--route' => 'web.authors.example'
+        '--route' => 'web.authors.example',
     ])
         ->assertSuccessful();
 
@@ -71,7 +71,7 @@ it('generates create "web" test for the module', function () {
         '--type' => 'web',
         '--stub' => 'create',
         '--model' => 'Author',
-        '--route' => 'web.authors.create'
+        '--route' => 'web.authors.create',
     ])
         ->assertSuccessful();
 
@@ -87,7 +87,7 @@ it('generates update "web" test for the module', function () {
         '--type' => 'web',
         '--stub' => 'update',
         '--model' => 'Author',
-        '--route' => 'web.authors.update'
+        '--route' => 'web.authors.update',
     ])
         ->assertSuccessful();
 
@@ -103,7 +103,7 @@ it('generates delete "web" test for the module', function () {
         '--type' => 'web',
         '--stub' => 'delete',
         '--model' => 'Author',
-        '--route' => 'web.authors.delete'
+        '--route' => 'web.authors.delete',
     ])
         ->assertSuccessful();
 
@@ -119,7 +119,7 @@ it('generates plain "api" test for the module', function () {
         '--type' => 'api',
         '--stub' => 'plain',
         '--model' => 'Author',
-        '--route' => 'api.authors.example'
+        '--route' => 'api.authors.example',
     ])
         ->assertSuccessful();
 
@@ -135,7 +135,7 @@ it('generates create "api" test for the module', function () {
         '--type' => 'api',
         '--stub' => 'create',
         '--model' => 'Author',
-        '--route' => 'api.authors.create'
+        '--route' => 'api.authors.create',
     ])
         ->assertSuccessful();
 
@@ -151,7 +151,7 @@ it('generates update "api" test for the module', function () {
         '--type' => 'api',
         '--stub' => 'update',
         '--model' => 'Author',
-        '--route' => 'api.authors.update'
+        '--route' => 'api.authors.update',
     ])
         ->assertSuccessful();
 
@@ -167,7 +167,7 @@ it('generates delete "api" test for the module', function () {
         '--type' => 'api',
         '--stub' => 'delete',
         '--model' => 'Author',
-        '--route' => 'api.authors.delete'
+        '--route' => 'api.authors.delete',
     ])
         ->assertSuccessful();
 
@@ -183,7 +183,7 @@ it('generates list "api" test for the module', function () {
         '--type' => 'api',
         '--stub' => 'list',
         '--model' => 'Author',
-        '--route' => 'api.authors.list'
+        '--route' => 'api.authors.list',
     ])
         ->assertSuccessful();
 
@@ -199,7 +199,7 @@ it('generates view "api" test for the module', function () {
         '--type' => 'api',
         '--stub' => 'view',
         '--model' => 'Author',
-        '--route' => 'api.authors.view'
+        '--route' => 'api.authors.view',
     ])
         ->assertSuccessful();
 
@@ -207,4 +207,3 @@ it('generates view "api" test for the module', function () {
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
-

@@ -172,11 +172,12 @@ class GeneratorHelper
         $toSegmentsCount = count($toSegments);
         $segmentsCount = max($fromSegmentsCount, $toSegmentsCount);
         for ($i = 0; $i < $segmentsCount; $i++) {
-            if (!isset($fromSegments[$i], $toSegments[$i]) || $fromSegments[$i] !== $toSegments[$i]) {
-                if ($i === 0 || $i === 1 && !$fromSegments[0]) {
+            if (! isset($fromSegments[$i], $toSegments[$i]) || $fromSegments[$i] !== $toSegments[$i]) {
+                if ($i === 0 || $i === 1 && ! $fromSegments[0]) {
                     return null;
                 }
                 $diffStartIndex = $i;
+
                 break;
             }
         }

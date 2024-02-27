@@ -13,7 +13,7 @@ it('generates "plain" seeder for the module', function () {
     $this->artisan('module:make:seeder', [
         'name' => 'AuthorsSeeder',
         'module' => 'Author',
-        '--stub' => 'plain'
+        '--stub' => 'plain',
     ])
         ->assertSuccessful();
 

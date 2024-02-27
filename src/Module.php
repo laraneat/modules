@@ -255,11 +255,11 @@ class Module implements Arrayable
 
         $composerClass = Composer::class;
         $composer = $this->app[$composerClass];
-        if (!($composer instanceof Composer)) {
+        if (! ($composer instanceof Composer)) {
             throw ComposerException::make("$composerClass not registered in your app.");
         }
 
-        if (!$composer->removePackages([$this->getPackageName()], false, $output)) {
+        if (! $composer->removePackages([$this->getPackageName()], false, $output)) {
             throw ComposerException::make("Failed to remove package with composer.");
         }
 
