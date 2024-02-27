@@ -165,7 +165,7 @@ return [
         ],
         ModuleComponentType::Notification->value => [
             'path' => 'src/Notifications',
-            'namespace' => 'Notification'
+            'namespace' => 'Notifications'
         ],
         ModuleComponentType::Observer->value => [
             'path' => 'src/Observers',
