@@ -33,7 +33,7 @@ class ArticleCategoryServiceProvider extends ModuleServiceProvider
     public function loadTranslations(): void
     {
         $sourcePath = realpath('../../lang');
-        $langPath = lang_path('modules/' . $this->modulePackageName);
+        $langPath = $this->app->langPath('modules/' . $this->modulePackageName);
 
         $this->loadTranslationsFrom($sourcePath, $this->modulePackageName);
 
@@ -48,7 +48,7 @@ class ArticleCategoryServiceProvider extends ModuleServiceProvider
     public function loadViews(): void
     {
         $sourcePath = realpath('../../resources/views');
-        $viewsPath = resource_path('views/modules/' . $this->modulePackageName);
+        $viewsPath = $this->app->resourcePath('views/modules/' . $this->modulePackageName);
 
         $this->loadViewsFrom(
             array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
@@ -66,7 +66,7 @@ class ArticleCategoryServiceProvider extends ModuleServiceProvider
     public function loadMigrations(): void
     {
         $sourcePath = realpath('../../database/migrations');
-        $migrationsPath = database_path('migrations');
+        $migrationsPath = $this->app->databasePath('migrations');
 
         $this->loadMigrationsFrom($sourcePath);
 

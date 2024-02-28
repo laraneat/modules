@@ -33,7 +33,7 @@ class {{ class }} extends ModuleServiceProvider
     public function loadMigrations(): void
     {
         $sourcePath = __DIR__.'/{{ migrationsPath }}';
-        $migrationsPath = database_path('migrations');
+        $migrationsPath = $this->app->databasePath('migrations');
 
         $this->loadMigrationsFrom($sourcePath);
 
@@ -48,7 +48,7 @@ class {{ class }} extends ModuleServiceProvider
     public function loadTranslations(): void
     {
         $sourcePath = __DIR__.'/{{ langPath }}';
-        $langPath = lang_path('modules/{{ modulePackageName }}');
+        $langPath = $this->app->langPath('modules/{{ modulePackageName }}');
 
         $this->loadTranslationsFrom($sourcePath, '{{ modulePackageName }}');
 
@@ -73,7 +73,7 @@ class {{ class }} extends ModuleServiceProvider
     public function loadViews(): void
     {
         $sourcePath = __DIR__.'/{{ viewsPath }}';
-        $viewsPath = resource_path('views/modules/{{ modulePackageName }}');
+        $viewsPath = $this->app->resourcePath('views/modules/{{ modulePackageName }}');
 
         $this->loadViewsFrom(
             array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),

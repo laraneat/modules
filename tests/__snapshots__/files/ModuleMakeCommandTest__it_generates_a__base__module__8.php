@@ -33,7 +33,7 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
     public function loadMigrations(): void
     {
         $sourcePath = __DIR__.'/../../database/migrations';
-        $migrationsPath = database_path('migrations');
+        $migrationsPath = $this->app->databasePath('migrations');
 
         $this->loadMigrationsFrom($sourcePath);
 
@@ -48,7 +48,7 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
     public function loadTranslations(): void
     {
         $sourcePath = __DIR__.'/../../lang';
-        $langPath = lang_path('modules/demo/article-comment');
+        $langPath = $this->app->langPath('modules/demo/article-comment');
 
         $this->loadTranslationsFrom($sourcePath, 'demo/article-comment');
 
@@ -73,7 +73,7 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
     public function loadViews(): void
     {
         $sourcePath = __DIR__.'/../../resources/views';
-        $viewsPath = resource_path('views/modules/demo/article-comment');
+        $viewsPath = $this->app->resourcePath('views/modules/demo/article-comment');
 
         $this->loadViewsFrom(
             array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
