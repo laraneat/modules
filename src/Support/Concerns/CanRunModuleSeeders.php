@@ -6,8 +6,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Enums\ModuleComponentType;
-use Laraneat\Modules\Support\Facades\Modules;
 use Laraneat\Modules\Module;
+use Laraneat\Modules\Support\Facades\Modules;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
 
 /**
