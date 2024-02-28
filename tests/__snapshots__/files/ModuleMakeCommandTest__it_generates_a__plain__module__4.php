@@ -37,7 +37,7 @@ class RouteServiceProvider extends ServiceProvider
         Route::middleware('web')
             // ->namespace('Modules\\ArticleComment\\UI\\WEB\\Controllers')
             ->group(function () {
-                $this->loadRoutesFromDirectory(realpath('../UI/WEB/routes'));
+                $this->loadRoutesFromDirectory(__DIR__.'/../UI/WEB/routes');
             });
     }
 
@@ -51,7 +51,7 @@ class RouteServiceProvider extends ServiceProvider
             ->middleware('api')
             // ->namespace('Modules\\ArticleComment\\UI\\API\\Controllers')
             ->group(function () {
-                $this->loadRoutesFromDirectory(realpath('../UI/API/routes'));
+                $this->loadRoutesFromDirectory(__DIR__.'/../UI/API/routes');
             });
     }
 }

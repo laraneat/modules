@@ -37,7 +37,7 @@ class {{ class }} extends ServiceProvider
         Route::middleware('web')
             // ->namespace('{{ webControllerNamespace }}')
             ->group(function () {
-                $this->loadRoutesFromDirectory(realpath('{{ webRoutesPath }}'));
+                $this->loadRoutesFromDirectory(__DIR__.'/{{ webRoutesPath }}');
             });
     }
 
@@ -51,7 +51,7 @@ class {{ class }} extends ServiceProvider
             ->middleware('api')
             // ->namespace('{{ apiControllerNamespace }}')
             ->group(function () {
-                $this->loadRoutesFromDirectory(realpath('{{ apiRoutesPath }}'));
+                $this->loadRoutesFromDirectory(__DIR__.'/{{ apiRoutesPath }}');
             });
     }
 }

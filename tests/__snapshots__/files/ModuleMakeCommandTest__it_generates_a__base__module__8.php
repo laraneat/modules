@@ -32,7 +32,7 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
      */
     public function loadMigrations(): void
     {
-        $sourcePath = realpath('../../database/migrations');
+        $sourcePath = __DIR__.'/../../database/migrations';
         $migrationsPath = database_path('migrations');
 
         $this->loadMigrationsFrom($sourcePath);
@@ -47,7 +47,7 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
      */
     public function loadTranslations(): void
     {
-        $sourcePath = realpath('../../lang');
+        $sourcePath = __DIR__.'/../../lang';
         $langPath = lang_path('modules/demo/article-comment');
 
         $this->loadTranslationsFrom($sourcePath, 'demo/article-comment');
@@ -63,7 +63,7 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
     public function loadCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommandsFrom(realpath('../UI/CLI/Commands'));
+            $this->loadCommandsFrom(__DIR__.'/../UI/CLI/Commands');
         }
     }
 
@@ -72,7 +72,7 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
      */
     public function loadViews(): void
     {
-        $sourcePath = realpath('../../resources/views');
+        $sourcePath = __DIR__.'/../../resources/views';
         $viewsPath = resource_path('views/modules/demo/article-comment');
 
         $this->loadViewsFrom(
