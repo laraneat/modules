@@ -50,7 +50,7 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
         $sourcePath = __DIR__.'/../../lang';
         $langPath = $this->app->langPath('modules/demo/article-comment');
 
-        $this->loadTranslationsFrom($sourcePath, 'demo/article-comment');
+        $this->loadTranslationsFrom($sourcePath, $this->modulePackageName);
 
         $this->publishes([
             $sourcePath => $langPath,

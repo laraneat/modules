@@ -50,7 +50,7 @@ class {{ class }} extends ModuleServiceProvider
         $sourcePath = __DIR__.'/{{ langPath }}';
         $langPath = $this->app->langPath('modules/{{ modulePackageName }}');
 
-        $this->loadTranslationsFrom($sourcePath, '{{ modulePackageName }}');
+        $this->loadTranslationsFrom($sourcePath, $this->modulePackageName);
 
         $this->publishes([
             $sourcePath => $langPath,
