@@ -1,6 +1,7 @@
 {
     "name": "demo/article-comment",
     "description": "article-comment module",
+    "version": "1.0.0",
     "authors": [
         {
             "name": "Example",
