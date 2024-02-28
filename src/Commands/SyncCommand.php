@@ -37,7 +37,7 @@ class SyncCommand extends BaseCommand
         } catch (ComposerException $e) {
             $this->components->error($e->getMessage());
             $modulePackageNames = join(" ", array_keys($this->modulesRepository->getModules()));
-            $this->components->info("Please run <kbd>composer update {$modulePackageNames}</kbd> manually");
+            $this->components->info("Please run <info>composer update {$modulePackageNames}</info> manually");
         }
 
         return self::SUCCESS;

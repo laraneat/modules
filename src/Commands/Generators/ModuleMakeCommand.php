@@ -131,7 +131,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             $this->addModuleToComposer();
         } catch (ComposerException $exception) {
             $this->components->error($exception->getMessage());
-            $this->components->info("Please run <kbd>composer update {$this->modulePackageName}</kbd> manually");
+            $this->components->info("Please run <info>composer update {$this->modulePackageName}</info> manually");
         }
 
         return self::SUCCESS;

@@ -52,7 +52,7 @@ class ModuleDeleteCommand extends BaseCommand
                 }
             } catch (ComposerException $exception) {
                 $this->components->error($exception->getMessage());
-                $this->components->info("Please run <kbd>composer remove {$moduleToDelete->getPackageName()}</kbd> manually");
+                $this->components->info("Please run <info>composer remove {$moduleToDelete->getPackageName()}</info> manually");
             }
         }
 
