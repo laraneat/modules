@@ -21,57 +21,16 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
      */
     public function boot(): void
     {
-        $this->registerMigrations();
-        // $this->registerTranslations();
-        // $this->registerCommands();
-        // $this->registerViews();
-    }
-
-    /**
-     * Get the services provided by the provider.
-     */
-    public function provides(): array
-    {
-        return [];
-    }
-
-    /**
-     * Register translations.
-     */
-    public function registerTranslations(): void
-    {
-        $sourcePath = realpath('../../lang');
-        $langPath = lang_path('modules/demo/article-comment');
-
-        $this->loadTranslationsFrom($sourcePath, 'demo/article-comment');
-
-        $this->publishes([
-            $sourcePath => $langPath,
-        ], 'article-comment-translations');
-    }
-
-    /**
-     * Register views.
-     */
-    public function registerViews(): void
-    {
-        $sourcePath = realpath('../../resources/views');
-        $viewsPath = resource_path('views/modules/demo/article-comment');
-
-        $this->loadViewsFrom(
-            array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
-            $this->modulePackageName
-        );
-
-        $this->publishes([
-            $sourcePath => $viewsPath
-        ], 'article-comment-views');
+        $this->loadMigrations();
+        // $this->loadTranslations();
+        // $this->loadCommands();
+        // $this->loadViews();
     }
 
     /**
      * Register migrations.
      */
-    public function registerMigrations(): void
+    public function loadMigrations(): void
     {
         $sourcePath = realpath('../../database/migrations');
         $migrationsPath = database_path('migrations');
@@ -84,12 +43,45 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
     }
 
     /**
+     * Register translations.
+     */
+    public function loadTranslations(): void
+    {
+        $sourcePath = realpath('../../lang');
+        $langPath = lang_path('modules/demo/article-comment');
+
+        $this->loadTranslationsFrom($sourcePath, 'demo/article-comment');
+
+        $this->publishes([
+            $sourcePath => $langPath,
+        ], 'article-comment-translations');
+    }
+
+    /**
      * Register artisan commands.
      */
-    public function registerCommands(): void
+    public function loadCommands(): void
     {
         if ($this->app->runningInConsole()) {
             $this->loadCommandsFrom(realpath('../UI/CLI/Commands'));
         }
+    }
+
+    /**
+     * Register views.
+     */
+    public function loadViews(): void
+    {
+        $sourcePath = realpath('../../resources/views');
+        $viewsPath = resource_path('views/modules/demo/article-comment');
+
+        $this->loadViewsFrom(
+            array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
+            $this->modulePackageName
+        );
+
+        $this->publishes([
+            $sourcePath => $viewsPath
+        ], 'article-comment-views');
     }
 }

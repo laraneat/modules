@@ -21,57 +21,16 @@ class {{ class }} extends ModuleServiceProvider
      */
     public function boot(): void
     {
-        $this->registerMigrations();
-        // $this->registerTranslations();
-        // $this->registerCommands();
-        // $this->registerViews();
-    }
-
-    /**
-     * Get the services provided by the provider.
-     */
-    public function provides(): array
-    {
-        return [];
-    }
-
-    /**
-     * Register translations.
-     */
-    public function registerTranslations(): void
-    {
-        $sourcePath = realpath('{{ langPath }}');
-        $langPath = lang_path('modules/{{ modulePackageName }}');
-
-        $this->loadTranslationsFrom($sourcePath, '{{ modulePackageName }}');
-
-        $this->publishes([
-            $sourcePath => $langPath,
-        ], '{{ moduleNameKebabCase }}-translations');
-    }
-
-    /**
-     * Register views.
-     */
-    public function registerViews(): void
-    {
-        $sourcePath = realpath('{{ viewsPath }}');
-        $viewsPath = resource_path('views/modules/{{ modulePackageName }}');
-
-        $this->loadViewsFrom(
-            array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
-            $this->modulePackageName
-        );
-
-        $this->publishes([
-            $sourcePath => $viewsPath
-        ], '{{ moduleNameKebabCase }}-views');
+        $this->loadMigrations();
+        // $this->loadTranslations();
+        // $this->loadCommands();
+        // $this->loadViews();
     }
 
     /**
      * Register migrations.
      */
-    public function registerMigrations(): void
+    public function loadMigrations(): void
     {
         $sourcePath = realpath('{{ migrationsPath }}');
         $migrationsPath = database_path('migrations');
@@ -84,12 +43,45 @@ class {{ class }} extends ModuleServiceProvider
     }
 
     /**
+     * Register translations.
+     */
+    public function loadTranslations(): void
+    {
+        $sourcePath = realpath('{{ langPath }}');
+        $langPath = lang_path('modules/{{ modulePackageName }}');
+
+        $this->loadTranslationsFrom($sourcePath, '{{ modulePackageName }}');
+
+        $this->publishes([
+            $sourcePath => $langPath,
+        ], '{{ moduleNameKebabCase }}-translations');
+    }
+
+    /**
      * Register artisan commands.
      */
-    public function registerCommands(): void
+    public function loadCommands(): void
     {
         if ($this->app->runningInConsole()) {
             $this->loadCommandsFrom(realpath('{{ commandsPath }}'));
         }
+    }
+
+    /**
+     * Register views.
+     */
+    public function loadViews(): void
+    {
+        $sourcePath = realpath('{{ viewsPath }}');
+        $viewsPath = resource_path('views/modules/{{ modulePackageName }}');
+
+        $this->loadViewsFrom(
+            array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
+            $this->modulePackageName
+        );
+
+        $this->publishes([
+            $sourcePath => $viewsPath
+        ], '{{ moduleNameKebabCase }}-views');
     }
 }

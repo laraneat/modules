@@ -21,24 +21,16 @@ class GeoLocationServiceProvider extends ModuleServiceProvider
      */
     public function boot(): void
     {
-        $this->registerMigrations();
-        // $this->registerTranslations();
-        // $this->registerCommands();
-        // $this->registerViews();
-    }
-
-    /**
-     * Get the services provided by the provider.
-     */
-    public function provides(): array
-    {
-        return [];
+        $this->loadMigrations();
+        // $this->loadTranslations();
+        // $this->loadCommands();
+        // $this->loadViews();
     }
 
     /**
      * Register translations.
      */
-    public function registerTranslations(): void
+    public function loadTranslations(): void
     {
         $sourcePath = realpath('../../lang');
         $langPath = lang_path('modules/' . $this->modulePackageName);
@@ -53,7 +45,7 @@ class GeoLocationServiceProvider extends ModuleServiceProvider
     /**
      * Register views.
      */
-    public function registerViews(): void
+    public function loadViews(): void
     {
         $sourcePath = realpath('../../resources/views');
         $viewsPath = resource_path('views/modules/' . $this->modulePackageName);
@@ -71,7 +63,7 @@ class GeoLocationServiceProvider extends ModuleServiceProvider
     /**
      * Register migrations.
      */
-    public function registerMigrations(): void
+    public function loadMigrations(): void
     {
         $sourcePath = realpath('../../database/migrations');
         $migrationsPath = database_path('migrations');
@@ -86,7 +78,7 @@ class GeoLocationServiceProvider extends ModuleServiceProvider
     /**
      * Register artisan commands.
      */
-    public function registerCommands(): void
+    public function loadCommands(): void
     {
         if ($this->app->runningInConsole()) {
             $this->loadCommandsFrom(realpath('../UI/CLI/Commands'));
