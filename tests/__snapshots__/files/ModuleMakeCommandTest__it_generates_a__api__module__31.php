@@ -2,6 +2,7 @@
 
 namespace Modules\ArticleComment\Tests\UI\API;
 
+use Illuminate\Testing\Fluent\AssertableJson;
 use Modules\ArticleComment\Models\ArticleComment;
 use Tests\TestCase;
 
@@ -9,43 +10,49 @@ use Tests\TestCase;
  * @group demo/article-comment
  * @group api
  */
-class DeleteArticleCommentTest extends TestCase
+class CreateArticleCommentTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
      */
     protected array $testUserAccess = [
-        'permissions' => 'delete-article-comment',
+        'permissions' => 'create-article-comment',
         'roles'       => '',
     ];
 
-    public function test_delete_article_comment(): void
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
+    }
+
+    public function test_create_article_comment(): void
     {
         $this->actingAsTestUser();
 
-        $articleComment = ArticleComment::factory()->create();
+        $data = $this->getTestData();
 
-        $this->deleteJson(route('api.article_comments.delete', ['articleComment' => $articleComment->getKey()]))
-            ->assertNoContent();
+        $this->postJson(route('api.article_comments.create'), $data)
+            ->assertCreated()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('data', fn (AssertableJson $json) =>
+                    $json->has('id')
+                        ->whereAll($data)
+                        ->etc()
+                    )
+            );
 
-        $this->assertNull(ArticleComment::find($articleComment->getKey()));
+        $this->assertDatabaseHas(ArticleComment::class, $data);
     }
 
-    public function test_delete_article_comment_without_access(): void
+    public function test_create_article_comment_without_access(): void
     {
         $this->actingAsTestUserWithoutAccess();
 
-        $articleComment = ArticleComment::factory()->create();
+        $data = $this->getTestData();
 
-        $this->deleteJson(route('api.article_comments.delete', ['articleComment' => $articleComment->getKey()]))
+        $this->postJson(route('api.article_comments.create'), $data)
             ->assertForbidden();
-    }
-
-    public function test_delete_not_existing_article_comment(): void
-    {
-        $this->actingAsTestUser();
-
-        $this->deleteJson(route('api.article_comments.delete', ['articleComment' => 7777]))
-            ->assertNotFound();
     }
 }

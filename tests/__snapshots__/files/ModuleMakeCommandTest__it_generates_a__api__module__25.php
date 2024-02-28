@@ -1,7 +1,19 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Modules\ArticleComment\Actions\CreateArticleCommentAction;
+namespace Modules\ArticleComment\UI\API\Resources;
 
-Route::post('article-comments', CreateArticleCommentAction::class)
-    ->name('api.article_comments.create');
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class ArticleCommentResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     */
+    public function toArray($request)
+    {
+        return parent::toArray($request);
+    }
+}

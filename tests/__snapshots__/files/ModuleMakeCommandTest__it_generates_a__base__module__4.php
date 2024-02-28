@@ -1,28 +1,34 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace Modules\ArticleComment\Database\Factories;
 
-return new class extends Migration
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\ArticleComment\Models\ArticleComment;
+
+/**
+ * @method \Illuminate\Support\Collection<int, ArticleComment>|ArticleComment create($attributes = [], ?ArticleComment $parent = null)
+ * @method \Illuminate\Support\Collection<int, ArticleComment> createMany(iterable $records)
+ * @method ArticleComment createOne($attributes = [])
+ * @method \Illuminate\Support\Collection<int, ArticleComment>|ArticleComment make($attributes = [], ?ArticleComment $parent = null)
+ * @method ArticleComment makeOne($attributes = [])
+ */
+class ArticleCommentFactory extends Factory
 {
     /**
-     * Run the migrations.
+     * The name of the factory's corresponding model.
+     *
+     * @var class-string
      */
-    public function up(): void
-    {
-        Schema::create('article_comments', static function (Blueprint $table) {
-            $table->id();
-
-            $table->timestamps();
-        });
-    }
+    protected $model = ArticleComment::class;
 
     /**
-     * Reverse the migrations.
+     * Define the model's default state.
      */
-    public function down(): void
+    public function definition(): array
     {
-        Schema::dropIfExists('article_comments');
+        return [
+            // TODO: add fields here
+        ];
     }
-};
+}
+

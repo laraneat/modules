@@ -4,25 +4,17 @@ namespace Modules\ArticleComment\UI\API\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
-use Modules\ArticleComment\DTO\UpdateArticleCommentDTO;
+use Modules\ArticleComment\Models\ArticleComment;
 
-class UpdateArticleCommentRequest extends FormRequest
+class ListArticleCommentsRequest extends FormRequest
 {
     public function rules(): array
     {
-        return [
-            // TODO: add fields here
-        ];
+        return [];
     }
 
     public function authorize(): bool
     {
-        $articleComment = $this->route('articleComment');
-        return $articleComment && Gate::check('update', $articleComment);
-    }
-
-    public function toDTO(): UpdateArticleCommentDTO
-    {
-        return new UpdateArticleCommentDTO($this->validated());
+        return Gate::check('viewAny', ArticleComment::class);
     }
 }

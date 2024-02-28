@@ -2,12 +2,10 @@
 
 namespace Modules\ArticleComment\UI\API\QueryWizards;
 
-use Jackardios\QueryWizard\Eloquent\EloquentFilter;
-use Jackardios\QueryWizard\Eloquent\EloquentInclude;
-use Jackardios\QueryWizard\Eloquent\EloquentQueryWizard;
-use Jackardios\QueryWizard\Eloquent\EloquentSort;
+use Jackardios\QueryWizard\Model\ModelInclude;
+use Jackardios\QueryWizard\Model\ModelQueryWizard;
 
-class ArticleCommentsQueryWizard extends EloquentQueryWizard
+class ArticleCommentQueryWizard extends ModelQueryWizard
 {
     /**
      * @return array<int, string>
@@ -36,15 +34,7 @@ class ArticleCommentsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return array<int, string|EloquentFilter>
-     */
-    protected function allowedFilters(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<int, string|EloquentInclude>
+     * @return array<int, string|ModelInclude>
      */
     protected function allowedIncludes(): array
     {
@@ -52,25 +42,9 @@ class ArticleCommentsQueryWizard extends EloquentQueryWizard
     }
 
     /**
-     * @return array<int, string|EloquentInclude>
+     * @return array<int, string|ModelInclude>
      */
     protected function defaultIncludes(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<int, string|EloquentSort>
-     */
-    protected function allowedSorts(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return array<int, string|EloquentSort>
-     */
-    protected function defaultSorts(): array
     {
         return [];
     }

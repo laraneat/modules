@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\ArticleComment\Actions\DeleteArticleCommentAction;
+use Modules\ArticleComment\Actions\CreateArticleCommentAction;
 
-Route::delete('article-comments/{articleComment}', DeleteArticleCommentAction::class)
-    ->name('api.article_comments.delete');
+Route::post('article-comments', CreateArticleCommentAction::class)
+    ->name('api.article_comments.create');

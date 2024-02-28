@@ -4,17 +4,25 @@ namespace Modules\ArticleComment\UI\API\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Modules\ArticleComment\DTO\CreateArticleCommentDTO;
+use Modules\ArticleComment\Models\ArticleComment;
 
-class DeleteArticleCommentRequest extends FormRequest
+class CreateArticleCommentRequest extends FormRequest
 {
     public function rules(): array
     {
-        return [];
+        return [
+            // TODO: add fields here
+        ];
     }
 
     public function authorize(): bool
     {
-        $articleComment = $this->route('articleComment');
-        return $articleComment && Gate::check('delete', $articleComment);
+        return Gate::check('create', ArticleComment::class);
+    }
+
+    public function toDTO(): CreateArticleCommentDTO
+    {
+        return new CreateArticleCommentDTO($this->validated());
     }
 }

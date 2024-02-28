@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Carbon;
 use Laraneat\Modules\Support\Composer;
+use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {
     $this->backupComposerJson();
@@ -26,6 +27,7 @@ it('generates a "plain" module', function () {
     ])
         ->assertSuccessful();
 
+    assertMatchesFileSnapshot($this->app->basePath('/composer.json'));
     assertsMatchesDirectorySnapshot($this->app->basePath('/modules/article-comment'));
 });
 
@@ -50,6 +52,7 @@ it('generates a "base" module', function () {
         )
         ->assertSuccessful();
 
+    assertMatchesFileSnapshot($this->app->basePath('/composer.json'));
     assertsMatchesDirectorySnapshot($this->app->basePath('/modules/article-comment'));
 });
 
@@ -74,6 +77,7 @@ it('generates a "api" module', function () {
         )
         ->assertSuccessful();
 
+    assertMatchesFileSnapshot($this->app->basePath('/composer.json'));
     assertsMatchesDirectorySnapshot($this->app->basePath('/modules/article-comment'));
 });
 
@@ -85,6 +89,8 @@ it('displays an error message if the passed module name is not valid', function 
     ])
         ->expectsOutputToContain("The module name passed is not valid!")
         ->assertFailed();
+
+    assertMatchesFileSnapshot($this->app->basePath('/composer.json'));
 });
 
 it('displays an error message when a module with the same package name already exists', function () {
@@ -95,6 +101,8 @@ it('displays an error message when a module with the same package name already e
     ])
         ->expectsOutputToContain("Module 'laraneat/article' already exist!")
         ->assertFailed();
+
+    assertMatchesFileSnapshot($this->app->basePath('/composer.json'));
 });
 
 it('displays an error message when a module with the same folder name already exists', function () {
@@ -105,4 +113,6 @@ it('displays an error message when a module with the same folder name already ex
     ])
         ->expectsOutputToContain("already exists.")
         ->assertFailed();
+
+    assertMatchesFileSnapshot($this->app->basePath('/composer.json'));
 });

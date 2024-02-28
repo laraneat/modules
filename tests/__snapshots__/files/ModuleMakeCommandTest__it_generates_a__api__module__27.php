@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\ArticleComment\Actions\ListArticleCommentsAction;
+use Modules\ArticleComment\Actions\DeleteArticleCommentAction;
 
-Route::get('article-comments', ListArticleCommentsAction::class)
-    ->name('api.article_comments.list');
+Route::delete('article-comments/{articleComment}', DeleteArticleCommentAction::class)
+    ->name('api.article_comments.delete');

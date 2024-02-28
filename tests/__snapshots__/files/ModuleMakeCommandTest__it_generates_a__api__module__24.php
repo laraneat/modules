@@ -1,19 +1,20 @@
 <?php
 
-namespace Modules\ArticleComment\UI\API\Resources;
+namespace Modules\ArticleComment\UI\API\Requests;
 
-use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
-class ArticleCommentResource extends JsonResource
+class ViewArticleCommentRequest extends FormRequest
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
-     */
-    public function toArray($request)
+    public function rules(): array
     {
-        return parent::toArray($request);
+        return [];
+    }
+
+    public function authorize(): bool
+    {
+        $articleComment = $this->route('articleComment');
+        return $articleComment && Gate::check('view', $articleComment);
     }
 }

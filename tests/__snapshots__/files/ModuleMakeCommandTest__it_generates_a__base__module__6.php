@@ -1,33 +1,45 @@
 <?php
 
-namespace Modules\ArticleComment\Models;
+namespace Modules\ArticleComment\Database\Seeders;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Modules\ArticleComment\Database\Factories\ArticleCommentFactory;
+use Illuminate\Database\Seeder;
+use Modules\Authorization\Actions\CreatePermissionAction;
+use Modules\Authorization\DTO\CreatePermissionDTO;
 
-class ArticleComment extends Model
+class ArticleCommentPermissionsSeeder_1 extends Seeder
 {
-    use HasFactory;
-
-    protected $fillable = [
-        // TODO: add fields here
-    ];
-
-    protected $hidden = [
-        // TODO: add fields here
-    ];
-
-    protected $casts = [
-        // TODO: add fields here
-    ];
-
-    /**
-     * Create a new factory instance for the model.
-     */
-    protected static function newFactory(): Factory
+    public function run(): void
     {
-        return ArticleCommentFactory::new();
+        $createPermissionAction = CreatePermissionAction::make();
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'view-article-comment',
+            display_name: 'View any "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'create-article-comment',
+            display_name: 'Create "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'update-article-comment',
+            display_name: 'Update any "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'delete-article-comment',
+            display_name: 'Delete any "article-comments"',
+            group: 'article-comments'
+        ));
+
+        $createPermissionAction->handle(new CreatePermissionDTO(
+            name: 'force-delete-article-comment',
+            display_name: 'Force delete any "article-comments"',
+            group: 'article-comments'
+        ));
     }
 }

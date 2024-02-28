@@ -1,87 +1,68 @@
 <?php
 
-namespace Modules\ArticleComment\Providers;
+namespace Modules\ArticleComment\Policies;
 
-use Laraneat\Modules\Support\ModuleServiceProvider;
+use Illuminate\Auth\Access\HandlesAuthorization;
+use Modules\ArticleComment\Models\ArticleComment;
+use Modules\User\Models\User;
 
-class ArticleCommentServiceProvider extends ModuleServiceProvider
+class ArticleCommentPolicy
 {
-    protected string $modulePackageName = 'demo/article-comment';
+    use HandlesAuthorization;
 
     /**
-     * Register services.
+     * Determine whether the user can view any models.
      */
-    public function register(): void
+    public function viewAny(User $user): bool
     {
-        //
+        return $user->can('view-article-comment');
     }
 
     /**
-     * Bootstrap services.
+     * Determine whether the user can view the model.
      */
-    public function boot(): void
+    public function view(User $user, ArticleComment $articleComment): bool
     {
-        $this->loadMigrations();
-        // $this->loadTranslations();
-        // $this->loadCommands();
-        // $this->loadViews();
+        return $user->can('view-article-comment');
     }
 
     /**
-     * Register migrations.
+     * Determine whether the user can create models.
      */
-    public function loadMigrations(): void
+    public function create(User $user): bool
     {
-        $sourcePath = __DIR__.'/../../database/migrations';
-        $migrationsPath = $this->app->databasePath('migrations');
-
-        $this->loadMigrationsFrom($sourcePath);
-
-        $this->publishes([
-            $sourcePath => $migrationsPath
-        ], 'article-comment-migrations');
+        return $user->can('create-article-comment');
     }
 
     /**
-     * Register translations.
+     * Determine whether the user can update the model.
      */
-    public function loadTranslations(): void
+    public function update(User $user, ArticleComment $articleComment): bool
     {
-        $sourcePath = __DIR__.'/../../lang';
-        $langPath = $this->app->langPath('modules/demo/article-comment');
-
-        $this->loadTranslationsFrom($sourcePath, $this->modulePackageName);
-
-        $this->publishes([
-            $sourcePath => $langPath,
-        ], 'article-comment-translations');
+        return $user->can('update-article-comment');
     }
 
     /**
-     * Register artisan commands.
+     * Determine whether the user can delete the model.
      */
-    public function loadCommands(): void
+    public function delete(User $user, ArticleComment $articleComment): bool
     {
-        if ($this->app->runningInConsole()) {
-            $this->loadCommandsFrom(__DIR__.'/../UI/CLI/Commands');
-        }
+        return $user->can('delete-article-comment');
     }
 
     /**
-     * Register views.
+     * Determine whether the user can restore the model.
      */
-    public function loadViews(): void
+    public function restore(User $user, ArticleComment $articleComment): bool
     {
-        $sourcePath = __DIR__.'/../../resources/views';
-        $viewsPath = $this->app->resourcePath('views/modules/demo/article-comment');
+        return $user->can('delete-article-comment');
+    }
 
-        $this->loadViewsFrom(
-            array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
-            $this->modulePackageName
-        );
-
-        $this->publishes([
-            $sourcePath => $viewsPath
-        ], 'article-comment-views');
+    /**
+     * Determine whether the user can permanently delete the model.
+     */
+    public function forceDelete(User $user, ArticleComment $articleComment): bool
+    {
+        return $user->can('force-delete-article-comment');
     }
 }

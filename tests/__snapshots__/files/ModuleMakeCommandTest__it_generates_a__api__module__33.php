@@ -2,7 +2,6 @@
 
 namespace Modules\ArticleComment\Tests\UI\API;
 
-use Illuminate\Testing\Fluent\AssertableJson;
 use Modules\ArticleComment\Models\ArticleComment;
 use Tests\TestCase;
 
@@ -10,65 +9,39 @@ use Tests\TestCase;
  * @group demo/article-comment
  * @group api
  */
-class UpdateArticleCommentTest extends TestCase
+class ListArticleCommentsTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
      */
     protected array $testUserAccess = [
-        'permissions' => 'update-article-comment',
+        'permissions' => 'view-article-comment',
         'roles'       => '',
     ];
 
-    protected function getTestData(array $mergeData = []): array
-    {
-        return array_merge([
-            // TODO: add fields here
-        ], $mergeData);
-    }
-
-    public function test_update_article_comment(): void
+    public function test_list_article_comments(): void
     {
         $this->actingAsTestUser();
 
-        $articleComment = ArticleComment::factory()->create();
+        ArticleComment::factory()->count(3)->create();
 
-        $data = $this->getTestData();
-        $expectedData = array_merge($data, [
-            'id' => $articleComment->getKey(),
-        ]);
-
-        $this->patchJson(route('api.article_comments.update', ['articleComment' => $articleComment->getKey()]), $data)
+        $this->getJson(route('api.article_comments.list'))
             ->assertOk()
-            ->assertJson(fn (AssertableJson $json) =>
-                $json->has('data', fn (AssertableJson $json) =>
-                    $json->whereAll($expectedData)
-                        ->etc()
-                )
-            );
-
-        $this->assertDatabaseHas(ArticleComment::class, $expectedData);
+            ->assertJsonStructure([
+                'links',
+                'meta',
+                'data'
+            ])
+            ->assertJsonCount(ArticleComment::query()->count(), 'data');
     }
 
-    public function test_update_article_comment_without_access(): void
+    public function test_list_article_comments_without_access(): void
     {
         $this->actingAsTestUserWithoutAccess();
 
-        $articleComment = ArticleComment::factory()->create();
+        ArticleComment::factory()->count(3)->create();
 
-        $data = $this->getTestData();
-
-        $this->patchJson(route('api.article_comments.update', ['articleComment' => $articleComment->getKey()]), $data)
+        $this->getJson(route('api.article_comments.list'))
             ->assertForbidden();
-    }
-
-    public function test_update_non_existing_article_comment(): void
-    {
-        $this->actingAsTestUser();
-
-        $data = $this->getTestData();
-
-        $this->patchJson(route('api.article_comments.update', ['articleComment' => 7777]), $data)
-            ->assertNotFound();
     }
 }

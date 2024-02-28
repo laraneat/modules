@@ -1,33 +1,13 @@
 <?php
 
-namespace Modules\ArticleComment\Models;
+namespace Modules\ArticleComment\DTO;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Modules\ArticleComment\Database\Factories\ArticleCommentFactory;
+use Spatie\LaravelData\Data;
 
-class ArticleComment extends Model
+class UpdateArticleCommentDTO extends Data
 {
-    use HasFactory;
-
-    protected $fillable = [
+    public function __construct(
         // TODO: add fields here
-    ];
-
-    protected $hidden = [
-        // TODO: add fields here
-    ];
-
-    protected $casts = [
-        // TODO: add fields here
-    ];
-
-    /**
-     * Create a new factory instance for the model.
-     */
-    protected static function newFactory(): Factory
-    {
-        return ArticleCommentFactory::new();
+    ) {
     }
 }

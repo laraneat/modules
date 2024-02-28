@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\ArticleComment\Actions\ViewArticleCommentAction;
+use Modules\ArticleComment\Actions\UpdateArticleCommentAction;
 
-Route::get('article-comments/{articleComment}', ViewArticleCommentAction::class)
-    ->name('api.article_comments.view');
+Route::patch('article-comments/{articleComment}', UpdateArticleCommentAction::class)
+    ->name('api.article_comments.update');

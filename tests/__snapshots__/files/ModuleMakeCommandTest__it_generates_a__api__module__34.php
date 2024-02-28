@@ -10,24 +10,35 @@ use Tests\TestCase;
  * @group demo/article-comment
  * @group api
  */
-class ViewArticleCommentTest extends TestCase
+class UpdateArticleCommentTest extends TestCase
 {
     /**
      * Roles and permissions, to be attached on the user by default
      */
     protected array $testUserAccess = [
-        'permissions' => 'view-article-comment',
+        'permissions' => 'update-article-comment',
         'roles'       => '',
     ];
 
-    public function test_view_article_comment(): void
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
+    }
+
+    public function test_update_article_comment(): void
     {
         $this->actingAsTestUser();
 
         $articleComment = ArticleComment::factory()->create();
-        $expectedData = $articleComment->toArray();
 
-        $this->getJson(route('api.article_comments.view', ['articleComment' => $articleComment->getKey()]))
+        $data = $this->getTestData();
+        $expectedData = array_merge($data, [
+            'id' => $articleComment->getKey(),
+        ]);
+
+        $this->patchJson(route('api.article_comments.update', ['articleComment' => $articleComment->getKey()]), $data)
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) =>
                 $json->has('data', fn (AssertableJson $json) =>
@@ -35,23 +46,29 @@ class ViewArticleCommentTest extends TestCase
                         ->etc()
                 )
             );
+
+        $this->assertDatabaseHas(ArticleComment::class, $expectedData);
     }
 
-    public function test_view_article_comment_without_access(): void
+    public function test_update_article_comment_without_access(): void
     {
         $this->actingAsTestUserWithoutAccess();
 
         $articleComment = ArticleComment::factory()->create();
 
-        $this->getJson(route('api.article_comments.view', ['articleComment' => $articleComment->getKey()]))
+        $data = $this->getTestData();
+
+        $this->patchJson(route('api.article_comments.update', ['articleComment' => $articleComment->getKey()]), $data)
             ->assertForbidden();
     }
 
-    public function test_view_not_existing_article_comment(): void
+    public function test_update_non_existing_article_comment(): void
     {
         $this->actingAsTestUser();
 
-        $this->getJson(route('api.article_comments.view', ['articleComment' => 7777]))
+        $data = $this->getTestData();
+
+        $this->patchJson(route('api.article_comments.update', ['articleComment' => 7777]), $data)
             ->assertNotFound();
     }
 }

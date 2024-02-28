@@ -4,9 +4,8 @@ namespace Modules\ArticleComment\UI\API\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
-use Modules\ArticleComment\Models\ArticleComment;
 
-class ListArticleCommentsRequest extends FormRequest
+class DeleteArticleCommentRequest extends FormRequest
 {
     public function rules(): array
     {
@@ -15,6 +14,7 @@ class ListArticleCommentsRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return Gate::check('viewAny', ArticleComment::class);
+        $articleComment = $this->route('articleComment');
+        return $articleComment && Gate::check('delete', $articleComment);
     }
 }

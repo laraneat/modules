@@ -1,28 +1,77 @@
 <?php
 
-namespace Modules\ArticleComment\UI\API\Requests;
+namespace Modules\ArticleComment\UI\API\QueryWizards;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Gate;
-use Modules\ArticleComment\DTO\CreateArticleCommentDTO;
-use Modules\ArticleComment\Models\ArticleComment;
+use Jackardios\QueryWizard\Eloquent\EloquentFilter;
+use Jackardios\QueryWizard\Eloquent\EloquentInclude;
+use Jackardios\QueryWizard\Eloquent\EloquentQueryWizard;
+use Jackardios\QueryWizard\Eloquent\EloquentSort;
 
-class CreateArticleCommentRequest extends FormRequest
+class ArticleCommentsQueryWizard extends EloquentQueryWizard
 {
-    public function rules(): array
+    /**
+     * @return array<int, string>
+     */
+    protected function allowedAppends(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function defaultAppends(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function allowedFields(): array
     {
         return [
             // TODO: add fields here
         ];
     }
 
-    public function authorize(): bool
+    /**
+     * @return array<int, string|EloquentFilter>
+     */
+    protected function allowedFilters(): array
     {
-        return Gate::check('create', ArticleComment::class);
+        return [];
     }
 
-    public function toDTO(): CreateArticleCommentDTO
+    /**
+     * @return array<int, string|EloquentInclude>
+     */
+    protected function allowedIncludes(): array
     {
-        return new CreateArticleCommentDTO($this->validated());
+        return [];
+    }
+
+    /**
+     * @return array<int, string|EloquentInclude>
+     */
+    protected function defaultIncludes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<int, string|EloquentSort>
+     */
+    protected function allowedSorts(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<int, string|EloquentSort>
+     */
+    protected function defaultSorts(): array
+    {
+        return [];
     }
 }

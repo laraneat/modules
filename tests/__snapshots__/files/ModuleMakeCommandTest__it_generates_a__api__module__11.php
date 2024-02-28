@@ -1,13 +1,25 @@
 <?php
 
-namespace Modules\ArticleComment\DTO;
+namespace Modules\ArticleComment\Actions;
 
-use Spatie\LaravelData\Data;
+use Illuminate\Database\Eloquent\Model;
+use Lorisleiva\Actions\Concerns\AsAction;
+use Modules\ArticleComment\Models\ArticleComment;
+use Modules\ArticleComment\UI\API\QueryWizards\ArticleCommentQueryWizard;
+use Modules\ArticleComment\UI\API\Requests\ViewArticleCommentRequest;
+use Modules\ArticleComment\UI\API\Resources\ArticleCommentResource;
 
-class CreateArticleCommentDTO extends Data
+class ViewArticleCommentAction
 {
-    public function __construct(
-        // TODO: add fields here
-    ) {
+    use AsAction;
+
+    public function handle(ViewArticleCommentRequest $request, ArticleComment $articleComment): Model
+    {
+        return ArticleCommentQueryWizard::for($articleComment)->build();
+    }
+
+    public function asController(ViewArticleCommentRequest $request, ArticleComment $articleComment): ArticleCommentResource
+    {
+        return new ArticleCommentResource($this->handle($request, $articleComment));
     }
 }

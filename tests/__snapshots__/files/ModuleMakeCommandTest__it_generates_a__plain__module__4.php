@@ -2,56 +2,86 @@
 
 namespace Modules\ArticleComment\Providers;
 
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Route;
-use Laraneat\Modules\Support\Concerns\CanLoadRoutesFromDirectory;
+use Laraneat\Modules\Support\ModuleServiceProvider;
 
-class RouteServiceProvider extends ServiceProvider
+class ArticleCommentServiceProvider extends ModuleServiceProvider
 {
-    use CanLoadRoutesFromDirectory;
+    protected string $modulePackageName = 'demo/article-comment';
 
     /**
-     * Called before routes are registered.
-     * Register any model bindings or pattern based filters.
+     * Register services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap services.
      */
     public function boot(): void
     {
-        parent::boot();
+        $this->loadMigrations();
+        // $this->loadTranslations();
+        // $this->loadCommands();
+        // $this->loadViews();
     }
 
     /**
-     * Define the routes for the application.
+     * Register migrations.
      */
-    public function map(): void
+    public function loadMigrations(): void
     {
-        $this->mapApiRoutes();
-        $this->mapWebRoutes();
+        $sourcePath = __DIR__.'/../../database/migrations';
+        $migrationsPath = $this->app->databasePath('migrations');
+
+        $this->loadMigrationsFrom($sourcePath);
+
+        $this->publishes([
+            $sourcePath => $migrationsPath
+        ], 'article-comment-migrations');
     }
 
     /**
-     * Define the "web" routes for the application.
-     * These routes all receive session state, CSRF protection, etc.
+     * Register translations.
      */
-    protected function mapWebRoutes(): void
+    public function loadTranslations(): void
     {
-        Route::middleware('web')
-            // ->namespace('Modules\\ArticleComment\\UI\\WEB\\Controllers')
-            ->group(function () {
-                $this->loadRoutesFromDirectory(__DIR__.'/../UI/WEB/routes');
-            });
+        $sourcePath = __DIR__.'/../../lang';
+        $langPath = $this->app->langPath('modules/demo/article-comment');
+
+        $this->loadTranslationsFrom($sourcePath, $this->modulePackageName);
+
+        $this->publishes([
+            $sourcePath => $langPath,
+        ], 'article-comment-translations');
     }
 
     /**
-     * Define the "api" routes for the application.
-     * These routes are typically stateless.
+     * Register artisan commands.
      */
-    protected function mapApiRoutes(): void
+    public function loadCommands(): void
     {
-        Route::prefix('api')
-            ->middleware('api')
-            // ->namespace('Modules\\ArticleComment\\UI\\API\\Controllers')
-            ->group(function () {
-                $this->loadRoutesFromDirectory(__DIR__.'/../UI/API/routes');
-            });
+        if ($this->app->runningInConsole()) {
+            $this->loadCommandsFrom(__DIR__.'/../UI/CLI/Commands');
+        }
+    }
+
+    /**
+     * Register views.
+     */
+    public function loadViews(): void
+    {
+        $sourcePath = __DIR__.'/../../resources/views';
+        $viewsPath = $this->app->resourcePath('views/modules/demo/article-comment');
+
+        $this->loadViewsFrom(
+            array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
+            $this->modulePackageName
+        );
+
+        $this->publishes([
+            $sourcePath => $viewsPath
+        ], 'article-comment-views');
     }
 }

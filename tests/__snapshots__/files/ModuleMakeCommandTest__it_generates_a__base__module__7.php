@@ -1,68 +1,33 @@
 <?php
 
-namespace Modules\ArticleComment\Policies;
+namespace Modules\ArticleComment\Models;
 
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Modules\ArticleComment\Models\ArticleComment;
-use Modules\User\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Modules\ArticleComment\Database\Factories\ArticleCommentFactory;
 
-class ArticleCommentPolicy
+class ArticleComment extends Model
 {
-    use HandlesAuthorization;
+    use HasFactory;
+
+    protected $fillable = [
+        // TODO: add fields here
+    ];
+
+    protected $hidden = [
+        // TODO: add fields here
+    ];
+
+    protected $casts = [
+        // TODO: add fields here
+    ];
 
     /**
-     * Determine whether the user can view any models.
+     * Create a new factory instance for the model.
      */
-    public function viewAny(User $user): bool
+    protected static function newFactory(): Factory
     {
-        return $user->can('view-article-comment');
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, ArticleComment $articleComment): bool
-    {
-        return $user->can('view-article-comment');
-    }
-
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        return $user->can('create-article-comment');
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, ArticleComment $articleComment): bool
-    {
-        return $user->can('update-article-comment');
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, ArticleComment $articleComment): bool
-    {
-        return $user->can('delete-article-comment');
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ArticleComment $articleComment): bool
-    {
-        return $user->can('delete-article-comment');
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ArticleComment $articleComment): bool
-    {
-        return $user->can('force-delete-article-comment');
+        return ArticleCommentFactory::new();
     }
 }
