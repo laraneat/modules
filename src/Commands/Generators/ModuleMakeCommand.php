@@ -142,7 +142,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
         $initialWorkingDir = getcwd();
         $appBasePath = $this->laravel->basePath();
         chdir($appBasePath);
-        $moduleRelativePath = Str::after($appBasePath, GeneratorHelper::makeModulePath($this->moduleName));
+        $moduleRelativePath = GeneratorHelper::makeRelativePath($appBasePath, GeneratorHelper::makeModulePath($this->moduleName));
         ComposerJsonFile::create(Factory::getComposerFile())
             ->addModule($this->modulePackageName, $moduleRelativePath)
             ->save();
