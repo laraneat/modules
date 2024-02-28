@@ -5,7 +5,7 @@ namespace Laraneat\Modules\Tests;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Str;
-use Laraneat\Modules\Facades\Modules;
+use Laraneat\Modules\Support\Facades\Modules;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModulesRepository;
 use Laraneat\Modules\Providers\ComposerServiceProvider;

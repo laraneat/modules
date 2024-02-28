@@ -4,7 +4,7 @@ namespace Modules\Article\Providers;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
-use Laraneat\Modules\Concerns\CanLoadRoutesFromDirectory;
+use Laraneat\Modules\Support\Concerns\CanLoadRoutesFromDirectory;
 
 class RouteServiceProvider extends ServiceProvider
 {

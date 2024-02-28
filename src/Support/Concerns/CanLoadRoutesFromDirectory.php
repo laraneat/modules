@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraneat\Modules\Concerns;
+namespace Laraneat\Modules\Support\Concerns;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
