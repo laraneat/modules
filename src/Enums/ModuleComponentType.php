@@ -13,6 +13,7 @@ enum ModuleComponentType: string
     case ApiTest = 'api-test';
     case CliCommand = 'cli-command';
     case CliTest = 'cli-test';
+    case Config = 'config';
     case Dto = 'dto';
     case Event = 'event';
     case Exception = 'exception';

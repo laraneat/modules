@@ -3,7 +3,7 @@
 namespace Modules\Author\Actions;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\Author\Models\Author;
 use Modules\Author\UI\API\QueryWizards\AuthorsQueryWizard;
@@ -21,7 +21,7 @@ class ListAuthorsAction
             ->paginate();
     }
 
-    public function asController(ListAuthorsRequest $request): ResourceCollection
+    public function asController(ListAuthorsRequest $request): AnonymousResourceCollection
     {
         return AuthorResource::collection($this->handle($request));
     }

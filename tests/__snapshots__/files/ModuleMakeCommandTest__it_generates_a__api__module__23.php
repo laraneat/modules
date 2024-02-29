@@ -23,6 +23,6 @@ class UpdateArticleCommentRequest extends FormRequest
 
     public function toDTO(): UpdateArticleCommentDTO
     {
-        return new UpdateArticleCommentDTO($this->validated());
+        return UpdateArticleCommentDTO::from($this->validated());
     }
 }

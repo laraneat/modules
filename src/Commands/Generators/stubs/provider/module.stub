@@ -6,14 +6,12 @@ use Laraneat\Modules\Support\ModuleServiceProvider;
 
 class {{ class }} extends ModuleServiceProvider
 {
-    protected string $modulePackageName = '{{ modulePackageName }}';
-
     /**
      * Register services.
      */
     public function register(): void
     {
-        //
+        // $this->loadConfigurations();
     }
 
     /**
@@ -22,9 +20,24 @@ class {{ class }} extends ModuleServiceProvider
     public function boot(): void
     {
         $this->loadMigrations();
-        // $this->loadTranslations();
         // $this->loadCommands();
+        // $this->loadTranslations();
         // $this->loadViews();
+    }
+
+    /**
+     * Register configuration files.
+     */
+    public function loadConfigurations(): void
+    {
+        $sourcePath = __DIR__.'/{{ configPath }}/{{ moduleNameKebabCase }}.php';
+        $configsPath = $this->app->configPath('{{ moduleNameKebabCase }}.php');
+
+        $this->mergeConfigFrom($sourcePath, '{{ moduleNameKebabCase }}');
+
+        $this->publishes([
+            $sourcePath => $configsPath
+        ], '{{ moduleNameKebabCase }}-config');
     }
 
     /**
@@ -43,21 +56,6 @@ class {{ class }} extends ModuleServiceProvider
     }
 
     /**
-     * Register translations.
-     */
-    public function loadTranslations(): void
-    {
-        $sourcePath = __DIR__.'/{{ langPath }}';
-        $langPath = $this->app->langPath('modules/{{ modulePackageName }}');
-
-        $this->loadTranslationsFrom($sourcePath, $this->modulePackageName);
-
-        $this->publishes([
-            $sourcePath => $langPath,
-        ], '{{ moduleNameKebabCase }}-translations');
-    }
-
-    /**
      * Register artisan commands.
      */
     public function loadCommands(): void
@@ -68,16 +66,31 @@ class {{ class }} extends ModuleServiceProvider
     }
 
     /**
+     * Register translations.
+     */
+    public function loadTranslations(): void
+    {
+        $sourcePath = __DIR__.'/{{ langPath }}';
+        $langPath = $this->app->langPath('modules/{{ moduleNameKebabCase }}');
+
+        $this->loadTranslationsFrom($sourcePath, '{{ moduleNameKebabCase }}');
+
+        $this->publishes([
+            $sourcePath => $langPath,
+        ], '{{ moduleNameKebabCase }}-translations');
+    }
+
+    /**
      * Register views.
      */
     public function loadViews(): void
     {
         $sourcePath = __DIR__.'/{{ viewsPath }}';
-        $viewsPath = $this->app->resourcePath('views/modules/{{ modulePackageName }}');
+        $viewsPath = $this->app->resourcePath('views/modules/{{ moduleNameKebabCase }}');
 
         $this->loadViewsFrom(
-            array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
-            $this->modulePackageName
+            array_merge($this->getPublishableViewPaths('{{ moduleNameKebabCase }}'), [$sourcePath]),
+            '{{ moduleNameKebabCase }}'
         );
 
         $this->publishes([

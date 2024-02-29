@@ -23,6 +23,6 @@ class CreateArticleCommentRequest extends FormRequest
 
     public function toDTO(): CreateArticleCommentDTO
     {
-        return new CreateArticleCommentDTO($this->validated());
+        return CreateArticleCommentDTO::from($this->validated());
     }
 }

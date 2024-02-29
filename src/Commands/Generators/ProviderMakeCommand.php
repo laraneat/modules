@@ -108,6 +108,10 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
                     $providerDir,
                     GeneratorHelper::component(ModuleComponentType::CliCommand)->getFullPath($this->module)
                 ),
+                'configPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::Config)->getFullPath($this->module)
+                ),
                 'langPath' => GeneratorHelper::makeRelativePath(
                     $providerDir,
                     GeneratorHelper::component(ModuleComponentType::Lang)->getFullPath($this->module)

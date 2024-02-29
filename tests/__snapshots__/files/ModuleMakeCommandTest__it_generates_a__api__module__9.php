@@ -3,7 +3,7 @@
 namespace Modules\ArticleComment\Actions;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\ArticleComment\Models\ArticleComment;
 use Modules\ArticleComment\UI\API\QueryWizards\ArticleCommentsQueryWizard;
@@ -21,7 +21,7 @@ class ListArticleCommentsAction
             ->paginate();
     }
 
-    public function asController(ListArticleCommentsRequest $request): ResourceCollection
+    public function asController(ListArticleCommentsRequest $request): AnonymousResourceCollection
     {
         return ArticleCommentResource::collection($this->handle($request));
     }

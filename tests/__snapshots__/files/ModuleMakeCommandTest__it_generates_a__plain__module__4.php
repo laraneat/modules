@@ -6,14 +6,12 @@ use Laraneat\Modules\Support\ModuleServiceProvider;
 
 class ArticleCommentServiceProvider extends ModuleServiceProvider
 {
-    protected string $modulePackageName = 'demo/article-comment';
-
     /**
      * Register services.
      */
     public function register(): void
     {
-        //
+        // $this->loadConfigurations();
     }
 
     /**
@@ -22,9 +20,24 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
     public function boot(): void
     {
         $this->loadMigrations();
-        // $this->loadTranslations();
         // $this->loadCommands();
+        // $this->loadTranslations();
         // $this->loadViews();
+    }
+
+    /**
+     * Register configuration files.
+     */
+    public function loadConfigurations(): void
+    {
+        $sourcePath = __DIR__.'/../../config/article-comment.php';
+        $configsPath = $this->app->configPath('article-comment.php');
+
+        $this->mergeConfigFrom($sourcePath, 'article-comment');
+
+        $this->publishes([
+            $sourcePath => $configsPath
+        ], 'article-comment-config');
     }
 
     /**
@@ -43,21 +56,6 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * Register translations.
-     */
-    public function loadTranslations(): void
-    {
-        $sourcePath = __DIR__.'/../../lang';
-        $langPath = $this->app->langPath('modules/demo/article-comment');
-
-        $this->loadTranslationsFrom($sourcePath, $this->modulePackageName);
-
-        $this->publishes([
-            $sourcePath => $langPath,
-        ], 'article-comment-translations');
-    }
-
-    /**
      * Register artisan commands.
      */
     public function loadCommands(): void
@@ -68,16 +66,31 @@ class ArticleCommentServiceProvider extends ModuleServiceProvider
     }
 
     /**
+     * Register translations.
+     */
+    public function loadTranslations(): void
+    {
+        $sourcePath = __DIR__.'/../../lang';
+        $langPath = $this->app->langPath('modules/article-comment');
+
+        $this->loadTranslationsFrom($sourcePath, 'article-comment');
+
+        $this->publishes([
+            $sourcePath => $langPath,
+        ], 'article-comment-translations');
+    }
+
+    /**
      * Register views.
      */
     public function loadViews(): void
     {
         $sourcePath = __DIR__.'/../../resources/views';
-        $viewsPath = $this->app->resourcePath('views/modules/demo/article-comment');
+        $viewsPath = $this->app->resourcePath('views/modules/article-comment');
 
         $this->loadViewsFrom(
-            array_merge($this->getPublishableViewPaths($this->modulePackageName), [$sourcePath]),
-            $this->modulePackageName
+            array_merge($this->getPublishableViewPaths('article-comment'), [$sourcePath]),
+            'article-comment'
         );
 
         $this->publishes([

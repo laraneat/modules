@@ -23,6 +23,6 @@ class CreateAuthorRequest extends FormRequest
 
     public function toDTO(): CreateAuthorDTO
     {
-        return new CreateAuthorDTO($this->validated());
+        return CreateAuthorDTO::from($this->validated());
     }
 }

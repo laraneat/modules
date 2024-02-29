@@ -117,6 +117,9 @@ return [
             'path' => 'tests/UI/CLI',
             'namespace' => 'Tests\\UI\\CLI'
         ],
+        ModuleComponentType::Config->value => [
+            'path' => 'config'
+        ],
         ModuleComponentType::Dto->value => [
             'path' => 'src/DTO',
             'namespace' => 'DTO'

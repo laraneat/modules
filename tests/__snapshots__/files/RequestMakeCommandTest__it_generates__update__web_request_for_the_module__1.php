@@ -23,6 +23,6 @@ class UpdateAuthorRequest extends FormRequest
 
     public function toDTO(): UpdateAuthorDTO
     {
-        return new UpdateAuthorDTO($this->validated());
+        return UpdateAuthorDTO::from($this->validated());
     }
 }
