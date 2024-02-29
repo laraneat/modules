@@ -23,6 +23,6 @@ class {{ class }} extends FormRequest
 
     public function toDTO(): {{ dto }}
     {
-        return new {{ dto }}($this->validated());
+        return {{ dto }}::from($this->validated());
     }
 }
