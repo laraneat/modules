@@ -19,7 +19,9 @@ class ModulesRepositoryServiceProvider extends ServiceProvider implements Deferr
             return new ModulesRepository(
                 app: $app,
                 modulesPath: $this->app['config']->get('modules.path'),
-                modulesManifestPath: $this->app->bootstrapPath('cache/laraneat-modules.php')
+                modulesManifestPath: $this->app['config']->get('modules.cache.enabled')
+                    ? $this->app->bootstrapPath('cache/laraneat-modules.php')
+                    : null
             );
         });
     }
