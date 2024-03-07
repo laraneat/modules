@@ -36,7 +36,11 @@ abstract class ModuleServiceProvider extends ServiceProvider
      *
      * @throws ReflectionException
      */
-    protected function loadCommandsFrom(array|string $paths): void
+    protected function loadCommandsFrom(
+        array|string $paths,
+        string $basePath,
+        string $baseNamespace
+    ): void
     {
         $paths = array_unique(Arr::wrap($paths));
 
@@ -48,10 +52,8 @@ abstract class ModuleServiceProvider extends ServiceProvider
             return;
         }
 
-        $namespace = $this->app->getNamespace();
-
         foreach (Finder::create()->in($paths)->files() as $file) {
-            $command = $this->commandClassFromFile($file, $namespace);
+            $command = $this->commandClassFromFile($file, $basePath, $baseNamespace);
 
             if (
                 is_subclass_of($command, Command::class) &&
@@ -67,12 +69,16 @@ abstract class ModuleServiceProvider extends ServiceProvider
     /**
      * Extract the command class name from the given file path.
      */
-    protected function commandClassFromFile(SplFileInfo $file, string $namespace): string
+    protected function commandClassFromFile(
+        SplFileInfo $file,
+        string $basePath,
+        string $baseNamespace,
+    ): string
     {
-        return $namespace . str_replace(
+        return rtrim($baseNamespace, '\\') . '\\' . str_replace(
             ['/', '.php'],
             ['\\', ''],
-            Str::after($file->getRealPath(), realpath(app_path()) . '/')
+            Str::after($file->getRealPath(), realpath($basePath) . DIRECTORY_SEPARATOR)
         );
     }
 

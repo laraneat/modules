@@ -81,7 +81,11 @@ class ArticleServiceProvider extends ModuleServiceProvider
     public function loadCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommandsFrom(realpath('../UI/CLI/Commands'));
+            $this->loadCommandsFrom(
+                __DIR__.'/../UI/CLI/Commands',
+                __DIR__.'/..',
+                'Modules\\Article'
+            );
         }
     }
 }
