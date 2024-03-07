@@ -104,6 +104,11 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
             $stubReplaces = array_merge($stubReplaces, [
                 'modulePackageName' => $this->module->getPackageName(),
                 'moduleNameKebabCase' => $this->module->getKebabName(),
+                'moduleNamespace' => str_replace('\\', '\\\\', $this->module->getNamespace()),
+                'modulePath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    $this->module->getPath()
+                ),
                 'commandsPath' => GeneratorHelper::makeRelativePath(
                     $providerDir,
                     GeneratorHelper::component(ModuleComponentType::CliCommand)->getFullPath($this->module)

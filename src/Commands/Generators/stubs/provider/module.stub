@@ -61,7 +61,11 @@ class {{ class }} extends ModuleServiceProvider
     public function loadCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommandsFrom(__DIR__.'/{{ commandsPath }}');
+            $this->loadCommandsFrom(
+                __DIR__.'/{{ commandsPath }}',
+                __DIR__.'/{{ modulePath }}',
+                '{{ moduleNamespace }}'
+            );
         }
     }
 
