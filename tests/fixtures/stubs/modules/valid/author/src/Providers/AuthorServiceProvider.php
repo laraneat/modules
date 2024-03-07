@@ -81,11 +81,9 @@ class AuthorServiceProvider extends ModuleServiceProvider
     public function loadCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommandsFrom(
-                __DIR__.'/../UI/CLI/Commands',
-                __DIR__.'/..',
-                'Modules\\Author'
-            );
+            $this->loadCommandsFrom([
+                'Modules\\Author\\UI\\CLI\\Commands' => __DIR__.'/../UI/CLI/Commands',
+            ]);
         }
     }
 }

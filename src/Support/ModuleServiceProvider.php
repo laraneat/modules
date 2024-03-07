@@ -32,36 +32,37 @@ abstract class ModuleServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register all commands in the given directory(ies).
+     * Load all commands by array of paths with namespace keys.
+     *
+     * @param array<string, string> $pathsByNamespace
      *
      * @throws ReflectionException
      */
     protected function loadCommandsFrom(
-        array|string $paths,
-        string $basePath,
-        string $baseNamespace
+        array $pathsByNamespace,
     ): void
     {
-        $paths = array_unique(Arr::wrap($paths));
-
-        $paths = array_filter($paths, static function ($path) {
+        $pathsByNamespace = array_unique(Arr::wrap($pathsByNamespace));
+        $pathsByNamespace = array_filter($pathsByNamespace, static function ($path) {
             return is_dir($path);
         });
 
-        if (empty($paths)) {
+        if (empty($pathsByNamespace)) {
             return;
         }
 
-        foreach (Finder::create()->in($paths)->files() as $file) {
-            $command = $this->commandClassFromFile($file, $basePath, $baseNamespace);
+        foreach ($pathsByNamespace as $namespace => $path) {
+            foreach (Finder::create()->in($path)->files() as $file) {
+                $command = $this->commandClassFromFile($file, $path, $namespace);
 
-            if (
-                is_subclass_of($command, Command::class) &&
-                ! (new ReflectionClass($command))->isAbstract()
-            ) {
-                Artisan::starting(function ($artisan) use ($command) {
-                    $artisan->resolve($command);
-                });
+                if (
+                    is_subclass_of($command, Command::class) &&
+                    ! (new ReflectionClass($command))->isAbstract()
+                ) {
+                    Artisan::starting(function ($artisan) use ($command) {
+                        $artisan->resolve($command);
+                    });
+                }
             }
         }
     }
@@ -72,7 +73,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
     protected function commandClassFromFile(
         SplFileInfo $file,
         string $basePath,
-        string $baseNamespace,
+        string $baseNamespace
     ): string
     {
         return rtrim($baseNamespace, '\\') . '\\' . str_replace(

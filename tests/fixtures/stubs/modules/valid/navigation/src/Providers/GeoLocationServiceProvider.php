@@ -81,11 +81,9 @@ class GeoLocationServiceProvider extends ModuleServiceProvider
     public function loadCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommandsFrom(
-                __DIR__.'/../UI/CLI/Commands',
-                __DIR__.'/..',
-                'Modules\\GeoLocation'
-            );
+            $this->loadCommandsFrom([
+                'Modules\\GeoLocation\\UI\\CLI\\Commands' => __DIR__.'/../UI/CLI/Commands',
+            ]);
         }
     }
 }
