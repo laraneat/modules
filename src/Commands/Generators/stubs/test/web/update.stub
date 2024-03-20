@@ -6,7 +6,7 @@ use {{ modelNamespace }}\{{ model }};
 use Tests\TestCase;
 
 /**
- * @group {{ modulePackageName }}
+ * @group {{ group }}
  * @group web
  */
 class {{ class }} extends TestCase
@@ -16,7 +16,7 @@ class {{ class }} extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'update-{{ modelKebabCase }}',
-        'roles'       => '',
+        'roles' => '',
     ];
 
     protected function getTestData(array $mergeData = []): array

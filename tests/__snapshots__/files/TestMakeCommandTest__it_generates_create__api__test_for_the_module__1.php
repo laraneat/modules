@@ -7,7 +7,7 @@ use Modules\Author\Models\Author;
 use Tests\TestCase;
 
 /**
- * @group laraneat/author
+ * @group author
  * @group api
  */
 class CreateAuthorTest extends TestCase
@@ -17,15 +17,8 @@ class CreateAuthorTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'create-author',
-        'roles'       => '',
+        'roles' => '',
     ];
-
-    protected function getTestData(array $mergeData = []): array
-    {
-        return array_merge([
-            // TODO: add fields here
-        ], $mergeData);
-    }
 
     public function test_create_author(): void
     {
@@ -54,5 +47,12 @@ class CreateAuthorTest extends TestCase
 
         $this->postJson(route('api.authors.create'), $data)
             ->assertForbidden();
+    }
+
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
     }
 }

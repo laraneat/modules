@@ -5,7 +5,7 @@ namespace Modules\Author\Tests\UI\WEB;
 use Tests\TestCase;
 
 /**
- * @group laraneat/author
+ * @group author
  * @group web
  */
 class ExampleTest extends TestCase

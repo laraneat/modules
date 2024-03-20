@@ -5,7 +5,7 @@ namespace {{ namespace }};
 use Tests\TestCase;
 
 /**
- * @group {{ modulePackageName }}
+ * @group {{ group }}
  * @group web
  */
 class {{ class }} extends TestCase

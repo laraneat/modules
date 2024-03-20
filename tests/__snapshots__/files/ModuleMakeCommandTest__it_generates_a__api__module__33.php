@@ -6,7 +6,7 @@ use Modules\ArticleComment\Models\ArticleComment;
 use Tests\TestCase;
 
 /**
- * @group demo/article-comment
+ * @group article-comment
  * @group api
  */
 class ListArticleCommentsTest extends TestCase
@@ -16,7 +16,7 @@ class ListArticleCommentsTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'view-article-comment',
-        'roles'       => '',
+        'roles' => '',
     ];
 
     public function test_list_article_comments(): void

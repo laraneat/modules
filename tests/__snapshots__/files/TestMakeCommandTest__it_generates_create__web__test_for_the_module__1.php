@@ -6,7 +6,7 @@ use Modules\Author\Models\Author;
 use Tests\TestCase;
 
 /**
- * @group laraneat/author
+ * @group author
  * @group web
  */
 class CreateAuthorTest extends TestCase
@@ -16,7 +16,7 @@ class CreateAuthorTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'create-author',
-        'roles'       => '',
+        'roles' => '',
     ];
 
     protected function getTestData(array $mergeData = []): array

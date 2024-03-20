@@ -6,7 +6,7 @@ use {{ modelNamespace }}\{{ model }};
 use Tests\TestCase;
 
 /**
- * @group {{ modulePackageName }}
+ * @group {{ group }}
  * @group api
  */
 class {{ class }} extends TestCase
@@ -16,7 +16,7 @@ class {{ class }} extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'view-{{ modelKebabCase }}',
-        'roles'       => '',
+        'roles' => '',
     ];
 
     public function test_list_{{ modelsSnakeCase }}(): void

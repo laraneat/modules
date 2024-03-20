@@ -7,7 +7,7 @@ use Modules\ArticleComment\Models\ArticleComment;
 use Tests\TestCase;
 
 /**
- * @group demo/article-comment
+ * @group article-comment
  * @group api
  */
 class CreateArticleCommentTest extends TestCase
@@ -17,15 +17,8 @@ class CreateArticleCommentTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'create-article-comment',
-        'roles'       => '',
+        'roles' => '',
     ];
-
-    protected function getTestData(array $mergeData = []): array
-    {
-        return array_merge([
-            // TODO: add fields here
-        ], $mergeData);
-    }
 
     public function test_create_article_comment(): void
     {
@@ -54,5 +47,12 @@ class CreateArticleCommentTest extends TestCase
 
         $this->postJson(route('api.article_comments.create'), $data)
             ->assertForbidden();
+    }
+
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
     }
 }

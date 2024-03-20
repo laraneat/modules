@@ -7,7 +7,7 @@ use Modules\ArticleComment\Models\ArticleComment;
 use Tests\TestCase;
 
 /**
- * @group demo/article-comment
+ * @group article-comment
  * @group api
  */
 class UpdateArticleCommentTest extends TestCase
@@ -17,15 +17,8 @@ class UpdateArticleCommentTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'update-article-comment',
-        'roles'       => '',
+        'roles' => '',
     ];
-
-    protected function getTestData(array $mergeData = []): array
-    {
-        return array_merge([
-            // TODO: add fields here
-        ], $mergeData);
-    }
 
     public function test_update_article_comment(): void
     {
@@ -70,5 +63,12 @@ class UpdateArticleCommentTest extends TestCase
 
         $this->patchJson(route('api.article_comments.update', ['articleComment' => 7777]), $data)
             ->assertNotFound();
+    }
+
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
     }
 }

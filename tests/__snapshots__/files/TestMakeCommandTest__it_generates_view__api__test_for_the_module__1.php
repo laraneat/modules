@@ -7,7 +7,7 @@ use Modules\Author\Models\Author;
 use Tests\TestCase;
 
 /**
- * @group laraneat/author
+ * @group author
  * @group api
  */
 class ViewAuthorTest extends TestCase
@@ -17,7 +17,7 @@ class ViewAuthorTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'view-author',
-        'roles'       => '',
+        'roles' => '',
     ];
 
     public function test_view_author(): void

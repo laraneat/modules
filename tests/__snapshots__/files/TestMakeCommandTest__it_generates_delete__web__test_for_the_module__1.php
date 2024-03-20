@@ -6,7 +6,7 @@ use Modules\Author\Models\Author;
 use Tests\TestCase;
 
 /**
- * @group laraneat/author
+ * @group author
  * @group web
  */
 class DeleteAuthorTest extends TestCase
@@ -16,7 +16,7 @@ class DeleteAuthorTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'delete-author',
-        'roles'       => '',
+        'roles' => '',
     ];
 
     public function test_delete_author(): void

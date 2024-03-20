@@ -5,7 +5,7 @@ namespace Modules\Author\Tests\UI\API;
 use Tests\TestCase;
 
 /**
- * @group laraneat/author
+ * @group author
  * @group api
  */
 class ExampleTest extends TestCase
@@ -15,7 +15,7 @@ class ExampleTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => '',
-        'roles'       => '',
+        'roles' => '',
     ];
 
     public function test(): void

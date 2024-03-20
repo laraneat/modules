@@ -127,7 +127,7 @@ class TestMakeCommand extends BaseComponentGeneratorCommand implements PromptsFo
             );
 
         $stubReplaces = [
-            'modulePackageName' => $this->module->getPackageName(),
+            'group' => $this->module->getKebabName(),
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
             'class' => class_basename($this->nameArgument),
         ];

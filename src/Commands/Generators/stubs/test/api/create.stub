@@ -7,7 +7,7 @@ use Tests\TestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
- * @group {{ modulePackageName }}
+ * @group {{ group }}
  * @group api
  */
 class {{ class }} extends TestCase
@@ -17,15 +17,8 @@ class {{ class }} extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'create-{{ modelKebabCase }}',
-        'roles'       => '',
+        'roles' => '',
     ];
-
-    protected function getTestData(array $mergeData = []): array
-    {
-        return array_merge([
-            // TODO: add fields here
-        ], $mergeData);
-    }
 
     public function test_create_{{ modelSnakeCase }}(): void
     {
@@ -54,5 +47,12 @@ class {{ class }} extends TestCase
 
         $this->postJson(route('{{ routeName }}'), $data)
             ->assertForbidden();
+    }
+
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
     }
 }

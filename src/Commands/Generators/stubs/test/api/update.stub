@@ -7,7 +7,7 @@ use Tests\TestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
- * @group {{ modulePackageName }}
+ * @group {{ group }}
  * @group api
  */
 class {{ class }} extends TestCase
@@ -17,15 +17,8 @@ class {{ class }} extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'update-{{ modelKebabCase }}',
-        'roles'       => '',
+        'roles' => '',
     ];
-
-    protected function getTestData(array $mergeData = []): array
-    {
-        return array_merge([
-            // TODO: add fields here
-        ], $mergeData);
-    }
 
     public function test_update_{{ modelSnakeCase }}(): void
     {
@@ -70,5 +63,12 @@ class {{ class }} extends TestCase
 
         $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => 7777]), $data)
             ->assertNotFound();
+    }
+
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
     }
 }

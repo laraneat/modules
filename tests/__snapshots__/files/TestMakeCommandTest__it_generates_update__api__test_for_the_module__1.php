@@ -7,7 +7,7 @@ use Modules\Author\Models\Author;
 use Tests\TestCase;
 
 /**
- * @group laraneat/author
+ * @group author
  * @group api
  */
 class UpdateAuthorTest extends TestCase
@@ -17,15 +17,8 @@ class UpdateAuthorTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'update-author',
-        'roles'       => '',
+        'roles' => '',
     ];
-
-    protected function getTestData(array $mergeData = []): array
-    {
-        return array_merge([
-            // TODO: add fields here
-        ], $mergeData);
-    }
 
     public function test_update_author(): void
     {
@@ -70,5 +63,12 @@ class UpdateAuthorTest extends TestCase
 
         $this->patchJson(route('api.authors.update', ['author' => 7777]), $data)
             ->assertNotFound();
+    }
+
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
     }
 }

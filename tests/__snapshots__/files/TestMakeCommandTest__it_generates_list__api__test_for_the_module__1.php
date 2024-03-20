@@ -6,7 +6,7 @@ use Modules\Author\Models\Author;
 use Tests\TestCase;
 
 /**
- * @group laraneat/author
+ * @group author
  * @group api
  */
 class ListAuthorsTest extends TestCase
@@ -16,7 +16,7 @@ class ListAuthorsTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'view-author',
-        'roles'       => '',
+        'roles' => '',
     ];
 
     public function test_list_authors(): void

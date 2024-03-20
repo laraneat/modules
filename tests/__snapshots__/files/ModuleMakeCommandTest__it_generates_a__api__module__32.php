@@ -6,7 +6,7 @@ use Modules\ArticleComment\Models\ArticleComment;
 use Tests\TestCase;
 
 /**
- * @group demo/article-comment
+ * @group article-comment
  * @group api
  */
 class DeleteArticleCommentTest extends TestCase
@@ -16,7 +16,7 @@ class DeleteArticleCommentTest extends TestCase
      */
     protected array $testUserAccess = [
         'permissions' => 'delete-article-comment',
-        'roles'       => '',
+        'roles' => '',
     ];
 
     public function test_delete_article_comment(): void
