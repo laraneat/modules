@@ -1,0 +1,31 @@
+{
+    "name": "laraneat/author",
+    "description": "Author module for testing",
+    "authors": [
+        {
+            "name": "Salavat Salakhutdinov",
+            "email": "salahutdinov.salavat@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Modules\\Author\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Author\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Author\\Providers\\FooServiceProvider",
+                "Modules\\Foo\\Providers\\BarServiceProvider"
+            ],
+            "aliases": {
+                "AuthorFacade": "Modules\\Author\\Facades\\SomeFacade"
+            }
+        }
+    }
+}

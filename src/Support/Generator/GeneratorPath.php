@@ -6,29 +6,13 @@ use Laraneat\Modules\Module;
 
 class GeneratorPath
 {
-    private string $path;
-    private string $namespace;
-    private bool $generate;
-    private bool $gitkeep;
+    protected string $path;
+    protected string $namespace;
 
-    /**
-     * @param array|bool|string $config
-     */
-    public function __construct($config)
+    public function __construct(array $config)
     {
-        if (!is_array($config)) {
-            $config = [
-                'path' => (string) $config,
-                'generate' => (bool) $config
-            ];
-        }
-
-        $this->path = $this->formatPath((string) $config['path']);
-        $this->namespace = $this->formatNamespace(
-            $this->convertPathToNamespace((string) ($config['namespace'] ?? $this->path))
-        );
-        $this->generate = (bool) ($config['generate'] ?? true);
-        $this->gitkeep = (bool) ($config['gitkeep'] ?? false);
+        $this->path = GeneratorHelper::normalizePath((string) $config['path']);
+        $this->namespace = GeneratorHelper::normalizeNamespace($config['namespace'] ?? $this->path);
     }
 
     public function getPath(): string
@@ -38,7 +22,7 @@ class GeneratorPath
 
     public function getFullPath(Module|string $module): string
     {
-        return GeneratorHelper::modulePath($module, $this->path);
+        return GeneratorHelper::makeModulePath($module, $this->path);
     }
 
     public function getNamespace(): string
@@ -48,36 +32,6 @@ class GeneratorPath
 
     public function getFullNamespace(Module|string $module): string
     {
-        return GeneratorHelper::moduleNamespace($module, $this->namespace);
-    }
-
-    public function generate(): bool
-    {
-        return $this->generate;
-    }
-
-    public function withGitKeep(): bool
-    {
-        return $this->gitkeep;
-    }
-
-    protected function formatPath(string $path): string
-    {
-        return trim($path, '/');
-    }
-
-    protected function formatNamespace(string $namespace): string
-    {
-        return trim($namespace, '\\');
-    }
-
-    protected function convertPathToNamespace(string $path): string
-    {
-        return str_replace('/', '\\', $path);
-    }
-
-    protected function convertNamespaceToPath(string $path): string
-    {
-        return str_replace('\\', '/', $path);
+        return GeneratorHelper::makeModuleNamespace($module, $this->namespace);
     }
 }

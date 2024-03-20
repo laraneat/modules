@@ -2,7 +2,7 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Seeders\Seeder;
+use Illuminate\Database\Seeder;
 
 class {{ class }} extends Seeder
 {

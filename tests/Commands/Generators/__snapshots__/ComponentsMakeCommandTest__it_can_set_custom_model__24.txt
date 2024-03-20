@@ -1,7 +1,0 @@
-<?php
-
-use App\Modules\Blog\Actions\UpdatePostAction;
-use Illuminate\Support\Facades\Route;
-
-Route::patch('posts/{post}', UpdatePostAction::class)
-    ->name('api.posts.update');

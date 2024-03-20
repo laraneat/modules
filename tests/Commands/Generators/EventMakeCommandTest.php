@@ -1,92 +1,22 @@
 <?php
 
-namespace Laraneat\Modules\Tests\Commands\Generators;
+use function PHPUnit\Framework\assertFileExists;
+use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-use Illuminate\Filesystem\Filesystem;
-use Laraneat\Modules\Contracts\RepositoryInterface;
-use Laraneat\Modules\Tests\BaseTestCase;
-use Spatie\Snapshots\MatchesSnapshots;
+beforeEach(function () {
+    $this->setModules([
+        __DIR__ . '/../../fixtures/stubs/modules/valid/author',
+    ], $this->app->basePath('/modules'));
+});
 
-/**
- * @group command
- * @group generator
- */
-class EventMakeCommandTest extends BaseTestCase
-{
-    use MatchesSnapshots;
+it('generates event for the module', function () {
+    $this->artisan('module:make:event', [
+        'name' => 'SomeAuthorEvent',
+        'module' => 'Author',
+    ])
+        ->assertSuccessful();
 
-    private Filesystem $finder;
-    private string $modulePath;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->modulePath = base_path('app/Modules/Article');
-        $this->finder = $this->app['files'];
-        $this->artisan('module:make', ['name' => 'Article', '--plain' => true]);
-    }
-
-    protected function tearDown(): void
-    {
-        $this->app[RepositoryInterface::class]->delete('Article');
-        parent::tearDown();
-    }
-
-    /** @test */
-    public function it_generates_event_file()
-    {
-        $code = $this->artisan('module:make:event', [
-            'name' => 'MyAwesomeEvent',
-            'module' => 'Article'
-        ]);
-
-        $this->assertTrue(is_file($this->modulePath . '/Events/MyAwesomeEvent.php'));
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_correct_event_file_with_content()
-    {
-        $code = $this->artisan('module:make:event', [
-            'name' => 'Foo/Bar\\MyAwesomeEvent',
-            'module' => 'Article'
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Events/Foo/Bar/MyAwesomeEvent.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_change_the_default_path_for_event_file()
-    {
-        $this->app['config']->set('modules.generator.components.event.path', 'Foo/Bar\\Events');
-
-        $code = $this->artisan('module:make:event', [
-            'name' => 'Baz\\Bat/MyAwesomeEvent',
-            'module' => 'Article'
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Foo/Bar/Events/Baz/Bat/MyAwesomeEvent.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_change_the_default_namespace_for_event_file()
-    {
-        $this->app['config']->set('modules.generator.components.event.namespace', 'Foo/Bar\\Events/');
-
-        $code = $this->artisan('module:make:event', [
-            'name' => 'Baz\\Bat/MyAwesomeEvent',
-            'module' => 'Article'
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Events/Baz/Bat/MyAwesomeEvent.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-}
+    $filePath = $this->app->basePath('/modules/author/src/Events/SomeAuthorEvent.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});

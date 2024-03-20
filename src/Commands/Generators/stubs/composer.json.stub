@@ -1,6 +1,7 @@
 {
-    "name": "{{ vendor }}/{{ moduleKey }}",
-    "description": "",
+    "name": "{{ modulePackageName }}",
+    "description": "{{ moduleName }} module",
+    "version": "1.0.0",
     "authors": [
         {
             "name": "{{ authorName }}",
@@ -9,7 +10,20 @@
     ],
     "autoload": {
         "psr-4": {
-            "{{ moduleNamespace }}\\": ""
+            "{{ moduleNamespace }}\\": "src/",
+            "{{ moduleNamespace }}\\Database\\Factories\\": "database/factories/",
+            "{{ moduleNamespace }}\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "{{ moduleNamespace }}\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
         }
     }
 }

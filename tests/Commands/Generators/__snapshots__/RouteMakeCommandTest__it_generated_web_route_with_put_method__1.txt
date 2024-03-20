@@ -1,7 +1,0 @@
-<?php
-
-use App\Modules\Article\Actions\SomePutAction;
-use Illuminate\Support\Facades\Route;
-
-Route::put('some/put/route', SomePutAction::class)
-    ->name('web.nested.some_put_route');

@@ -2,19 +2,16 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
 use Laraneat\Modules\Module;
-use Symfony\Component\Console\Input\InputOption;
 
-class ListCommand extends Command
+class ListCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:list';
+    protected $signature = 'module:list';
 
     /**
      * The console command description.
@@ -28,62 +25,14 @@ class ListCommand extends Command
      */
     public function handle(): int
     {
-        $this->table(['Name', 'Status', 'Priority', 'Path'], $this->getRows());
+        $this->table(
+            ['Package Name', 'Namespace', 'Path'],
+            collect($this->modulesRepository->getModules())
+                ->map(fn (Module $module) => [$module->getPackageName(), $module->getNamespace(), $module->getPath()])
+                ->values()
+                ->toArray()
+        );
 
         return self::SUCCESS;
-    }
-
-    /**
-     * Get table rows.
-     *
-     * @return array
-     */
-    public function getRows(): array
-    {
-        $rows = [];
-
-        foreach ($this->getModules() as $module) {
-            $rows[] = [
-                $module->getName(),
-                $module->isEnabled() ? 'Enabled' : 'Disabled',
-                $module->get('priority'),
-                $module->getPath(),
-            ];
-        }
-
-        return $rows;
-    }
-
-    /**
-     * @return Module[]
-     */
-    public function getModules(): array
-    {
-        switch ($this->option('only')) {
-            case 'enabled':
-                return Modules::getByStatus(true);
-
-            case 'disabled':
-                return Modules::getByStatus(false);
-
-            case 'priority':
-                return Modules::getOrdered($this->option('direction'));
-
-            default:
-                return Modules::all();
-        }
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['only', 'o', InputOption::VALUE_OPTIONAL, 'Types of modules will be displayed.', null],
-            ['direction', 'd', InputOption::VALUE_OPTIONAL, 'The direction of ordering.', 'asc'],
-        ];
     }
 }

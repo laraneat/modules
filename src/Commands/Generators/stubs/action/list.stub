@@ -2,24 +2,26 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Actions\Action;
-use Illuminate\Pagination\AbstractPaginator;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 use {{ modelNamespace }}\{{ model }};
 use {{ queryWizardNamespace }}\{{ queryWizard }};
 use {{ requestNamespace }}\{{ request }};
 use {{ resourceNamespace }}\{{ resource }};
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Lorisleiva\Actions\Concerns\AsAction;
 
-class {{ class }} extends Action
+class {{ class }}
 {
-    public function handle({{ request }} $request): AbstractPaginator
+    use AsAction;
+
+    public function handle({{ request }} $request): LengthAwarePaginator
     {
         return {{ queryWizard }}::for({{ model }}::query())
             ->build()
-            ->jsonPaginate();
+            ->paginate();
     }
 
-    public function asController({{ request }} $request): ResourceCollection
+    public function asController({{ request }} $request): AnonymousResourceCollection
     {
         return {{ resource }}::collection($this->handle($request));
     }

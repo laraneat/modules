@@ -1,0 +1,20 @@
+{
+    "name": "",
+    "description": "Invalid module without name",
+    "authors": [
+        {
+            "name": "Salavat Salakhutdinov",
+            "email": "salahutdinov.salavat@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Modules\\WithoutName\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\WithoutName\\Tests\\": "tests/"
+        }
+    }
+}

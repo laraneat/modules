@@ -1,7 +1,0 @@
-<?php
-
-use App\Modules\Blog\Actions\UpdateCommentAction;
-use Illuminate\Support\Facades\Route;
-
-Route::patch('comments/{comment}', UpdateCommentAction::class)
-    ->name('api.comments.update');

@@ -1,7 +1,0 @@
-<?php
-
-use App\Modules\Blog\Actions\ListPostsAction;
-use Illuminate\Support\Facades\Route;
-
-Route::get('posts', ListPostsAction::class)
-    ->name('api.posts.list');

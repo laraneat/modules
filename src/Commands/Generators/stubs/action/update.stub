@@ -2,32 +2,31 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Actions\Action;
-use App\Ship\Exceptions\UpdateResourceFailedException;
 use {{ dtoNamespace }}\{{ dto }};
 use {{ modelNamespace }}\{{ model }};
 use {{ requestNamespace }}\{{ request }};
 use {{ resourceNamespace }}\{{ resource }};
+use Lorisleiva\Actions\Concerns\AsAction;
 
-class {{ class }} extends Action
+class {{ class }}
 {
-    public function handle({{ model }} ${{ modelEntity }}, {{ dto }} $dto): {{ model }}
+    use AsAction;
+
+    public function handle({{ model }} ${{ modelCamelCase }}, {{ dto }} $dto): {{ model }}
     {
         $data = $dto->all();
 
-        if (empty($data)) {
-            throw new UpdateResourceFailedException();
+        if ($data) {
+            ${{ modelCamelCase }}->update($data);
         }
 
-        ${{ modelEntity }}->update($data);
-
-        return ${{ modelEntity }};
+        return ${{ modelCamelCase }};
     }
 
-    public function asController({{ request }} $request, {{ model }} ${{ modelEntity }}): {{ resource }}
+    public function asController({{ request }} $request, {{ model }} ${{ modelCamelCase }}): {{ resource }}
     {
-        ${{ modelEntity }} = $this->handle(${{ modelEntity }}, $request->toDTO());
+        ${{ modelCamelCase }} = $this->handle(${{ modelCamelCase }}, $request->toDTO());
 
-        return new {{ resource }}(${{ modelEntity }});
+        return new {{ resource }}(${{ modelCamelCase }});
     }
 }

@@ -2,9 +2,12 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Controllers\WebController;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller;
 
-class {{ class }} extends WebController
+class {{ class }} extends Controller
 {
-    //
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 }

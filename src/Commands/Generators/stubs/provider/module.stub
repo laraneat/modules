@@ -2,22 +2,16 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Providers\ServiceProvider;
-use Laraneat\Modules\Traits\ModuleProviderHelpersTrait;
+use Laraneat\Modules\Support\ModuleServiceProvider;
 
-class {{ class }} extends ServiceProvider
+class {{ class }} extends ModuleServiceProvider
 {
-    use ModuleProviderHelpersTrait;
-
-    protected string $moduleName = '{{ moduleName }}';
-    protected string $moduleKey = '{{ moduleKey }}';
-
     /**
      * Register services.
      */
     public function register(): void
     {
-        //
+        // $this->loadConfigurations();
     }
 
     /**
@@ -25,75 +19,84 @@ class {{ class }} extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->registerMigrations();
-        // $this->registerTranslations();
-        // $this->registerCommands();
-        // $this->registerViews();
+        $this->loadMigrations();
+        // $this->loadCommands();
+        // $this->loadTranslations();
+        // $this->loadViews();
     }
 
     /**
-     * Get the services provided by the provider.
+     * Register configuration files.
      */
-    public function provides(): array
+    public function loadConfigurations(): void
     {
-        return [];
-    }
+        $sourcePath = __DIR__.'/{{ configPath }}/{{ moduleNameKebabCase }}.php';
+        $configsPath = $this->app->configPath('{{ moduleNameKebabCase }}.php');
 
-    /**
-     * Register translations.
-     */
-    public function registerTranslations(): void
-    {
-        $sourcePath = module_path($this->moduleName, '{{ langPath }}');
-        $langPath = resource_path('lang/modules/' . $this->moduleKey);
-
-        $this->loadTranslationsFrom($sourcePath, $this->moduleKey);
+        $this->mergeConfigFrom($sourcePath, '{{ moduleNameKebabCase }}');
 
         $this->publishes([
-            $sourcePath => $langPath,
-        ], 'translations');
-    }
-
-    /**
-     * Register views.
-     */
-    public function registerViews(): void
-    {
-        $sourcePath = module_path($this->moduleName, '{{ viewsPath }}');
-        $viewsPath = resource_path('views/modules/' . $this->moduleKey);
-
-        $this->loadViewsFrom(
-            array_merge($this->getPublishableViewPaths($this->moduleKey), [$sourcePath]),
-            $this->moduleKey
-        );
-
-        $this->publishes([
-            $sourcePath => $viewsPath
-        ], 'views');
+            $sourcePath => $configsPath
+        ], '{{ moduleNameKebabCase }}-config');
     }
 
     /**
      * Register migrations.
      */
-    public function registerMigrations(): void
+    public function loadMigrations(): void
     {
-        $sourcePath = module_path($this->moduleName, '{{ migrationsPath }}');
-        $migrationsPath = database_path('migrations');
+        $sourcePath = __DIR__.'/{{ migrationsPath }}';
+        $migrationsPath = $this->app->databasePath('migrations');
 
         $this->loadMigrationsFrom($sourcePath);
 
         $this->publishes([
             $sourcePath => $migrationsPath
-        ], 'migrations');
+        ], '{{ moduleNameKebabCase }}-migrations');
     }
 
     /**
      * Register artisan commands.
      */
-    public function registerCommands(): void
+    public function loadCommands(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadCommands(module_path($this->moduleName, '{{ commandsPath }}'));
+            $this->loadCommandsFrom([
+                '{{ commandsNamespace }}' => __DIR__.'/{{ commandsPath }}',
+            ]);
         }
+    }
+
+    /**
+     * Register translations.
+     */
+    public function loadTranslations(): void
+    {
+        $sourcePath = __DIR__.'/{{ langPath }}';
+        $langPath = $this->app->langPath('modules/{{ moduleNameKebabCase }}');
+
+        $this->loadTranslationsFrom($sourcePath, '{{ moduleNameKebabCase }}');
+
+        $this->publishes([
+            $sourcePath => $langPath,
+        ], '{{ moduleNameKebabCase }}-translations');
+    }
+
+    /**
+     * Register views.
+     */
+    public function loadViews(): void
+    {
+        $sourcePath = __DIR__.'/{{ viewsPath }}';
+        $viewsPath = $this->app->resourcePath('views/modules/{{ moduleNameKebabCase }}');
+
+        $this->loadViewsFrom(
+            array_merge($this->getPublishableViewPaths('{{ moduleNameKebabCase }}'), [$sourcePath]),
+            '{{ moduleNameKebabCase }}'
+        );
+
+        $this->publishes([
+            $sourcePath => $viewsPath
+        ], '{{ moduleNameKebabCase }}-views');
     }
 }

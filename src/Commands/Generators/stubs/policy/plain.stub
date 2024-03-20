@@ -2,10 +2,9 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Policies\Policy;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class {{ class }} extends Policy
+class {{ class }}
 {
     use HandlesAuthorization;
 

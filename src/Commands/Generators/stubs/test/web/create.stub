@@ -2,11 +2,11 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Tests\TestCase;
 use {{ modelNamespace }}\{{ model }};
+use Tests\TestCase;
 
 /**
- * @group {{ moduleKey }}
+ * @group {{ group }}
  * @group web
  */
 class {{ class }} extends TestCase
@@ -14,9 +14,9 @@ class {{ class }} extends TestCase
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'create-{{ modelPermissionEntity }}',
-        'roles'       => '',
+    protected array $testUserAccess = [
+        'permissions' => 'create-{{ modelKebabCase }}',
+        'roles' => '',
     ];
 
     protected function getTestData(array $mergeData = []): array
@@ -26,21 +26,21 @@ class {{ class }} extends TestCase
         ], $mergeData);
     }
 
-    public function test_create_{{ modelSnake }}(): void
+    public function test_create_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
         $data = $this->getTestData();
 
         $this->post(route('{{ routeName }}'), $data)
             ->assertCreated();
 
-        $this->assertExistsModelWhereColumns({{ model }}::class, $data);
+        $this->assertDatabaseHas({{ model }}::class, $data);
     }
 
-    public function test_create_{{ modelSnake }}_without_access(): void
+    public function test_create_{{ modelSnakeCase }}_without_access(): void
     {
-        $this->getTestingUserWithoutAccess();
+        $this->actingAsTestUserWithoutAccess();
 
         $data = $this->getTestData();
 

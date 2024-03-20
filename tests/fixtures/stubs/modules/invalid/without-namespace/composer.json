@@ -1,0 +1,10 @@
+{
+    "name": "laraneat/without-namespace",
+    "description": "Invalid module without namespace",
+    "authors": [
+        {
+            "name": "Salavat Salakhutdinov",
+            "email": "salahutdinov.salavat@gmail.com"
+        }
+    ]
+}

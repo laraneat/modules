@@ -4,14 +4,15 @@ namespace Laraneat\Modules;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Foundation\AliasLoader;
-use Illuminate\Foundation\ProviderRepository;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use Laraneat\Modules\Contracts\ActivatorInterface;
-use Laraneat\Modules\Facades\Modules;
+use Laraneat\Modules\Exceptions\ComposerException;
+use Laraneat\Modules\Support\Composer;
+use Laraneat\Modules\Support\ComposerJsonFile;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Module implements Arrayable
 {
@@ -21,6 +22,21 @@ class Module implements Arrayable
      * The laravel application instance.
      */
     protected Application $app;
+
+    /**
+     * The laravel filesystem instance.
+     */
+    protected Filesystem $filesystem;
+
+    /**
+     * The laraneat modules repository instance.
+     */
+    protected ModulesRepository $modulesRepository;
+
+    /**
+     * The module package name.
+     */
+    protected string $packageName;
 
     /**
      * The module name.
@@ -38,34 +54,56 @@ class Module implements Arrayable
     protected string $namespace;
 
     /**
-     * @var array of cached Json objects, keyed by filename
+     * Module providers
+     *
+     * @var array<int, class-string>
      */
-    protected array $moduleJson = [];
+    protected array $providers = [];
 
     /**
-     * The laravel filesystem instance.
+     * Module aliases
+     *
+     * @var array<string, class-string>
      */
-    private Filesystem $filesystem;
+    protected array $aliases = [];
 
     /**
-     * The activator instance.
+     * @param Application $app The laravel application instance.
+     * @param ModulesRepository $modulesRepository The laraneat modules repository instance.
+     * @param string $packageName The module package name.
+     * @param string|null $name The module name.
+     * @param string $path The module path.
+     * @param string $namespace The module namespace.
+     * @param array<int, class-string> $providers Module providers
+     * @param array<string, class-string> $aliases Module aliases
      */
-    private ActivatorInterface $activator;
-
     public function __construct(
         Application $app,
-        string $name,
+        ModulesRepository $modulesRepository,
+        string $packageName,
+        ?string $name,
         string $path,
         string $namespace,
-        array $moduleJson = []
+        array $providers,
+        array $aliases,
     ) {
         $this->app = $app;
-        $this->name = trim($name);
+        $this->filesystem = $app['files'] ?: new Filesystem();
+        $this->modulesRepository = $modulesRepository;
+        $this->packageName = trim($packageName);
+        $this->name = trim($name ?? "") ?: Str::afterLast($this->packageName, '/');
         $this->path = rtrim($path, '/');
         $this->namespace = trim($namespace, '\\');
-        $this->moduleJson = $moduleJson;
-        $this->filesystem = $app['files'];
-        $this->activator = $app[ActivatorInterface::class];
+        $this->providers = $providers;
+        $this->aliases = $aliases;
+    }
+
+    /**
+     * Get package name.
+     */
+    public function getPackageName(): string
+    {
+        return $this->packageName;
     }
 
     /**
@@ -77,14 +115,6 @@ class Module implements Arrayable
     }
 
     /**
-     * Get key.
-     */
-    public function getKey(): string
-    {
-        return Str::snake($this->name, '-');
-    }
-
-    /**
      * Get name in studly case.
      */
     public function getStudlyName(): string
@@ -93,43 +123,19 @@ class Module implements Arrayable
     }
 
     /**
+     * Get name in kebab case.
+     */
+    public function getKebabName(): string
+    {
+        return Str::kebab(str_replace('_', '-', $this->name));
+    }
+
+    /**
      * Get name in snake case.
      */
     public function getSnakeName(): string
     {
-        return Str::snake($this->name);
-    }
-
-    /**
-     * Get description.
-     */
-    public function getDescription(): string
-    {
-        return $this->get('description');
-    }
-
-    /**
-     * Get alias.
-     */
-    public function getAlias(): string
-    {
-        return $this->get('alias');
-    }
-
-    /**
-     * Get priority.
-     */
-    public function getPriority(): string
-    {
-        return $this->get('priority');
-    }
-
-    /**
-     * Get module requirements.
-     */
-    public function getRequires(): array
-    {
-        return $this->get('requires');
+        return Str::snake(str_replace('-', '_', $this->name));
     }
 
     /**
@@ -149,112 +155,151 @@ class Module implements Arrayable
     }
 
     /**
-     * Bootstrap the application events.
+     * Get module providers.
+     *
+     * @return array<int, class-string>
      */
-    public function boot(): void
+    public function getProviders(): array
     {
-        if ($this->isLoadFilesOnBoot()) {
-            $this->registerFiles();
+        return $this->providers;
+    }
+
+    /**
+     * Get module aliases.
+     *
+     * @return array<string, class-string>
+     */
+    public function getAliases(): array
+    {
+        return $this->aliases;
+    }
+
+    /**
+     * Set module providers.
+     *
+     * @param array<int, class-string> $providers
+     *
+     * @return $this
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
+    public function setProviders(array $providers): static
+    {
+        $this->providers = $providers;
+
+        return $this->save();
+    }
+
+    /**
+     * Set module aliases.
+     *
+     * @param array<string, class-string> $aliases
+     *
+     * @return $this
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
+    public function setAliases(array $aliases): static
+    {
+        $this->aliases = $aliases;
+
+        return $this->save();
+    }
+
+    /**
+     * Set module providers.
+     *
+     * @param class-string $providerClass
+     *
+     * @return $this
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
+    public function addProvider(string $providerClass): static
+    {
+        if (! in_array($providerClass, $this->providers)) {
+            $this->providers[] = $providerClass;
+
+            return $this->save();
         }
 
-        $this->fireEvent('boot');
+        return $this;
     }
 
     /**
-     * Get json contents from the cache, setting as needed.
+     * Set module providers.
+     *
+     * @param string $alias
+     * @param class-string $class
+     *
+     * @return $this
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
-    public function json(?string $fileName = 'module.json'): Json
+    public function addAlias(string $alias, string $class): static
     {
-        if ($fileName === null) {
-            $fileName = 'module.json';
+        if (! isset($this->aliases[$alias]) || $this->aliases[$alias] !== $class) {
+            $this->aliases[$alias] = $class;
+
+            return $this->save();
         }
 
-        return Arr::get($this->moduleJson, $fileName, function () use ($fileName) {
-            return $this->moduleJson[$fileName] = Json::make($this->getExtraPath($fileName), $this->filesystem);
-        });
+        return $this;
     }
 
     /**
-     * Get a specific data from json file by given the key.
+     * Delete the current module.
+     *
+     * @throws ComposerException
      */
-    public function get(string $key, $default = null)
+    public function delete(\Closure|OutputInterface $output = null): bool
     {
-        return $this->json()->get($key, $default);
-    }
+        $status = $this->filesystem->deleteDirectory($this->getPath());
+        $this->modulesRepository->pruneModulesManifest();
 
-    /**
-     * Get a specific data from composer.json file by given the key.
-     */
-    public function getComposerAttr(string $key, $default = null)
-    {
-        return $this->json('composer.json')->get($key, $default);
-    }
-
-    /**
-     * Register the module.
-     */
-    public function register(): void
-    {
-        $this->registerAliases();
-        $this->registerProviders();
-
-        if ($this->isLoadFilesOnBoot() === false) {
-            $this->registerFiles();
+        $composerClass = Composer::class;
+        $composer = $this->app[$composerClass];
+        if (! ($composer instanceof Composer)) {
+            throw ComposerException::make("$composerClass not registered in your app.");
         }
 
-        $this->fireEvent('register');
-    }
-
-    /**
-     * Register the module event.
-     */
-    protected function fireEvent(string $event): void
-    {
-        $this->app['events']->dispatch(sprintf('modules.%s.' . $event, $this->getKey()), [$this]);
-    }
-
-    /**
-     * Get the path to the cached *_module.php file.
-     */
-    public function getCachedServicesPath(): string
-    {
-        // This checks if we are running on a Laravel Vapor managed instance
-        // and sets the path to a writable one (services path is not on a writable storage in Vapor).
-        if (!is_null(env('VAPOR_MAINTENANCE_MODE', null))) {
-            return Str::replaceLast('config.php', $this->getSnakeName() . '_module.php', $this->app->getCachedConfigPath());
+        if (! $composer->removePackages([$this->getPackageName()], false, $output)) {
+            throw ComposerException::make("Failed to remove package with composer.");
         }
 
-        return Str::replaceLast('services.php', $this->getSnakeName() . '_module.php', $this->app->getCachedServicesPath());
+        return $status;
     }
 
     /**
-     * Register the service providers from this module.
+     * Get sub path.
      */
-    public function registerProviders(): void
+    public function subPath(string $subPath): string
     {
-        (new ProviderRepository($this->app, new Filesystem(), $this->getCachedServicesPath()))
-            ->load($this->get('providers', []));
+        return $this->getPath() . '/' . GeneratorHelper::normalizePath($subPath);
     }
 
     /**
-     * Register the aliases from this module.
+     * Get sub namespace.
      */
-    public function registerAliases(): void
+    public function subNamespace(string $subNamespace): string
     {
-        $loader = AliasLoader::getInstance();
-        foreach ($this->get('aliases', []) as $aliasName => $aliasClass) {
-            $loader->alias($aliasName, $aliasClass);
+        return $this->getNamespace() . '\\' . GeneratorHelper::normalizeNamespace($subNamespace);
+    }
+
+    /**
+     * Get migration paths.
+     *
+     * @return array<int, string>
+     */
+    public function getMigrationPaths(): array
+    {
+        /** @var Migrator|null $migrator */
+        $migrator = $this->app['migrator'] ?? null;
+
+        if ($migrator === null) {
+            return [];
         }
-    }
 
-    /**
-     * Register the files from this module.
-     */
-    protected function registerFiles(): void
-    {
-        foreach ($this->get('files', []) as $fileName) {
-            include $this->path . '/' . $fileName;
-        }
+        return collect($migrator->paths())
+            ->filter(fn (string $path) => Str::startsWith($path, $this->getPath()))
+            ->values()
+            ->toArray();
     }
 
     /**
@@ -262,117 +307,47 @@ class Module implements Arrayable
      */
     public function __toString()
     {
-        return $this->getStudlyName();
+        return $this->getPackageName();
     }
 
     /**
-     * Determine whether the given status same with the current module status.
-     */
-    public function isStatus(bool $status): bool
-    {
-        return $this->activator->hasStatus($this, $status);
-    }
-
-    /**
-     * Determine whether the current module activated.
-     */
-    public function isEnabled(): bool
-    {
-        return $this->activator->hasStatus($this, true);
-    }
-
-    /**
-     * Determine whether the current module not disabled.
-     */
-    public function isDisabled(): bool
-    {
-        return !$this->isEnabled();
-    }
-
-    /**
-     * Set active state for current module.
-     */
-    public function setActive(bool $active): void
-    {
-        $this->activator->setActive($this, $active);
-    }
-
-    /**
-     * Disable the current module.
-     */
-    public function disable(): void
-    {
-        $this->fireEvent('disabling');
-
-        $this->activator->disable($this);
-        $this->flushCache();
-
-        $this->fireEvent('disabled');
-    }
-
-    /**
-     * Enable the current module.
-     */
-    public function enable(): void
-    {
-        $this->fireEvent('enabling');
-
-        $this->activator->enable($this);
-        $this->flushCache();
-
-        $this->fireEvent('enabled');
-    }
-
-    /**
-     * Delete the current module.
-     */
-    public function delete(): bool
-    {
-        $this->fireEvent('deleting');
-
-        $this->activator->delete($this);
-        $status = $this->json()->getFilesystem()->deleteDirectory($this->getPath());
-        $this->flushCache();
-
-        $this->fireEvent('deleted');
-
-        return $status;
-    }
-
-    /**
-     * Get extra path.
-     */
-    public function getExtraPath(string $path): string
-    {
-        return $this->getPath() . '/' . ltrim($path, '/');
-    }
-
-    /**
-     * Check if the module files can be loaded on boot.
-     */
-    protected function isLoadFilesOnBoot(): bool
-    {
-        return config('modules.register.files', 'register') === 'boot';
-    }
-
-    /**
-     * Get the module as a plain array.
+     * @return array{
+     *     path: string,
+     *     packageName: string,
+     *     name: string,
+     *     namespace: string,
+     *     providers: array<int, class-string>,
+     *     aliases: array<string, class-string>
+     * }
      */
     public function toArray(): array
     {
         return [
-            'name' => $this->name,
             'path' => $this->path,
+            'packageName' => $this->packageName,
+            'name' => $this->name,
             'namespace' => $this->namespace,
-            'module_json' => array_map(static fn (Json $json) => $json->toArray(), $this->moduleJson)
+            'providers' => $this->providers,
+            'aliases' => $this->aliases,
         ];
     }
 
     /**
-     * Flush modules cache.
+     * Save changes to composer.json
+     *
+     * @return $this
+     *
+     * @throws \Exception
      */
-    protected function flushCache(): void
+    protected function save(): static
     {
-        Modules::flushCache();
+        ComposerJsonFile::create($this->path . '/composer.json')
+            ->set('extra.laravel.providers', $this->providers)
+            ->set('extra.laravel.aliases', $this->aliases)
+            ->save();
+
+        $this->modulesRepository->pruneModulesManifest();
+
+        return $this;
     }
 }

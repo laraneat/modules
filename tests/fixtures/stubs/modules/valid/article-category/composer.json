@@ -1,0 +1,29 @@
+{
+    "name": "laraneat/article-category",
+    "description": "ArticleCategory module for testing",
+    "authors": [
+        {
+            "name": "Salavat Salakhutdinov",
+            "email": "salahutdinov.salavat@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Modules\\ArticleCategory\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\ArticleCategory\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\ArticleCategory\\Providers\\ArticleCategoryServiceProvider",
+                "Modules\\ArticleCategory\\Providers\\RouteServiceProvider"
+            ],
+            "aliases": []
+        }
+    }
+}

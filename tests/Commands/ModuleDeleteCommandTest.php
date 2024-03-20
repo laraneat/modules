@@ -1,48 +1,30 @@
 <?php
 
-namespace Laraneat\Modules\Tests\Commands;
+use Laraneat\Modules\ModulesRepository;
+use Laraneat\Modules\Support\Composer;
 
-use Illuminate\Filesystem\Filesystem;
-use Laraneat\Modules\Activators\FileActivator;
-use Laraneat\Modules\Tests\BaseTestCase;
-use Spatie\Snapshots\MatchesSnapshots;
+beforeEach(function () {
+    $this->setModules([
+        __DIR__ . '/../fixtures/stubs/modules/valid/article-category',
+        __DIR__ . '/../fixtures/stubs/modules/valid/article',
+        __DIR__ . '/../fixtures/stubs/modules/valid/author',
+        __DIR__ . '/../fixtures/stubs/modules/valid/empty-module',
+        __DIR__ . '/../fixtures/stubs/modules/valid/empty',
+        __DIR__ . '/../fixtures/stubs/modules/valid/navigation',
+    ], $this->app->basePath('/modules'));
 
-/**
- * @group command
- */
-class ModuleDeleteCommandTest extends BaseTestCase
-{
-    use MatchesSnapshots;
+    /** @var ModulesRepository $modulesRepository */
+    $modulesRepository = $this->app[ModulesRepository::class];
+    $this->modulesRepository = $modulesRepository;
+});
 
-    private Filesystem $finder;
-    private FileActivator $activator;
+it('deletes a module', function () {
+    expect($this->modulesRepository->has('laraneat/article'))->toBe(true);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->finder = $this->app['files'];
-        $this->activator = new FileActivator($this->app);
-    }
+    $this->instance(Composer::class, $this->mockComposer(['composer', 'remove', 'laraneat/article']));
 
-    /** @test */
-    public function it_can_delete_a_module_from_disk(): void
-    {
-        $this->artisan('module:make', ['name' => 'WrongModule']);
-        $this->assertDirectoryExists(base_path('app/Modules/WrongModule'));
+    $this->artisan('module:delete article')
+        ->assertSuccessful();
 
-        $code = $this->artisan('module:delete', ['module' => 'WrongModule']);
-        $this->assertDirectoryDoesNotExist(base_path('app/Modules/WrongModule'));
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_deletes_modules_from_status_file(): void
-    {
-        $this->artisan('module:make', ['name' => 'WrongModule']);
-        $this->assertMatchesSnapshot($this->finder->get($this->activator->getStatusesFilePath()));
-
-        $code = $this->artisan('module:delete', ['module' => 'WrongModule']);
-        $this->assertMatchesSnapshot($this->finder->get($this->activator->getStatusesFilePath()));
-        $this->assertSame(0, $code);
-    }
-}
+    expect($this->modulesRepository->has('laraneat/article'))->toBe(false);
+});

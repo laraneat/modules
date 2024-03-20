@@ -1,7 +1,0 @@
-<?php
-
-use App\Modules\Blog\Actions\DeletePostCommentAction;
-use Illuminate\Support\Facades\Route;
-
-Route::delete('post-comments/{postComment}', DeletePostCommentAction::class)
-    ->name('api.post_comments.delete');

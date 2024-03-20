@@ -2,22 +2,27 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Traits\ConsoleHelpersTrait;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
+use Illuminate\Console\ConfirmableTrait;
 
-class MigrateRefreshCommand extends Command
+class MigrateRefreshCommand extends BaseCommand
 {
-    use ConsoleHelpersTrait, ModuleCommandTrait;
+    use ConfirmableTrait;
 
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:migrate-refresh';
+    protected $signature = 'module:migrate:refresh
+                            {module?* : Module name(s) or package name(s)}
+                            {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
+                            {--database= : The database connection to use}
+                            {--force : Force the operation to run when in production}
+                            {--schema-path= : The path to a schema dump file}
+                            {--pretend : Dump the SQL queries that would be run}
+                            {--seed : Indicates if the seed task should be re-run}
+                            {--seeder= : The class name of the root seeder}
+                            {--step : Force the migrations to be run so they can be rolled back individually}';
 
     /**
      * The console command description.
@@ -31,52 +36,30 @@ class MigrateRefreshCommand extends Command
      */
     public function handle(): int
     {
-        $module = $this->getModule();
+        if (! $this->confirmToProceed()) {
+            return self::FAILURE;
+        }
 
-        $this->call('module:migrate-reset', [
-            'module' => $module->getStudlyName(),
+        $this->call('module:migrate:reset', [
+            'module' => $this->argument('module'),
+            '--realpath' => $this->option('realpath'),
             '--database' => $this->option('database'),
-            '--force' => $this->option('force'),
+            '--pretend' => $this->option('pretend'),
+            '--force' => true,
         ]);
 
         $this->call('module:migrate', [
-            'module' => $module->getStudlyName(),
+            'module' => $this->argument('module'),
+            '--realpath' => $this->option('realpath'),
             '--database' => $this->option('database'),
-            '--force' => $this->option('force'),
+            '--schema-path' => $this->option('schema-path'),
+            '--pretend' => $this->option('pretend'),
+            '--seed' => $this->option('seed'),
+            '--seeder' => $this->option('seeder'),
+            '--step' => $this->option('step'),
+            '--force' => true,
         ]);
 
-        if ($this->option('seed')) {
-            $this->call('module:seed', [
-                'module' => $module->getStudlyName(),
-            ]);
-        }
-
         return self::SUCCESS;
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['database', null, InputOption::VALUE_OPTIONAL, 'The database connection to use.'],
-            ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production.'],
-            ['seed', null, InputOption::VALUE_NONE, 'Indicates if the seed task should be re-run.'],
-        ];
     }
 }

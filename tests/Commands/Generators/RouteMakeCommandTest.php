@@ -1,338 +1,214 @@
 <?php
 
-namespace Laraneat\Modules\Tests\Commands\Generators;
+use function PHPUnit\Framework\assertFileExists;
+use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-use Illuminate\Filesystem\Filesystem;
-use Laraneat\Modules\Contracts\RepositoryInterface;
-use Laraneat\Modules\Tests\BaseTestCase;
-use Spatie\Snapshots\MatchesSnapshots;
+beforeEach(function () {
+    $this->setModules([
+        __DIR__ . '/../../fixtures/stubs/modules/valid/author',
+    ], $this->app->basePath('/modules'));
+});
 
-/**
- * @group command
- * @group generator
- */
-class RouteMakeCommandTest extends BaseTestCase
-{
-    use MatchesSnapshots;
+it('generates "get" web route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'list_authors',
+        'module' => 'Author',
+        '--ui' => 'web',
+        '--action' => 'ListAuthorsAction',
+        '--method' => 'get',
+        '--url' => 'authors',
+        '--name' => 'web.authors.list',
+    ])
+        ->assertSuccessful();
 
-    private Filesystem $finder;
-    private string $modulePath;
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/routes/list_authors.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->modulePath = base_path('app/Modules/Article');
-        $this->finder = $this->app['files'];
-        $this->artisan('module:make', ['name' => 'Article', '--plain' => true]);
-    }
+it('generates "post" web route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'create_author',
+        'module' => 'Author',
+        '--ui' => 'web',
+        '--action' => 'CreateAuthorAction',
+        '--method' => 'post',
+        '--url' => 'authors',
+        '--name' => 'web.authors.create',
+    ])
+        ->assertSuccessful();
 
-    protected function tearDown(): void
-    {
-        $this->app[RepositoryInterface::class]->delete('Article');
-        parent::tearDown();
-    }
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/routes/create_author.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_generates_route_file()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_route',
-            'module' => 'Article',
-            '--url' => 'some/route',
-            '-n' => true
-        ]);
+it('generates "put" web route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'update_author',
+        'module' => 'Author',
+        '--ui' => 'web',
+        '--action' => 'UpdateAuthorAction',
+        '--method' => 'put',
+        '--url' => 'authors/{author}',
+        '--name' => 'web.authors.update',
+    ])
+        ->assertSuccessful();
 
-        $this->assertTrue(is_file($this->modulePath . '/UI/API/Routes/nested/some_route.php'));
-        $this->assertSame(0, $code);
-    }
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/routes/update_author.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_generated_correct_route_file_with_content()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_route',
-            'module' => 'Article',
-            '--url' => 'some/route',
-            '-n' => true
-        ]);
+it('generates "patch" web route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'update_author',
+        'module' => 'Author',
+        '--ui' => 'web',
+        '--action' => 'UpdateAuthorAction',
+        '--method' => 'patch',
+        '--url' => 'authors/{author}',
+        '--name' => 'web.authors.update',
+    ])
+        ->assertSuccessful();
 
-        $file = $this->finder->get($this->modulePath . '/UI/API/Routes/nested/some_route.php');
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/routes/update_author.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+it('generates "delete" web route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'delete_author',
+        'module' => 'Author',
+        '--ui' => 'web',
+        '--action' => 'DeleteAuthorAction',
+        '--method' => 'delete',
+        '--url' => 'authors/{author}',
+        '--name' => 'web.authors.delete',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_can_change_the_default_path_for_route_file()
-    {
-        $this->app['config']->set('modules.generator.components.api-route.path', 'Foo/Bar\\Routes');
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/routes/delete_author.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_route',
-            'module' => 'Article',
-            '--url' => 'some/route',
-            '-n' => true
-        ]);
+it('generates "options" web route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'options_authors',
+        'module' => 'Author',
+        '--ui' => 'web',
+        '--action' => 'ListAuthorsAction',
+        '--method' => 'options',
+        '--url' => 'authors',
+        '--name' => 'web.authors.options',
+    ])
+        ->assertSuccessful();
 
-        $file = $this->finder->get($this->modulePath . '/Foo/Bar/Routes/nested/some_route.php');
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/routes/options_authors.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+it('generates "get" api route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'list_authors',
+        'module' => 'Author',
+        '--ui' => 'api',
+        '--action' => 'ListAuthorsAction',
+        '--method' => 'get',
+        '--url' => 'authors',
+        '--name' => 'web.authors.list',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_generated_recognized_view_route()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/v1/view_posts',
-            'module' => 'Article',
-            '--url' => 'posts/{post}',
-            '-n' => true
-        ]);
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/routes/list_authors.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $file = $this->finder->get($this->modulePath . '/UI/API/Routes/v1/view_posts.php');
+it('generates "post" api route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'create_author',
+        'module' => 'Author',
+        '--ui' => 'api',
+        '--action' => 'CreateAuthorAction',
+        '--method' => 'post',
+        '--url' => 'authors',
+        '--name' => 'api.authors.create',
+    ])
+        ->assertSuccessful();
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/routes/create_author.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_generated_api_route_with_get_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_get_route',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--url' => 'some/get/route',
-            '--method' => 'get',
-            '--name' => 'api.nested.some_get_route',
-            '--action' => 'SomeGetAction',
-            '-n' => true
-        ]);
+it('generates "put" api route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'update_author',
+        'module' => 'Author',
+        '--ui' => 'api',
+        '--action' => 'UpdateAuthorAction',
+        '--method' => 'put',
+        '--url' => 'authors/{author}',
+        '--name' => 'api.authors.update',
+    ])
+        ->assertSuccessful();
 
-        $file = $this->finder->get($this->modulePath . '/UI/API/Routes/nested/some_get_route.php');
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/routes/update_author.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+it('generates "patch" api route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'update_author',
+        'module' => 'Author',
+        '--ui' => 'api',
+        '--action' => 'UpdateAuthorAction',
+        '--method' => 'patch',
+        '--url' => 'authors/{author}',
+        '--name' => 'api.authors.update',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_generated_api_route_with_post_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_post_route',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--url' => 'some/post/route',
-            '--method' => 'post',
-            '--name' => 'api.nested.some_post_route',
-            '--action' => 'SomePostAction',
-            '-n' => true
-        ]);
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/routes/update_author.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $file = $this->finder->get($this->modulePath . '/UI/API/Routes/nested/some_post_route.php');
+it('generates "delete" api route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'delete_author',
+        'module' => 'Author',
+        '--ui' => 'api',
+        '--action' => 'DeleteAuthorAction',
+        '--method' => 'delete',
+        '--url' => 'authors/{author}',
+        '--name' => 'api.authors.delete',
+    ])
+        ->assertSuccessful();
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/routes/delete_author.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_generated_api_route_with_put_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_put_route',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--url' => 'some/put/route',
-            '--method' => 'put',
-            '--name' => 'api.nested.some_put_route',
-            '--action' => 'SomePutAction',
-            '-n' => true
-        ]);
+it('generates "options" api route for the module', function () {
+    $this->artisan('module:make:route', [
+        'name' => 'options_authors',
+        'module' => 'Author',
+        '--ui' => 'api',
+        '--action' => 'ListAuthorsAction',
+        '--method' => 'options',
+        '--url' => 'authors',
+        '--name' => 'api.authors.options',
+    ])
+        ->assertSuccessful();
 
-        $file = $this->finder->get($this->modulePath . '/UI/API/Routes/nested/some_put_route.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_api_route_with_patch_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_patch_route',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--url' => 'some/patch/route',
-            '--method' => 'patch',
-            '--name' => 'api.nested.some_patch_route',
-            '--action' => 'SomePatchAction',
-            '-n' => true
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/API/Routes/nested/some_patch_route.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_api_route_with_delete_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_delete_route',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--url' => 'some/delete/route',
-            '--method' => 'delete',
-            '--name' => 'api.nested.some_delete_route',
-            '--action' => 'SomeDeleteAction',
-            '-n' => true
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/API/Routes/nested/some_delete_route.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_api_route_with_options_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_options_route',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--url' => 'some/options/route',
-            '--method' => 'options',
-            '--name' => 'api.nested.some_options_route',
-            '--action' => 'SomeOptionsAction',
-            '-n' => true
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/API/Routes/nested/some_options_route.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_web_route_with_get_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_get_route',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--url' => 'some/get/route',
-            '--method' => 'get',
-            '--name' => 'web.nested.some_get_route',
-            '--action' => 'SomeGetAction',
-            '-n' => true
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Routes/nested/some_get_route.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_web_route_with_post_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_post_route',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--url' => 'some/post/route',
-            '--method' => 'post',
-            '--name' => 'web.nested.some_post_route',
-            '--action' => 'SomePostAction',
-            '-n' => true
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Routes/nested/some_post_route.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_web_route_with_put_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_put_route',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--url' => 'some/put/route',
-            '--method' => 'put',
-            '--name' => 'web.nested.some_put_route',
-            '--action' => 'SomePutAction',
-            '-n' => true
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Routes/nested/some_put_route.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_web_route_with_patch_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_patch_route',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--url' => 'some/patch/route',
-            '--method' => 'patch',
-            '--name' => 'web.nested.some_patch_route',
-            '--action' => 'SomePatchAction',
-            '-n' => true
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Routes/nested/some_patch_route.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_web_route_with_delete_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_delete_route',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--url' => 'some/delete/route',
-            '--method' => 'delete',
-            '--name' => 'web.nested.some_delete_route',
-            '--action' => 'SomeDeleteAction',
-            '-n' => true
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Routes/nested/some_delete_route.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_web_route_with_options_method()
-    {
-        $code = $this->artisan('module:make:route', [
-            'name' => '/nested/some_options_route',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--url' => 'some/options/route',
-            '--method' => 'options',
-            '--name' => 'web.nested.some_options_route',
-            '--action' => 'SomeOptionsAction',
-            '-n' => true
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Routes/nested/some_options_route.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-}
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/routes/options_authors.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
