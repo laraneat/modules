@@ -31,4 +31,3 @@ class {{ class }} extends Factory
         ];
     }
 }
-

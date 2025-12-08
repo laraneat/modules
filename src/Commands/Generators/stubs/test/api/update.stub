@@ -3,8 +3,9 @@
 namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
-use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\TestCase;
 
 /**
  * @group {{ group }}
@@ -12,6 +13,8 @@ use Illuminate\Testing\Fluent\AssertableJson;
  */
 class {{ class }} extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -41,6 +44,29 @@ class {{ class }} extends TestCase
             );
 
         $this->assertDatabaseHas({{ model }}::class, $expectedData);
+    }
+
+    public function test_update_{{ modelSnakeCase }}_with_invalid_data(): void
+    {
+        $this->actingAsTestUser();
+
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
+
+        $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]), [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                // TODO: add expected validation errors here
+            ]);
+    }
+
+    public function test_update_{{ modelSnakeCase }}_unauthenticated(): void
+    {
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
+
+        $data = $this->getTestData();
+
+        $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]), $data)
+            ->assertUnauthorized();
     }
 
     public function test_update_{{ modelSnakeCase }}_without_access(): void

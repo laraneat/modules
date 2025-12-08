@@ -3,8 +3,9 @@
 namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
-use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\TestCase;
 
 /**
  * @group {{ group }}
@@ -12,6 +13,8 @@ use Illuminate\Testing\Fluent\AssertableJson;
  */
 class {{ class }} extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -35,6 +38,14 @@ class {{ class }} extends TestCase
                         ->etc()
                 )
             );
+    }
+
+    public function test_view_{{ modelSnakeCase }}_unauthenticated(): void
+    {
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
+
+        $this->getJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]))
+            ->assertUnauthorized();
     }
 
     public function test_view_{{ modelSnakeCase }}_without_access(): void

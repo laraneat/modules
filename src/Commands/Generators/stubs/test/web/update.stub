@@ -43,7 +43,7 @@ class {{ class }} extends TestCase
         $this->assertDatabaseHas({{ model }}::class, $expectedData);
     }
 
-    public function test_update_{{ modelSnakeCase }}WithoutAccess(): void
+    public function test_update_{{ modelSnakeCase }}_without_access(): void
     {
         $this->actingAsTestUserWithoutAccess();
 

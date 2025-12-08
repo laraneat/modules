@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 class {{ class }} extends ServiceProvider
 {
     /**
-     * Bootstrap services.
+     * Register services.
      */
     public function register(): void
     {

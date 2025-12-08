@@ -4,8 +4,8 @@ namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
 use {{ requestNamespace }}\{{ request }};
-use Illuminate\Http\JsonResponse;
 use Lorisleiva\Actions\Concerns\AsAction;
+use Symfony\Component\HttpFoundation\Response;
 
 class {{ class }}
 {
@@ -16,7 +16,7 @@ class {{ class }}
         return ${{ modelCamelCase }}->delete();
     }
 
-    public function asController({{ request }} $request, {{ model }} ${{ modelCamelCase }}): JsonResponse
+    public function asController({{ request }} $request, {{ model }} ${{ modelCamelCase }}): Response
     {
         $this->handle(${{ modelCamelCase }});
 

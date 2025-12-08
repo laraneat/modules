@@ -3,8 +3,9 @@
 namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
-use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\TestCase;
 
 /**
  * @group {{ group }}
@@ -12,6 +13,8 @@ use Illuminate\Testing\Fluent\AssertableJson;
  */
 class {{ class }} extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -33,10 +36,29 @@ class {{ class }} extends TestCase
                     $json->has('id')
                         ->whereAll($data)
                         ->etc()
-                    )
+                )
             );
 
         $this->assertDatabaseHas({{ model }}::class, $data);
+    }
+
+    public function test_create_{{ modelSnakeCase }}_with_invalid_data(): void
+    {
+        $this->actingAsTestUser();
+
+        $this->postJson(route('{{ routeName }}'), [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                // TODO: add expected validation errors here
+            ]);
+    }
+
+    public function test_create_{{ modelSnakeCase }}_unauthenticated(): void
+    {
+        $data = $this->getTestData();
+
+        $this->postJson(route('{{ routeName }}'), $data)
+            ->assertUnauthorized();
     }
 
     public function test_create_{{ modelSnakeCase }}_without_access(): void
