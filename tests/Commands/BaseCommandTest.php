@@ -293,22 +293,44 @@ describe('multiple "module" argument', function () {
         // Laravel's expectsChoice expects keys and values merged when using associative arrays
         // The options are: ['all' => 'All modules', 'laraneat/article' => 'laraneat/article', ...]
         // This results in: ['All modules', 'all', 'empty/empty', 'empty/empty', ...]
-        $expectedAnswers = [
-            'All modules',
-            'all',
-            'empty/empty',
-            'empty/empty',
-            'laraneat/article',
-            'laraneat/article',
-            'laraneat/article-category',
-            'laraneat/article-category',
-            'laraneat/author',
-            'laraneat/author',
-            'laraneat/empty',
-            'laraneat/empty',
-            'laraneat/location',
-            'laraneat/location',
-        ];
+        // In Laravel 10, Symfony adds empty string at position 0 and 'None' at position 2 for multiselect prompts
+        $isLaravel10 = version_compare(app()->version(), '11.0', '<');
+
+        $expectedAnswers = $isLaravel10
+            ? [
+                '', // empty string added by Symfony in Laravel 10
+                'All modules',
+                'None', // 'None' option added by Symfony in Laravel 10
+                'all',
+                'empty/empty',
+                'empty/empty',
+                'laraneat/article',
+                'laraneat/article',
+                'laraneat/article-category',
+                'laraneat/article-category',
+                'laraneat/author',
+                'laraneat/author',
+                'laraneat/empty',
+                'laraneat/empty',
+                'laraneat/location',
+                'laraneat/location',
+            ]
+            : [
+                'All modules',
+                'all',
+                'empty/empty',
+                'empty/empty',
+                'laraneat/article',
+                'laraneat/article',
+                'laraneat/article-category',
+                'laraneat/article-category',
+                'laraneat/author',
+                'laraneat/author',
+                'laraneat/empty',
+                'laraneat/empty',
+                'laraneat/location',
+                'laraneat/location',
+            ];
 
         $this->artisan('multiple-module-argument-command')
             ->expectsChoice(
