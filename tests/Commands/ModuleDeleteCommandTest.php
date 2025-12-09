@@ -4,6 +4,22 @@ use Laraneat\Modules\ModulesRepository;
 use Laraneat\Modules\Support\Composer;
 
 beforeEach(function () {
+    // Set mock BEFORE anything else so Module instances get the mock
+    $this->instance(Composer::class, $this->mockComposer(['removePackages' => true]));
+
+    // Rebind ModulesRepository with the mocked Composer
+    $this->app->singleton(ModulesRepository::class, function ($app) {
+        return new ModulesRepository(
+            filesystem: $app['files'],
+            composer: $app[Composer::class],
+            modulesPath: $app['config']->get('modules.path'),
+            basePath: $app->basePath(),
+            modulesManifestPath: $app['config']->get('modules.cache.enabled')
+                ? $app->bootstrapPath('cache/laraneat-modules.php')
+                : null
+        );
+    });
+
     $this->setModules([
         __DIR__ . '/../fixtures/stubs/modules/valid/article-category',
         __DIR__ . '/../fixtures/stubs/modules/valid/article',
@@ -20,8 +36,6 @@ beforeEach(function () {
 
 it('deletes a module', function () {
     expect($this->modulesRepository->has('laraneat/article'))->toBe(true);
-
-    $this->instance(Composer::class, $this->mockComposer(['composer', 'remove', 'laraneat/article']));
 
     $this->artisan('module:delete article')
         ->assertSuccessful();

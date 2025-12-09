@@ -2,10 +2,10 @@
 
 namespace Modules\Author\Actions;
 
-use Illuminate\Http\JsonResponse;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\Author\Models\Author;
 use Modules\Author\UI\API\Requests\DeleteAuthorRequest;
+use Symfony\Component\HttpFoundation\Response;
 
 class DeleteAuthorAction
 {
@@ -16,7 +16,7 @@ class DeleteAuthorAction
         return $author->delete();
     }
 
-    public function asController(DeleteAuthorRequest $request, Author $author): JsonResponse
+    public function asController(DeleteAuthorRequest $request, Author $author): Response
     {
         $this->handle($author);
 

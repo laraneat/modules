@@ -2,6 +2,7 @@
 
 namespace Modules\ArticleComment\Tests\UI\API;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ArticleComment\Models\ArticleComment;
 use Tests\TestCase;
 
@@ -11,6 +12,8 @@ use Tests\TestCase;
  */
 class DeleteArticleCommentTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -29,6 +32,14 @@ class DeleteArticleCommentTest extends TestCase
             ->assertNoContent();
 
         $this->assertNull(ArticleComment::find($articleComment->getKey()));
+    }
+
+    public function test_delete_article_comment_unauthenticated(): void
+    {
+        $articleComment = ArticleComment::factory()->create();
+
+        $this->deleteJson(route('api.article_comments.delete', ['articleComment' => $articleComment->getKey()]))
+            ->assertUnauthorized();
     }
 
     public function test_delete_article_comment_without_access(): void

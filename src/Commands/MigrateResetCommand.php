@@ -2,16 +2,10 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\ConfirmableTrait;
-use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
-use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
-use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Module;
 
-class MigrateResetCommand extends BaseCommand
+class MigrateResetCommand extends BaseMigrationCommand
 {
-    use ConfirmableTrait;
-
     /**
      * The name and signature of the console command.
      *
@@ -32,39 +26,12 @@ class MigrateResetCommand extends BaseCommand
     protected $description = 'Reset the modules migrations.';
 
     /**
-     * Execute the console command.
-     */
-    public function handle(): int
-    {
-        if (! $this->confirmToProceed()) {
-            return self::FAILURE;
-        }
-
-        try {
-            $modulesToHandle = $this->getModuleArgumentOrFail();
-        } catch (ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
-            $this->error($exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        foreach($modulesToHandle as $module) {
-            $this->reset($module);
-        }
-
-        return self::SUCCESS;
-
-    }
-
-    /**
      * Reset migration from the specified module.
      */
-    protected function reset(Module $module): void
+    protected function executeForModule(Module $module): void
     {
-        $this->line('Running for module: <info>' . $module->getName() . '</info>');
-
         $this->call('migrate:reset', [
-            '--path' => $module->getMigrationPaths(),
+            '--path' => $this->getMigrationPaths($module),
             '--database' => $this->option('database'),
             '--realpath' => (bool) $this->option('realpath'),
             '--pretend' => (bool) $this->option('pretend'),

@@ -15,9 +15,8 @@ use Laraneat\Modules\Support\Composer;
 use Laraneat\Modules\Support\Facades\Modules;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use Mockery;
+use Mockery\MockInterface;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
-use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\Process\Process;
 
 abstract class TestCase extends OrchestraTestCase
 {
@@ -86,7 +85,7 @@ abstract class TestCase extends OrchestraTestCase
         $this->addModulesPath($modulesPath);
         $this->filesystem->ensureDirectoryExists($modulesPath);
 
-        foreach($paths as $modulePath) {
+        foreach ($paths as $modulePath) {
             $modulePath = rtrim($modulePath, '/');
             $this->filesystem->copyDirectory($modulePath, $modulesPath . '/' . Str::afterLast($modulePath, '/'));
         }
@@ -97,7 +96,7 @@ abstract class TestCase extends OrchestraTestCase
     public function pruneModulesPaths(): void
     {
         if ($this->modulesPaths) {
-            foreach($this->modulesPaths as $path) {
+            foreach ($this->modulesPaths as $path) {
                 if ($this->filesystem->isDirectory($path)) {
                     $this->filesystem->deleteDirectory($path);
                 }
@@ -135,13 +134,14 @@ abstract class TestCase extends OrchestraTestCase
         $this->composerJsonBackupPath = null;
     }
 
+    /**
+     * @param array<string, mixed> $attributes
+     */
     public function createModule(array $attributes = []): Module
     {
         return new Module(
-            app: $this->app,
-            modulesRepository: $this->app[ModulesRepository::class],
             packageName: $attributes['packageName'] ?? 'some-vendor/testing-module',
-            name: $attributes['name'] ?? null,
+            name: $attributes['name'] ?? '',
             path: $attributes['path'] ?? $this->app->basePath('modules/TestingModule'),
             namespace: $attributes['namespace'] ?? 'SomeVendor\\TestingModule\\',
             providers: $attributes['providers'] ?? [
@@ -155,27 +155,19 @@ abstract class TestCase extends OrchestraTestCase
     }
 
     /**
-     * @return MockObject&Composer
+     * Create a mock of Composer class for testing.
+     *
+     * @param array<string, mixed> $methodExpectations Array of method names to their expected return values
+     *
+     * @return MockInterface&Composer
      */
-    public function mockComposer(array $expectedProcessArguments, bool $customComposerPhar = false, array $environmentVariables = []): MockObject
+    public function mockComposer(array $methodExpectations = []): MockInterface
     {
-        $directory = __DIR__;
+        $composer = Mockery::mock(Composer::class);
 
-        $files = Mockery::mock(Filesystem::class);
-        $files->shouldReceive('exists')->once()->with($directory.'/composer.phar')->andReturn($customComposerPhar);
-
-        $process = Mockery::mock(Process::class);
-        $process->shouldReceive('run')->once();
-
-        $composer = $this->getMockBuilder(Composer::class)
-            ->onlyMethods(['getProcess'])
-            ->setConstructorArgs([$files, $directory, $environmentVariables])
-            ->getMock();
-
-        $composer->expects($this->once())
-            ->method('getProcess')
-            ->with($expectedProcessArguments)
-            ->willReturn($process);
+        foreach ($methodExpectations as $method => $returnValue) {
+            $composer->shouldReceive($method)->andReturn($returnValue);
+        }
 
         return $composer;
     }

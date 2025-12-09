@@ -43,7 +43,7 @@ class UpdateAuthorTest extends TestCase
         $this->assertDatabaseHas(Author::class, $expectedData);
     }
 
-    public function test_update_authorWithoutAccess(): void
+    public function test_update_author_without_access(): void
     {
         $this->actingAsTestUserWithoutAccess();
 

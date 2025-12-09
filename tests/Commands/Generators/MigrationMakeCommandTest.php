@@ -174,3 +174,58 @@ it('generates "pivot" migration for the module', function () {
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
+
+describe('table name validation', function () {
+    it('rejects invalid table names with special characters', function () {
+        // Use a migration name that doesn't auto-detect the table name,
+        // so we can enter an invalid one via the prompt
+        $this->artisan('module:make:migration', [
+            'name' => 'modify_something',
+            'module' => 'Article',
+            '--stub' => 'create',
+        ])
+            ->expectsQuestion('Enter the table name', 'invalid-table')
+            ->expectsOutputToContain('not valid')
+            ->assertFailed();
+    });
+
+    it('rejects invalid table names starting with a number', function () {
+        $this->artisan('module:make:migration', [
+            'name' => 'modify_something',
+            'module' => 'Article',
+            '--stub' => 'create',
+        ])
+            ->expectsQuestion('Enter the table name', '123table')
+            ->expectsOutputToContain('not valid')
+            ->assertFailed();
+    });
+
+    it('rejects invalid pivot table names', function () {
+        $this->artisan('module:make:migration', [
+            'name' => 'create_article_author_table',
+            'module' => 'Article',
+            '--stub' => 'pivot',
+        ])
+            ->expectsQuestion('Enter the name of first table', 'invalid-table')
+            ->expectsQuestion('Enter the name of second table', 'authors')
+            ->expectsOutputToContain('not valid')
+            ->assertFailed();
+    });
+
+    it('accepts valid table names', function () {
+        $this->artisan('module:make:migration', [
+            'name' => 'create_valid_table_table',
+            'module' => 'Article',
+            '--stub' => 'create',
+        ])
+            ->assertSuccessful();
+
+        $this->artisan('module:make:migration', [
+            'name' => 'create__underscore_table_table',
+            'module' => 'Article',
+            '--stub' => 'create',
+            '--force' => true,
+        ])
+            ->assertSuccessful();
+    });
+});

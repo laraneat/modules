@@ -4,11 +4,6 @@ namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Laraneat\Modules\Enums\ModuleComponentType;
-use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
-use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
-use Laraneat\Modules\Exceptions\ModuleNotFound;
-use Laraneat\Modules\Exceptions\NameIsReserved;
-use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Generator\Stub;
 
 /**
@@ -35,23 +30,6 @@ class ControllerMakeCommand extends BaseComponentGeneratorCommand implements Pro
     protected $description = 'Generate new controller for the specified module.';
 
     /**
-     * Module instance.
-     *
-     * @var Module
-     */
-    protected Module $module;
-
-    /**
-     * The 'name' argument
-     */
-    protected string $nameArgument;
-
-    /**
-     * The module component type.
-     */
-    protected ModuleComponentType $componentType;
-
-    /**
      * The UI for which the controller will be created.
      * ('web' or 'api')
      */
@@ -67,35 +45,17 @@ class ControllerMakeCommand extends BaseComponentGeneratorCommand implements Pro
         ];
     }
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): int
+    protected function beforeGenerate(): void
     {
-        try {
-            $this->nameArgument = $this->argument('name');
-            $this->ensureNameIsNotReserved($this->nameArgument);
-            $this->module = $this->getModuleArgumentOrFail();
-            $this->ui = $this->getOptionOrChoice(
-                'ui',
-                question: 'Enter the UI for which the controller will be created',
-                choices: ['api', 'web'],
-                default: 'api'
-            );
-            $this->componentType = $this->ui === 'api'
-                ? ModuleComponentType::ApiController
-                : ModuleComponentType::WebController;
-        } catch (NameIsReserved|ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
-            $this->components->error($exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        return $this->generate(
-            $this->getComponentPath($this->module, $this->nameArgument, $this->componentType),
-            $this->getContents(),
-            $this->option('force')
+        $this->ui = $this->getOptionOrChoice(
+            'ui',
+            question: 'Enter the UI for which the controller will be created',
+            choices: ['api', 'web'],
+            default: 'api'
         );
+        $this->componentType = $this->ui === 'api'
+            ? ModuleComponentType::ApiController
+            : ModuleComponentType::WebController;
     }
 
     protected function getContents(): string

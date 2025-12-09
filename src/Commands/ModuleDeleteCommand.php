@@ -44,7 +44,7 @@ class ModuleDeleteCommand extends BaseCommand
 
         foreach($modulesToDelete as $moduleToDelete) {
             try {
-                $status = $moduleToDelete->delete($this->output);
+                $status = $this->modulesRepository->delete($moduleToDelete->getPackageName(), $this->output);
                 if ($status) {
                     $this->components->info("Module [{$moduleToDelete->getPackageName()}] has been deleted.");
                 } else {

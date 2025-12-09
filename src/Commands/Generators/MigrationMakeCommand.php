@@ -5,11 +5,7 @@ namespace Laraneat\Modules\Commands\Generators;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Enums\ModuleComponentType;
-use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
-use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
-use Laraneat\Modules\Exceptions\ModuleNotFound;
-use Laraneat\Modules\Exceptions\NameIsReserved;
-use Laraneat\Modules\Module;
+use Laraneat\Modules\Exceptions\InvalidTableName;
 use Laraneat\Modules\Support\Generator\Stub;
 use Laraneat\Modules\Support\Migrations\NameParser;
 use Laraneat\Modules\Support\Migrations\SchemaParser;
@@ -42,18 +38,6 @@ class MigrationMakeCommand extends BaseComponentGeneratorCommand implements Prom
     protected $description = 'Generate new migration for the specified module.';
 
     /**
-     * Module instance.
-     *
-     * @var Module
-     */
-    protected Module $module;
-
-    /**
-     * The 'name' argument
-     */
-    protected string $nameArgument;
-
-    /**
      * The module component type.
      */
     protected ModuleComponentType $componentType = ModuleComponentType::Migration;
@@ -68,26 +52,9 @@ class MigrationMakeCommand extends BaseComponentGeneratorCommand implements Prom
         ];
     }
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): int
+    protected function getGeneratedFilePath(): string
     {
-        try {
-            $this->nameArgument = $this->argument('name');
-            $this->ensureNameIsNotReserved($this->nameArgument);
-            $this->module = $this->getModuleArgumentOrFail();
-        } catch (NameIsReserved|ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
-            $this->components->error($exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        return $this->generate(
-            $this->getComponentPath($this->module, $this->getFileName(), $this->componentType),
-            $this->getContents(),
-            $this->option('force')
-        );
+        return $this->getComponentPath($this->module, $this->getFileName(), $this->componentType);
     }
 
     protected function getContents(): string
@@ -135,6 +102,9 @@ class MigrationMakeCommand extends BaseComponentGeneratorCommand implements Prom
         return Stub::create('/migration/plain.stub')->render();
     }
 
+    /**
+     * @throws InvalidTableName
+     */
     protected function getTableName(NameParser $parser): string
     {
         $tableName = $parser->getTableName();
@@ -147,9 +117,16 @@ class MigrationMakeCommand extends BaseComponentGeneratorCommand implements Prom
             }
         }
 
+        if (!$this->isValidTableName($tableName)) {
+            throw InvalidTableName::make($tableName);
+        }
+
         return $tableName;
     }
 
+    /**
+     * @throws InvalidTableName
+     */
     protected function generatePivotMigrationContent(NameParser $parser): string
     {
         $table = $this->getTableName($parser);
@@ -170,6 +147,14 @@ class MigrationMakeCommand extends BaseComponentGeneratorCommand implements Prom
             'Enter the name of second table',
             $tableTwo ?? ''
         );
+
+        if (!$this->isValidTableName($tableOne)) {
+            throw InvalidTableName::make($tableOne);
+        }
+
+        if (!$this->isValidTableName($tableTwo)) {
+            throw InvalidTableName::make($tableTwo);
+        }
 
         return Stub::create('/migration/pivot.stub', [
             'table' => $table,

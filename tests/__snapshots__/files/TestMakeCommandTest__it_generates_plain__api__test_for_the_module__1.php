@@ -2,6 +2,7 @@
 
 namespace Modules\Author\Tests\UI\API;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -10,6 +11,8 @@ use Tests\TestCase;
  */
 class ExampleTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */

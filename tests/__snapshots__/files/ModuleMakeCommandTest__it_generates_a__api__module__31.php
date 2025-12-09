@@ -2,6 +2,7 @@
 
 namespace Modules\ArticleComment\Tests\UI\API;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Modules\ArticleComment\Models\ArticleComment;
 use Tests\TestCase;
@@ -12,6 +13,8 @@ use Tests\TestCase;
  */
 class CreateArticleCommentTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -33,10 +36,29 @@ class CreateArticleCommentTest extends TestCase
                     $json->has('id')
                         ->whereAll($data)
                         ->etc()
-                    )
+                )
             );
 
         $this->assertDatabaseHas(ArticleComment::class, $data);
+    }
+
+    public function test_create_article_comment_with_invalid_data(): void
+    {
+        $this->actingAsTestUser();
+
+        $this->postJson(route('api.article_comments.create'), [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                // TODO: add expected validation errors here
+            ]);
+    }
+
+    public function test_create_article_comment_unauthenticated(): void
+    {
+        $data = $this->getTestData();
+
+        $this->postJson(route('api.article_comments.create'), $data)
+            ->assertUnauthorized();
     }
 
     public function test_create_article_comment_without_access(): void

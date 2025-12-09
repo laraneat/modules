@@ -31,4 +31,3 @@ class SomeAuthorFactory extends Factory
         ];
     }
 }
-

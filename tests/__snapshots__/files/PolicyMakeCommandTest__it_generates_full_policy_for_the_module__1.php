@@ -2,13 +2,11 @@
 
 namespace Modules\Author\Policies;
 
-use Illuminate\Auth\Access\HandlesAuthorization;
 use Modules\Author\Models\Author;
 use Modules\User\Models\User;
 
 class AuthorPolicy
 {
-    use HandlesAuthorization;
 
     /**
      * Determine whether the user can view any models.

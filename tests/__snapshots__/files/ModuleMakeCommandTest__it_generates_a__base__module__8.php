@@ -2,13 +2,11 @@
 
 namespace Modules\ArticleComment\Policies;
 
-use Illuminate\Auth\Access\HandlesAuthorization;
 use Modules\ArticleComment\Models\ArticleComment;
 use Modules\User\Models\User;
 
 class ArticleCommentPolicy
 {
-    use HandlesAuthorization;
 
     /**
      * Determine whether the user can view any models.

@@ -19,7 +19,7 @@ beforeEach(function () {
 });
 
 it('generates a "plain" module', function () {
-    $this->instance(Composer::class, $this->mockComposer(['composer', 'update', 'demo/article-comment']));
+    $this->instance(Composer::class, $this->mockComposer(['updatePackages' => true]));
     $this->artisan('module:make', [
         'name' => 'demo/article-comment',
         '--preset' => 'plain',
@@ -32,7 +32,7 @@ it('generates a "plain" module', function () {
 });
 
 it('generates a "base" module', function () {
-    $this->instance(Composer::class, $this->mockComposer(['composer', 'update', 'demo/article-comment']));
+    $this->instance(Composer::class, $this->mockComposer(['updatePackages' => true]));
     $this->artisan('module:make', [
         'name' => 'demo/article-comment',
         '--preset' => 'base',
@@ -57,7 +57,7 @@ it('generates a "base" module', function () {
 });
 
 it('generates a "api" module', function () {
-    $this->instance(Composer::class, $this->mockComposer(['composer', 'update', 'demo/article-comment']));
+    $this->instance(Composer::class, $this->mockComposer(['updatePackages' => true]));
     $this->artisan('module:make', [
         'name' => 'demo/article-comment',
         '--preset' => 'api',
@@ -111,7 +111,7 @@ it('displays an error message when a module with the same folder name already ex
         '--preset' => 'plain',
         '--entity' => 'Article',
     ])
-        ->expectsOutputToContain("already exists.")
+        ->expectsOutputToContain("File already exists")
         ->assertFailed();
 
     assertMatchesFileSnapshot($this->app->basePath('/composer.json'));

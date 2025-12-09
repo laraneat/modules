@@ -290,26 +290,31 @@ describe('multiple "module" argument', function () {
     });
 
     it('gives a module selection if the multiple "module" argument is not passed', function () {
-        $choices = collect([
-            'None' => '',
-            'all' => 'All modules',
-            'laraneat/article-category' => 'laraneat/article-category',
-            'laraneat/article' => 'laraneat/article',
-            'laraneat/author' => 'laraneat/author',
-            'laraneat/empty' => 'laraneat/empty',
-            'empty/empty' => 'empty/empty',
-            'laraneat/location' => 'laraneat/location',
-        ]);
+        // Laravel's expectsChoice expects keys and values merged when using associative arrays
+        // The options are: ['all' => 'All modules', 'laraneat/article' => 'laraneat/article', ...]
+        // This results in: ['All modules', 'all', 'empty/empty', 'empty/empty', ...]
+        $expectedAnswers = [
+            'All modules',
+            'all',
+            'empty/empty',
+            'empty/empty',
+            'laraneat/article',
+            'laraneat/article',
+            'laraneat/article-category',
+            'laraneat/article-category',
+            'laraneat/author',
+            'laraneat/author',
+            'laraneat/empty',
+            'laraneat/empty',
+            'laraneat/location',
+            'laraneat/location',
+        ];
 
         $this->artisan('multiple-module-argument-command')
             ->expectsChoice(
                 question: 'Select one or more module',
                 answer: ['laraneat/article', 'empty/empty', 'laraneat/location'],
-                answers: collect()
-                    ->merge($choices->keys())
-                    ->merge($choices->values())
-                    ->sort()
-                    ->all()
+                answers: $expectedAnswers
             )
             ->expectsOutput('laraneat/article, empty/empty, laraneat/location')
             ->assertSuccessful();

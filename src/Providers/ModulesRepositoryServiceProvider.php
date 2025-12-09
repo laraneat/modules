@@ -6,6 +6,8 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 use Laraneat\Modules\ModulesRepository;
+use Laraneat\Modules\Support\Composer;
+use Laraneat\Modules\Support\ModuleConfigWriter;
 
 class ModulesRepositoryServiceProvider extends ServiceProvider implements DeferrableProvider
 {
@@ -15,13 +17,20 @@ class ModulesRepositoryServiceProvider extends ServiceProvider implements Deferr
     public function register(): void
     {
         $this->app->singleton(ModulesRepository::class, function (Application $app) {
-            /** @phpstan-ignore-next-line  */
             return new ModulesRepository(
-                app: $app,
-                modulesPath: $this->app['config']->get('modules.path'),
-                modulesManifestPath: $this->app['config']->get('modules.cache.enabled')
-                    ? $this->app->bootstrapPath('cache/laraneat-modules.php')
+                filesystem: $app['files'],
+                composer: $app[Composer::class],
+                modulesPath: $app['config']->get('modules.path'),
+                basePath: $app->basePath(),
+                modulesManifestPath: $app['config']->get('modules.cache.enabled')
+                    ? $app->bootstrapPath('cache/laraneat-modules.php')
                     : null
+            );
+        });
+
+        $this->app->singleton(ModuleConfigWriter::class, function (Application $app) {
+            return new ModuleConfigWriter(
+                modulesRepository: $app[ModulesRepository::class],
             );
         });
     }
@@ -33,6 +42,9 @@ class ModulesRepositoryServiceProvider extends ServiceProvider implements Deferr
      */
     public function provides(): array
     {
-        return [ModulesRepository::class];
+        return [
+            ModulesRepository::class,
+            ModuleConfigWriter::class,
+        ];
     }
 }

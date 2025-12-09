@@ -1,45 +1,20 @@
 {
-    "name": "laraneat/laraneat",
-    "type": "project",
-    "description": "The Laraneat framework.",
-    "keywords": [
-        "laraneat",
-        "laravel",
-        "apiato",
-        "php",
-        "framework"
-    ],
+    "name": "laravel/laravel",
+    "description": "The Laravel Framework.",
+    "keywords": ["framework", "laravel"],
     "license": "MIT",
-    "require": {
-        "php": "^8.1",
-        "laravel/framework": "^10.0"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^10.5.9"
-    },
+    "type": "project",
     "autoload": {
-        "classmap": [
-            "database"
-        ],
         "psr-4": {
             "App\\": "app/",
-            "Modules\\": "modules/"
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
         }
     },
-    "extra": {
-        "laravel": {
-            "dont-discover": []
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
         }
     },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "php-http/discovery": true
-        }
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+    "minimum-stability": "dev"
 }

@@ -7,6 +7,11 @@ use Illuminate\Support\Env;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Commands\BaseCommand;
 use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Exceptions\InvalidClassName;
+use Laraneat\Modules\Exceptions\InvalidTableName;
+use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
+use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
+use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Exceptions\NameIsReserved;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModulesRepository;
@@ -15,6 +20,20 @@ use LogicException;
 
 abstract class BaseComponentGeneratorCommand extends BaseCommand
 {
+    /**
+     * The module instance.
+     */
+    protected Module $module;
+
+    /**
+     * The 'name' argument.
+     */
+    protected string $nameArgument;
+
+    /**
+     * The module component type.
+     */
+    protected ModuleComponentType $componentType;
     /**
      * Reserved names that cannot be used for generation.
      *
@@ -99,6 +118,84 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
     }
 
     /**
+     * Execute the console command (Template Method).
+     *
+     * Subclasses can override:
+     * - beforeGenerate(): void - hook before generation starts
+     * - getContents(): string - must be implemented to return file contents
+     * - getGeneratedFilePath(): string - override to customize file path
+     * - afterGenerate(): void - hook after successful generation
+     */
+    public function handle(): int
+    {
+        $this->beforeGenerate();
+
+        try {
+            $this->nameArgument = $this->argument('name');
+            $this->ensureNameIsNotReserved($this->nameArgument);
+            $this->ensureNameIsValidClassName($this->nameArgument);
+            $this->module = $this->getModuleArgumentOrFail();
+        } catch (NameIsReserved|InvalidClassName|ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
+            $this->components->error($exception->getMessage());
+
+            return self::FAILURE;
+        }
+
+        try {
+            $result = $this->generate(
+                $this->getGeneratedFilePath(),
+                $this->getContents(),
+                $this->option('force')
+            );
+        } catch (InvalidTableName $exception) {
+            $this->components->error($exception->getMessage());
+
+            return self::FAILURE;
+        }
+
+        if ($result !== self::SUCCESS) {
+            return $result;
+        }
+
+        $this->afterGenerate();
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * Hook called before generation starts.
+     * Override in subclasses to add custom logic (e.g., package checks).
+     */
+    protected function beforeGenerate(): void
+    {
+        // Default: do nothing
+    }
+
+    /**
+     * Get the contents for the generated file.
+     * Must be implemented by subclasses.
+     */
+    abstract protected function getContents(): string;
+
+    /**
+     * Get the path for the generated file.
+     * Override in subclasses to customize (e.g., MigrationMakeCommand).
+     */
+    protected function getGeneratedFilePath(): string
+    {
+        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
+    }
+
+    /**
+     * Hook called after successful generation.
+     * Override in subclasses to add custom logic (e.g., ProviderMakeCommand).
+     */
+    protected function afterGenerate(): void
+    {
+        // Default: do nothing
+    }
+
+    /**
      * @param string $name
      * @return void
      *
@@ -114,13 +211,48 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
     }
 
     /**
+     * Validate that the name is a valid PHP class name.
+     *
+     * @throws InvalidClassName
+     */
+    protected function ensureNameIsValidClassName(string $name): void
+    {
+        $classBaseName = class_basename($name);
+
+        if (!$this->isValidClassName($classBaseName)) {
+            throw InvalidClassName::make($classBaseName);
+        }
+    }
+
+    /**
+     * Check if the name is a valid PHP class name.
+     */
+    protected function isValidClassName(string $name): bool
+    {
+        // PHP class names must start with a letter or underscore,
+        // followed by any number of letters, numbers, or underscores.
+        // Also supports multibyte characters as per PHP specification.
+        return (bool) preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $name);
+    }
+
+    /**
+     * Check if the name is a valid database table name.
+     */
+    protected function isValidTableName(string $name): bool
+    {
+        // Table names should contain only letters, numbers, and underscores,
+        // and start with a letter or underscore.
+        return (bool) preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $name);
+    }
+
+    /**
      * Generate component file.
      * @return int The function returns "0" on success and "1" on failure.
      */
     protected function generate(string $path, string $contents, bool $force = false): int
     {
         if ($force === false && $this->filesystem->exists($path)) {
-            $this->components->error("File: `$path` already exists.");
+            $this->components->error("File already exists: `$path`. Use --force to overwrite.");
 
             return self::FAILURE;
         }
@@ -128,7 +260,21 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
         $path = str_replace('\\', '/', $path);
         $contents = $this->sortImports($contents);
 
-        $this->filesystem->ensureDirectoryExists(dirname($path));
+        $directory = dirname($path);
+
+        try {
+            $this->filesystem->ensureDirectoryExists($directory);
+        } catch (\Exception $e) {
+            $this->components->error("Failed to create directory: `$directory`. " . $e->getMessage());
+
+            return self::FAILURE;
+        }
+
+        if (!is_writable($directory)) {
+            $this->components->error("Directory is not writable: `$directory`. Check file permissions.");
+
+            return self::FAILURE;
+        }
 
         if ($this->filesystem->put($path, $contents) !== false) {
             $this->components->info("Created: `$path`");
@@ -136,7 +282,7 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
             return self::SUCCESS;
         }
 
-        $this->components->error("Failed to create file: `$path`");
+        $this->components->error("Failed to write file: `$path`. Check disk space and file permissions.");
 
         return self::FAILURE;
     }

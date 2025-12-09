@@ -11,8 +11,10 @@ use function Spatie\Snapshots\assertMatchesFileSnapshot;
 beforeEach(function () {
     $this->modulesManifestPath = $this->app->bootstrapPath('cache/testing-laraneat-modules.php');
     $this->repository = new ModulesRepository(
-        app: $this->app,
+        filesystem: $this->app['files'],
+        composer: $this->app[Composer::class],
         modulesPath: $this->app['config']->get('modules.path'),
+        basePath: $this->app->basePath(),
         modulesManifestPath: $this->modulesManifestPath,
     );
 });
@@ -417,6 +419,18 @@ it('throws an exception when modules with the requested name are not found', fun
 });
 
 it('can delete a module', function () {
+    // Set mock BEFORE setModules, because Module instances get Composer from container
+    $this->instance(Composer::class, $this->mockComposer(['removePackages' => true]));
+
+    // Recreate repository with mocked Composer
+    $this->repository = new ModulesRepository(
+        filesystem: $this->app['files'],
+        composer: $this->app[Composer::class],
+        modulesPath: $this->app['config']->get('modules.path'),
+        basePath: $this->app->basePath(),
+        modulesManifestPath: $this->modulesManifestPath,
+    );
+
     $this->setModules([
         __DIR__ . '/fixtures/stubs/modules/valid/article',
         __DIR__ . '/fixtures/stubs/modules/valid/article-category',
@@ -424,8 +438,6 @@ it('can delete a module', function () {
         __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
         __DIR__ . '/fixtures/stubs/modules/valid/navigation',
     ]);
-
-    $this->instance(Composer::class, $this->mockComposer(['composer', 'remove', 'laraneat/article']));
 
     expect($this->repository->has('laraneat/article'))->toBe(true)
         ->and($this->repository->delete('laraneat/article'))->toBe(true)
@@ -433,6 +445,18 @@ it('can delete a module', function () {
 });
 
 it('can sync modules with composer', function () {
+    // Set mock BEFORE setModules, because repository uses Composer from container
+    $this->instance(Composer::class, $this->mockComposer(['updatePackages' => true]));
+
+    // Recreate repository with mocked Composer
+    $this->repository = new ModulesRepository(
+        filesystem: $this->app['files'],
+        composer: $this->app[Composer::class],
+        modulesPath: $this->app['config']->get('modules.path'),
+        basePath: $this->app->basePath(),
+        modulesManifestPath: $this->modulesManifestPath,
+    );
+
     $this->setModules([
         __DIR__ . '/fixtures/stubs/modules/valid/article',
         __DIR__ . '/fixtures/stubs/modules/valid/article-category',
@@ -440,19 +464,6 @@ it('can sync modules with composer', function () {
         __DIR__ . '/fixtures/stubs/modules/valid/empty-module',
         __DIR__ . '/fixtures/stubs/modules/valid/navigation',
     ]);
-
-    $this->instance(
-        Composer::class,
-        $this->mockComposer([
-            'composer',
-            'update',
-            'laraneat/article-category',
-            'laraneat/article',
-            'laraneat/author',
-            'laraneat/empty',
-            'laraneat/location',
-        ])
-    );
 
     $this->backupComposerJson();
     $composerJsonPath = $this->app->basePath('/composer.json');
@@ -462,5 +473,4 @@ it('can sync modules with composer', function () {
     assertFileExists($composerJsonPath);
     assertMatchesFileSnapshot($composerJsonPath);
     $this->resetComposerJson();
-
 });

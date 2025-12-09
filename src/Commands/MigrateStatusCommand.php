@@ -2,12 +2,9 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
-use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
-use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Module;
 
-class MigrateStatusCommand extends BaseCommand
+class MigrateStatusCommand extends BaseMigrationCommand
 {
     /**
      * The name and signature of the console command.
@@ -25,37 +22,20 @@ class MigrateStatusCommand extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Reset the modules migrations.';
+    protected $description = 'Show the status of the modules migrations.';
 
     /**
-     * Execute the console command.
+     * Whether to require confirmation in production.
      */
-    public function handle(): int
-    {
-        try {
-            $modulesToHandle = $this->getModuleArgumentOrFail();
-        } catch (ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
-            $this->error($exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        foreach($modulesToHandle as $module) {
-            $this->status($module);
-        }
-
-        return self::SUCCESS;
-    }
+    protected bool $requiresConfirmation = false;
 
     /**
      * Show migration status from the specified module.
      */
-    protected function status(Module|string $module): void
+    protected function executeForModule(Module $module): void
     {
-        $this->line('Running for module: <info>' . $module->getName() . '</info>');
-
         $this->call('migrate:status', [
-            '--path' => $module->getMigrationPaths(),
+            '--path' => $this->getMigrationPaths($module),
             '--database' => $this->option('database'),
             '--realpath' => (bool) $this->option('realpath'),
             '--pending' => (bool) $this->option('pending'),

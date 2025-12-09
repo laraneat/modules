@@ -2,16 +2,10 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\ConfirmableTrait;
-use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
-use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
-use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Module;
 
-class MigrateCommand extends BaseCommand
+class MigrateCommand extends BaseMigrationCommand
 {
-    use ConfirmableTrait;
-
     /**
      * The name and signature of the console command.
      *
@@ -36,38 +30,12 @@ class MigrateCommand extends BaseCommand
     protected $description = 'Migrate the migrations from the specified module(s) or from all modules.';
 
     /**
-     * Execute the console command.
-     */
-    public function handle(): int
-    {
-        if (! $this->confirmToProceed()) {
-            return self::FAILURE;
-        }
-
-        try {
-            $modulesToHandle = $this->getModuleArgumentOrFail();
-        } catch (ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
-            $this->error($exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        foreach($modulesToHandle as $module) {
-            $this->migrate($module);
-        }
-
-        return self::SUCCESS;
-    }
-
-    /**
      * Run the migration from the specified module.
      */
-    protected function migrate(Module $module): void
+    protected function executeForModule(Module $module): void
     {
-        $this->line('Running for module: <info>' . $module->getPackageName() . '</info>');
-
         $this->call('migrate', [
-            '--path' => $module->getMigrationPaths(),
+            '--path' => $this->getMigrationPaths($module),
             '--realpath' => (bool) $this->option('realpath'),
             '--database' => $this->option('database'),
             '--schema-path' => $this->option('schema-path'),

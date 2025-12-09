@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migrator;
 use Laraneat\Modules\Support\Composer;
+use Laraneat\Modules\Support\ModuleConfigWriter;
 
 use function PHPUnit\Framework\assertFileExists;
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
@@ -113,22 +113,6 @@ it('can make sub namespace', function () {
         ->toBe('SomeVendor\\SomeTestingModule\\Models\\SomeModel');
 });
 
-it('can return module migration paths', function () {
-    $module = $this->createModule(['path' => $this->app->basePath('/modules/SomeTestingModule')]);
-
-    expect($module->getMigrationPaths())->toBe([]);
-
-    /** @var Migrator|null $migrator */
-    $migrator = $this->app['migrator'];
-    $migrator->path($this->app->basePath('/modules/AnotherTestingModule/database/migrations'));
-    $migrator->path($this->app->basePath('/modules/SomeTestingModule/database/migrations'));
-    $migrator->path($this->app->basePath('/migrations'));
-
-    expect($module->getMigrationPaths())->toBe([
-        $this->app->basePath('/modules/SomeTestingModule/database/migrations'),
-    ]);
-});
-
 it('can return module as array', function () {
     expect($this->createModule([
         'path' => $this->app->basePath('modules/TestingModule'),
@@ -159,7 +143,7 @@ it('can return module as array', function () {
     ]);
 });
 
-it('can set providers', function () {
+it('can update providers via ModuleConfigWriter', function () {
     $this->setModules([
         __DIR__ . '/fixtures/stubs/modules/valid/author',
     ]);
@@ -181,7 +165,10 @@ it('can set providers', function () {
     $composerJsonPath = $module->subPath('composer.json');
     assertFileExists($composerJsonPath);
     assertMatchesFileSnapshot($composerJsonPath);
-    $module->setProviders([
+
+    /** @var ModuleConfigWriter $configWriter */
+    $configWriter = $this->app->make(ModuleConfigWriter::class);
+    $configWriter->updateProviders($module, [
         'Modules\\Author\\Providers\\FooServiceProvider',
         'Modules\\Foo\\Providers\\BarServiceProvider',
     ]);
@@ -189,7 +176,7 @@ it('can set providers', function () {
     assertMatchesFileSnapshot($composerJsonPath);
 });
 
-it('can set aliases', function () {
+it('can update aliases via ModuleConfigWriter', function () {
     $this->setModules([
         __DIR__ . '/fixtures/stubs/modules/valid/author',
     ]);
@@ -211,7 +198,10 @@ it('can set aliases', function () {
     $composerJsonPath = $module->subPath('composer.json');
     assertFileExists($composerJsonPath);
     assertMatchesFileSnapshot($composerJsonPath);
-    $module->setAliases([
+
+    /** @var ModuleConfigWriter $configWriter */
+    $configWriter = $this->app->make(ModuleConfigWriter::class);
+    $configWriter->updateAliases($module, [
         'foo' => 'Modules\\Author\\Services\\Foo',
         'bar' => 'Modules\\Bar\\Services\\Bar',
     ]);
@@ -219,7 +209,7 @@ it('can set aliases', function () {
     assertMatchesFileSnapshot($composerJsonPath);
 });
 
-it('can add providers', function () {
+it('can add providers via ModuleConfigWriter', function () {
     $this->setModules([
         __DIR__ . '/fixtures/stubs/modules/valid/author',
     ]);
@@ -241,14 +231,17 @@ it('can add providers', function () {
     $composerJsonPath = $module->subPath('composer.json');
     assertFileExists($composerJsonPath);
     assertMatchesFileSnapshot($composerJsonPath);
-    $module->addProvider('Modules\\Author\\Providers\\FooServiceProvider');
-    $module->addProvider('Modules\\Author\\Providers\\RouteServiceProvider');
-    $module->addProvider('Modules\\Foo\\Providers\\BarServiceProvider');
+
+    /** @var ModuleConfigWriter $configWriter */
+    $configWriter = $this->app->make(ModuleConfigWriter::class);
+    $configWriter->addProvider($module, 'Modules\\Author\\Providers\\FooServiceProvider');
+    $configWriter->addProvider($module, 'Modules\\Author\\Providers\\RouteServiceProvider'); // duplicate, should not be added
+    $configWriter->addProvider($module, 'Modules\\Foo\\Providers\\BarServiceProvider');
     assertFileExists($composerJsonPath);
     assertMatchesFileSnapshot($composerJsonPath);
 });
 
-it('can add aliases', function () {
+it('can add aliases via ModuleConfigWriter', function () {
     $this->setModules([
         __DIR__ . '/fixtures/stubs/modules/valid/author',
     ]);
@@ -270,34 +263,12 @@ it('can add aliases', function () {
     $composerJsonPath = $module->subPath('composer.json');
     assertFileExists($composerJsonPath);
     assertMatchesFileSnapshot($composerJsonPath);
-    $module->addAlias('foo', 'Modules\\Author\\Services\\Foo');
-    $module->addAlias('bar', 'Modules\\Bar\\Services\\Bar');
+
+    /** @var ModuleConfigWriter $configWriter */
+    $configWriter = $this->app->make(ModuleConfigWriter::class);
+    $configWriter->addAlias($module, 'foo', 'Modules\\Author\\Services\\Foo');
+    $configWriter->addAlias($module, 'bar', 'Modules\\Bar\\Services\\Bar');
     assertFileExists($composerJsonPath);
     assertMatchesFileSnapshot($composerJsonPath);
 });
 
-it('can delete module', function () {
-    $this->setModules([
-        __DIR__ . '/fixtures/stubs/modules/valid/author',
-    ]);
-
-    $module = $this->createModule([
-        'path' => $this->app->basePath('/modules/author'),
-        'packageName' => 'laraneat/author',
-        'name' => 'author',
-        'namespace' => 'Modules\\Author',
-        'providers' => [
-            'Modules\\Author\\Providers\\AuthorServiceProvider',
-            'Modules\\Author\\Providers\\RouteServiceProvider',
-        ],
-        'aliases' => [
-            'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
-        ],
-    ]);
-
-    $this->instance(Composer::class, $this->mockComposer(['composer', 'remove', 'laraneat/author']));
-
-    expect($module->getPath())->toBeDirectory();
-    expect($module->delete())->toBe(true);
-    expect($module->getPath())->not()->toBeDirectory();
-});

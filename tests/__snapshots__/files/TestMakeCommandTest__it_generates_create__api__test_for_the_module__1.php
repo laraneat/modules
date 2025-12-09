@@ -2,6 +2,7 @@
 
 namespace Modules\Author\Tests\UI\API;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Modules\Author\Models\Author;
 use Tests\TestCase;
@@ -12,6 +13,8 @@ use Tests\TestCase;
  */
 class CreateAuthorTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -33,10 +36,29 @@ class CreateAuthorTest extends TestCase
                     $json->has('id')
                         ->whereAll($data)
                         ->etc()
-                    )
+                )
             );
 
         $this->assertDatabaseHas(Author::class, $data);
+    }
+
+    public function test_create_author_with_invalid_data(): void
+    {
+        $this->actingAsTestUser();
+
+        $this->postJson(route('api.authors.create'), [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                // TODO: add expected validation errors here
+            ]);
+    }
+
+    public function test_create_author_unauthenticated(): void
+    {
+        $data = $this->getTestData();
+
+        $this->postJson(route('api.authors.create'), $data)
+            ->assertUnauthorized();
     }
 
     public function test_create_author_without_access(): void

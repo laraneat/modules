@@ -4,13 +4,9 @@ namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Laraneat\Modules\Enums\ModuleComponentType;
-use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
-use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
-use Laraneat\Modules\Exceptions\ModuleNotFound;
-use Laraneat\Modules\Exceptions\NameIsReserved;
-use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
 use Laraneat\Modules\Support\Generator\Stub;
+use Laraneat\Modules\Support\ModuleConfigWriter;
 
 /**
  * @group generator
@@ -36,21 +32,19 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
     protected $description = 'Generate new provider for the specified module.';
 
     /**
-     * The module instance
-     *
-     * @var Module
-     */
-    protected Module $module;
-
-    /**
-     * The 'name' argument
-     */
-    protected string $nameArgument;
-
-    /**
      * The module component type.
      */
     protected ModuleComponentType $componentType = ModuleComponentType::Provider;
+
+    /**
+     * Selected stub name (cached for afterGenerate).
+     */
+    protected string $selectedStub;
+
+    /**
+     * Stub replacements (cached for afterGenerate).
+     */
+    protected array $stubReplaces;
 
     /**
      * Prompt for missing input arguments using the returned questions.
@@ -62,34 +56,16 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
         ];
     }
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): int
+    protected function getContents(): string
     {
-        try {
-            $this->nameArgument = $this->argument('name');
-            $this->ensureNameIsNotReserved($this->nameArgument);
-            $this->module = $this->getModuleArgumentOrFail();
-        } catch (NameIsReserved|ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
-            $this->components->error($exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        return $this->generateProvider();
-    }
-
-    protected function generateProvider(): int
-    {
-        $stub = $this->getOptionOrChoice(
+        $this->selectedStub = $this->getOptionOrChoice(
             'stub',
             'Select the stub you want to use for generator',
             ['plain', 'module', 'event', 'route'],
             'plain'
         );
 
-        $stubReplaces = [
+        $this->stubReplaces = [
             'namespace' => $this->getComponentNamespace(
                 $this->module,
                 $this->nameArgument,
@@ -100,8 +76,8 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
 
         $providerDir = GeneratorHelper::component(ModuleComponentType::Provider)->getFullPath($this->module);
 
-        if ($stub === 'module') {
-            $stubReplaces = array_merge($stubReplaces, [
+        if ($this->selectedStub === 'module') {
+            $this->stubReplaces = array_merge($this->stubReplaces, [
                 'modulePackageName' => $this->module->getPackageName(),
                 'moduleNameKebabCase' => $this->module->getKebabName(),
                 'commandsNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component(ModuleComponentType::CliCommand)->getFullNamespace($this->module)),
@@ -126,8 +102,8 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
                     GeneratorHelper::component(ModuleComponentType::Migration)->getFullPath($this->module)
                 ),
             ]);
-        } elseif ($stub === 'route') {
-            $stubReplaces = array_merge($stubReplaces, [
+        } elseif ($this->selectedStub === 'route') {
+            $this->stubReplaces = array_merge($this->stubReplaces, [
                 'modulePackageName' => $this->module->getPackageName(),
                 'webControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component(ModuleComponentType::WebController)->getFullNamespace($this->module)),
                 'apiControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component(ModuleComponentType::ApiController)->getFullNamespace($this->module)),
@@ -142,18 +118,12 @@ class ProviderMakeCommand extends BaseComponentGeneratorCommand implements Promp
             ]);
         }
 
-        $result = $this->generate(
-            $this->getComponentPath($this->module, $this->nameArgument, $this->componentType),
-            Stub::create("provider/{$stub}.stub", $stubReplaces)->render(),
-            $this->option('force')
-        );
+        return Stub::create("provider/{$this->selectedStub}.stub", $this->stubReplaces)->render();
+    }
 
-        if ($result !== self::SUCCESS) {
-            return $result;
-        }
-
-        $this->module->addProvider($stubReplaces['namespace'] . '\\' . $stubReplaces['class']);
-
-        return self::SUCCESS;
+    protected function afterGenerate(): void
+    {
+        $this->laravel->make(ModuleConfigWriter::class)
+            ->addProvider($this->module, $this->stubReplaces['namespace'] . '\\' . $this->stubReplaces['class']);
     }
 }

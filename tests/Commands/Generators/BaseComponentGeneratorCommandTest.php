@@ -35,6 +35,11 @@ describe('getFullClassFromOptionOrAsk()', function () {
 
             return self::SUCCESS;
         }
+
+        protected function getContents(): string
+        {
+            return '';
+        }
     }
 
     beforeEach(function () {
@@ -97,5 +102,59 @@ describe('getFullClassFromOptionOrAsk()', function () {
             '--model' => '\\Modules\\GeoLocation\\Models\\GeoLocation',
         ])
             ->expectsOutput('\\Modules\\GeoLocation\\Models\\GeoLocation');
+    });
+});
+
+describe('class name validation', function () {
+    it('rejects invalid class names starting with a number', function () {
+        $this->artisan('module:make:action', [
+            'name' => '123Invalid',
+            'module' => 'Author',
+        ])
+            ->expectsOutputToContain('not a valid PHP class name')
+            ->assertFailed();
+    });
+
+    it('rejects invalid class names with special characters', function () {
+        $this->artisan('module:make:action', [
+            'name' => 'Invalid-Class',
+            'module' => 'Author',
+        ])
+            ->expectsOutputToContain('not a valid PHP class name')
+            ->assertFailed();
+    });
+
+    it('rejects invalid class names with spaces', function () {
+        $this->artisan('module:make:action', [
+            'name' => 'Invalid Class',
+            'module' => 'Author',
+        ])
+            ->expectsOutputToContain('not a valid PHP class name')
+            ->assertFailed();
+    });
+
+    it('accepts valid class names', function () {
+        $this->artisan('module:make:action', [
+            'name' => 'ValidAction',
+            'module' => 'Author',
+            '--stub' => 'plain',
+        ])
+            ->assertSuccessful();
+
+        $this->artisan('module:make:action', [
+            'name' => '_ValidAction',
+            'module' => 'Author',
+            '--stub' => 'plain',
+            '--force' => true,
+        ])
+            ->assertSuccessful();
+
+        $this->artisan('module:make:action', [
+            'name' => 'Valid123Action',
+            'module' => 'Author',
+            '--stub' => 'plain',
+            '--force' => true,
+        ])
+            ->assertSuccessful();
     });
 });

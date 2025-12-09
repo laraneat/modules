@@ -2,10 +2,10 @@
 
 namespace Modules\ArticleComment\Actions;
 
-use Illuminate\Http\JsonResponse;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Modules\ArticleComment\Models\ArticleComment;
 use Modules\ArticleComment\UI\API\Requests\DeleteArticleCommentRequest;
+use Symfony\Component\HttpFoundation\Response;
 
 class DeleteArticleCommentAction
 {
@@ -16,7 +16,7 @@ class DeleteArticleCommentAction
         return $articleComment->delete();
     }
 
-    public function asController(DeleteArticleCommentRequest $request, ArticleComment $articleComment): JsonResponse
+    public function asController(DeleteArticleCommentRequest $request, ArticleComment $articleComment): Response
     {
         $this->handle($articleComment);
 

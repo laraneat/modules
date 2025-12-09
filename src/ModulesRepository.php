@@ -3,9 +3,7 @@
 namespace Laraneat\Modules;
 
 use Composer\Factory;
-use Exception;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
@@ -23,11 +21,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ModulesRepository implements Arrayable
 {
     /**
-     * The filesystem instance.
-     */
-    protected Filesystem $filesystem;
-
-    /**
      * Paths for scanning modules.
      *
      * @var array<int, string>
@@ -37,7 +30,7 @@ class ModulesRepository implements Arrayable
     /**
      * The loaded modules array.
      *
-     * @var array<string, Module>
+     * @var array<string, Module>|null
      */
     protected ?array $modules = null;
 
@@ -45,11 +38,12 @@ class ModulesRepository implements Arrayable
      * Create a new module manifest instance.
      */
     public function __construct(
-        protected Application $app,
+        protected Filesystem $filesystem,
+        protected Composer $composer,
         protected string $modulesPath,
+        protected string $basePath,
         protected ?string $modulesManifestPath = null,
     ) {
-        $this->filesystem = $this->app['files'];
         $this->addScanPath($this->modulesPath);
     }
 
@@ -72,10 +66,10 @@ class ModulesRepository implements Arrayable
      */
     public function addScanPath(string|array $scanPaths): static
     {
-        foreach(Arr::wrap($scanPaths) as $scanPath) {
+        foreach (Arr::wrap($scanPaths) as $scanPath) {
             $normalizedScanPath = $this->normalizeScanPath($scanPath);
 
-            if (! $normalizedScanPath || in_array($normalizedScanPath, $this->scanPaths)) {
+            if (!$normalizedScanPath || in_array($normalizedScanPath, $this->scanPaths, true)) {
                 continue;
             }
 
@@ -99,7 +93,7 @@ class ModulesRepository implements Arrayable
     {
         $modulesManifest = [];
 
-        foreach($this->scanPaths as $path) {
+        foreach ($this->scanPaths as $path) {
             $packagePaths = $this->filesystem->glob("$path/composer.json");
 
             foreach ($packagePaths as $packagePath) {
@@ -107,7 +101,7 @@ class ModulesRepository implements Arrayable
                 $composerJsonFile = ComposerJsonFile::create($packagePath);
                 $packageName = trim($composerJsonFile->get('name') ?? "");
 
-                if (! $packageName) {
+                if (!$packageName) {
                     continue;
                 }
 
@@ -143,6 +137,10 @@ class ModulesRepository implements Arrayable
     {
         $this->modules = null;
 
+        if ($this->modulesManifestPath === null) {
+            return true;
+        }
+
         return $this->filesystem->delete($this->modulesManifestPath);
     }
 
@@ -167,7 +165,7 @@ class ModulesRepository implements Arrayable
                 );
             }
         } catch (FileNotFoundException) {
-            //
+            // Manifest file not found, will rebuild
         }
 
         return $this->modules = $this->makeModulesFromManifest($this->buildModulesManifest());
@@ -227,7 +225,7 @@ class ModulesRepository implements Arrayable
         $moduleStudlyName = Str::studly($moduleName);
         $foundModules = [];
 
-        foreach($this->getModules() as $modulePackageName => $module) {
+        foreach ($this->getModules() as $modulePackageName => $module) {
             $modulePackageNameWithoutVendor = Str::kebab(Str::afterLast($modulePackageName, '/'));
             if ($module->getStudlyName() === $moduleStudlyName || $modulePackageNameWithoutVendor === $moduleKebabName) {
                 $foundModules[$modulePackageName] = $module;
@@ -248,7 +246,7 @@ class ModulesRepository implements Arrayable
     {
         $modules = $this->filterByName($moduleName);
 
-        if (! $modules) {
+        if (!$modules) {
             throw ModuleNotFound::makeForName($moduleName);
         }
 
@@ -263,42 +261,46 @@ class ModulesRepository implements Arrayable
      */
     public function delete(string $modulePackageName, \Closure|OutputInterface $output = null): bool
     {
-        return $this->findOrFail($modulePackageName)->delete($output);
+        $module = $this->findOrFail($modulePackageName);
+
+        $result = $this->filesystem->deleteDirectory($module->getPath());
+
+        if (!$this->composer->removePackages([$module->getPackageName()], false, $output)) {
+            throw ComposerException::make("Failed to remove package with composer.");
+        }
+
+        $this->pruneModulesManifest();
+
+        return $result;
     }
 
     /**
+     * Sync modules with composer.
+     *
      * @throws ModuleHasNoNamespace
      * @throws ModuleHasNonUniquePackageName
      * @throws ComposerException
      */
     public function syncWithComposer(\Closure|OutputInterface $output = null): void
     {
-        $initialWorkingDir = getcwd();
-        $appBasePath = $this->app->basePath();
-        chdir($appBasePath);
-        $composerJsonFile = ComposerJsonFile::create(Factory::getComposerFile());
+        $composerJsonPath = $this->basePath . '/' . Factory::getComposerFile();
+        $composerJsonFile = ComposerJsonFile::create($composerJsonPath);
 
-        foreach($this->getModules() as $modulePackageName => $module) {
-            $moduleRelativePath = GeneratorHelper::makeRelativePath($appBasePath, $module->getPath());
+        foreach ($this->getModules() as $modulePackageName => $module) {
+            $moduleRelativePath = GeneratorHelper::makeRelativePath($this->basePath, $module->getPath());
             if ($moduleRelativePath !== null) {
                 $composerJsonFile->addModule($modulePackageName, $moduleRelativePath);
             }
         }
 
         $composerJsonFile->save();
-        chdir($initialWorkingDir);
 
         $modulePackageNames = array_keys($this->getModules());
-        if (! $modulePackageNames) {
+        if (!$modulePackageNames) {
             return;
         }
 
-        $composerClass = Composer::class;
-        $composer = $this->app[$composerClass];
-        if (! ($composer instanceof Composer)) {
-            throw ComposerException::make("$composerClass not registered in your app.");
-        }
-        if (! $composer->updatePackages($modulePackageNames, false, $output)) {
+        if (!$this->composer->updatePackages($modulePackageNames, false, $output)) {
             throw ComposerException::make("Failed to update package with composer.");
         }
     }
@@ -321,17 +323,19 @@ class ModulesRepository implements Arrayable
     /**
      * Write the given manifest array to disk.
      *
-     * @throws Exception
+     * @param array<string, mixed> $manifest
+     *
+     * @throws DirectoryMustBePresentAndWritable
      */
     protected function write(array $manifest, string $manifestPath): void
     {
-        if (! is_writable($dirname = dirname($manifestPath))) {
+        if (!is_writable($dirname = dirname($manifestPath))) {
             throw DirectoryMustBePresentAndWritable::make($dirname);
         }
 
         $this->filesystem->replace(
             $manifestPath,
-            '<?php return '.var_export($manifest, true).';'
+            '<?php return ' . var_export($manifest, true) . ';'
         );
     }
 
@@ -377,13 +381,10 @@ class ModulesRepository implements Arrayable
     /**
      * @param string $packageName
      * @param array{ path: string, name: string, namespace: string, providers: class-string[], aliases: array<string, class-string> } $moduleData
-     * @return Module
      */
     protected function makeModuleFromManifestItem(string $packageName, array $moduleData): Module
     {
         return new Module(
-            app: $this->app,
-            modulesRepository: $this,
             packageName: $packageName,
             name: $moduleData['name'],
             path: $moduleData['path'],

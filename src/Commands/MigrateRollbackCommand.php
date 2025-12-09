@@ -2,16 +2,10 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\ConfirmableTrait;
-use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
-use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
-use Laraneat\Modules\Exceptions\ModuleNotFound;
 use Laraneat\Modules\Module;
 
-class MigrateRollbackCommand extends BaseCommand
+class MigrateRollbackCommand extends BaseMigrationCommand
 {
-    use ConfirmableTrait;
-
     /**
      * The name and signature of the console command.
      *
@@ -34,39 +28,12 @@ class MigrateRollbackCommand extends BaseCommand
     protected $description = 'Rollback the modules migrations.';
 
     /**
-     * Execute the console command.
-     */
-    public function handle(): int
-    {
-        if (! $this->confirmToProceed()) {
-            return self::FAILURE;
-        }
-
-        try {
-            $modulesToHandle = $this->getModuleArgumentOrFail();
-        } catch (ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
-            $this->error($exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        foreach($modulesToHandle as $module) {
-            $this->rollback($module);
-        }
-
-        return self::SUCCESS;
-
-    }
-
-    /**
      * Rollback migration from the specified module.
      */
-    protected function rollback(Module $module): void
+    protected function executeForModule(Module $module): void
     {
-        $this->line('Running for module: <info>' . $module->getName() . '</info>');
-
         $this->call('migrate:rollback', [
-            '--path' => $module->getMigrationPaths(),
+            '--path' => $this->getMigrationPaths($module),
             '--database' => $this->option('database'),
             '--step' => $this->option('step') ?: null,
             '--batch' => $this->option('batch') ?: null,

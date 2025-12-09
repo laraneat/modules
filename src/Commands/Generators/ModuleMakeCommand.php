@@ -26,7 +26,8 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
     protected $signature = 'module:make
                             {name : The name of the module to be created}
                             {--preset= : The preset of the module to be created ("plain", "base", or "api", "plain" by default)}
-                            {--entity= : Entity name (used to create module components, the default is the name of the module)}';
+                            {--entity= : Entity name (used to create module components, the default is the name of the module)}
+                            {--force : Overwrite the module if it already exists}';
 
     /**
      * The console command description.
@@ -72,12 +73,8 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
 
     /**
      * Execute the console command.
-     *
-     * @param ModulesRepository $modulesRepository
-     *
-     * @return int
      */
-    public function handle(ModulesRepository $modulesRepository): int
+    public function handle(): int
     {
         $nameArgument = trim($this->argument('name'), '/\\');
         $explodedNameArgument = explode('/', $nameArgument, 2);
@@ -100,7 +97,7 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             $this->moduleName
         );
 
-        if ($modulesRepository->has($this->modulePackageName)) {
+        if ($this->modulesRepository->has($this->modulePackageName)) {
             $this->components->error("Module '$this->modulePackageName' already exist!");
 
             return self::FAILURE;
@@ -390,5 +387,14 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             question: 'Enter the entity name (used to create module components)',
             default: $this->moduleStudlyName
         ));
+    }
+
+    /**
+     * Not used by ModuleMakeCommand as it fully overrides handle().
+     * Required by abstract base class.
+     */
+    protected function getContents(): string
+    {
+        return '';
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Modules\ArticleComment\Tests\UI\API;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ArticleComment\Models\ArticleComment;
 use Tests\TestCase;
 
@@ -11,6 +12,8 @@ use Tests\TestCase;
  */
 class ListArticleCommentsTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -32,7 +35,15 @@ class ListArticleCommentsTest extends TestCase
                 'meta',
                 'data'
             ])
-            ->assertJsonCount(ArticleComment::query()->count(), 'data');
+            ->assertJsonCount(3, 'data');
+    }
+
+    public function test_list_article_comments_unauthenticated(): void
+    {
+        ArticleComment::factory()->count(3)->create();
+
+        $this->getJson(route('api.article_comments.list'))
+            ->assertUnauthorized();
     }
 
     public function test_list_article_comments_without_access(): void

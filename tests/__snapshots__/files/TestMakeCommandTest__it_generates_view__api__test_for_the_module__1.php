@@ -2,6 +2,7 @@
 
 namespace Modules\Author\Tests\UI\API;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Modules\Author\Models\Author;
 use Tests\TestCase;
@@ -12,6 +13,8 @@ use Tests\TestCase;
  */
 class ViewAuthorTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -35,6 +38,14 @@ class ViewAuthorTest extends TestCase
                         ->etc()
                 )
             );
+    }
+
+    public function test_view_author_unauthenticated(): void
+    {
+        $author = Author::factory()->create();
+
+        $this->getJson(route('api.authors.view', ['author' => $author->getKey()]))
+            ->assertUnauthorized();
     }
 
     public function test_view_author_without_access(): void

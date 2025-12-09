@@ -2,6 +2,7 @@
 
 namespace Modules\Author\Tests\UI\API;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Author\Models\Author;
 use Tests\TestCase;
 
@@ -11,6 +12,8 @@ use Tests\TestCase;
  */
 class ListAuthorsTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -32,7 +35,15 @@ class ListAuthorsTest extends TestCase
                 'meta',
                 'data'
             ])
-            ->assertJsonCount(Author::query()->count(), 'data');
+            ->assertJsonCount(3, 'data');
+    }
+
+    public function test_list_authors_unauthenticated(): void
+    {
+        Author::factory()->count(3)->create();
+
+        $this->getJson(route('api.authors.list'))
+            ->assertUnauthorized();
     }
 
     public function test_list_authors_without_access(): void

@@ -2,6 +2,7 @@
 
 namespace Modules\ArticleComment\Tests\UI\API;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Modules\ArticleComment\Models\ArticleComment;
 use Tests\TestCase;
@@ -12,6 +13,8 @@ use Tests\TestCase;
  */
 class ViewArticleCommentTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -35,6 +38,14 @@ class ViewArticleCommentTest extends TestCase
                         ->etc()
                 )
             );
+    }
+
+    public function test_view_article_comment_unauthenticated(): void
+    {
+        $articleComment = ArticleComment::factory()->create();
+
+        $this->getJson(route('api.article_comments.view', ['articleComment' => $articleComment->getKey()]))
+            ->assertUnauthorized();
     }
 
     public function test_view_article_comment_without_access(): void

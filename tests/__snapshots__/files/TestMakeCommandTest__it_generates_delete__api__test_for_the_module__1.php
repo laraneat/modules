@@ -2,6 +2,7 @@
 
 namespace Modules\Author\Tests\UI\API;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Author\Models\Author;
 use Tests\TestCase;
 
@@ -11,6 +12,8 @@ use Tests\TestCase;
  */
 class DeleteAuthorTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
@@ -29,6 +32,14 @@ class DeleteAuthorTest extends TestCase
             ->assertNoContent();
 
         $this->assertNull(Author::find($author->getKey()));
+    }
+
+    public function test_delete_author_unauthenticated(): void
+    {
+        $author = Author::factory()->create();
+
+        $this->deleteJson(route('api.authors.delete', ['author' => $author->getKey()]))
+            ->assertUnauthorized();
     }
 
     public function test_delete_author_without_access(): void

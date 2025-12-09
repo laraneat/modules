@@ -4,11 +4,6 @@ namespace Laraneat\Modules\Commands\Generators;
 
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Laraneat\Modules\Enums\ModuleComponentType;
-use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
-use Laraneat\Modules\Exceptions\ModuleHasNonUniquePackageName;
-use Laraneat\Modules\Exceptions\ModuleNotFound;
-use Laraneat\Modules\Exceptions\NameIsReserved;
-use Laraneat\Modules\Module;
 use Laraneat\Modules\Support\Generator\Stub;
 
 /**
@@ -34,18 +29,6 @@ class DTOMakeCommand extends BaseComponentGeneratorCommand implements PromptsFor
     protected $description = 'Generate new DTO for the specified module.';
 
     /**
-     * Module instance.
-     *
-     * @var Module
-     */
-    protected Module $module;
-
-    /**
-     * The 'name' argument
-     */
-    protected string $nameArgument;
-
-    /**
      * The module component type.
      */
     protected ModuleComponentType $componentType = ModuleComponentType::Dto;
@@ -60,28 +43,9 @@ class DTOMakeCommand extends BaseComponentGeneratorCommand implements PromptsFor
         ];
     }
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): int
+    protected function beforeGenerate(): void
     {
         $this->ensurePackageIsInstalledOrWarn('spatie/laravel-data');
-
-        try {
-            $this->nameArgument = $this->argument('name');
-            $this->ensureNameIsNotReserved($this->nameArgument);
-            $this->module = $this->getModuleArgumentOrFail();
-        } catch (NameIsReserved|ModuleNotFound|ModuleHasNonUniquePackageName|ModuleHasNoNamespace $exception) {
-            $this->components->error($exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        return $this->generate(
-            $this->getComponentPath($this->module, $this->nameArgument, $this->componentType),
-            $this->getContents(),
-            $this->option('force')
-        );
     }
 
     protected function getContents(): string
