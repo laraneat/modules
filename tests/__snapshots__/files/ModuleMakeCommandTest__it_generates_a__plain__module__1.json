@@ -1,25 +1,48 @@
 {
-    "name": "laravel/laravel",
-    "description": "The Laravel Framework.",
+    "name": "laraneat/laraneat",
+    "type": "project",
+    "description": "The Laraneat framework.",
     "keywords": [
-        "framework",
-        "laravel"
+        "laraneat",
+        "laravel",
+        "apiato",
+        "php",
+        "framework"
     ],
     "license": "MIT",
-    "type": "project",
+    "require": {
+        "php": "^8.1",
+        "demo/article-comment": "*",
+        "laravel/framework": "^10.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5.9"
+    },
     "autoload": {
+        "classmap": [
+            "database"
+        ],
         "psr-4": {
             "App\\": "app/",
-            "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Modules\\": "modules/"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "Tests\\": "tests/"
+    "extra": {
+        "laravel": {
+            "dont-discover": []
         }
     },
-    "minimum-stability": "dev",
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
     "repositories": [
         {
             "type": "path",
@@ -28,8 +51,5 @@
                 "symlink": true
             }
         }
-    ],
-    "require": {
-        "demo/article-comment": "*"
-    }
+    ]
 }

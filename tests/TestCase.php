@@ -44,6 +44,15 @@ abstract class TestCase extends OrchestraTestCase
         return static::applicationBasePath();
     }
 
+    /**
+     * Resolve application implementation.
+     * Override to skip testbench's bootstrap/app.php which ignores applicationBasePath().
+     */
+    protected function resolveApplication(): \Illuminate\Foundation\Application
+    {
+        return $this->resolveDefaultApplication();
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
