@@ -30,7 +30,7 @@ it('generates "web" controller for the module', function () {
     ])
         ->assertSuccessful();
 
-    $filePath = $this->app->basePath('/modules/author/src/UI/Web/Controllers/WebAuthorController.php');
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/Controllers/WebAuthorController.php');
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });

@@ -27,9 +27,21 @@ abstract class TestCase extends OrchestraTestCase
 
     protected ?string $composerJsonBackupPath = null;
 
+    /**
+     * Get application base path.
+     * Using both methods for compatibility with different Orchestra Testbench versions.
+     */
     public static function applicationBasePath(): string
     {
         return __DIR__ . '/fixtures/laravel';
+    }
+
+    /**
+     * @deprecated Use applicationBasePath() instead
+     */
+    protected function getBasePath(): string
+    {
+        return static::applicationBasePath();
     }
 
     protected function setUp(): void
