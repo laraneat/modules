@@ -51,7 +51,7 @@ class ModuleConfigWriter
     {
         $providers = $module->getProviders();
 
-        if (!in_array($providerClass, $providers, true)) {
+        if (! in_array($providerClass, $providers, true)) {
             $providers[] = $providerClass;
             $this->updateProviders($module, $providers);
         }
@@ -70,7 +70,7 @@ class ModuleConfigWriter
     {
         $aliases = $module->getAliases();
 
-        if (!isset($aliases[$alias]) || $aliases[$alias] !== $class) {
+        if (! isset($aliases[$alias]) || $aliases[$alias] !== $class) {
             $aliases[$alias] = $class;
             $this->updateAliases($module, $aliases);
         }

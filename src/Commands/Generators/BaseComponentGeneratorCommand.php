@@ -219,7 +219,7 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
     {
         $classBaseName = class_basename($name);
 
-        if (!$this->isValidClassName($classBaseName)) {
+        if (! $this->isValidClassName($classBaseName)) {
             throw InvalidClassName::make($classBaseName);
         }
     }
@@ -270,7 +270,7 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
             return self::FAILURE;
         }
 
-        if (!is_writable($directory)) {
+        if (! is_writable($directory)) {
             $this->components->error("Directory is not writable: `$directory`. Check file permissions.");
 
             return self::FAILURE;
@@ -455,7 +455,7 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
         /** @var array{packages?: array} $installed */
         $installed = json_decode($this->filesystem->get($installedJsonPath), true);
 
-        foreach($installed['packages'] ?? [] as $package) {
+        foreach ($installed['packages'] ?? [] as $package) {
             if ($package['name'] === $packageName) {
                 return true;
             }

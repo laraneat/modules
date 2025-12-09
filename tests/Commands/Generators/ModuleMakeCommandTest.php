@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Carbon;
 use Laraneat\Modules\Support\Composer;
+
 use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
 beforeEach(function () {

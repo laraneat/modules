@@ -42,7 +42,7 @@ class ModuleDeleteCommand extends BaseCommand
             return self::FAILURE;
         }
 
-        foreach($modulesToDelete as $moduleToDelete) {
+        foreach ($modulesToDelete as $moduleToDelete) {
             try {
                 $status = $this->modulesRepository->delete($moduleToDelete->getPackageName(), $this->output);
                 if ($status) {

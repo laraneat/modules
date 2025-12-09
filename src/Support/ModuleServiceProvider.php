@@ -40,8 +40,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
      */
     protected function loadCommandsFrom(
         array $pathsByNamespace,
-    ): void
-    {
+    ): void {
         $pathsByNamespace = array_unique(Arr::wrap($pathsByNamespace));
         $pathsByNamespace = array_filter($pathsByNamespace, static function ($path) {
             return is_dir($path);
@@ -74,8 +73,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
         SplFileInfo $file,
         string $basePath,
         string $baseNamespace
-    ): string
-    {
+    ): string {
         return rtrim($baseNamespace, '\\') . '\\' . str_replace(
             ['/', '.php'],
             ['\\', ''],

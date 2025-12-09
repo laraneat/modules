@@ -41,7 +41,7 @@ function assertsMatchesDirectorySnapshot(string $directory): void
     expect($directory)->toBeDirectory();
     $filePaths = getRelativeFilePathsInDirectory($directory);
     assertMatchesSnapshot($filePaths);
-    foreach(makeAbsolutePaths($filePaths, $directory) as $filePath) {
+    foreach (makeAbsolutePaths($filePaths, $directory) as $filePath) {
         assertMatchesFileSnapshot($filePath);
     }
 }

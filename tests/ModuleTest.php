@@ -1,6 +1,5 @@
 <?php
 
-use Laraneat\Modules\Support\Composer;
 use Laraneat\Modules\Support\ModuleConfigWriter;
 
 use function PHPUnit\Framework\assertFileExists;
@@ -271,4 +270,3 @@ it('can add aliases via ModuleConfigWriter', function () {
     assertFileExists($composerJsonPath);
     assertMatchesFileSnapshot($composerJsonPath);
 });
-

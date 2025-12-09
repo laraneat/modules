@@ -69,7 +69,7 @@ class ModulesRepository implements Arrayable
         foreach (Arr::wrap($scanPaths) as $scanPath) {
             $normalizedScanPath = $this->normalizeScanPath($scanPath);
 
-            if (!$normalizedScanPath || in_array($normalizedScanPath, $this->scanPaths, true)) {
+            if (! $normalizedScanPath || in_array($normalizedScanPath, $this->scanPaths, true)) {
                 continue;
             }
 
@@ -101,7 +101,7 @@ class ModulesRepository implements Arrayable
                 $composerJsonFile = ComposerJsonFile::create($packagePath);
                 $packageName = trim($composerJsonFile->get('name') ?? "");
 
-                if (!$packageName) {
+                if (! $packageName) {
                     continue;
                 }
 
@@ -246,7 +246,7 @@ class ModulesRepository implements Arrayable
     {
         $modules = $this->filterByName($moduleName);
 
-        if (!$modules) {
+        if (! $modules) {
             throw ModuleNotFound::makeForName($moduleName);
         }
 
@@ -265,7 +265,7 @@ class ModulesRepository implements Arrayable
 
         $result = $this->filesystem->deleteDirectory($module->getPath());
 
-        if (!$this->composer->removePackages([$module->getPackageName()], false, $output)) {
+        if (! $this->composer->removePackages([$module->getPackageName()], false, $output)) {
             throw ComposerException::make("Failed to remove package with composer.");
         }
 
@@ -296,11 +296,11 @@ class ModulesRepository implements Arrayable
         $composerJsonFile->save();
 
         $modulePackageNames = array_keys($this->getModules());
-        if (!$modulePackageNames) {
+        if (! $modulePackageNames) {
             return;
         }
 
-        if (!$this->composer->updatePackages($modulePackageNames, false, $output)) {
+        if (! $this->composer->updatePackages($modulePackageNames, false, $output)) {
             throw ComposerException::make("Failed to update package with composer.");
         }
     }
@@ -329,7 +329,7 @@ class ModulesRepository implements Arrayable
      */
     protected function write(array $manifest, string $manifestPath): void
     {
-        if (!is_writable($dirname = dirname($manifestPath))) {
+        if (! is_writable($dirname = dirname($manifestPath))) {
             throw DirectoryMustBePresentAndWritable::make($dirname);
         }
 

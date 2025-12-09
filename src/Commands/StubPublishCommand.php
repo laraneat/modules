@@ -34,7 +34,7 @@ class StubPublishCommand extends Command
         $filesystem->ensureDirectoryExists($customStubsPath = GeneratorHelper::getCustomStubsPath());
         $originalStubsPath = realpath(__DIR__ . '/Generators/stubs');
 
-        foreach($filesystem->allFiles($originalStubsPath) as $file) {
+        foreach ($filesystem->allFiles($originalStubsPath) as $file) {
             $from = $file->getRealPath();
             $relativePath = Str::after($file->getRealPath(), $originalStubsPath);
             $to = $customStubsPath . '/' . ltrim($relativePath, '/');

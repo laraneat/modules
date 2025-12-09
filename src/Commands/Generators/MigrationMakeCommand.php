@@ -117,7 +117,7 @@ class MigrationMakeCommand extends BaseComponentGeneratorCommand implements Prom
             }
         }
 
-        if (!$this->isValidTableName($tableName)) {
+        if (! $this->isValidTableName($tableName)) {
             throw InvalidTableName::make($tableName);
         }
 
@@ -148,11 +148,11 @@ class MigrationMakeCommand extends BaseComponentGeneratorCommand implements Prom
             $tableTwo ?? ''
         );
 
-        if (!$this->isValidTableName($tableOne)) {
+        if (! $this->isValidTableName($tableOne)) {
             throw InvalidTableName::make($tableOne);
         }
 
-        if (!$this->isValidTableName($tableTwo)) {
+        if (! $this->isValidTableName($tableTwo)) {
             throw InvalidTableName::make($tableTwo);
         }
 

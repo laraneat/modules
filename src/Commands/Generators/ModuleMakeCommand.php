@@ -7,7 +7,6 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Exceptions\ComposerException;
 use Laraneat\Modules\Module;
-use Laraneat\Modules\ModulesRepository;
 use Laraneat\Modules\Support\Composer;
 use Laraneat\Modules\Support\ComposerJsonFile;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
