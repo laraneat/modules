@@ -27,7 +27,7 @@ abstract class TestCase extends OrchestraTestCase
 
     protected ?string $composerJsonBackupPath = null;
 
-    protected function getBasePath(): string
+    public static function applicationBasePath(): string
     {
         return __DIR__ . '/fixtures/laravel';
     }
