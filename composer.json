@@ -27,16 +27,16 @@
         "php": "^8.1",
         "ext-json": "*",
         "composer/composer": "^2.1",
-        "laravel/framework": "^10.0"
+        "laravel/framework": "^10.0 || ^11.0 || ^12.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.48",
-        "larastan/larastan": "^2.0",
-        "mockery/mockery": "~1.0",
-        "orchestra/testbench": "^8.2",
-        "pestphp/pest": "^2.31",
-        "pestphp/pest-plugin-laravel": "^2.0",
-        "phpstan/phpstan": "^1.10.58",
+        "larastan/larastan": "^2.0 || ^3.0",
+        "mockery/mockery": "^1.0",
+        "orchestra/testbench": "^8.0 || ^9.0 || ^10.0",
+        "pestphp/pest": "^2.31 || ^3.0",
+        "pestphp/pest-plugin-laravel": "^2.0 || ^3.0",
+        "phpstan/phpstan": "^1.10.58 || ^2.0",
         "roave/security-advisories": "dev-latest",
         "spatie/pest-plugin-snapshots": "^2.1"
     },
