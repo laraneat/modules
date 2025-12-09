@@ -5,6 +5,7 @@ A Laravel package that provides a powerful modular architecture system for organ
 ## Table of Contents
 
 - [Overview](#overview)
+- [Performance Comparison](#performance-comparison-with-nwidartlaravel-modules)
 - [Architecture Diagram](#architecture-diagram)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
@@ -18,7 +19,7 @@ A Laravel package that provides a powerful modular architecture system for organ
 
 ## Overview
 
-Laraneat Modules implements the **Porto SAP (Software Architectural Pattern)** to help you build maintainable, scalable Laravel applications. Instead of organizing code by technical layers, you organize by business domains (modules).
+Laraneat Modules helps you build maintainable, scalable Laravel applications. Inspired by the [Porto SAP (Software Architectural Pattern)](https://github.com/Mahmoudz/Porto), it encourages organizing code by business domains (modules) instead of technical layers.
 
 ### Why Modular Architecture?
 
@@ -29,6 +30,62 @@ Laraneat Modules implements the **Porto SAP (Software Architectural Pattern)** t
 | Coupled, hard to maintain | Decoupled, easy to maintain |
 | Difficult to reuse | Easy to extract and reuse |
 | Complex routing | Module-scoped routing |
+
+## Performance Comparison with nWidart/laravel-modules
+
+This package is designed with performance in mind. **With caching enabled, it adds virtually zero overhead** — the cached manifest is a simple PHP array that loads in microseconds, and all core services use lazy loading.
+
+Here's how it compares to the popular [nWidart/laravel-modules](https://github.com/nWidart/laravel-modules):
+
+### Key Differences
+
+| Feature | Laraneat Modules | nWidart/laravel-modules |
+|---------|------------------|-------------------------|
+| **Module manifest** | `composer.json` only | `module.json` + `composer.json` |
+| **Cache type** | Persistent file cache | In-memory only (per request) |
+| **Service providers** | DeferrableProvider (lazy) | Eager loading |
+| **Enable/disable modules** | Not supported | Supported via JSON file |
+| **Architecture pattern** | Domain-driven (Porto-inspired) | Flexible structure |
+
+### Performance Impact
+
+#### Production (with cache enabled)
+
+| Metric | Laraneat | nWidart |
+|--------|----------|---------|
+| File operations (first request) | 1 (cached manifest) | N (module.json × modules) |
+| File operations (subsequent) | 1 | N |
+| Providers loaded | On-demand | All modules |
+
+#### Development (without cache)
+
+Both packages scan the filesystem on each request. However, Laraneat uses `DeferrableProvider`, so the `ModulesRepository` is only instantiated when actually needed.
+
+### Why Laraneat is Faster
+
+1. **Persistent manifest cache** — Module metadata is cached to `bootstrap/cache/laraneat-modules.php`, eliminating filesystem scans in production.
+
+2. **DeferrableProvider** — Core services (`ModulesRepository`, `Composer`, console commands) implement Laravel's `DeferrableProvider` interface, loading only when requested.
+
+3. **Single manifest file** — Uses existing `composer.json` instead of requiring an additional `module.json` per module.
+
+4. **No status file I/O** — No `modules_statuses.json` reads on every request (unlike nWidart's enabled/disabled feature).
+
+### Recommendations
+
+```php
+// config/modules.php - Enable cache in production
+'cache' => [
+    'enabled' => env('APP_ENV') === 'production',
+],
+```
+
+After deployment:
+```bash
+php artisan module:cache
+```
+
+For development with many modules, consider enabling cache manually to avoid repeated filesystem scans.
 
 ## Architecture Diagram
 
@@ -75,7 +132,7 @@ Laraneat Modules implements the **Porto SAP (Software Architectural Pattern)** t
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Module Internal Architecture (Porto SAP)
+### Module Internal Architecture
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
