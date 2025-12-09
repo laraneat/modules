@@ -2,25 +2,26 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
-use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class FactoryMakeCommand extends ComponentGeneratorCommand
+class FactoryMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make:factory';
+    protected $signature = 'module:make:factory
+                            {name : The name of the factory class}
+                            {module? : The name or package name of the app module}
+                            {--model= : The class name of the model to be used in the factory}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -30,64 +31,38 @@ class FactoryMakeCommand extends ComponentGeneratorCommand
     protected $description = 'Generate new factory for the specified module.';
 
     /**
-     * Module instance.
-     *
-     * @var Module
+     * The module component type.
      */
-    protected Module $module;
+    protected ModuleComponentType $componentType = ModuleComponentType::Factory;
 
     /**
-     * Component type.
-     *
-     * @var string
+     * Prompt for missing input arguments using the returned questions.
      */
-    protected string $componentType = 'factory';
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
-     */
-    protected string $nameArgument;
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the factory.'],
+            'name' => 'Enter the factory class name',
         ];
     }
 
-    protected function prepare()
+    protected function getContents(): string
     {
-        $this->module = $this->getModule();
-        $this->nameArgument = $this->getTrimmedArgument('name');
-    }
-
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
-    {
-        $model = $this->getOptionOrAsk(
-            'model',
-            'Enter the class name of the model to be used in the factory',
-            '',
-            true
+        $modelClass = $this->getFullClassFromOptionOrAsk(
+            optionName: 'model',
+            question: 'Enter the class name of the model to be used in the factory',
+            componentType: ModuleComponentType::Model,
+            module: $this->module
         );
-        $modelClass = $this->getClass($model);
         $stubReplaces = [
-            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument),
-            'model' => $modelClass,
-            'modelEntity' => Str::camel($modelClass),
-            'modelNamespace' => $this->getComponentNamespace($this->module, $model, 'model')
+            'namespace' => $this->getComponentNamespace(
+                $this->module,
+                $this->nameArgument,
+                $this->componentType
+            ),
+            'class' => class_basename($this->nameArgument),
+            'model' => class_basename($modelClass),
+            'modelCamelCase' => Str::camel(class_basename($modelClass)),
+            'modelNamespace' => $this->getNamespaceOfClass($modelClass),
         ];
 
         return Stub::create("factory.stub", $stubReplaces)->render();

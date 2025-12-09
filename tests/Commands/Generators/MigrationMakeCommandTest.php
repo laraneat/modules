@@ -1,169 +1,231 @@
 <?php
 
-namespace Laraneat\Modules\Tests\Commands\Generators;
+use Illuminate\Support\Carbon;
 
-use Illuminate\Filesystem\Filesystem;
-use Laraneat\Modules\Contracts\RepositoryInterface;
-use Laraneat\Modules\Tests\BaseTestCase;
-use Spatie\Snapshots\MatchesSnapshots;
+use function PHPUnit\Framework\assertFileExists;
+use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-/**
- * @group command
- * @group generator
- */
-class MigrationMakeCommandTest extends BaseTestCase
-{
-    use MatchesSnapshots;
+beforeEach(function () {
+    $this->setModules([
+        realpath(__DIR__ . '/../../fixtures/stubs/modules/valid/article'),
+    ], $this->app->basePath('/modules'));
 
-    private Filesystem $finder;
-    private string $modulePath;
+    $date = Carbon::parse('2024-01-01');
+    $this->travelTo($date);
+    $this->dateStamp = $date->format('Y_m_d_His_');
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->modulePath = base_path('app/Modules/Article');
-        $this->finder = $this->app['files'];
-        $this->artisan('module:make', ['name' => 'Article', '--plain' => true]);
-    }
+it('generates "plain" migration for the module', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'some_plain_migration',
+        'module' => 'Article',
+        '--stub' => 'plain',
+    ])
+        ->assertSuccessful();
 
-    protected function tearDown(): void
-    {
-        $this->app[RepositoryInterface::class]->delete('Article');
-        parent::tearDown();
-    }
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}some_plain_migration.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_generates_migration_file()
-    {
-        $code = $this->artisan('module:make:migration', [
-            'name' => 'create_posts_table',
-            'module' => 'Article'
-        ]);
+it('generates "plain" migration for the module if the stub is not recognized by name', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'some_plain_migration',
+        'module' => 'Article',
+    ])
+        ->assertSuccessful();
 
-        $files = $this->finder->allFiles($this->modulePath . '/Data/Migrations');
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}some_plain_migration.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $this->assertCount(1, $files);
-        $this->assertSame(0, $code);
-    }
+it('generates "create" migration for the module', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'new_articles_table',
+        'module' => 'Article',
+        '--stub' => 'create',
+        '--fields' => 'title:string,excerpt:text,content:text,belongsTo:user:id:users',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_can_change_the_default_path()
-    {
-        $this->app['config']->set('modules.generator.components.migration.path', 'Foo/Bar\\Migrations');
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}new_articles_table.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $code = $this->artisan('module:make:migration', [
-            'name' => 'create_posts_table',
-            'module' => 'Article'
-        ]);
+it('generates "create" migration for the module without fields', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'new_articles_table',
+        'module' => 'Article',
+        '--stub' => 'create',
+    ])
+        ->assertSuccessful();
 
-        $files = $this->finder->allFiles($this->modulePath . '/Foo/Bar/Migrations');
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}new_articles_table.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $this->assertCount(1, $files);
-        $this->assertSame(0, $code);
-    }
+it('automatically detects and generates "create" migration for the module', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'create_articles_table',
+        'module' => 'Article',
+        '--fields' => 'title:string,excerpt:text,content:text,belongsTo:user:id:users',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_generates_correct_create_migration_file_content()
-    {
-        $code = $this->artisan('module:make:migration', [
-            'name' => 'create_posts_table',
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}create_articles_table.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
+
+it('generates "add" migration for the module', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'modify_articles_table',
+        'module' => 'Article',
+        '--stub' => 'add',
+        '--fields' => 'title:string,excerpt:text,belongsTo:user:id:users',
+    ])
+        ->assertSuccessful();
+
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}modify_articles_table.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
+
+it('generates "add" migration for the module without fields', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'modify_articles_table',
+        'module' => 'Article',
+        '--stub' => 'add',
+    ])
+        ->assertSuccessful();
+
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}modify_articles_table.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
+
+it('automatically detects and generates "add" migration for the module', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'add_title_to_articles_table',
+        'module' => 'Article',
+        '--fields' => 'title:string',
+    ])
+        ->assertSuccessful();
+
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}add_title_to_articles_table.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
+
+it('generates "delete" migration for the module', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'modify_articles_table',
+        'module' => 'Article',
+        '--stub' => 'delete',
+        '--fields' => 'title:string,excerpt:text,belongsTo:user:id:users',
+    ])
+        ->assertSuccessful();
+
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}modify_articles_table.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
+
+it('generates "delete" migration for the module without fields', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'modify_articles_table',
+        'module' => 'Article',
+        '--stub' => 'delete',
+    ])
+        ->assertSuccessful();
+
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}modify_articles_table.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
+
+it('automatically detects and generates "delete" migration for the module', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'delete_title_from_articles_table',
+        'module' => 'Article',
+        '--fields' => 'title:string',
+    ])
+        ->assertSuccessful();
+
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}delete_title_from_articles_table.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
+
+it('generates "pivot" migration for the module', function () {
+    $this->artisan('module:make:migration', [
+        'name' => 'create_article_author_table',
+        'module' => 'Article',
+        '--stub' => 'pivot',
+    ])
+        ->expectsQuestion('Enter the name of first table', 'articles')
+        ->expectsQuestion('Enter the name of second table', 'authors')
+        ->assertSuccessful();
+
+    $filePath = $this->app->basePath("/modules/article/database/migrations/{$this->dateStamp}create_article_author_table.php");
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
+
+describe('table name validation', function () {
+    it('rejects invalid table names with special characters', function () {
+        // Use a migration name that doesn't auto-detect the table name,
+        // so we can enter an invalid one via the prompt
+        $this->artisan('module:make:migration', [
+            'name' => 'modify_something',
             'module' => 'Article',
-            '--fields' => 'title:string,excerpt:text,content:text,belongsTo:user:id:users'
-        ]);
+            '--stub' => 'create',
+        ])
+            ->expectsQuestion('Enter the table name', 'invalid-table')
+            ->expectsOutputToContain('not valid')
+            ->assertFailed();
+    });
 
-        $files = $this->finder->allFiles($this->modulePath . '/Data/Migrations');
-        $fileName = $files[0]->getRelativePathname();
-        $file = $this->finder->get($this->modulePath . '/Data/Migrations/' . $fileName);
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generates_correct_add_migration_file_content()
-    {
-        $code = $this->artisan('module:make:migration', [
-            'name' => 'add_title_to_posts_table',
+    it('rejects invalid table names starting with a number', function () {
+        $this->artisan('module:make:migration', [
+            'name' => 'modify_something',
             'module' => 'Article',
-            '--fields' => 'title:string'
-        ]);
+            '--stub' => 'create',
+        ])
+            ->expectsQuestion('Enter the table name', '123table')
+            ->expectsOutputToContain('not valid')
+            ->assertFailed();
+    });
 
-        $files = $this->finder->allFiles($this->modulePath . '/Data/Migrations');
-        $fileName = $files[0]->getRelativePathname();
-        $file = $this->finder->get($this->modulePath . '/Data/Migrations/' . $fileName);
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generates_correct_delete_migration_file_content()
-    {
-        $code = $this->artisan('module:make:migration', [
-            'name' => 'remove_title_from_posts_table',
-            'module' => 'Article',
-            '--fields' => 'title:string'
-        ]);
-
-        $files = $this->finder->allFiles($this->modulePath . '/Data/Migrations');
-        $fileName = $files[0]->getRelativePathname();
-        $file = $this->finder->get($this->modulePath . '/Data/Migrations/' . $fileName);
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generates_correct_pivot_migration_file_content()
-    {
-        $code = $this->artisan('module:make:migration', [
-            'name' => 'create_user_role_table',
+    it('rejects invalid pivot table names', function () {
+        $this->artisan('module:make:migration', [
+            'name' => 'create_article_author_table',
             'module' => 'Article',
             '--stub' => 'pivot',
-            '-n' => true
-        ]);
+        ])
+            ->expectsQuestion('Enter the name of first table', 'invalid-table')
+            ->expectsQuestion('Enter the name of second table', 'authors')
+            ->expectsOutputToContain('not valid')
+            ->assertFailed();
+    });
 
-        $files = $this->finder->allFiles($this->modulePath . '/Data/Migrations');
-        $fileName = $files[0]->getRelativePathname();
-        $file = $this->finder->get($this->modulePath . '/Data/Migrations/' . $fileName);
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-//    public function it_generates_correct_pivot_migration_file_content_with_options()
-//    {
-//        $code = $this->artisan('module:make:migration', [
-//            'name' => 'create_user_role_table',
-//            'module' => 'Article',
-//            '--stub' => 'pivot',
-//            '--tableOne' => 'users',
-//            '--tableTwo' => 'roles',
-//        ]);
-//
-//        $files = $this->finder->allFiles($this->modulePath . '/Data/Migrations');
-//        $fileName = $files[0]->getRelativePathname();
-//        $file = $this->finder->get($this->modulePath . '/Data/Migrations/' . $fileName);
-//
-//        $this->assertMatchesSnapshot($file);
-//        $this->assertSame(0, $code);
-//    }
-
-    /** @test */
-    public function it_generates_correct_plain_migration_file_content()
-    {
-        $code = $this->artisan('module:make:migration', [
-            'name' => 'create_posts_table',
+    it('accepts valid table names', function () {
+        $this->artisan('module:make:migration', [
+            'name' => 'create_valid_table_table',
             'module' => 'Article',
-            '--stub' => 'plain'
-        ]);
+            '--stub' => 'create',
+        ])
+            ->assertSuccessful();
 
-        $files = $this->finder->allFiles($this->modulePath . '/Data/Migrations');
-        $fileName = $files[0]->getRelativePathname();
-        $file = $this->finder->get($this->modulePath . '/Data/Migrations/' . $fileName);
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-}
+        $this->artisan('module:make:migration', [
+            'name' => 'create__underscore_table_table',
+            'module' => 'Article',
+            '--stub' => 'create',
+            '--force' => true,
+        ])
+            ->assertSuccessful();
+    });
+});

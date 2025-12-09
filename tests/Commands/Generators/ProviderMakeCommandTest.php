@@ -1,141 +1,77 @@
 <?php
 
-namespace Laraneat\Modules\Tests\Commands\Generators;
+use function PHPUnit\Framework\assertFileExists;
+use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-use Illuminate\Filesystem\Filesystem;
-use Laraneat\Modules\Contracts\RepositoryInterface;
-use Laraneat\Modules\Tests\BaseTestCase;
-use Spatie\Snapshots\MatchesSnapshots;
+beforeEach(function () {
+    $this->setModules([
+        __DIR__ . '/../../fixtures/stubs/modules/valid/author',
+    ], $this->app->basePath('/modules'));
+});
 
-/**
- * @group command
- * @group generator
- */
-class ProviderMakeCommandTest extends BaseTestCase
-{
-    use MatchesSnapshots;
+it('generates "plain" provider for the module', function () {
+    $this->artisan('module:make:provider', [
+        'name' => 'TestServiceProvider',
+        'module' => 'Author',
+        '--stub' => 'plain',
+    ])
+        ->assertSuccessful();
 
-    private Filesystem $finder;
-    private string $modulePath;
+    $filePath = $this->app->basePath('/modules/author/src/Providers/TestServiceProvider.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->modulePath = base_path('app/Modules/Article');
-        $this->finder = $this->app['files'];
-        $this->artisan('module:make', ['name' => 'Article', '--plain' => true]);
-    }
+it('generates "module" provider for the module', function () {
+    $this->artisan('module:make:provider', [
+        'name' => 'CustomModuleServiceProvider',
+        'module' => 'Author',
+        '--stub' => 'module',
+    ])
+        ->assertSuccessful();
 
-    protected function tearDown(): void
-    {
-        $this->app[RepositoryInterface::class]->delete('Article');
-        parent::tearDown();
-    }
+    $filePath = $this->app->basePath('/modules/author/src/Providers/CustomModuleServiceProvider.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_generates_provider_file(): void
-    {
-        $code = $this->artisan('module:make:provider', [
-            'name' => 'MyAwesomeProvider',
-            'module' => 'Article',
-            '--stub' => 'plain'
-        ]);
+it('generates "event" provider for the module', function () {
+    $this->artisan('module:make:provider', [
+        'name' => 'EventServiceProvider',
+        'module' => 'Author',
+        '--stub' => 'event',
+    ])
+        ->assertSuccessful();
 
-        $this->assertTrue(is_file($this->modulePath . '/Providers/MyAwesomeProvider.php'));
-        $this->assertSame(0, $code);
-    }
+    $filePath = $this->app->basePath('/modules/author/src/Providers/EventServiceProvider.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_generated_correct_provider_file_with_content(): void
-    {
-        $code = $this->artisan('module:make:provider', [
-            'name' => 'MyAwesomeProvider',
-            'module' => 'Article',
-            '--stub' => 'plain'
-        ]);
+it('generates "route" provider for the module', function () {
+    $this->artisan('module:make:provider', [
+        'name' => 'CustomRouteServiceProvider',
+        'module' => 'Author',
+        '--stub' => 'route',
+    ])
+        ->assertSuccessful();
 
-        $file = $this->finder->get($this->modulePath . '/Providers/MyAwesomeProvider.php');
+    $filePath = $this->app->basePath('/modules/author/src/Providers/CustomRouteServiceProvider.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+it('registers provider in module composer.json', function () {
+    $this->artisan('module:make:provider', [
+        'name' => 'CustomServiceProvider',
+        'module' => 'Author',
+        '--stub' => 'plain',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_can_change_the_default_path(): void
-    {
-        $this->app['config']->set('modules.generator.components.provider.path', 'Foo/Bar\\NewProviders');
+    $composerJsonPath = $this->app->basePath('/modules/author/composer.json');
+    $composerJson = json_decode(file_get_contents($composerJsonPath), true);
 
-        $code = $this->artisan('module:make:provider', [
-            'name' => 'Baz\\Bat/MyAwesomeProvider',
-            'module' => 'Article',
-            '--stub' => 'plain'
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Foo/Bar/NewProviders/Baz/Bat/MyAwesomeProvider.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_change_the_default_namespace(): void
-    {
-        $this->app['config']->set('modules.generator.components.provider.namespace', 'Foo/Bar\\NewProviders/');
-
-        $code = $this->artisan('module:make:provider', [
-            'name' => 'Baz\\Bat/MyAwesomeProvider',
-            'module' => 'Article',
-            '--stub' => 'plain'
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Providers/Baz/Bat/MyAwesomeProvider.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_module_provider_file(): void
-    {
-        $code = $this->artisan('module:make:provider', [
-            'name' => 'Baz\\Bat/MyAwesomeModuleProvider',
-            'module' => 'Article',
-            '--stub' => 'module',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Providers/Baz/Bat/MyAwesomeModuleProvider.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_route_provider_file(): void
-    {
-        $code = $this->artisan('module:make:provider', [
-            'name' => 'Baz\\Bat/MyAwesomeRouteProvider',
-            'module' => 'Article',
-            '--stub' => 'route',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Providers/Baz/Bat/MyAwesomeRouteProvider.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_event_provider_file(): void
-    {
-        $code = $this->artisan('module:make:provider', [
-            'name' => 'Baz\\Bat/MyAwesomeEventProvider',
-            'module' => 'Article',
-            '--stub' => 'event',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Providers/Baz/Bat/MyAwesomeEventProvider.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-}
+    expect($composerJson['extra']['laravel']['providers'])
+        ->toContain('Modules\\Author\\Providers\\CustomServiceProvider');
+});

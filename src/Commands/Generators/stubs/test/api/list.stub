@@ -2,28 +2,31 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Tests\TestCase;
 use {{ modelNamespace }}\{{ model }};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 /**
- * @group {{ moduleKey }}
+ * @group {{ group }}
  * @group api
  */
 class {{ class }} extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'view-{{ modelPermissionEntity }}',
-        'roles'       => '',
+    protected array $testUserAccess = [
+        'permissions' => 'view-{{ modelKebabCase }}',
+        'roles' => '',
     ];
 
-    public function test_list_{{ modelsSnake }}(): void
+    public function test_list_{{ modelsSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
-        {{ model }}::factory()->count(2)->create();
+        {{ model }}::factory()->count(3)->create();
 
         $this->getJson(route('{{ routeName }}'))
             ->assertOk()
@@ -32,14 +35,22 @@ class {{ class }} extends TestCase
                 'meta',
                 'data'
             ])
-            ->assertJsonCount({{ model }}::query()->count(), 'data');
+            ->assertJsonCount(3, 'data');
     }
 
-    public function test_list_{{ modelsSnake }}_without_access(): void
+    public function test_list_{{ modelsSnakeCase }}_unauthenticated(): void
     {
-        $this->getTestingUserWithoutAccess();
+        {{ model }}::factory()->count(3)->create();
 
-        {{ model }}::factory()->count(2)->create();
+        $this->getJson(route('{{ routeName }}'))
+            ->assertUnauthorized();
+    }
+
+    public function test_list_{{ modelsSnakeCase }}_without_access(): void
+    {
+        $this->actingAsTestUserWithoutAccess();
+
+        {{ model }}::factory()->count(3)->create();
 
         $this->getJson(route('{{ routeName }}'))
             ->assertForbidden();

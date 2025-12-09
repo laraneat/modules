@@ -2,8 +2,9 @@
 
 namespace Laraneat\Modules\Support\Generator;
 
-use Laraneat\Modules\Exceptions\ModuleNotFoundException;
-use Laraneat\Modules\Facades\Modules;
+use Illuminate\Support\Str;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Exceptions\InvalidConfigValue;
 use Laraneat\Modules\Module;
 
 class GeneratorHelper
@@ -11,134 +12,203 @@ class GeneratorHelper
     /**
      * Get generator modules path
      *
-     * @return string
+     * @throws InvalidConfigValue
      */
-    public static function path(): string
+    public static function getBasePath(): string
     {
-        return rtrim(config("modules.generator.path"), '/');
+        $generatorPath = config('modules.path');
+
+        if (! $generatorPath) {
+            throw InvalidConfigValue::makeForNullValue('modules.path');
+        }
+
+        return self::normalizePath($generatorPath, true);
     }
 
     /**
      * Get generator modules namespace
      *
-     * @return string
+     * @throws InvalidConfigValue
      */
-    public static function namespace(): string
+    public static function getBaseNamespace(): string
     {
-        return self::formatNamespace(config("modules.generator.namespace"));
+        $generatorNamespace = config('modules.namespace');
+
+        if (! $generatorNamespace) {
+            throw InvalidConfigValue::makeForNullValue('modules.namespace');
+        }
+
+        return self::normalizeNamespace($generatorNamespace);
     }
 
     /**
      * Get custom stubs path
-     *
-     * @return string
      */
-    public static function customStubsPath(): string
+    public static function getCustomStubsPath(): ?string
     {
-        return rtrim(config("modules.generator.custom_stubs"), '/');
+        $customStubsPath = config('modules.custom_stubs', base_path('/stubs/modules'));
+
+        return $customStubsPath ? self::normalizePath($customStubsPath, true) : null;
     }
 
     /**
-     * Get user model
+     * Get user model class
      *
-     * @return string
+     * @return class-string|null
      */
-    public static function userModel(): string
+    public static function getUserModelClass(): ?string
     {
-        return self::formatNamespace(config("modules.generator.user_model"));
+        $userModelClass = config('modules.user_model');
+
+        return $userModelClass && is_string($userModelClass) ? self::normalizeNamespace($userModelClass) : null;
     }
 
     /**
-     * Get "create permission" action
+     * Get "create permission" action class
      *
-     * @return string
+     * @return class-string|null
      */
-    public static function createPermissionAction(): string
+    public static function getCreatePermissionActionClass(): ?string
     {
-        return self::formatNamespace(config("modules.generator.create_permission.action"));
+        $createPermissionActionClass = config('modules.create_permission.action');
+
+        return $createPermissionActionClass && is_string($createPermissionActionClass)
+            ? self::normalizeNamespace($createPermissionActionClass)
+            : null;
     }
 
     /**
-     * Get "create permission" DTO
+     * Get "create permission" DTO class
      *
-     * @return string
+     * @return class-string|null
      */
-    public static function createPermissionDTO(): string
+    public static function getCreatePermissionDTOClass(): ?string
     {
-        return self::formatNamespace(config("modules.generator.create_permission.dto"));
+        $createPermissionDTOClass = config('modules.create_permission.dto');
+
+        return $createPermissionDTOClass && is_string($createPermissionDTOClass)
+            ? self::normalizeNamespace($createPermissionDTOClass)
+            : null;
     }
 
     /**
      * Get component config
      *
-     * @param string $componentType
-     *
-     * @return GeneratorPath
+     *  @throws InvalidConfigValue
      */
-    public static function component(string $componentType): GeneratorPath
+    public static function component(ModuleComponentType $componentType): GeneratorPath
     {
-        return new GeneratorPath(config("modules.generator.components.$componentType"));
+        $configPath = "modules.components.{$componentType->value}";
+        $generatorComponent = config($configPath);
+
+        if (! is_array($generatorComponent) || empty($generatorComponent['path'])) {
+            throw InvalidConfigValue::make($configPath);
+        };
+
+        return new GeneratorPath($generatorComponent);
     }
 
     /**
      * Get module path
      *
-     * @param Module|string $module
-     * @param string|null $extraPath
-     * @return string
+     * @throws InvalidConfigValue
      */
-    public static function modulePath(Module|string $module, ?string $extraPath = null): string
+    public static function makeModulePath(Module|string $moduleOrName, ?string $subPath = null): ?string
     {
-        try {
-            $modulePath = Modules::getModulePath($module);
-        } catch (ModuleNotFoundException $e) {
-            $modulesPath = self::path();
-            $modulePart = self::formatPath($module);
-            $modulePath = $modulePart ? $modulesPath . '/' . $modulePart : $modulePart;
+        if ($moduleOrName instanceof Module) {
+            return $moduleOrName->subPath($subPath);
         }
 
-        return $extraPath ? $modulePath . '/' .  self::formatPath($extraPath) : $modulePath;
+        $modulePart = self::normalizePath($moduleOrName);
+
+        if (! $modulePart) {
+            return null;
+        }
+
+        $modulePath = self::getBasePath() . '/' . $modulePart;
+
+        return $subPath ? $modulePath . '/' .  self::normalizePath($subPath) : $modulePath;
     }
 
     /**
      * Get module namespace
      *
-     * @param Module|string $module
-     * @param string|null $extraNamespace
-     * @return string
+     * @throws InvalidConfigValue
      */
-    public static function moduleNamespace(Module|string $module, ?string $extraNamespace = null): string
+    public static function makeModuleNamespace(Module|string $moduleOrName, ?string $subNamespace = null): ?string
     {
-        try {
-            $moduleNamespace = Modules::getModuleNamespace($module);
-        } catch (ModuleNotFoundException $e) {
-            $modulesNamespace = self::namespace();
-            $modulePart = self::formatNamespace($module);
-            $moduleNamespace = $modulePart ? $modulesNamespace . '\\' . $modulePart : $modulePart;
+        if ($moduleOrName instanceof Module) {
+            return $moduleOrName->subNamespace($subNamespace);
         }
 
-        return $extraNamespace ? $moduleNamespace . '\\' . self::formatNamespace($extraNamespace) : $moduleNamespace;
+        $modulePart = self::normalizeNamespace(Str::studly($moduleOrName));
+
+        if (! $modulePart) {
+            return null;
+        }
+
+        $moduleNamespace = self::getBaseNamespace() . '\\' . $modulePart;
+
+        return $subNamespace ? $moduleNamespace . '\\' .  self::normalizeNamespace($subNamespace) : $moduleNamespace;
     }
 
     /**
-     * Format path (normalize slashes)
-     *
-     * @param string $path
-     * @return string
+     * Make relative path or returns null
      */
-    private static function formatPath(string $path): string
+    public static function makeRelativePath(string $from, string $to): ?string
     {
-        return trim(str_replace('\\', '/', $path), '/');
+        $from = static::normalizePath($from, true);
+        $to = static::normalizePath($to, true);
+
+        if ($from === $to) {
+            return '';
+        }
+
+        $fromSegments = explode('/', $from);
+        $toSegments = explode('/', $to);
+
+        $diffStartIndex = null;
+        $fromSegmentsCount = count($fromSegments);
+        $toSegmentsCount = count($toSegments);
+        $segmentsCount = max($fromSegmentsCount, $toSegmentsCount);
+        for ($i = 0; $i < $segmentsCount; $i++) {
+            if (! isset($fromSegments[$i], $toSegments[$i]) || $fromSegments[$i] !== $toSegments[$i]) {
+                if ($i === 0 || $i === 1 && ! $fromSegments[0]) {
+                    return null;
+                }
+                $diffStartIndex = $i;
+
+                break;
+            }
+        }
+
+        $relativePath = Str::repeat('../', $fromSegmentsCount - $diffStartIndex)
+            . join('/', array_slice($toSegments, $diffStartIndex));
+
+        return rtrim($relativePath, '/');
     }
 
     /**
-     * Format namespace (normalize slashes)
-     *
-     * @param string $namespace
-     * @return string
+     * Normalize path to use only forward slash and trim slashes
      */
-    private static function formatNamespace(string $namespace): string
+    public static function normalizePath(string $path, $useRtrim = false): string
     {
-        return trim(str_replace('/', '\\', $namespace), '\\');
+        $path = str_replace('\\', '/', $path);
+
+        return $useRtrim && Str::startsWith($path, '/')
+            ? '/' . trim($path, '/')
+            : trim($path, '/');
+    }
+
+    /**
+     * Normalize namespace to use only backslash and trim slashes
+     */
+    public static function normalizeNamespace(string $namespace, $useRtrim = false): string
+    {
+        $namespace = str_replace('/', '\\', $namespace);
+
+        return $useRtrim && Str::startsWith($namespace, '\\')
+            ? '\\' . trim($namespace, '\\')
+            : trim($namespace, '\\');
     }
 }

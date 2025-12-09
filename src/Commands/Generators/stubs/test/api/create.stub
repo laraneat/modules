@@ -2,34 +2,30 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 use {{ modelNamespace }}\{{ model }};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\TestCase;
 
 /**
- * @group {{ moduleKey }}
+ * @group {{ group }}
  * @group api
  */
 class {{ class }} extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'create-{{ modelPermissionEntity }}',
-        'roles'       => '',
+    protected array $testUserAccess = [
+        'permissions' => 'create-{{ modelKebabCase }}',
+        'roles' => '',
     ];
 
-    protected function getTestData(array $mergeData = []): array
+    public function test_create_{{ modelSnakeCase }}(): void
     {
-        return array_merge([
-            // TODO: add fields here
-        ], $mergeData);
-    }
-
-    public function test_create_{{ modelSnake }}(): void
-    {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
         $data = $this->getTestData();
 
@@ -40,19 +36,45 @@ class {{ class }} extends TestCase
                     $json->has('id')
                         ->whereAll($data)
                         ->etc()
-                    )
+                )
             );
 
-        $this->assertExistsModelWhereColumns({{ model }}::class, $data);
+        $this->assertDatabaseHas({{ model }}::class, $data);
     }
 
-    public function test_create_{{ modelSnake }}_without_access(): void
+    public function test_create_{{ modelSnakeCase }}_with_invalid_data(): void
     {
-        $this->getTestingUserWithoutAccess();
+        $this->actingAsTestUser();
+
+        $this->postJson(route('{{ routeName }}'), [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                // TODO: add expected validation errors here
+            ]);
+    }
+
+    public function test_create_{{ modelSnakeCase }}_unauthenticated(): void
+    {
+        $data = $this->getTestData();
+
+        $this->postJson(route('{{ routeName }}'), $data)
+            ->assertUnauthorized();
+    }
+
+    public function test_create_{{ modelSnakeCase }}_without_access(): void
+    {
+        $this->actingAsTestUserWithoutAccess();
 
         $data = $this->getTestData();
 
         $this->postJson(route('{{ routeName }}'), $data)
             ->assertForbidden();
+    }
+
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
     }
 }

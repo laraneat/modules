@@ -1,0 +1,32 @@
+{
+    "name": "demo/article-comment",
+    "description": "article-comment module",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Example",
+            "email": "example@example.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Modules\\ArticleComment\\": "src/",
+            "Modules\\ArticleComment\\Database\\Factories\\": "database/factories/",
+            "Modules\\ArticleComment\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\ArticleComment\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\ArticleComment\\Providers\\ArticleCommentServiceProvider",
+                "Modules\\ArticleComment\\Providers\\RouteServiceProvider"
+            ],
+            "aliases": []
+        }
+    }
+}

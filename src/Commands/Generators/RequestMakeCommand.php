@@ -2,25 +2,29 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
-use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class RequestMakeCommand extends ComponentGeneratorCommand
+class RequestMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make:request';
+    protected $signature = 'module:make:request
+                            {name : The name of the request}
+                            {module? : The name or package name of the app module}
+                            {--s|stub= : The stub name to load for this generator}
+                            {--ui= : The UI for which the request will be created}
+                            {--dto= : The class name of the DTO to be used in the request}
+                            {--model= : The class name of the model to be used in the request}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -31,111 +35,75 @@ class RequestMakeCommand extends ComponentGeneratorCommand
 
     /**
      * The UI for which the request will be created.
-     *
-     * @var string
+     * ('web' or 'api')
      */
-    protected string $ui = 'api';
+    protected string $ui;
 
     /**
-     * The stub name to load for this generator
-     *
-     * @var string
+     * Prompt for missing input arguments using the returned questions.
      */
-    protected string $stub = 'plain';
-
-    /**
-     * Module instance.
-     *
-     * @var Module
-     */
-    protected Module $module;
-
-    /**
-     * Component type.
-     *
-     * @var string
-     */
-    protected string $componentType;
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
-     */
-    protected string $nameArgument;
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['ui', null, InputOption::VALUE_REQUIRED, 'The UI for which the request will be created.'],
-            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
-            ['dto', null, InputOption::VALUE_REQUIRED, 'The class name of the DTO to be used in the request.'],
-            ['model', null, InputOption::VALUE_REQUIRED, 'The class name of the model to be used in the request.'],
+            'name' => 'Enter the request class name',
         ];
     }
 
-    protected function prepare()
+    protected function beforeGenerate(): void
     {
-        $this->module = $this->getModule();
         $this->ui = $this->getOptionOrChoice(
             'ui',
-            'Select the UI for which the request will be created',
-            ['api', 'web'],
-            'api'
+            question: 'Enter the UI for which the request will be created',
+            choices: ['api', 'web'],
+            default: 'api'
         );
-        $stubChoices = ($this->ui === "web")
-            ? ['plain', 'create', 'delete', 'update']
-            : ['plain', 'create', 'delete', 'list', 'update', 'view'];
-        $this->stub = $this->getOptionOrChoice(
-            'stub',
-            'Select the stub you want to use for generator',
-            $stubChoices,
-            'plain'
-        );
-        $this->componentType = "{$this->ui}-request";
-        $this->nameArgument = $this->getTrimmedArgument('name');
+        $this->componentType = $this->ui === 'api'
+            ? ModuleComponentType::ApiRequest
+            : ModuleComponentType::WebRequest;
     }
 
-    protected function getDestinationFilePath(): string
+    protected function getContents(): string
     {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
-    {
+        $stub = $this->getOptionOrChoice(
+            optionName: 'stub',
+            question: 'Select the stub you want to use for generator',
+            choices: ($this->ui === "web")
+                ? ['plain', 'create', 'delete', 'update']
+                : ['plain', 'create', 'delete', 'list', 'update', 'view'],
+            default: 'plain'
+        );
         $stubReplaces = [
-            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'namespace' => $this->getComponentNamespace(
+                $this->module,
+                $this->nameArgument,
+                $this->componentType
+            ),
+            'class' => class_basename($this->nameArgument),
         ];
 
-        if ($this->stub !== 'plain') {
-            if ($this->stub === 'create' || $this->stub === 'update') {
-                $dto = $this->getOptionOrAsk(
-                    'dto',
-                    'Enter the class name of the DTO to be used in the request',
-                    '',
-                    true
+        if ($stub !== 'plain') {
+            if ($stub === 'create' || $stub === 'update') {
+                $dtoClass = $this->getFullClassFromOptionOrAsk(
+                    optionName: 'dto',
+                    question: 'Enter the class name of the DTO to be used in the request',
+                    componentType: ModuleComponentType::Dto,
+                    module: $this->module
                 );
-                $stubReplaces['dto'] = $this->getClass($dto);
-                $stubReplaces['dtoNamespace'] = $this->getComponentNamespace($this->module, $dto, 'dto');
+                $stubReplaces['dto'] = class_basename($dtoClass);
+                $stubReplaces['dtoNamespace'] = $this->getNamespaceOfClass($dtoClass);
             }
 
-            $model = $this->getOptionOrAsk(
-                'model',
-                'Enter the class name of the model to be used in the request',
-                '',
-                true
+            $modelClass = $this->getFullClassFromOptionOrAsk(
+                optionName: 'model',
+                question: 'Enter the class name of the model to be used in the request',
+                componentType: ModuleComponentType::Model,
+                module: $this->module
             );
-            $stubReplaces['model'] = $this->getClass($model);
-            $stubReplaces['modelEntity'] = Str::camel($stubReplaces['model']);
-            $stubReplaces['modelNamespace'] = $this->getComponentNamespace($this->module, $model, 'model');
+            $stubReplaces['model'] = class_basename($modelClass);
+            $stubReplaces['modelCamelCase'] = Str::camel($stubReplaces['model']);
+            $stubReplaces['modelNamespace'] = $this->getNamespaceOfClass($modelClass);
         }
 
-        return Stub::create("request/{$this->stub}.stub", $stubReplaces)->render();
+        return Stub::create("request/$stub.stub", $stubReplaces)->render();
     }
 }

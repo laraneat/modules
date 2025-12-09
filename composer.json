@@ -1,10 +1,10 @@
 {
     "name": "laraneat/modules",
     "description": "Laraneat modules.",
-    "homepage": "https://github.com/laraneat/core/",
+    "homepage": "https://github.com/laraneat/modules/",
     "support": {
-        "issues": "https://github.com/laraneat/core/issues",
-        "source": "https://github.com/laraneat/core"
+        "issues": "https://github.com/laraneat/modules/issues",
+        "source": "https://github.com/laraneat/modules"
     },
     "authors": [
         {
@@ -24,41 +24,46 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.0",
+        "php": "^8.1",
         "ext-json": "*",
-        "laravel/framework": "^10.0"
+        "composer/composer": "^2.1",
+        "laravel/framework": "^10.0 || ^11.0 || ^12.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.48",
-        "mockery/mockery": "~1.0",
-        "orchestra/testbench": "^8.2",
-        "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^10.5",
+        "larastan/larastan": "^2.0 || ^3.0",
+        "mockery/mockery": "^1.0",
+        "orchestra/testbench": "^8.0 || ^9.0 || ^10.0",
+        "pestphp/pest": "^2.31 || ^3.0",
+        "pestphp/pest-plugin-laravel": "^2.0 || ^3.0",
+        "phpstan/phpstan": "^1.10.58 || ^2.0",
         "roave/security-advisories": "dev-latest",
-        "spatie/phpunit-snapshot-assertions": "^5.1"
+        "spatie/pest-plugin-snapshots": "^2.1"
     },
     "autoload": {
         "psr-4": {
             "Laraneat\\Modules\\": "src"
-        },
-        "files": [
-            "src/helpers.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
             "Laraneat\\Modules\\Tests\\": "tests",
-            "App\\": "tests/laravel/app",
-            "App\\Modules\\Article\\": "tests/fixtures/stubs/valid/Article"
+            "App\\": "tests/fixtures/laravel/app",
+            "Modules\\": "tests/fixtures/laravel/modules"
         }
     },
     "suggest": {
-        "wikimedia/composer-merge-plugin": "Allows the ability to create and merge composer.json files for your individual modules for module-specific dependency management."
+        "lorisleiva/laravel-actions": "Laravel components that take care of one specific task",
+        "jackardios/laravel-query-wizard": "Easily build Eloquent queries from API requests",
+        "spatie/laravel-data": "Powerful data objects for Laravel"
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Laraneat\\Modules\\ModulesServiceProvider"
+                "Laraneat\\Modules\\Providers\\ComposerServiceProvider",
+                "Laraneat\\Modules\\Providers\\ConsoleServiceProvider",
+                "Laraneat\\Modules\\Providers\\ModulesRepositoryServiceProvider",
+                "Laraneat\\Modules\\Providers\\ModulesServiceProvider"
             ],
             "aliases": {
                 "Modules": "Laraneat\\Modules\\Facades\\Modules"
@@ -66,17 +71,16 @@
         }
     },
     "scripts": {
-        "update-snapshots": "./vendor/bin/phpunit --no-coverage -d --update-snapshots",
-        "test": "vendor/bin/phpunit",
-        "test-coverage": "vendor/bin/phpunit --debug --coverage-html coverage",
-        "pcf": "vendor/bin/php-cs-fixer fix --verbose",
+        "analyse" : "./vendor/bin/phpstan analyse --memory-limit=256M",
+        "test" : "./vendor/bin/pest --no-coverage",
+        "test-coverage" : "./vendor/bin/pest --coverage-html coverage",
+        "update-snapshots": "./vendor/bin/pest --no-coverage --update-snapshots",
+        "format": "./vendor/bin/php-cs-fixer fix --allow-risky=yes",
         "post-autoload-dump": [
             "@php ./vendor/bin/testbench package:discover --ansi"
         ]
     },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
+    "config" : {
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true

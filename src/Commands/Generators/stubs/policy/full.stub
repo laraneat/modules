@@ -2,29 +2,26 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Policies\Policy;
-use Illuminate\Auth\Access\HandlesAuthorization;
 use {{ modelNamespace }}\{{ model }};
 use {{ userNamespace }}\{{ user }};
 
-class {{ class }} extends Policy
+class {{ class }}
 {
-    use HandlesAuthorization;
 
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny({{ user }} $user): bool
     {
-        return $user->can('view-{{ modelPermissionEntity }}');
+        return $user->can('view-{{ modelKebabCase }}');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view({{ user }} $user, {{ model }} ${{ modelEntity }}): bool
+    public function view({{ user }} $user, {{ model }} ${{ modelCamelCase }}): bool
     {
-        return $user->can('view-{{ modelPermissionEntity }}');
+        return $user->can('view-{{ modelKebabCase }}');
     }
 
     /**
@@ -32,38 +29,38 @@ class {{ class }} extends Policy
      */
     public function create({{ user }} $user): bool
     {
-        return $user->can('create-{{ modelPermissionEntity }}');
+        return $user->can('create-{{ modelKebabCase }}');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update({{ user }} $user, {{ model }} ${{ modelEntity }}): bool
+    public function update({{ user }} $user, {{ model }} ${{ modelCamelCase }}): bool
     {
-        return $user->can('update-{{ modelPermissionEntity }}');
+        return $user->can('update-{{ modelKebabCase }}');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete({{ user }} $user, {{ model }} ${{ modelEntity }}): bool
+    public function delete({{ user }} $user, {{ model }} ${{ modelCamelCase }}): bool
     {
-        return $user->can('delete-{{ modelPermissionEntity }}');
+        return $user->can('delete-{{ modelKebabCase }}');
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore({{ user }} $user, {{ model }} ${{ modelEntity }}): bool
+    public function restore({{ user }} $user, {{ model }} ${{ modelCamelCase }}): bool
     {
-        return $user->can('delete-{{ modelPermissionEntity }}');
+        return $user->can('delete-{{ modelKebabCase }}');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete({{ user }} $user, {{ model }} ${{ modelEntity }}): bool
+    public function forceDelete({{ user }} $user, {{ model }} ${{ modelCamelCase }}): bool
     {
-        return $user->can('force-delete-{{ modelPermissionEntity }}');
+        return $user->can('force-delete-{{ modelKebabCase }}');
     }
 }

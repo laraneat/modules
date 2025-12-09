@@ -6,22 +6,16 @@ class NameParser
 {
     /**
      * The migration name.
-     *
-     * @var string
      */
     protected string $name;
 
     /**
      * The array data.
-     *
-     * @var array
      */
     protected array $data = [];
 
     /**
      * The available schema actions.
-     *
-     * @var array
      */
     protected array $actions = [
         'create' => [
@@ -42,8 +36,6 @@ class NameParser
 
     /**
      * The constructor.
-     *
-     * @param string $name
      */
     public function __construct(string $name)
     {
@@ -53,8 +45,6 @@ class NameParser
 
     /**
      * Get original migration name.
-     *
-     * @return string
      */
     public function getOriginalName(): string
     {
@@ -63,8 +53,6 @@ class NameParser
 
     /**
      * Get schema type or action.
-     *
-     * @return string
      */
     public function getAction(): string
     {
@@ -73,8 +61,6 @@ class NameParser
 
     /**
      * Get the table will be used.
-     *
-     * @return string|null
      */
     public function getTableName(): ?string
     {
@@ -85,8 +71,6 @@ class NameParser
 
     /**
      * Get matches data from regex.
-     *
-     * @return array
      */
     public function getMatches(): array
     {
@@ -97,35 +81,18 @@ class NameParser
 
     /**
      * Get name pattern.
-     *
-     * @return string
      */
     public function getPattern(): string
     {
-        switch ($action = $this->getAction()) {
-            case 'add':
-            case 'append':
-            case 'update':
-            case 'insert':
-                return "/{$action}_(.*)_to_(.*)_table/";
-                break;
-
-            case 'delete':
-            case 'remove':
-            case 'alter':
-                return "/{$action}_(.*)_from_(.*)_table/";
-                break;
-
-            default:
-                return "/{$action}_(.*)_table/";
-                break;
-        }
+        return match ($action = $this->getAction()) {
+            'add', 'append', 'update', 'insert' => "/{$action}_(.*)_to_(.*)_table/",
+            'delete', 'remove', 'alter' => "/{$action}_(.*)_from_(.*)_table/",
+            default => "/{$action}_(.*)_table/",
+        };
     }
 
     /**
      * Fetch the migration name to an array data.
-     *
-     * @return array
      */
     protected function fetchData(): array
     {
@@ -134,8 +101,6 @@ class NameParser
 
     /**
      * Get the array data.
-     *
-     * @return array
      */
     public function getData(): array
     {
@@ -144,20 +109,14 @@ class NameParser
 
     /**
      * Determine whether the given type is same with the current schema action or type.
-     *
-     * @param $type
-     *
-     * @return bool
      */
-    public function is($type): bool
+    public function is(string $type): bool
     {
         return $type === $this->getAction();
     }
 
     /**
      * Determine whether the current schema action is a adding action.
-     *
-     * @return bool
      */
     public function isAdd(): bool
     {
@@ -166,8 +125,6 @@ class NameParser
 
     /**
      * Determine whether the current schema action is a deleting action.
-     *
-     * @return bool
      */
     public function isDelete(): bool
     {
@@ -176,8 +133,6 @@ class NameParser
 
     /**
      * Determine whether the current schema action is a creating action.
-     *
-     * @return bool
      */
     public function isCreate(): bool
     {

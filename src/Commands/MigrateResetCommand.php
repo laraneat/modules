@@ -2,22 +2,21 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Contracts\RepositoryInterface;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Migrations\Migrator;
 use Laraneat\Modules\Module;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
-class MigrateResetCommand extends Command
+class MigrateResetCommand extends BaseMigrationCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:migrate-reset';
+    protected $signature = 'module:migrate:reset
+                            {module?* : Module name(s) or package name(s)}
+                            {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
+                            {--database= : The database connection to use}
+                            {--force : Force the operation to run when in production}
+                            {--pretend : Dump the SQL queries that would be run}';
 
     /**
      * The console command description.
@@ -27,88 +26,16 @@ class MigrateResetCommand extends Command
     protected $description = 'Reset the modules migrations.';
 
     /**
-     * @var RepositoryInterface
+     * Reset migration from the specified module.
      */
-    protected RepositoryInterface $repository;
-
-    /**
-     * Execute the console command.
-     */
-    public function handle(): int
+    protected function executeForModule(Module $module): void
     {
-        $name = $this->argument('module');
-
-        if (!empty($name)) {
-            $this->reset($name);
-
-            return self::SUCCESS;
-        }
-
-        foreach (Modules::getOrdered($this->option('direction')) as $module) {
-            $this->line('Running for module: <info>' . $module->getName() . '</info>');
-
-            $this->reset($module);
-        }
-
-        return self::SUCCESS;
-    }
-
-    /**
-     * Rollback migration from the specified module.
-     *
-     * @param Module|string $module
-     */
-    public function reset($module): void
-    {
-        if (is_string($module)) {
-            $module = Modules::findOrFail($module);
-        }
-
-        $migrator = new Migrator($module, $this->getLaravel());
-
-        $database = $this->option('database');
-
-        if (!empty($database)) {
-            $migrator->setDatabase($database);
-        }
-
-        $migrated = $migrator->reset();
-
-        if (count($migrated)) {
-            foreach ($migrated as $migration) {
-                $this->line("Rollback: <info>{$migration}</info>");
-            }
-
-            return;
-        }
-
-        $this->comment('Nothing to rollback.');
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['direction', 'd', InputOption::VALUE_OPTIONAL, 'The direction of ordering.', 'desc'],
-            ['database', null, InputOption::VALUE_OPTIONAL, 'The database connection to use.'],
-            ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production.'],
-            ['pretend', null, InputOption::VALUE_NONE, 'Dump the SQL queries that would be run.'],
-        ];
+        $this->call('migrate:reset', [
+            '--path' => $this->getMigrationPaths($module),
+            '--database' => $this->option('database'),
+            '--realpath' => (bool) $this->option('realpath'),
+            '--pretend' => (bool) $this->option('pretend'),
+            '--force' => true,
+        ]);
     }
 }

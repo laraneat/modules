@@ -2,9 +2,9 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Seeders\Seeder;
-use {{ actionNamespace }}\{{ createPermissionAction }};
-use {{ dtoNamespace }}\{{ createPermissionDTO }};
+use {{ createPermissionActionNamespace }}\{{ createPermissionAction }};
+use {{ createPermissionDTONamespace }}\{{ createPermissionDTO }};
+use Illuminate\Database\Seeder;
 
 class {{ class }} extends Seeder
 {
@@ -13,33 +13,33 @@ class {{ class }} extends Seeder
         $createPermissionAction = {{ createPermissionAction }}::make();
 
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
-            name: 'view-{{ modelPermissionEntity }}',
-            display_name: 'View any "{{ modelPermissionEntities }}"',
-            group: '{{ modelPermissionEntities }}'
+            name: 'view-{{ modelKebabCase }}',
+            display_name: 'View any "{{ modelsKebabCase }}"',
+            group: '{{ modelsKebabCase }}'
         ));
 
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
-            name: 'create-{{ modelPermissionEntity }}',
-            display_name: 'Create "{{ modelPermissionEntities }}"',
-            group: '{{ modelPermissionEntities }}'
+            name: 'create-{{ modelKebabCase }}',
+            display_name: 'Create "{{ modelsKebabCase }}"',
+            group: '{{ modelsKebabCase }}'
         ));
 
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
-            name: 'update-{{ modelPermissionEntity }}',
-            display_name: 'Update any "{{ modelPermissionEntities }}"',
-            group: '{{ modelPermissionEntities }}'
+            name: 'update-{{ modelKebabCase }}',
+            display_name: 'Update any "{{ modelsKebabCase }}"',
+            group: '{{ modelsKebabCase }}'
         ));
 
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
-            name: 'delete-{{ modelPermissionEntity }}',
-            display_name: 'Delete any "{{ modelPermissionEntities }}"',
-            group: '{{ modelPermissionEntities }}'
+            name: 'delete-{{ modelKebabCase }}',
+            display_name: 'Delete any "{{ modelsKebabCase }}"',
+            group: '{{ modelsKebabCase }}'
         ));
 
         $createPermissionAction->handle(new {{ createPermissionDTO }}(
-            name: 'force-delete-{{ modelPermissionEntity }}',
-            display_name: 'Force delete any "{{ modelPermissionEntities }}"',
-            group: '{{ modelPermissionEntities }}'
+            name: 'force-delete-{{ modelKebabCase }}',
+            display_name: 'Force delete any "{{ modelsKebabCase }}"',
+            group: '{{ modelsKebabCase }}'
         ));
     }
 }

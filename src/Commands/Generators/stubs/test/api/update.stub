@@ -2,43 +2,39 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 use {{ modelNamespace }}\{{ model }};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\TestCase;
 
 /**
- * @group {{ moduleKey }}
+ * @group {{ group }}
  * @group api
  */
 class {{ class }} extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'update-{{ modelPermissionEntity }}',
-        'roles'       => '',
+    protected array $testUserAccess = [
+        'permissions' => 'update-{{ modelKebabCase }}',
+        'roles' => '',
     ];
 
-    protected function getTestData(array $mergeData = []): array
+    public function test_update_{{ modelSnakeCase }}(): void
     {
-        return array_merge([
-            // TODO: add fields here
-        ], $mergeData);
-    }
+        $this->actingAsTestUser();
 
-    public function test_update_{{ modelSnake }}(): void
-    {
-        $this->getTestingUser();
-
-        ${{ modelEntity }} = {{ model }}::factory()->create();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
 
         $data = $this->getTestData();
         $expectedData = array_merge($data, [
-            'id' => ${{ modelEntity }}->getKey(),
+            'id' => ${{ modelCamelCase }}->getKey(),
         ]);
 
-        $this->patchJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)
+        $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]), $data)
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) =>
                 $json->has('data', fn (AssertableJson $json) =>
@@ -47,28 +43,58 @@ class {{ class }} extends TestCase
                 )
             );
 
-        $this->assertExistsModelWhereColumns({{ model }}::class, $expectedData);
+        $this->assertDatabaseHas({{ model }}::class, $expectedData);
     }
 
-    public function test_update_{{ modelSnake }}_without_access(): void
+    public function test_update_{{ modelSnakeCase }}_with_invalid_data(): void
     {
-        $this->getTestingUserWithoutAccess();
+        $this->actingAsTestUser();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
+
+        $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]), [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                // TODO: add expected validation errors here
+            ]);
+    }
+
+    public function test_update_{{ modelSnakeCase }}_unauthenticated(): void
+    {
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
 
         $data = $this->getTestData();
 
-        $this->patchJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)
+        $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]), $data)
+            ->assertUnauthorized();
+    }
+
+    public function test_update_{{ modelSnakeCase }}_without_access(): void
+    {
+        $this->actingAsTestUserWithoutAccess();
+
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
+
+        $data = $this->getTestData();
+
+        $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]), $data)
             ->assertForbidden();
     }
 
-    public function test_update_non_existing_{{ modelSnake }}(): void
+    public function test_update_non_existing_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
         $data = $this->getTestData();
 
-        $this->patchJson(route('{{ routeName }}', ['{{ modelEntity }}' => 7777]), $data)
+        $this->patchJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => 7777]), $data)
             ->assertNotFound();
+    }
+
+    protected function getTestData(array $mergeData = []): array
+    {
+        return array_merge([
+            // TODO: add fields here
+        ], $mergeData);
     }
 }

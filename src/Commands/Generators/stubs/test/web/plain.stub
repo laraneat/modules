@@ -2,10 +2,10 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Tests\TestCase;
+use Tests\TestCase;
 
 /**
- * @group {{ moduleKey }}
+ * @group {{ group }}
  * @group web
  */
 class {{ class }} extends TestCase

@@ -2,70 +2,51 @@
 
 namespace Laraneat\Modules;
 
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Foundation\AliasLoader;
-use Illuminate\Foundation\ProviderRepository;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use Laraneat\Modules\Contracts\ActivatorInterface;
-use Laraneat\Modules\Facades\Modules;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
 
+/**
+ * @implements Arrayable<string, mixed>
+ */
 class Module implements Arrayable
 {
     use Macroable;
 
-    /**
-     * The laravel application instance.
-     */
-    protected Application $app;
-
-    /**
-     * The module name.
-     */
+    protected string $packageName;
     protected string $name;
-
-    /**
-     * The module path.
-     */
     protected string $path;
-
-    /**
-     * The module namespace.
-     */
     protected string $namespace;
 
     /**
-     * @var array of cached Json objects, keyed by filename
+     * @param string $packageName The module package name.
+     * @param string $name The module name.
+     * @param string $path The module path.
+     * @param string $namespace The module namespace.
+     * @param array<int, class-string> $providers Module providers
+     * @param array<string, class-string> $aliases Module aliases
      */
-    protected array $moduleJson = [];
-
-    /**
-     * The laravel filesystem instance.
-     */
-    private Filesystem $filesystem;
-
-    /**
-     * The activator instance.
-     */
-    private ActivatorInterface $activator;
-
     public function __construct(
-        Application $app,
+        string $packageName,
         string $name,
         string $path,
         string $namespace,
-        array $moduleJson = []
+        protected array $providers = [],
+        protected array $aliases = [],
     ) {
-        $this->app = $app;
-        $this->name = trim($name);
+        $this->packageName = trim($packageName);
+        $this->name = trim($name) ?: Str::afterLast($this->packageName, '/');
         $this->path = rtrim($path, '/');
         $this->namespace = trim($namespace, '\\');
-        $this->moduleJson = $moduleJson;
-        $this->filesystem = $app['files'];
-        $this->activator = $app[ActivatorInterface::class];
+    }
+
+    /**
+     * Get package name.
+     */
+    public function getPackageName(): string
+    {
+        return $this->packageName;
     }
 
     /**
@@ -77,14 +58,6 @@ class Module implements Arrayable
     }
 
     /**
-     * Get key.
-     */
-    public function getKey(): string
-    {
-        return Str::snake($this->name, '-');
-    }
-
-    /**
      * Get name in studly case.
      */
     public function getStudlyName(): string
@@ -93,43 +66,19 @@ class Module implements Arrayable
     }
 
     /**
+     * Get name in kebab case.
+     */
+    public function getKebabName(): string
+    {
+        return Str::kebab(str_replace('_', '-', $this->name));
+    }
+
+    /**
      * Get name in snake case.
      */
     public function getSnakeName(): string
     {
-        return Str::snake($this->name);
-    }
-
-    /**
-     * Get description.
-     */
-    public function getDescription(): string
-    {
-        return $this->get('description');
-    }
-
-    /**
-     * Get alias.
-     */
-    public function getAlias(): string
-    {
-        return $this->get('alias');
-    }
-
-    /**
-     * Get priority.
-     */
-    public function getPriority(): string
-    {
-        return $this->get('priority');
-    }
-
-    /**
-     * Get module requirements.
-     */
-    public function getRequires(): array
-    {
-        return $this->get('requires');
+        return Str::snake(str_replace('-', '_', $this->name));
     }
 
     /**
@@ -149,230 +98,68 @@ class Module implements Arrayable
     }
 
     /**
-     * Bootstrap the application events.
+     * Get module providers.
+     *
+     * @return array<int, class-string>
      */
-    public function boot(): void
+    public function getProviders(): array
     {
-        if ($this->isLoadFilesOnBoot()) {
-            $this->registerFiles();
-        }
-
-        $this->fireEvent('boot');
+        return $this->providers;
     }
 
     /**
-     * Get json contents from the cache, setting as needed.
+     * Get module aliases.
+     *
+     * @return array<string, class-string>
      */
-    public function json(?string $fileName = 'module.json'): Json
+    public function getAliases(): array
     {
-        if ($fileName === null) {
-            $fileName = 'module.json';
-        }
-
-        return Arr::get($this->moduleJson, $fileName, function () use ($fileName) {
-            return $this->moduleJson[$fileName] = Json::make($this->getExtraPath($fileName), $this->filesystem);
-        });
+        return $this->aliases;
     }
 
     /**
-     * Get a specific data from json file by given the key.
+     * Get sub path.
      */
-    public function get(string $key, $default = null)
+    public function subPath(string $subPath): string
     {
-        return $this->json()->get($key, $default);
+        return $this->getPath() . '/' . GeneratorHelper::normalizePath($subPath);
     }
 
     /**
-     * Get a specific data from composer.json file by given the key.
+     * Get sub namespace.
      */
-    public function getComposerAttr(string $key, $default = null)
+    public function subNamespace(string $subNamespace): string
     {
-        return $this->json('composer.json')->get($key, $default);
-    }
-
-    /**
-     * Register the module.
-     */
-    public function register(): void
-    {
-        $this->registerAliases();
-        $this->registerProviders();
-
-        if ($this->isLoadFilesOnBoot() === false) {
-            $this->registerFiles();
-        }
-
-        $this->fireEvent('register');
-    }
-
-    /**
-     * Register the module event.
-     */
-    protected function fireEvent(string $event): void
-    {
-        $this->app['events']->dispatch(sprintf('modules.%s.' . $event, $this->getKey()), [$this]);
-    }
-
-    /**
-     * Get the path to the cached *_module.php file.
-     */
-    public function getCachedServicesPath(): string
-    {
-        // This checks if we are running on a Laravel Vapor managed instance
-        // and sets the path to a writable one (services path is not on a writable storage in Vapor).
-        if (!is_null(env('VAPOR_MAINTENANCE_MODE', null))) {
-            return Str::replaceLast('config.php', $this->getSnakeName() . '_module.php', $this->app->getCachedConfigPath());
-        }
-
-        return Str::replaceLast('services.php', $this->getSnakeName() . '_module.php', $this->app->getCachedServicesPath());
-    }
-
-    /**
-     * Register the service providers from this module.
-     */
-    public function registerProviders(): void
-    {
-        (new ProviderRepository($this->app, new Filesystem(), $this->getCachedServicesPath()))
-            ->load($this->get('providers', []));
-    }
-
-    /**
-     * Register the aliases from this module.
-     */
-    public function registerAliases(): void
-    {
-        $loader = AliasLoader::getInstance();
-        foreach ($this->get('aliases', []) as $aliasName => $aliasClass) {
-            $loader->alias($aliasName, $aliasClass);
-        }
-    }
-
-    /**
-     * Register the files from this module.
-     */
-    protected function registerFiles(): void
-    {
-        foreach ($this->get('files', []) as $fileName) {
-            include $this->path . '/' . $fileName;
-        }
+        return $this->getNamespace() . '\\' . GeneratorHelper::normalizeNamespace($subNamespace);
     }
 
     /**
      * Handle call __toString.
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->getStudlyName();
+        return $this->getPackageName();
     }
 
     /**
-     * Determine whether the given status same with the current module status.
-     */
-    public function isStatus(bool $status): bool
-    {
-        return $this->activator->hasStatus($this, $status);
-    }
-
-    /**
-     * Determine whether the current module activated.
-     */
-    public function isEnabled(): bool
-    {
-        return $this->activator->hasStatus($this, true);
-    }
-
-    /**
-     * Determine whether the current module not disabled.
-     */
-    public function isDisabled(): bool
-    {
-        return !$this->isEnabled();
-    }
-
-    /**
-     * Set active state for current module.
-     */
-    public function setActive(bool $active): void
-    {
-        $this->activator->setActive($this, $active);
-    }
-
-    /**
-     * Disable the current module.
-     */
-    public function disable(): void
-    {
-        $this->fireEvent('disabling');
-
-        $this->activator->disable($this);
-        $this->flushCache();
-
-        $this->fireEvent('disabled');
-    }
-
-    /**
-     * Enable the current module.
-     */
-    public function enable(): void
-    {
-        $this->fireEvent('enabling');
-
-        $this->activator->enable($this);
-        $this->flushCache();
-
-        $this->fireEvent('enabled');
-    }
-
-    /**
-     * Delete the current module.
-     */
-    public function delete(): bool
-    {
-        $this->fireEvent('deleting');
-
-        $this->activator->delete($this);
-        $status = $this->json()->getFilesystem()->deleteDirectory($this->getPath());
-        $this->flushCache();
-
-        $this->fireEvent('deleted');
-
-        return $status;
-    }
-
-    /**
-     * Get extra path.
-     */
-    public function getExtraPath(string $path): string
-    {
-        return $this->getPath() . '/' . ltrim($path, '/');
-    }
-
-    /**
-     * Check if the module files can be loaded on boot.
-     */
-    protected function isLoadFilesOnBoot(): bool
-    {
-        return config('modules.register.files', 'register') === 'boot';
-    }
-
-    /**
-     * Get the module as a plain array.
+     * @return array{
+     *     path: string,
+     *     packageName: string,
+     *     name: string,
+     *     namespace: string,
+     *     providers: array<int, class-string>,
+     *     aliases: array<string, class-string>
+     * }
      */
     public function toArray(): array
     {
         return [
-            'name' => $this->name,
             'path' => $this->path,
+            'packageName' => $this->packageName,
+            'name' => $this->name,
             'namespace' => $this->namespace,
-            'module_json' => array_map(static fn (Json $json) => $json->toArray(), $this->moduleJson)
+            'providers' => $this->providers,
+            'aliases' => $this->aliases,
         ];
-    }
-
-    /**
-     * Flush modules cache.
-     */
-    protected function flushCache(): void
-    {
-        Modules::flushCache();
     }
 }

@@ -2,12 +2,11 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Events\Event;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 
-class {{ class }} extends Event
+class {{ class }}
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

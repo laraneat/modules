@@ -2,97 +2,75 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Illuminate\Support\Str;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class MailMakeCommand extends ComponentGeneratorCommand
+class MailMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make:mail';
+    protected $signature = 'module:make:mail
+                            {name : The name of the mail class}
+                            {module? : The name or package name of the app module}
+                            {--subject= : The subject of mail}
+                            {--view= : The view for the mail}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate new mail for the specified module.';
+    protected $description = 'Generate new mail class for the specified module.';
 
     /**
-     * The stub name to load for this generator.
-     *
-     * @var string
+     * The module component type.
      */
-    protected string $stub = 'plain';
+    protected ModuleComponentType $componentType = ModuleComponentType::Mail;
 
     /**
-     * Module instance.
-     *
-     * @var Module
+     * Prompt for missing input arguments using the returned questions.
      */
-    protected Module $module;
-
-    /**
-     * Component type.
-     *
-     * @var string
-     */
-    protected string $componentType;
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
-     */
-    protected string $nameArgument;
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
+            'name' => 'Enter the mail class name',
         ];
     }
 
-    protected function prepare()
+    protected function getContents(): string
     {
-        $this->module = $this->getModule();
-        $this->stub = $this->getOptionOrChoice(
-            'stub',
-            'Select the stub you want to use for generator',
-            ['plain', 'queued'],
-            'plain'
+        $classBaseName = class_basename($this->nameArgument);
+        $subject = $this->getOptionOrAsk(
+            "subject",
+            "Enter the subject of mail",
+            Str::headline($classBaseName)
         );
-        $this->componentType = 'mail';
-        $this->nameArgument = $this->getTrimmedArgument('name');
-    }
+        $view = $this->getOptionOrAsk(
+            "view",
+            "Enter the view for the mail",
+            'view.name'
+        );
 
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
-    {
         $stubReplaces = [
-            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'namespace' => $this->getComponentNamespace(
+                $this->module,
+                $this->nameArgument,
+                $this->componentType
+            ),
+            'class' => $classBaseName,
+            'subject' => $subject,
+            'view' => $view,
         ];
 
-        return Stub::create("mail/{$this->stub}.stub", $stubReplaces)->render();
+        return Stub::create("mail.stub", $stubReplaces)->render();
     }
 }

@@ -2,32 +2,35 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Tests\TestCase;
-use Illuminate\Testing\Fluent\AssertableJson;
 use {{ modelNamespace }}\{{ model }};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\TestCase;
 
 /**
- * @group {{ moduleKey }}
+ * @group {{ group }}
  * @group api
  */
 class {{ class }} extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'view-{{ modelPermissionEntity }}',
-        'roles'       => '',
+    protected array $testUserAccess = [
+        'permissions' => 'view-{{ modelKebabCase }}',
+        'roles' => '',
     ];
 
-    public function test_view_{{ modelSnake }}(): void
+    public function test_view_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
-        $expectedData = ${{ modelEntity }}->toArray();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
+        $expectedData = ${{ modelCamelCase }}->toArray();
 
-        $this->getJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]))
+        $this->getJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]))
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) =>
                 $json->has('data', fn (AssertableJson $json) =>
@@ -37,21 +40,29 @@ class {{ class }} extends TestCase
             );
     }
 
-    public function test_view_{{ modelSnake }}_without_access(): void
+    public function test_view_{{ modelSnakeCase }}_unauthenticated(): void
     {
-        $this->getTestingUserWithoutAccess();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
+        $this->getJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]))
+            ->assertUnauthorized();
+    }
 
-        $this->getJson(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]))
+    public function test_view_{{ modelSnakeCase }}_without_access(): void
+    {
+        $this->actingAsTestUserWithoutAccess();
+
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
+
+        $this->getJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]))
             ->assertForbidden();
     }
 
-    public function test_view_not_existing_{{ modelSnake }}(): void
+    public function test_view_not_existing_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
-        $this->getJson(route('{{ routeName }}', ['{{ modelEntity }}' => 7777]))
+        $this->getJson(route('{{ routeName }}', ['{{ modelCamelCase }}' => 7777]))
             ->assertNotFound();
     }
 }

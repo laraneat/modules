@@ -1,0 +1,22 @@
+includes:
+    - phpstan-baseline.neon
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - src
+    tmpDir: build/phpstan
+    reportUnmatchedIgnoredErrors: true
+    checkOctaneCompatibility: true
+    checkModelProperties: true
+    ignoreErrors:
+        # These traits are used in stubs for generated code
+        - identifier: trait.unused
+          path: src/Support/Concerns/CanLoadRoutesFromDirectory.php
+        - identifier: trait.unused
+          path: src/Support/Concerns/CanRunModuleSeeders.php
+        - identifier: trait.unused
+          path: src/Support/Concerns/InteractsWithTestUser.php
+        - identifier: trait.unused
+          path: src/Support/Concerns/WithJsonResponseHelpers.php

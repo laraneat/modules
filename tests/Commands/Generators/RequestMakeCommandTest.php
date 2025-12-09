@@ -1,363 +1,162 @@
 <?php
 
-namespace Laraneat\Modules\Tests\Commands\Generators;
+use function PHPUnit\Framework\assertFileExists;
+use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-use Illuminate\Filesystem\Filesystem;
-use Laraneat\Modules\Contracts\RepositoryInterface;
-use Laraneat\Modules\Tests\BaseTestCase;
-use Spatie\Snapshots\MatchesSnapshots;
-use Symfony\Component\Console\Exception\InvalidOptionException;
+beforeEach(function () {
+    $this->setModules([
+        __DIR__ . '/../../fixtures/stubs/modules/valid/author',
+    ], $this->app->basePath('/modules'));
+});
 
-/**
- * @group command
- * @group generator
- */
-class RequestMakeCommandTest extends BaseTestCase
-{
-    use MatchesSnapshots;
+it('generates "plain" web request for the module', function () {
+    $this->artisan('module:make:request', [
+        'name' => 'PlainAuthorRequest',
+        'module' => 'Author',
+        '--stub' => 'plain',
+        '--ui' => 'web',
+    ])
+        ->assertSuccessful();
 
-    private Filesystem $finder;
-    private string $modulePath;
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/Requests/PlainAuthorRequest.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->modulePath = base_path('app/Modules/Article');
-        $this->finder = $this->app['files'];
-        $this->artisan('module:make', ['name' => 'Article', '--plain' => true]);
-    }
+it('generates "create" web request for the module', function () {
+    $this->artisan('module:make:request', [
+        'name' => 'CreateAuthorRequest',
+        'module' => 'Author',
+        '--stub' => 'create',
+        '--ui' => 'web',
+        '--dto' => 'CreateAuthorDTO',
+        '--model' => 'Author',
+    ])
+        ->assertSuccessful();
 
-    protected function tearDown(): void
-    {
-        $this->app[RepositoryInterface::class]->delete('Article');
-        parent::tearDown();
-    }
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/Requests/CreateAuthorRequest.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_generates_api_request_file()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'MyAwesomeApiRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'plain'
-        ]);
+it('generates "update" web request for the module', function () {
+    $this->artisan('module:make:request', [
+        'name' => 'UpdateAuthorRequest',
+        'module' => 'Author',
+        '--stub' => 'update',
+        '--ui' => 'web',
+        '--dto' => 'UpdateAuthorDTO',
+        '--model' => 'Author',
+    ])
+        ->assertSuccessful();
 
-        $this->assertTrue(is_file($this->modulePath . '/UI/API/Requests/MyAwesomeApiRequest.php'));
-        $this->assertSame(0, $code);
-    }
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/Requests/UpdateAuthorRequest.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-    /** @test */
-    public function it_generated_correct_api_request_file_with_content()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'MyAwesomeApiRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'plain'
-        ]);
+it('generates "delete" web request for the module', function () {
+    $this->artisan('module:make:request', [
+        'name' => 'DeleteAuthorRequest',
+        'module' => 'Author',
+        '--stub' => 'delete',
+        '--ui' => 'web',
+        '--model' => 'Author',
+    ])
+        ->assertSuccessful();
 
-        $file = $this->finder->get($this->modulePath . '/UI/API/Requests/MyAwesomeApiRequest.php');
+    $filePath = $this->app->basePath('/modules/author/src/UI/WEB/Requests/DeleteAuthorRequest.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+it('generates "plain" api request for the module', function () {
+    $this->artisan('module:make:request', [
+        'name' => 'PlainAuthorRequest',
+        'module' => 'Author',
+        '--stub' => 'plain',
+        '--ui' => 'api',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_can_change_the_default_path_for_api_request()
-    {
-        $this->app['config']->set('modules.generator.components.api-request.path', 'Foo/Bar\\NewRequests');
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/Requests/PlainAuthorRequest.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeApiRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'plain'
-        ]);
+it('generates "create" api request for the module', function () {
+    $this->artisan('module:make:request', [
+        'name' => 'CreateAuthorRequest',
+        'module' => 'Author',
+        '--stub' => 'create',
+        '--ui' => 'api',
+        '--dto' => 'CreateAuthorDTO',
+        '--model' => 'Author',
+    ])
+        ->assertSuccessful();
 
-        $file = $this->finder->get($this->modulePath . '/Foo/Bar/NewRequests/Baz/Bat/MyAwesomeApiRequest.php');
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/Requests/CreateAuthorRequest.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+it('generates "update" api request for the module', function () {
+    $this->artisan('module:make:request', [
+        'name' => 'UpdateAuthorRequest',
+        'module' => 'Author',
+        '--stub' => 'update',
+        '--ui' => 'api',
+        '--dto' => 'UpdateAuthorDTO',
+        '--model' => 'Author',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_can_change_the_default_namespace_for_api_request()
-    {
-        $this->app['config']->set('modules.generator.components.api-request.namespace', 'Foo/Bar\\NewRequests/');
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/Requests/UpdateAuthorRequest.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeApiRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'plain'
-        ]);
+it('generates "delete" api request for the module', function () {
+    $this->artisan('module:make:request', [
+        'name' => 'DeleteAuthorRequest',
+        'module' => 'Author',
+        '--stub' => 'delete',
+        '--ui' => 'api',
+        '--model' => 'Author',
+    ])
+        ->assertSuccessful();
 
-        $file = $this->finder->get($this->modulePath . '/UI/API/Requests/Baz/Bat/MyAwesomeApiRequest.php');
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/Requests/DeleteAuthorRequest.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
+it('generates "view" api request for the module', function () {
+    $this->artisan('module:make:request', [
+        'name' => 'ViewAuthorRequest',
+        'module' => 'Author',
+        '--stub' => 'view',
+        '--ui' => 'api',
+        '--model' => 'Author',
+    ])
+        ->assertSuccessful();
 
-    /** @test */
-    public function it_can_generate_api_create_request_file()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeApiCreateRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'create',
-            '--model' => 'Some/Nested\\Model',
-            '--dto' => 'Foo/Bar\\TestDTO',
-        ]);
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/Requests/ViewAuthorRequest.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});
 
-        $file = $this->finder->get($this->modulePath . '/UI/API/Requests/Baz/Bat/MyAwesomeApiCreateRequest.php');
+it('generates "list" api request for the module', function () {
+    $this->artisan('module:make:request', [
+        'name' => 'ListAuthorsRequest',
+        'module' => 'Author',
+        '--stub' => 'list',
+        '--ui' => 'api',
+        '--model' => 'Author',
+    ])
+        ->assertSuccessful();
 
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_throws_exception_when_classes_not_provided_for_api_create_request_file()
-    {
-        $this->expectException(InvalidOptionException::class);
-
-        $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeApiCreateRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'create',
-            '-n' => '',
-        ]);
-    }
-
-    /** @test */
-    public function it_can_generate_api_delete_request_file()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeApiDeleteRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'delete',
-            '--model' => 'Some/Nested\\Model',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/API/Requests/Baz/Bat/MyAwesomeApiDeleteRequest.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_api_list_request_file()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeApiListRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'list',
-            '--model' => 'Some/Nested\\Model',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/API/Requests/Baz/Bat/MyAwesomeApiListRequest.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_api_update_request_file()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeApiUpdateRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'update',
-            '--model' => 'Some/Nested\\Model',
-            '--dto' => 'Foo/Bar\\TestDTO',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/API/Requests/Baz/Bat/MyAwesomeApiUpdateRequest.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_throws_exception_when_classes_not_provided_for_api_update_request_file()
-    {
-        $this->expectException(InvalidOptionException::class);
-
-        $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeApiUpdateRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'update',
-            '-n' => '',
-        ]);
-    }
-
-    /** @test */
-    public function it_can_generate_api_view_request_file()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeApiViewRequest',
-            'module' => 'Article',
-            '--ui' => 'api',
-            '--stub' => 'view',
-            '--model' => 'Some/Nested\\Model',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/API/Requests/Baz/Bat/MyAwesomeApiViewRequest.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generates_web_request_file()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'MyAwesomeWebRequest',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--stub' => 'plain'
-        ]);
-
-        $this->assertTrue(is_file($this->modulePath . '/UI/WEB/Requests/MyAwesomeWebRequest.php'));
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_generated_correct_web_request_file_with_content()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'MyAwesomeWebRequest',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--stub' => 'plain'
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Requests/MyAwesomeWebRequest.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_change_the_default_path_for_web_request()
-    {
-        $this->app['config']->set('modules.generator.components.web-request.path', 'Foo/Bar\\NewRequests');
-
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeWebRequest',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--stub' => 'plain'
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/Foo/Bar/NewRequests/Baz/Bat/MyAwesomeWebRequest.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_change_the_default_namespace_for_web_request()
-    {
-        $this->app['config']->set('modules.generator.components.web-request.namespace', 'Foo/Bar\\NewRequests/');
-
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeWebRequest',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--stub' => 'plain'
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Requests/Baz/Bat/MyAwesomeWebRequest.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_web_create_request_file()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeWebCreateRequest',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--stub' => 'create',
-            '--model' => 'Some/Nested\\Model',
-            '--dto' => 'Foo/Bar\\TestDTO',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Requests/Baz/Bat/MyAwesomeWebCreateRequest.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_throws_exception_when_classes_not_provided_for_web_create_request_file()
-    {
-        $this->expectException(InvalidOptionException::class);
-
-        $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeWebCreateRequest',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--stub' => 'create',
-            '-n' => '',
-        ]);
-    }
-
-    /** @test */
-    public function it_can_generate_web_delete_request_file()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeWebDeleteRequest',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--stub' => 'delete',
-            '--model' => 'Some/Nested\\Model',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Requests/Baz/Bat/MyAwesomeWebDeleteRequest.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_can_generate_web_update_request_file()
-    {
-        $code = $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeWebUpdateRequest',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--stub' => 'update',
-            '--model' => 'Some/Nested\\Model',
-            '--dto' => 'Foo/Bar\\TestDTO',
-        ]);
-
-        $file = $this->finder->get($this->modulePath . '/UI/WEB/Requests/Baz/Bat/MyAwesomeWebUpdateRequest.php');
-
-        $this->assertMatchesSnapshot($file);
-        $this->assertSame(0, $code);
-    }
-
-    /** @test */
-    public function it_throws_exception_when_classes_not_provided_for_web_update_request_file()
-    {
-        $this->expectException(InvalidOptionException::class);
-
-        $this->artisan('module:make:request', [
-            'name' => 'Baz\\Bat/MyAwesomeWebUpdateRequest',
-            'module' => 'Article',
-            '--ui' => 'web',
-            '--stub' => 'update',
-            '-n' => '',
-        ]);
-    }
-}
+    $filePath = $this->app->basePath('/modules/author/src/UI/API/Requests/ListAuthorsRequest.php');
+    assertFileExists($filePath);
+    assertMatchesFileSnapshot($filePath);
+});

@@ -2,11 +2,11 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Tests\TestCase;
 use {{ modelNamespace }}\{{ model }};
+use Tests\TestCase;
 
 /**
- * @group {{ moduleKey }}
+ * @group {{ group }}
  * @group web
  */
 class {{ class }} extends TestCase
@@ -14,38 +14,38 @@ class {{ class }} extends TestCase
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'delete-{{ modelPermissionEntity }}',
-        'roles'       => '',
+    protected array $testUserAccess = [
+        'permissions' => 'delete-{{ modelKebabCase }}',
+        'roles' => '',
     ];
 
-    public function test_delete_{{ modelSnake }}(): void
+    public function test_delete_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
 
-        $this->delete(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]))
+        $this->delete(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]))
             ->assertNoContent();
 
-        $this->assertNull({{ model }}::find(${{ modelEntity }}->getKey()));
+        $this->assertNull({{ model }}::find(${{ modelCamelCase }}->getKey()));
     }
 
-    public function test_delete_{{ modelSnake }}_without_access(): void
+    public function test_delete_{{ modelSnakeCase }}_without_access(): void
     {
-        $this->getTestingUserWithoutAccess();
+        $this->actingAsTestUserWithoutAccess();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
 
-        $this->delete(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]))
+        $this->delete(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]))
             ->assertForbidden();
     }
 
-    public function test_delete_not_existing_{{ modelSnake }}(): void
+    public function test_delete_not_existing_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
-        $this->delete(route('{{ routeName }}', ['{{ modelEntity }}' => 7777]))
+        $this->delete(route('{{ routeName }}', ['{{ modelCamelCase }}' => 7777]))
             ->assertNotFound();
     }
 }

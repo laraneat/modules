@@ -2,97 +2,65 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class NotificationMakeCommand extends ComponentGeneratorCommand
+class NotificationMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make:notification';
+    protected $signature = 'module:make:notification
+                            {name : The name of the notification class}
+                            {module? : The name or package name of the app module}
+                            {--s|stub= : The stub name to load for this generator}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate new notification for the specified module.';
+    protected $description = 'Generate new notification class for the specified module.';
 
     /**
-     * The stub name to load for this generator.
-     *
-     * @var string
+     * The module component type.
      */
-    protected string $stub = 'queued';
+    protected ModuleComponentType $componentType = ModuleComponentType::Notification;
 
     /**
-     * Module instance.
-     *
-     * @var Module
+     * Prompt for missing input arguments using the returned questions.
      */
-    protected Module $module;
-
-    /**
-     * Component type.
-     *
-     * @var string
-     */
-    protected string $componentType;
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
-     */
-    protected string $nameArgument;
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
+            'name' => 'Enter the notification class name',
         ];
     }
 
-    protected function prepare()
+    protected function getContents(): string
     {
-        $this->module = $this->getModule();
-        $this->stub = $this->getOptionOrChoice(
+        $stub = $this->getOptionOrChoice(
             'stub',
             'Select the stub you want to use for generator',
             ['plain', 'queued'],
-            'queued'
+            'plain'
         );
-        $this->componentType = 'notification';
-        $this->nameArgument = $this->getTrimmedArgument('name');
-    }
-
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
-    {
         $stubReplaces = [
-            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'namespace' => $this->getComponentNamespace(
+                $this->module,
+                $this->nameArgument,
+                $this->componentType
+            ),
+            'class' => class_basename($this->nameArgument),
         ];
 
-        return Stub::create("notification/{$this->stub}.stub", $stubReplaces)->render();
+        return Stub::create("notification/$stub.stub", $stubReplaces)->render();
     }
 }

@@ -2,97 +2,71 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class QueryWizardMakeCommand extends ComponentGeneratorCommand
+class QueryWizardMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make:wizard';
+    protected $signature = 'module:make:query-wizard
+                            {name : The name of the query-wizard class}
+                            {module? : The name or package name of the app module}
+                            {--s|stub= : The stub name to load for this generator}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate new query-wizard for the specified module.';
+    protected $description = 'Generate new query-wizard class for the specified module.';
 
     /**
-     * The stub name to load for this generator.
-     *
-     * @var string
+     * The module component type.
      */
-    protected string $stub = 'eloquent';
+    protected ModuleComponentType $componentType = ModuleComponentType::ApiQueryWizard;
 
     /**
-     * Module instance.
-     *
-     * @var Module
+     * Prompt for missing input arguments using the returned questions.
      */
-    protected Module $module;
-
-    /**
-     * Component type.
-     *
-     * @var string
-     */
-    protected string $componentType;
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
-     */
-    protected string $nameArgument;
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
+            'name' => 'Enter the query-wizard class name',
         ];
     }
 
-    protected function prepare()
+    protected function beforeGenerate(): void
     {
-        $this->module = $this->getModule();
-        $this->stub = $this->getOptionOrChoice(
+        $this->ensurePackageIsInstalledOrWarn('jackardios/laravel-query-wizard');
+    }
+
+    protected function getContents(): string
+    {
+        $stub = $this->getOptionOrChoice(
             'stub',
             'Select the stub you want to use for generator',
-            ['eloquent', 'model', 'scout', 'elastic'],
+            ['eloquent', 'model'],
             'eloquent'
         );
-        $this->componentType = 'api-query-wizard';
-        $this->nameArgument = $this->getTrimmedArgument('name');
-    }
 
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
-    {
         $stubReplaces = [
-            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'namespace' => $this->getComponentNamespace(
+                $this->module,
+                $this->nameArgument,
+                $this->componentType
+            ),
+            'class' => class_basename($this->nameArgument),
         ];
 
-        return Stub::create("query-wizard/{$this->stub}.stub", $stubReplaces)->render();
+        return Stub::create("query-wizard/$stub.stub", $stubReplaces)->render();
     }
 }

@@ -10,15 +10,12 @@ class ConsoleServiceProvider extends ServiceProvider implements DeferrableProvid
 {
     /**
      * The available commands
-     * @var array
+     *
+     * @var array<int, class-string>
      */
-    protected $commands = [
+    protected array $commands = [
         Commands\CacheClearCommand::class,
         Commands\CacheCommand::class,
-        Commands\DisableCommand::class,
-        Commands\DumpCommand::class,
-        Commands\EnableCommand::class,
-        Commands\InstallCommand::class,
         Commands\ListCommand::class,
         Commands\MigrateCommand::class,
         Commands\MigrateRefreshCommand::class,
@@ -26,14 +23,10 @@ class ConsoleServiceProvider extends ServiceProvider implements DeferrableProvid
         Commands\MigrateRollbackCommand::class,
         Commands\MigrateStatusCommand::class,
         Commands\ModuleDeleteCommand::class,
-        Commands\SeedCommand::class,
-        Commands\SetupCommand::class,
-        Commands\UnUseCommand::class,
-        Commands\UpdateCommand::class,
-        Commands\UseCommand::class,
+        Commands\StubPublishCommand::class,
+        Commands\SyncCommand::class,
         Commands\Generators\ActionMakeCommand::class,
         Commands\Generators\CommandMakeCommand::class,
-        Commands\Generators\ComponentsMakeCommand::class,
         Commands\Generators\ControllerMakeCommand::class,
         Commands\Generators\DTOMakeCommand::class,
         Commands\Generators\EventMakeCommand::class,
@@ -50,15 +43,18 @@ class ConsoleServiceProvider extends ServiceProvider implements DeferrableProvid
         Commands\Generators\ObserverMakeCommand::class,
         Commands\Generators\PolicyMakeCommand::class,
         Commands\Generators\ProviderMakeCommand::class,
-        Commands\Generators\RouteMakeCommand::class,
         Commands\Generators\QueryWizardMakeCommand::class,
         Commands\Generators\RequestMakeCommand::class,
         Commands\Generators\ResourceMakeCommand::class,
+        Commands\Generators\RouteMakeCommand::class,
         Commands\Generators\RuleMakeCommand::class,
         Commands\Generators\SeederMakeCommand::class,
         Commands\Generators\TestMakeCommand::class,
     ];
 
+    /**
+     * Register commands
+     */
     public function register(): void
     {
         if ($this->app->runningInConsole()) {
@@ -69,7 +65,7 @@ class ConsoleServiceProvider extends ServiceProvider implements DeferrableProvid
     /**
      * Get the services provided by the provider.
      *
-     * @return array<int, string>
+     * @return array<int, class-string>
      */
     public function provides(): array
     {

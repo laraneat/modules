@@ -2,17 +2,14 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
-
-class CacheClearCommand extends Command
+class CacheClearCommand extends BaseCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:clear';
+    protected $signature = 'module:clear';
 
     /**
      * The console command description.
@@ -26,8 +23,8 @@ class CacheClearCommand extends Command
      */
     public function handle(): int
     {
-        Modules::flushCache();
-        $this->info("Modules cache cleared!");
+        $this->modulesRepository->pruneModulesManifest();
+        $this->components->info("Modules manifest cache cleared!");
 
         return self::SUCCESS;
     }

@@ -2,91 +2,43 @@
 
 namespace Laraneat\Modules\Commands;
 
-use Illuminate\Console\Command;
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Migrations\Migrator;
 use Laraneat\Modules\Module;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
-class MigrateStatusCommand extends Command
+class MigrateStatusCommand extends BaseMigrationCommand
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:migrate-status';
+    protected $signature = 'module:migrate:status
+                            {module?* : Module name(s) or package name(s)}
+                            {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
+                            {--database= : The database connection to use}
+                            {--pending : Only list pending migrations}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Status for all module migrations';
+    protected $description = 'Show the status of the modules migrations.';
 
     /**
-     * Execute the console command.
-     *
-     * @return int
+     * Whether to require confirmation in production.
      */
-    public function handle(): int
-    {
-        $name = $this->argument('module');
-
-        if ($name) {
-            $module = Modules::findOrFail($name);
-
-            $this->migrateStatus($module);
-
-            return self::SUCCESS;
-        }
-
-        foreach (Modules::getOrdered($this->option('direction')) as $module) {
-            $this->line('Running for module: <info>' . $module->getName() . '</info>');
-            $this->migrateStatus($module);
-        }
-
-        return self::SUCCESS;
-    }
+    protected bool $requiresConfirmation = false;
 
     /**
-     * Run the migration from the specified module.
-     *
-     * @param Module $module
+     * Show migration status from the specified module.
      */
-    protected function migrateStatus(Module $module): void
+    protected function executeForModule(Module $module): void
     {
-        $path = str_replace(base_path(), '', (new Migrator($module, $this->getLaravel()))->getPath());
-
         $this->call('migrate:status', [
-            '--path' => $path,
+            '--path' => $this->getMigrationPaths($module),
             '--database' => $this->option('database'),
+            '--realpath' => (bool) $this->option('realpath'),
+            '--pending' => (bool) $this->option('pending'),
         ]);
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments(): array
-    {
-        return [
-            ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
-        ];
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
-    {
-        return [
-            ['direction', 'd', InputOption::VALUE_OPTIONAL, 'The direction of ordering.', 'asc'],
-            ['database', null, InputOption::VALUE_OPTIONAL, 'The database connection to use.'],
-        ];
     }
 }

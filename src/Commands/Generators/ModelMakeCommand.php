@@ -2,24 +2,26 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Support\Generator\GeneratorHelper;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class ModelMakeCommand extends ComponentGeneratorCommand
+class ModelMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make:model';
+    protected $signature = 'module:make:model
+                            {name : The name of the model}
+                            {module? : The name or package name of the app module}
+                            {--factory= : The class name of the model factory}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -29,86 +31,46 @@ class ModelMakeCommand extends ComponentGeneratorCommand
     protected $description = 'Generate new model for the specified module.';
 
     /**
-     * The stub name to load for this generator.
-     *
-     * @var string
+     * The module component type.
      */
-    protected string $stub = 'full';
+    protected ModuleComponentType $componentType = ModuleComponentType::Model;
 
     /**
-     * Module instance.
-     *
-     * @var Module
+     * Prompt for missing input arguments using the returned questions.
      */
-    protected Module $module;
-
-    /**
-     * Component type.
-     *
-     * @var string
-     */
-    protected string $componentType;
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
-     */
-    protected string $nameArgument;
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
-            ['factory', null, InputOption::VALUE_REQUIRED, 'The class name of the model factory.'],
+            'name' => 'Enter the model class name',
         ];
     }
 
-    protected function prepare()
+    protected function getContents(): string
     {
-        $this->module = $this->getModule();
-        $this->stub = $this->getOptionOrChoice(
-            'stub',
-            'Select the stub you want to use for generator',
-            ['plain', 'full'],
-            'full'
-        );
-        $this->componentType = 'model';
-        $this->nameArgument = $this->getTrimmedArgument('name');
-    }
-
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
-    {
+        $stub = 'plain';
         $stubReplaces = [
             'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'class' => class_basename($this->nameArgument),
         ];
 
-        if ($this->stub === 'full') {
-            $factory = $this->getOptionOrAsk(
-                'factory',
-                'Enter the class name of the model factory',
-                ''
+        $factoryOption = $this->getOptionOrAsk(
+            'factory',
+            question: 'Enter the class name of the factory to be used in the model (optional)',
+            required: false
+        );
+
+        if ($factoryOption) {
+            $factoryClass = $this->getFullClass(
+                $factoryOption,
+                GeneratorHelper::component(ModuleComponentType::Factory)
+                    ->getFullNamespace($this->module)
             );
 
-            if ($factory) {
-                $stubReplaces['factory'] = $this->getClass($factory);
-                $stubReplaces['factoryNamespace'] = $this->getComponentNamespace($this->module, $factory, 'factory');
-            } else {
-                $this->stub = 'plain';
-            }
+            $stub = 'full';
+            $stubReplaces['factory'] = class_basename($factoryClass);
+            $stubReplaces['factoryNamespace'] = $this->getNamespaceOfClass($factoryClass);
         }
 
-        return Stub::create("model/{$this->stub}.stub", $stubReplaces)->render();
+        return Stub::create("model/$stub.stub", $stubReplaces)->render();
     }
 }

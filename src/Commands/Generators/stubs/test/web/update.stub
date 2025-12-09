@@ -2,11 +2,11 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Tests\TestCase;
 use {{ modelNamespace }}\{{ model }};
+use Tests\TestCase;
 
 /**
- * @group {{ moduleKey }}
+ * @group {{ group }}
  * @group web
  */
 class {{ class }} extends TestCase
@@ -14,9 +14,9 @@ class {{ class }} extends TestCase
     /**
      * Roles and permissions, to be attached on the user by default
      */
-    protected array $access = [
-        'permissions' => 'update-{{ modelPermissionEntity }}',
-        'roles'       => '',
+    protected array $testUserAccess = [
+        'permissions' => 'update-{{ modelKebabCase }}',
+        'roles' => '',
     ];
 
     protected function getTestData(array $mergeData = []): array
@@ -26,42 +26,42 @@ class {{ class }} extends TestCase
         ], $mergeData);
     }
 
-    public function test_update_{{ modelSnake }}(): void
+    public function test_update_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
 
         $data = $this->getTestData();
         $expectedData = array_merge($data, [
-            'id' => ${{ modelEntity }}->getKey(),
+            'id' => ${{ modelCamelCase }}->getKey(),
         ]);
 
-        $this->patch(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)
+        $this->patch(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]), $data)
            ->assertOk();
 
-        $this->assertExistsModelWhereColumns({{ model }}::class, $expectedData);
+        $this->assertDatabaseHas({{ model }}::class, $expectedData);
     }
 
-    public function test_update_{{ modelSnake }}WithoutAccess(): void
+    public function test_update_{{ modelSnakeCase }}_without_access(): void
     {
-        $this->getTestingUserWithoutAccess();
+        $this->actingAsTestUserWithoutAccess();
 
-        ${{ modelEntity }} = {{ model }}::factory()->create();
+        ${{ modelCamelCase }} = {{ model }}::factory()->create();
 
         $data = $this->getTestData();
 
-        $this->patch(route('{{ routeName }}', ['{{ modelEntity }}' => ${{ modelEntity }}->getKey()]), $data)
+        $this->patch(route('{{ routeName }}', ['{{ modelCamelCase }}' => ${{ modelCamelCase }}->getKey()]), $data)
             ->assertForbidden();
     }
 
-    public function test_update_non_existing_{{ modelSnake }}(): void
+    public function test_update_non_existing_{{ modelSnakeCase }}(): void
     {
-        $this->getTestingUser();
+        $this->actingAsTestUser();
 
         $data = $this->getTestData();
 
-        $this->patch(route('{{ routeName }}', ['{{ modelEntity }}' => 7777]), $data)
+        $this->patch(route('{{ routeName }}', ['{{ modelCamelCase }}' => 7777]), $data)
             ->assertNotFound();
     }
 }

@@ -1,246 +1,272 @@
 <?php
 
-namespace Laraneat\Modules\Tests;
+use Laraneat\Modules\Support\ModuleConfigWriter;
 
-use App\Modules\Article\Providers\DeferredServiceProvider;
-use App\Modules\Article\Providers\ArticleServiceProvider;
-use Illuminate\Support\Facades\Event;
-use Laraneat\Modules\Contracts\ActivatorInterface;
+use function PHPUnit\Framework\assertFileExists;
+use function Spatie\Snapshots\assertMatchesFileSnapshot;
 
-class ModuleTest extends BaseTestCase
-{
-    private TestingModule $module;
-    private ActivatorInterface $activator;
+it('can return the package name', function () {
+    expect($this->createModule(['packageName' => 'some-vendor/testing-module'])->getPackageName())->toBe('some-vendor/testing-module');
+    expect($this->createModule(['packageName' => 'testing-module'])->getPackageName())->toBe('testing-module');
+    expect($this->createModule(['packageName' => '  some-vendor/module  '])->getPackageName())->toBe('some-vendor/module');
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->module = new TestingModule(
-            $this->app,
-            'Article Name',
-            __DIR__ . '/fixtures/stubs/valid/Article',
-            'App\\Modules\\Article'
-        );
-        $this->activator = $this->app[ActivatorInterface::class];
-    }
+it('can return the name', function () {
+    expect($this->createModule(['name' => 'TestingModule'])->getName())->toBe('TestingModule');
+    expect($this->createModule(['name' => '  SomeModule  '])->getName())->toBe('SomeModule');
+    expect($this->createModule(['name' => '  some-module  '])->getName())->toBe('some-module');
 
-    protected function tearDown(): void
-    {
-        $this->activator->reset();
-        parent::tearDown();
-    }
+    expect($this->createModule(['packageName' => 'some-vendor/testing-module'])->getName())->toBe('testing-module');
+    expect($this->createModule(['packageName' => '  some-vendor/module  '])->getName())->toBe('module');
+    expect($this->createModule(['packageName' => 'testing-module'])->getName())->toBe('testing-module');
+});
 
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-        symlink(__DIR__ . '/fixtures/stubs/valid', __DIR__ . '/fixtures/stubs/valid_symlink');
-    }
+it('can return the studly name', function () {
+    expect($this->createModule(['name' => 'TestingModule'])->getStudlyName())->toBe('TestingModule');
+    expect($this->createModule(['name' => '  SomeModule  '])->getStudlyName())->toBe('SomeModule');
+    expect($this->createModule(['name' => '  some-module  '])->getStudlyName())->toBe('SomeModule');
 
-    public static function tearDownAfterClass(): void
-    {
-        parent::tearDownAfterClass();
-        unlink(__DIR__ . '/fixtures/stubs/valid_symlink');
-    }
+    expect($this->createModule(['packageName' => 'some-vendor/testing-module'])->getStudlyName())->toBe('TestingModule');
+    expect($this->createModule(['packageName' => '  some-vendor/module  '])->getStudlyName())->toBe('Module');
+    expect($this->createModule(['packageName' => 'testing-module'])->getStudlyName())->toBe('TestingModule');
+});
 
-    /** @test */
-    public function it_gets_module_name()
-    {
-        $this->assertEquals('Article Name', $this->module->getName());
-    }
+it('can return the kebab name', function () {
+    expect($this->createModule(['name' => 'TestingModule'])->getKebabName())->toBe('testing-module');
+    expect($this->createModule(['name' => '  SomeModule  '])->getKebabName())->toBe('some-module');
+    expect($this->createModule(['name' => '  some-module  '])->getKebabName())->toBe('some-module');
 
-    /** @test */
-    public function it_gets_module_key()
-    {
-        $this->assertEquals('article-name', $this->module->getKey());
-    }
+    expect($this->createModule(['packageName' => 'some-vendor/testing-module'])->getKebabName())->toBe('testing-module');
+    expect($this->createModule(['packageName' => '  some-vendor/module  '])->getKebabName())->toBe('module');
+    expect($this->createModule(['packageName' => 'testing-module'])->getKebabName())->toBe('testing-module');
+});
 
-    /** @test */
-    public function it_gets_studly_name()
-    {
-        $this->assertEquals('ArticleName', $this->module->getStudlyName());
-    }
+it('can return the snake name', function () {
+    expect($this->createModule(['name' => 'TestingModule'])->getSnakeName())->toBe('testing_module');
+    expect($this->createModule(['name' => '  SomeModule  '])->getSnakeName())->toBe('some_module');
+    expect($this->createModule(['name' => '  some-module  '])->getSnakeName())->toBe('some_module');
 
-    /** @test */
-    public function it_gets_snake_name()
-    {
-        $this->assertEquals('article_name', $this->module->getSnakeName());
-    }
+    expect($this->createModule(['packageName' => 'some-vendor/testing-module'])->getSnakeName())->toBe('testing_module');
+    expect($this->createModule(['packageName' => '  some-vendor/module  '])->getSnakeName())->toBe('module');
+    expect($this->createModule(['packageName' => 'testing-module'])->getSnakeName())->toBe('testing_module');
+});
 
-    /** @test */
-    public function it_gets_module_description()
-    {
-        $this->assertEquals('article module', $this->module->getDescription());
-    }
+it('can return the path', function () {
+    expect($this->createModule([
+        'path' => $this->app->basePath('/modules/SomeTestingModule'),
+    ])->getPath())->toBe($this->app->basePath('/modules/SomeTestingModule'));
+});
 
-    /** @test */
-    public function it_gets_module_alias()
-    {
-        $this->assertEquals('article', $this->module->getAlias());
-    }
+it('can return the namespace', function () {
+    expect($this->createModule(['namespace' => 'Some\\TestingModule\\'])->getNamespace())
+        ->toBe('Some\\TestingModule');
+    expect($this->createModule(['namespace' => 'Some\\TestingModule\\\\\\'])->getNamespace())
+        ->toBe('Some\\TestingModule');
+    expect($this->createModule(['namespace' => '\\\\Some\\TestingModule'])->getNamespace())
+        ->toBe('Some\\TestingModule');
+    expect($this->createModule(['namespace' => '\\\\Some\\TestingModule\\\\\\'])->getNamespace())
+        ->toBe('Some\\TestingModule');
+});
 
-    /** @test */
-    public function it_gets_module_path()
-    {
-        $this->assertEquals(__DIR__ . '/fixtures/stubs/valid/Article', $this->module->getPath());
-    }
+it('can return providers', function () {
+    expect($this->createModule([
+        'providers' => [
+            'SomeVendor\\TestingModule\\Providers\\TestingModuleServiceProvider',
+            'SomeVendor\\TestingModule\\Providers\\RouteServiceProvider',
+        ],
+    ])->getProviders())->toBe([
+        'SomeVendor\\TestingModule\\Providers\\TestingModuleServiceProvider',
+        'SomeVendor\\TestingModule\\Providers\\RouteServiceProvider',
+    ]);
+});
 
-    /** @test */
-    public function it_gets_module_path_with_symlink()
-    {
-        // symlink created in setUpBeforeClass
+it('can return aliases', function () {
+    expect($this->createModule([
+        'aliases' => [
+            'testing-module' => 'SomeVendor\\TestingModule\\Facades\\TestingModule',
+            'some' => 'SomeVendor\\TestingModule\\Facades\\Some',
+        ],
+    ])->getAliases())->toBe([
+        'testing-module' => 'SomeVendor\\TestingModule\\Facades\\TestingModule',
+        'some' => 'SomeVendor\\TestingModule\\Facades\\Some',
+    ]);
+});
 
-        $this->module = new TestingModule(
-            $this->app,
-            'Article Name',
-            __DIR__ . '/fixtures/stubs/valid_symlink/Article',
-            'App\\Module\\Article'
-        );
+it('can make sub path', function () {
+    expect($this->createModule(['path' => $this->app->basePath('/modules/SomeTestingModule')])
+        ->subPath('resources/views/index.blade.php'))
+        ->toBe($this->app->basePath('/modules/SomeTestingModule/resources/views/index.blade.php'));
 
-        $this->assertEquals(__DIR__ . '/fixtures/stubs/valid_symlink/Article', $this->module->getPath());
+    expect($this->createModule(['path' => $this->app->basePath('/modules/SomeTestingModule')])
+        ->subPath('///resources/views/index.blade.php'))
+        ->toBe($this->app->basePath('/modules/SomeTestingModule/resources/views/index.blade.php'));
+});
 
-        // symlink deleted in tearDownAfterClass
-    }
+it('can make sub namespace', function () {
+    expect($this->createModule(['namespace' => 'SomeVendor\\SomeTestingModule'])
+        ->subNamespace('Models\\SomeModel'))
+        ->toBe('SomeVendor\\SomeTestingModule\\Models\\SomeModel');
 
-    /** @test */
-    public function it_gets_required_modules()
-    {
-        $this->assertEquals(['required_module'], $this->module->getRequires());
-    }
+    expect($this->createModule(['namespace' => 'SomeVendor\\SomeTestingModule'])
+        ->subNamespace('\\\\Models\\SomeModel\\\\'))
+        ->toBe('SomeVendor\\SomeTestingModule\\Models\\SomeModel');
+});
 
-    /** @test */
-    public function it_reads_module_json_files()
-    {
-        $jsonModule = $this->module->json();
-        $composerJson = $this->module->json('composer.json');
+it('can return module as array', function () {
+    expect($this->createModule([
+        'path' => $this->app->basePath('modules/TestingModule'),
+        'packageName' => 'some-vendor/testing-module',
+        'name' => 'TestingModule',
+        'namespace' => '\\\\\\SomeVendor\\TestingModule\\\\',
+        'providers' => [
+            'SomeVendor\\TestingModule\\Providers\\TestingModuleServiceProvider',
+            'SomeVendor\\TestingModule\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'testing-module' => 'SomeVendor\\TestingModule\\Facades\\TestingModule',
+            'some' => 'SomeVendor\\TestingModule\\Facades\\Some',
+        ],
+    ])->toArray())->toBe([
+        'path' => $this->app->basePath('modules/TestingModule'),
+        'packageName' => 'some-vendor/testing-module',
+        'name' => 'TestingModule',
+        'namespace' => 'SomeVendor\\TestingModule',
+        'providers' => [
+            'SomeVendor\\TestingModule\\Providers\\TestingModuleServiceProvider',
+            'SomeVendor\\TestingModule\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'testing-module' => 'SomeVendor\\TestingModule\\Facades\\TestingModule',
+            'some' => 'SomeVendor\\TestingModule\\Facades\\Some',
+        ],
+    ]);
+});
 
-        $this->assertEquals('0.1', $jsonModule->get('version'));
-        $this->assertEquals('laraneat/article', $composerJson->get('name'));
-    }
+it('can update providers via ModuleConfigWriter', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+    ]);
 
-    /** @test */
-    public function it_reads_key_from_module_json_file_via_helper_method()
-    {
-        $this->assertEquals('Article', $this->module->get('name'));
-        $this->assertEquals('0.1', $this->module->get('version'));
-        $this->assertEquals('my default', $this->module->get('some-thing-non-there', 'my default'));
-        $this->assertEquals(['required_module'], $this->module->get('requires'));
-    }
+    $module = $this->createModule([
+        'path' => $this->app->basePath('/modules/author'),
+        'packageName' => 'laraneat/author',
+        'name' => 'author',
+        'namespace' => 'Modules\\Author',
+        'providers' => [
+            'Modules\\Author\\Providers\\AuthorServiceProvider',
+            'Modules\\Author\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
+        ],
+    ]);
 
-    /** @test */
-    public function it_reads_key_from_composer_json_file_via_helper_method()
-    {
-        $this->assertEquals('laraneat/article', $this->module->getComposerAttr('name'));
-    }
+    $composerJsonPath = $module->subPath('composer.json');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
 
-    /** @test */
-    public function it_casts_module_to_string()
-    {
-        $this->assertEquals('ArticleName', (string) $this->module);
-    }
+    /** @var ModuleConfigWriter $configWriter */
+    $configWriter = $this->app->make(ModuleConfigWriter::class);
+    $configWriter->updateProviders($module, [
+        'Modules\\Author\\Providers\\FooServiceProvider',
+        'Modules\\Foo\\Providers\\BarServiceProvider',
+    ]);
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+});
 
-    /** @test */
-    public function it_module_status_check()
-    {
-        $this->assertFalse($this->module->isStatus(true));
-        $this->assertTrue($this->module->isStatus(false));
-    }
+it('can update aliases via ModuleConfigWriter', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+    ]);
 
-    /** @test */
-    public function it_checks_module_enabled_status()
-    {
-        $this->assertFalse($this->module->isEnabled());
-        $this->assertTrue($this->module->isDisabled());
-    }
+    $module = $this->createModule([
+        'path' => $this->app->basePath('/modules/author'),
+        'packageName' => 'laraneat/author',
+        'name' => 'author',
+        'namespace' => 'Modules\\Author',
+        'providers' => [
+            'Modules\\Author\\Providers\\AuthorServiceProvider',
+            'Modules\\Author\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
+        ],
+    ]);
 
-    /** @test */
-    public function it_sets_active_status(): void
-    {
-        $this->module->setActive(true);
-        $this->assertTrue($this->module->isEnabled());
-        $this->module->setActive(false);
-        $this->assertFalse($this->module->isEnabled());
-    }
+    $composerJsonPath = $module->subPath('composer.json');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
 
-    /** @test */
-    public function it_fires_events_when_module_is_enabled()
-    {
-        Event::fake();
+    /** @var ModuleConfigWriter $configWriter */
+    $configWriter = $this->app->make(ModuleConfigWriter::class);
+    $configWriter->updateAliases($module, [
+        'foo' => 'Modules\\Author\\Services\\Foo',
+        'bar' => 'Modules\\Bar\\Services\\Bar',
+    ]);
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+});
 
-        $this->module->enable();
+it('can add providers via ModuleConfigWriter', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+    ]);
 
-        Event::assertDispatched(sprintf('modules.%s.enabling', $this->module->getKey()));
-        Event::assertDispatched(sprintf('modules.%s.enabled', $this->module->getKey()));
-    }
+    $module = $this->createModule([
+        'path' => $this->app->basePath('/modules/author'),
+        'packageName' => 'laraneat/author',
+        'name' => 'author',
+        'namespace' => 'Modules\\Author',
+        'providers' => [
+            'Modules\\Author\\Providers\\AuthorServiceProvider',
+            'Modules\\Author\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
+        ],
+    ]);
 
-    /** @test */
-    public function it_fires_events_when_module_is_disabled()
-    {
-        Event::fake();
+    $composerJsonPath = $module->subPath('composer.json');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
 
-        $this->module->disable();
+    /** @var ModuleConfigWriter $configWriter */
+    $configWriter = $this->app->make(ModuleConfigWriter::class);
+    $configWriter->addProvider($module, 'Modules\\Author\\Providers\\FooServiceProvider');
+    $configWriter->addProvider($module, 'Modules\\Author\\Providers\\RouteServiceProvider'); // duplicate, should not be added
+    $configWriter->addProvider($module, 'Modules\\Foo\\Providers\\BarServiceProvider');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+});
 
-        Event::assertDispatched(sprintf('modules.%s.disabling', $this->module->getKey()));
-        Event::assertDispatched(sprintf('modules.%s.disabled', $this->module->getKey()));
-    }
+it('can add aliases via ModuleConfigWriter', function () {
+    $this->setModules([
+        __DIR__ . '/fixtures/stubs/modules/valid/author',
+    ]);
 
-    /** @test */
-    public function it_has_a_good_providers_manifest_path()
-    {
-        $this->assertEquals(
-            $this->app->bootstrapPath("cache/{$this->module->getSnakeName()}_module.php"),
-            $this->module->getCachedServicesPath()
-        );
-    }
+    $module = $this->createModule([
+        'path' => $this->app->basePath('/modules/author'),
+        'packageName' => 'laraneat/author',
+        'name' => 'author',
+        'namespace' => 'Modules\\Author',
+        'providers' => [
+            'Modules\\Author\\Providers\\AuthorServiceProvider',
+            'Modules\\Author\\Providers\\RouteServiceProvider',
+        ],
+        'aliases' => [
+            'AuthorFacade' => 'Modules\\Author\\Facades\\SomeFacade',
+        ],
+    ]);
 
-    /** @test */
-    public function it_makes_a_manifest_file_when_providers_are_loaded()
-    {
-        $cachedServicesPath = $this->module->getCachedServicesPath();
+    $composerJsonPath = $module->subPath('composer.json');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
 
-        @unlink($cachedServicesPath);
-        $this->assertFileDoesNotExist($cachedServicesPath);
-
-        $this->module->registerProviders();
-
-        $this->assertFileExists($cachedServicesPath);
-        $manifest = require $cachedServicesPath;
-
-        $this->assertEquals([
-            'providers' => [
-                ArticleServiceProvider::class,
-                DeferredServiceProvider::class,
-            ],
-            'eager'     => [ArticleServiceProvider::class],
-            'deferred'  => ['deferred' => DeferredServiceProvider::class],
-            'when'      =>
-            [DeferredServiceProvider::class => []],
-        ], $manifest);
-    }
-
-    /** @test */
-    public function it_can_load_a_deferred_provider()
-    {
-        @unlink($this->module->getCachedServicesPath());
-
-        $this->module->registerProviders();
-
-        try {
-            app('foo');
-            $this->fail("app('foo') should throw an exception.");
-        } catch (\Exception $e) {
-            $this->assertEquals('Target class [foo] does not exist.', $e->getMessage());
-        }
-
-        app('deferred');
-
-        $this->assertEquals('bar', app('foo'));
-    }
-}
-
-class TestingModule extends \Laraneat\Modules\Module
-{
-    public function registerProviders(): void
-    {
-        parent::registerProviders();
-    }
-}
+    /** @var ModuleConfigWriter $configWriter */
+    $configWriter = $this->app->make(ModuleConfigWriter::class);
+    $configWriter->addAlias($module, 'foo', 'Modules\\Author\\Services\\Foo');
+    $configWriter->addAlias($module, 'bar', 'Modules\\Bar\\Services\\Bar');
+    assertFileExists($composerJsonPath);
+    assertMatchesFileSnapshot($composerJsonPath);
+});

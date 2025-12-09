@@ -2,13 +2,15 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Jobs\Job;
 use Illuminate\Foundation\Bus\Dispatchable;
 
-class {{ class }} extends Job
+class {{ class }}
 {
     use Dispatchable;
 
+    /**
+     * Create a new job instance.
+     */
     public function __construct()
     {
         //

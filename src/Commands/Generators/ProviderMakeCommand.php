@@ -2,26 +2,27 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\Module;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Laraneat\Modules\Enums\ModuleComponentType;
 use Laraneat\Modules\Support\Generator\GeneratorHelper;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
-use Symfony\Component\Console\Input\InputOption;
+use Laraneat\Modules\Support\Generator\Stub;
+use Laraneat\Modules\Support\ModuleConfigWriter;
 
 /**
  * @group generator
  */
-class ProviderMakeCommand extends ComponentGeneratorCommand
+class ProviderMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make:provider';
+    protected $signature = 'module:make:provider
+                            {name : The name of the provider class}
+                            {module? : The name or package name of the app module}
+                            {--s|stub= : The stub name to load for this generator}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -31,96 +32,98 @@ class ProviderMakeCommand extends ComponentGeneratorCommand
     protected $description = 'Generate new provider for the specified module.';
 
     /**
-     * The stub name to load for this generator.
+     * The module component type.
      */
-    protected string $stub = 'plain';
+    protected ModuleComponentType $componentType = ModuleComponentType::Provider;
 
     /**
-     * Module instance.
+     * Selected stub name (cached for afterGenerate).
      */
-    protected Module $module;
+    protected string $selectedStub;
 
     /**
-     * Component type.
+     * Stub replacements (cached for afterGenerate).
      */
-    protected string $componentType;
+    protected array $stubReplaces;
 
     /**
-     * Prepared 'name' argument.
+     * Prompt for missing input arguments using the returned questions.
      */
-    protected string $nameArgument;
-
-    /**
-     * Get the console command options.
-     */
-    protected function getOptions(): array
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            ['stub', 's', InputOption::VALUE_REQUIRED, 'The stub name to load for this generator.'],
+            'name' => 'Enter the provider class name',
         ];
     }
 
-    protected function prepare(): void
+    protected function getContents(): string
     {
-        $this->module = $this->getModule();
-        $this->stub = $this->getOptionOrChoice(
+        $this->selectedStub = $this->getOptionOrChoice(
             'stub',
             'Select the stub you want to use for generator',
-            ['plain', 'module', 'route', 'event'],
+            ['plain', 'module', 'event', 'route'],
             'plain'
         );
-        $this->componentType = 'provider';
-        $this->nameArgument = $this->getTrimmedArgument('name');
-    }
 
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
-    {
-        $stubReplaces = [
-            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+        $this->stubReplaces = [
+            'namespace' => $this->getComponentNamespace(
+                $this->module,
+                $this->nameArgument,
+                $this->componentType
+            ),
+            'class' => class_basename($this->nameArgument),
         ];
 
-        if ($this->stub === 'module') {
-            $stubReplaces = array_merge($stubReplaces, [
-                'moduleName' => $this->module->getStudlyName(),
-                'moduleKey' => $this->module->getKey(),
-                'commandsPath' => GeneratorHelper::component('cli-command')->getPath(),
-                'langPath' => GeneratorHelper::component('lang')->getPath(),
-                'configPath' => GeneratorHelper::component('config')->getPath(),
-                'viewsPath' => GeneratorHelper::component('view')->getPath(),
-                'migrationsPath' => GeneratorHelper::component('migration')->getPath(),
+        $providerDir = GeneratorHelper::component(ModuleComponentType::Provider)->getFullPath($this->module);
+
+        if ($this->selectedStub === 'module') {
+            $this->stubReplaces = array_merge($this->stubReplaces, [
+                'modulePackageName' => $this->module->getPackageName(),
+                'moduleNameKebabCase' => $this->module->getKebabName(),
+                'commandsNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component(ModuleComponentType::CliCommand)->getFullNamespace($this->module)),
+                'commandsPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::CliCommand)->getFullPath($this->module)
+                ),
+                'configPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::Config)->getFullPath($this->module)
+                ),
+                'langPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::Lang)->getFullPath($this->module)
+                ),
+                'viewsPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::View)->getFullPath($this->module)
+                ),
+                'migrationsPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::Migration)->getFullPath($this->module)
+                ),
             ]);
-        } elseif ($this->stub === 'route') {
-            $stubReplaces = array_merge($stubReplaces, [
-                'moduleName' => $this->module->getStudlyName(),
-                'webControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component('web-controller')->getFullNamespace($this->module)),
-                'apiControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component('api-controller')->getFullNamespace($this->module)),
-                'webRoutesPath' => GeneratorHelper::component('web-route')->getPath(),
-                'apiRoutesPath' => GeneratorHelper::component('api-route')->getPath()
+        } elseif ($this->selectedStub === 'route') {
+            $this->stubReplaces = array_merge($this->stubReplaces, [
+                'modulePackageName' => $this->module->getPackageName(),
+                'webControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component(ModuleComponentType::WebController)->getFullNamespace($this->module)),
+                'apiControllerNamespace' => str_replace('\\', '\\\\', GeneratorHelper::component(ModuleComponentType::ApiController)->getFullNamespace($this->module)),
+                'webRoutesPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::WebRoute)->getFullPath($this->module)
+                ),
+                'apiRoutesPath' => GeneratorHelper::makeRelativePath(
+                    $providerDir,
+                    GeneratorHelper::component(ModuleComponentType::ApiRoute)->getFullPath($this->module)
+                ),
             ]);
         }
 
-        $this->addProviderClassToModuleJson($stubReplaces['namespace'] . '\\' . $stubReplaces['class']);
-
-        return Stub::create("provider/{$this->stub}.stub", $stubReplaces)->render();
+        return Stub::create("provider/{$this->selectedStub}.stub", $this->stubReplaces)->render();
     }
 
-    protected function addProviderClassToModuleJson(string $providerClass): void
+    protected function afterGenerate(): void
     {
-        $json = $this->module->json();
-        $providers = $json->get('providers');
-        if (! is_array($providers)) {
-            $providers = [];
-        }
-        $providers[] = $providerClass;
-        $json->set('providers', $providers)
-            ->save();
-
-        Modules::flushCache();
+        $this->laravel->make(ModuleConfigWriter::class)
+            ->addProvider($this->module, $this->stubReplaces['namespace'] . '\\' . $this->stubReplaces['class']);
     }
 }

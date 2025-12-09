@@ -2,15 +2,13 @@
 
 namespace {{ namespace }};
 
-use App\Ship\Abstracts\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
-use Laraneat\Modules\Traits\RouteProviderHelpersTrait;
+use Laraneat\Modules\Support\Concerns\CanLoadRoutesFromDirectory;
 
 class {{ class }} extends ServiceProvider
 {
-    use RouteProviderHelpersTrait;
-
-    protected string $moduleName = '{{ moduleName }}';
+    use CanLoadRoutesFromDirectory;
 
     /**
      * Called before routes are registered.
@@ -37,9 +35,9 @@ class {{ class }} extends ServiceProvider
     protected function mapWebRoutes(): void
     {
         Route::middleware('web')
-//            ->namespace('{{ webControllerNamespace }}')
+            // ->namespace('{{ webControllerNamespace }}')
             ->group(function () {
-                $this->loadRoutesFromDirectory(module_path($this->moduleName, '{{ webRoutesPath }}'));
+                $this->loadRoutesFromDirectory(__DIR__.'/{{ webRoutesPath }}');
             });
     }
 
@@ -51,9 +49,9 @@ class {{ class }} extends ServiceProvider
     {
         Route::prefix('api')
             ->middleware('api')
-//            ->namespace('{{ apiControllerNamespace }}')
+            // ->namespace('{{ apiControllerNamespace }}')
             ->group(function () {
-                $this->loadRoutesFromDirectory(module_path($this->moduleName, '{{ apiRoutesPath }}'));
+                $this->loadRoutesFromDirectory(__DIR__.'/{{ apiRoutesPath }}');
             });
     }
 }

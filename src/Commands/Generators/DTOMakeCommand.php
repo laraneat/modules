@@ -2,23 +2,24 @@
 
 namespace Laraneat\Modules\Commands\Generators;
 
-use Laraneat\Modules\Module;
-use Laraneat\Modules\Support\Stub;
-use Laraneat\Modules\Traits\ModuleCommandTrait;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Laraneat\Modules\Enums\ModuleComponentType;
+use Laraneat\Modules\Support\Generator\Stub;
 
 /**
  * @group generator
  */
-class DTOMakeCommand extends ComponentGeneratorCommand
+class DTOMakeCommand extends BaseComponentGeneratorCommand implements PromptsForMissingInput
 {
-    use ModuleCommandTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'module:make:dto';
+    protected $signature = 'module:make:dto
+                            {name : The name of the DTO class}
+                            {module? : The name or package name of the app module}
+                            {--force : Overwrite the file if it already exists}';
 
     /**
      * The console command description.
@@ -28,54 +29,36 @@ class DTOMakeCommand extends ComponentGeneratorCommand
     protected $description = 'Generate new DTO for the specified module.';
 
     /**
-     * Module instance.
-     *
-     * @var Module
+     * The module component type.
      */
-    protected Module $module;
+    protected ModuleComponentType $componentType = ModuleComponentType::Dto;
 
     /**
-     * Component type.
-     *
-     * @var string
+     * Prompt for missing input arguments using the returned questions.
      */
-    protected string $componentType = 'dto';
-
-    /**
-     * Prepared 'name' argument.
-     *
-     * @var string
-     */
-    protected string $nameArgument;
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions(): array
+    protected function promptForMissingArgumentsUsing(): array
     {
-        return [];
+        return [
+            'name' => 'Enter the DTO class name',
+        ];
     }
 
-    protected function prepare()
+    protected function beforeGenerate(): void
     {
-        $this->module = $this->getModule();
-        $this->nameArgument = $this->getTrimmedArgument('name');
+        $this->ensurePackageIsInstalledOrWarn('spatie/laravel-data');
     }
 
-    protected function getDestinationFilePath(): string
-    {
-        return $this->getComponentPath($this->module, $this->nameArgument, $this->componentType);
-    }
-
-    protected function getTemplateContents(): string
+    protected function getContents(): string
     {
         $stubReplaces = [
-            'namespace' => $this->getComponentNamespace($this->module, $this->nameArgument, $this->componentType),
-            'class' => $this->getClass($this->nameArgument)
+            'namespace' => $this->getComponentNamespace(
+                $this->module,
+                $this->nameArgument,
+                $this->componentType
+            ),
+            'class' => class_basename($this->nameArgument),
         ];
 
-        return Stub::create("dto/default.stub", $stubReplaces)->render();
+        return Stub::create("dto.stub", $stubReplaces)->render();
     }
 }
