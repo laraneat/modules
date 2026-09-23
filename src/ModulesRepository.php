@@ -8,6 +8,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Laraneat\Modules\Exceptions\CannotDeleteModule;
 use Laraneat\Modules\Exceptions\ComposerException;
 use Laraneat\Modules\Exceptions\DirectoryMustBePresentAndWritable;
 use Laraneat\Modules\Exceptions\ModuleHasNoNamespace;
@@ -256,18 +257,27 @@ class ModulesRepository implements Arrayable
     /**
      * Delete a specific module by its package name.
      *
+     * The package is removed from composer first: if that fails, the module files are kept,
+     * so composer.json never requires a module that no longer exists locally.
+     *
      * @throws ModuleNotFound
      * @throws ComposerException
+     * @throws CannotDeleteModule
      */
     public function delete(string $modulePackageName, \Closure|OutputInterface|null $output = null): bool
     {
         $module = $this->findOrFail($modulePackageName);
+        $modulePath = rtrim($module->getPath(), '/\\');
 
-        $result = $this->filesystem->deleteDirectory($module->getPath());
+        if (is_link($modulePath)) {
+            throw CannotDeleteModule::becauseItIsSymlink($module->getPackageName(), $modulePath);
+        }
 
         if (! $this->composer->removePackages([$module->getPackageName()], false, $output)) {
             throw ComposerException::make("Failed to remove package with composer.");
         }
+
+        $result = $this->filesystem->deleteDirectory($modulePath);
 
         $this->pruneModulesManifest();
 
