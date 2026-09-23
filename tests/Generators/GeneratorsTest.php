@@ -129,6 +129,49 @@ it('looks up --model and --parent in the "make:model" namespace', function () {
         ->and($qualified['modules/blog/src/Observers/PostObserver.php'])->toContain('use Modules\\Blog\\Models\\Post;');
 });
 
+it('maps to the module root with an empty namespace', function () {
+    $this->files(['config/modules.php' => '<?php return ["generators" => ["make:model" => "", "make:policy" => ""]];']);
+    $this->reboot();
+
+    $files = $this->generate('make:policy RackPolicy --model=Rack --module=blog');
+
+    expect($files['modules/blog/src/RackPolicy.php'])->toContain('namespace Modules\\Blog;', 'use Modules\\Blog\\Rack;');
+});
+
+it('leaves the --model option of other generators alone', function () {
+    $this->files(['config/modules.php' => '<?php return ["generators" => ["make:model" => "Domain\\\\Models"]];']);
+    $this->reboot();
+
+    $command = new class(app('files')) extends GeneratorCommand
+    {
+        protected $name = 'make:prompt';
+
+        protected function getStub(): string
+        {
+            return __FILE__;
+        }
+
+        public function handle(): int
+        {
+            $this->line('model: '.$this->option('model'));
+
+            return self::SUCCESS;
+        }
+
+        protected function getOptions(): array
+        {
+            return [['model', null, InputOption::VALUE_REQUIRED, 'The language model']];
+        }
+    };
+
+    ModuleOption::addTo($command);
+    Artisan::registerCommand($command);
+
+    $this->artisan('make:prompt Summary --model=gpt-4o --module=blog')
+        ->expectsOutputToContain('model: gpt-4o')
+        ->assertSuccessful();
+});
+
 it('imports the form requests of a controller from the module', function () {
     $files = $this->generate('make:controller PostController --model=Post --requests --module=blog');
 

@@ -51,6 +51,16 @@ final class ModuleOption
         BaseViewMakeCommand::class => ViewMakeCommand::class,
     ];
 
+    /**
+     * The options of the Laravel generators that name a model.
+     */
+    private const array MODEL_OPTIONS = [
+        'make:controller' => ['model', 'parent'],
+        'make:factory' => ['model'],
+        'make:observer' => ['model'],
+        'make:policy' => ['model'],
+    ];
+
     public static function register(Container $app): void
     {
         $app->singleton(ModuleContext::class);
@@ -122,7 +132,7 @@ final class ModuleOption
         }
 
         $generators = Config::array('modules.generators', []);
-        $namespace = $generators[$command->getName()] ?? null;
+        $namespace = $generators[$command->getName() ?? ''] ?? null;
 
         if (is_string($namespace) && $input->hasArgument('name')) {
             $root = (fn (): string => $this->rootNamespace())->call($command);
@@ -132,7 +142,7 @@ final class ModuleOption
         }
 
         if (is_string($models = $generators['make:model'] ?? null)) {
-            foreach (['model', 'parent'] as $option) {
+            foreach (self::MODEL_OPTIONS[$command->getName() ?? ''] ?? [] as $option) {
                 if ($input->hasOption($option)) {
                     self::qualifyInput($input->getOption($option), $module, $module->namespace, $models, static fn (string $class) => $input->setOption($option, $class));
                 }
@@ -152,7 +162,7 @@ final class ModuleOption
         $class = trim(str_replace('/', '\\', (string) $class), '\\');
 
         if ($class !== '' && ! str_starts_with($class, $module->namespace.'\\')) {
-            $set(rtrim($root, '\\').'\\'.trim($namespace, '\\').'\\'.$class);
+            $set(implode('\\', array_filter([rtrim($root, '\\'), trim($namespace, '\\'), $class], static fn (string $part): bool => $part !== '')));
         }
     }
 }
