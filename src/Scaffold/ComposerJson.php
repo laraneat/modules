@@ -257,23 +257,22 @@ final class ComposerJson
     /**
      * The repository Composer uses in place of the default Packagist repository: a composer repository
      * with a packagist.org URL, or one named "packagist.org" or "packagist" whatever its URL (a mirror).
-     * False when Packagist is disabled, null for the default repository.
+     * False when Packagist is disabled or replaced by another kind of repository, null for the default one.
      */
     private function packagist(): stdClass|false|null
     {
         $disabled = false;
 
         foreach ($this->repositories() as $name => $repository) {
+            // A repository under this name takes the place of the default one, false disables it.
             if (is_string($name) && in_array($name, ['packagist', 'packagist.org'], true)) {
-                if ($repository === false) {
-                    $disabled = true;
-
-                    continue;
-                }
-
                 if ($repository instanceof stdClass && ($repository->type ?? null) === 'composer') {
                     return $repository;
                 }
+
+                $disabled = true;
+
+                continue;
             }
 
             if (! $repository instanceof stdClass) {

@@ -379,6 +379,10 @@ it('tells whether packagist can serve a package', function (array $repositories,
     'mirror excluding the vendor' => [['packagist.org' => ['type' => 'composer', 'url' => 'https://mirror.example.com', 'exclude' => ['app/*']]], true],
     'mirror' => [['packagist' => ['type' => 'composer', 'url' => 'https://mirror.example.com']], false],
     'unnamed mirror' => [[['type' => 'composer', 'url' => 'https://mirror.example.com', 'exclude' => ['app/*']]], false],
+    'replaced by another kind of repository' => [['packagist.org' => ['type' => 'vcs', 'url' => 'https://example.com/repo.git']], true],
+    'disabled by name, then redefined' => [['packagist.org' => false, 'main' => ['type' => 'composer', 'url' => 'https://repo.packagist.org']], false],
+    'after entries that are not objects' => [['modules/*', PACKAGIST_EXCLUDING_APP], true],
+    'not a composer repository' => [[['type' => 'vcs', 'url' => 'https://packagist.org/app/blog', 'exclude' => ['app/*']]], false],
 ]);
 
 it('fails on files it can not edit', function (?string $contents, string $message) {

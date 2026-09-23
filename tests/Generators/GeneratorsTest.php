@@ -163,6 +163,14 @@ it('creates a factory with a fully qualified name in the module', function () {
         ->and($files['modules/blog/database/factories/Admin/TagFactory.php'])->toContain('namespace Modules\\Blog\\Database\\Factories\\Admin;');
 });
 
+it('maps only the names of class generators', function () {
+    $this->files(['config/modules.php' => '<?php return ["generators" => ["make:migration" => "Migrations"]];']);
+    $this->reboot();
+
+    expect(array_keys($this->generate('make:migration create_tags_table --module=blog')))
+        ->toBe(['modules/blog/database/migrations/{date}_create_tags_table.php']);
+});
+
 it('generates into the application without --module', function (string $command, array $paths) {
     expect(array_keys($this->generate($command)))->toEqualCanonicalizing($paths);
 })->with([
