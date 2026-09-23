@@ -75,8 +75,9 @@ final class DeleteCommand extends Command
         }
 
         // Composer does not remove the link of a path package whose directory is gone.
-        if (is_link($vendorLink) && ! file_exists($vendorLink)) {
-            $files->delete($vendorLink);
+        // Windows removes a link to a directory, like the junction Composer creates there, with rmdir().
+        if (is_link($vendorLink) && ! file_exists($vendorLink) && ! $files->delete($vendorLink)) {
+            @rmdir($vendorLink);
         }
 
         $this->components->info("Module [{$module->name}] deleted.");

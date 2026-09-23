@@ -8,7 +8,15 @@ function doctor(): array
 {
     $status = Artisan::call('module:doctor');
 
-    return [$status, preg_replace('/ +$/m', '', Artisan::output())];
+    return [$status, preg_replace('/ +$/m', '', str_replace("\r\n", "\n", Artisan::output()))];
+}
+
+/**
+ * Windows removes a link to a directory with rmdir().
+ */
+function removeLink(string $path): void
+{
+    DIRECTORY_SEPARATOR === '\\' ? rmdir($path) : unlink($path);
 }
 
 it('finds no problems in installed modules', function () {
@@ -37,7 +45,7 @@ it('reports modules that are not installed', function () {
 
 it('reports a package linked elsewhere', function () {
     $this->installModules();
-    unlink($this->path('vendor/app/blog'));
+    removeLink($this->path('vendor/app/blog'));
     symlink($this->path('modules/shop-order'), $this->path('vendor/app/blog'));
 
     [$status, $output] = doctor();
@@ -48,7 +56,7 @@ it('reports a package linked elsewhere', function () {
 
 it('warns about a mirrored package', function () {
     $this->installModules();
-    unlink($this->path('vendor/app/blog'));
+    removeLink($this->path('vendor/app/blog'));
     mkdir($this->path('vendor/app/blog'));
 
     [$status, $output] = doctor();
@@ -59,7 +67,7 @@ it('warns about a mirrored package', function () {
 
 it('reports a missing installed package', function () {
     $this->installModules();
-    unlink($this->path('vendor/app/blog'));
+    removeLink($this->path('vendor/app/blog'));
 
     [$status, $output] = doctor();
 
@@ -69,7 +77,7 @@ it('reports a missing installed package', function () {
 
 it('reports a package installed from another repository', function (array $dist) {
     $this->installModules();
-    unlink($this->path('vendor/app/blog'));
+    removeLink($this->path('vendor/app/blog'));
     mkdir($this->path('vendor/app/blog'));
     $installed = $this->readJson('vendor/composer/installed.json');
     $installed['packages'][0]['dist'] = $dist;
