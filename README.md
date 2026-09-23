@@ -80,6 +80,9 @@ A module is a directory in `modules/` with a `composer.json`:
 - The directory name (`blog`) is the module name. It is also the namespace of the module views,
   translations and Blade components: `view('blog::index')`, `__('blog::messages.welcome')`, `<x-blog::alert />`.
 - The first `autoload.psr-4` entry is the root namespace of the module.
+- Every module must have a valid `composer.json` with a unique package name and namespace. An invalid
+  module is an error while the application boots, for HTTP requests too: `module:doctor` and the tests
+  catch it before a deploy.
 - The module is required by the application like any other package:
 
 ```json
@@ -125,14 +128,17 @@ The name is normalized to kebab case (`ShopOrder` becomes `shop-order`, namespac
 
 The built-in template has a `composer.json` and empty convention directories. Your own templates live
 in `stubs/module/<preset>`: `--preset=api` uses `stubs/module/api`, and `stubs/module/default` replaces the
-built-in template. Start from a copy of the built-in one:
+built-in template. Publish the built-in template to `stubs/module/default`, and copy it to
+`stubs/module/<preset>` to start a named preset:
 
 ```bash
 php artisan vendor:publish --tag=modules-stubs
+cp -R stubs/module/default stubs/module/api
 ```
 
 - Files ending in `.stub` are rendered and lose the extension. Other files are copied as they are.
-- Placeholders work in file contents and in paths: `{{ variable }}` or `{{ variable|filter|filter }}`.
+- Placeholders work in the contents of `.stub` files and in all paths: `{{ variable }}` or
+  `{{ variable|filter|filter }}`.
 - Variables:
 
   | Variable    | Example value            |
@@ -177,11 +183,17 @@ The package loads everything it finds in a module. A missing directory is skippe
 `src/` is the directory of the root namespace of the module: `View/Components` and `Console/Commands` are
 looked up there.
 
+A module config file can extend any key, `config/app.php` included. The merge is shallow: the top-level keys
+of the application config replace those of the module.
+
 ### Factories
 
 `Modules\Blog\Models\Post::factory()` uses `Modules\Blog\Database\Factories\PostFactory`, and the factory
 knows its model, the way Laravel pairs `App\Models\Post` with `Database\Factories\PostFactory`. Classes outside
 the modules keep the Laravel behavior.
+
+The resolver is global (`Factory::guessFactoryNamesUsing()`): a resolver that the application sets itself
+replaces it.
 
 The factory resolver is registered only in the console (tests, seeders, Tinker), because factories are not
 used while serving requests. If you create models with factories during HTTP requests, point the model at
@@ -201,7 +213,8 @@ final class Post extends Model
 
 Classes in the `make:command` namespace of a module (`src/Console/Commands`, including subdirectories) are
 registered as Artisan commands. Abstract classes and other classes are skipped. Commands with the
-`#[AsCommand]` attribute are loaded lazily.
+`#[AsCommand]` attribute are loaded lazily. Like migrations, module commands are registered only in the
+console, so `Artisan::call()` can not run them during an HTTP request.
 
 ### Policies and events
 
@@ -226,6 +239,9 @@ Route groups are defined in `config/modules.php`:
 - Files of a directory are loaded before its subdirectories, in alphabetical order.
 - Groups apply to all modules. A module with its own layout can load its routes in its service provider.
 - Nothing is loaded when the routes are cached: `php artisan route:cache` includes the module routes.
+- Route files are loaded while the package boots, like the routes of other packages: before the providers
+  of the application boot. `Route::pattern()` and route macros from `AppServiceProvider::boot()` do not reach
+  them. Define those in the `register()` method of a provider, or use `->where()` in the route files.
 
 ```php
 // modules/blog/routes/api/posts.php
@@ -305,9 +321,10 @@ php artisan module:sync
 The provider is registered in `extra.laravel.providers` of the module `composer.json`; `module:sync` installs
 the changed module, so that Laravel package discovery picks it up.
 
-Module providers are loaded by package discovery, in the order of the package names. The module config
-is merged while the Laraneat provider registers, which may happen after the `register()` of a module
-provider. Read config in `boot()`, or inside the closures of your bindings, not directly in `register()`.
+Module providers are loaded by package discovery, in the order of the package names. The module config,
+views and translations are registered while the Laraneat provider registers, which may happen after the
+`register()` of a module provider. In `register()`, do not read config or use the `Modules` facade directly:
+do it in `boot()` or inside the closures of your bindings.
 
 ## Seeders
 
@@ -327,7 +344,9 @@ final class DatabaseSeeder extends Seeder
 
 - Without arguments it returns the seeders of `database/seeders`. Pass subdirectories to add them:
   `Modules::seeders('', 'Demo')` returns `database/seeders` and `database/seeders/Demo`,
-  `Modules::seeders('Demo')` only `database/seeders/Demo`. Subdirectories are not searched recursively.
+  `Modules::seeders('Demo')` only `database/seeders/Demo`. Only direct subdirectories are read:
+  `Modules::seeders('Demo/Extra')` returns nothing.
+- Class names come from the file paths (PSR-4): a seeder whose namespace does not match its path is not found.
 - Seeders run in the order of their integer `_N` class name suffix (`PermissionsSeeder_1` before
   `UsersSeeder_2`); seeders without a suffix run last. Equal suffixes run in the order of the class names.
 - Abstract classes and classes that do not extend `Seeder` are skipped.
@@ -362,11 +381,13 @@ pest()->extend(Tests\TestCase::class)->in('Feature', '../modules/*/tests/Feature
 |---------------------------------|-------------|
 | `module:make <name>`            | Create a module. `--preset=<preset>` picks the template, `--no-update` skips `composer update`. |
 | `module:sync`                   | Add every module to the `composer.json` of the application and run `composer update` for the modules that changed. `--no-update` only prints the command. |
-| `module:delete <name>`          | Run `composer remove` for the module, then delete its directory. Asks for confirmation; `--force` skips it. `--no-update` only edits `composer.json`. A symlinked module directory is never deleted. |
+| `module:delete <name>`          | Run `composer remove` for the module, then delete its directory. Asks for confirmation; `--force` skips it. With `--no-update`, it edits `composer.json` instead of running Composer, deletes the directory and prints the `composer update` command to run. A symlinked module directory is never deleted. |
 | `module:doctor`                 | Check the modules and how they are installed. Read-only; fails when it finds errors. |
 | `module:list`                   | List the modules. With `-v`, also what is loaded from each of them. |
 | `module:cache`                  | Cache the module manifest. Part of `php artisan optimize`. |
 | `module:clear`                  | Remove the module manifest cache. Part of `php artisan optimize:clear`. |
+
+Commands and `--module` take the module directory name (`blog`), not the package name (`app/blog`).
 
 `module:doctor` checks:
 
@@ -413,8 +434,12 @@ provider only reads the manifest, it never scans the modules while it boots.
 
 - `php artisan optimize` (or `module:cache`) writes the manifest to `bootstrap/cache/modules.php`, next to
   the config and route caches. A cached application loads it with one `require`. Set `MODULES_CACHE` to
-  store it elsewhere, like `APP_CONFIG_CACHE`.
-- Without the cache file, the manifest is built once per process. There is no stale cache in development.
+  store it elsewhere, like `APP_CONFIG_CACHE`. It must be a real environment variable: `.env` is not read
+  when the config is cached.
+- Without the cache file, the manifest is built once per process, so it is never stale. The cache is written
+  only by `optimize` and `module:cache`: a deploy that skips them scans the modules in every process.
+- The cached manifest lists the files it loads. After `php artisan optimize` on a development machine, new
+  route, config, seeder and command files are ignored until `php artisan optimize:clear`.
 - `module:make`, `module:sync` and `module:delete` rebuild the cache file if it exists.
 - The config and route caches include the module config and routes, so the package skips them when they
   are cached.

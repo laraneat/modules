@@ -15,8 +15,9 @@ every step, and run the checks at the end.
 - Save the routes of the application to compare them later:
 
   ```bash
-  php artisan route:list --json > /tmp/routes-before.json
-  php artisan module:list
+  php artisan route:list --json \
+    | php -r 'echo json_encode(json_decode(stream_get_contents(STDIN)), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), PHP_EOL;' \
+    > /tmp/routes-before.json
   ```
 
 ### 1. Update the package
@@ -42,9 +43,12 @@ rm -f bootstrap/cache/laraneat-modules.php
 Copy the new config next to the old one and move your values into it:
 
 ```bash
-mv config/modules.php config/modules.v2.php
+mv config/modules.php config/modules.php.v2
 cp vendor/laraneat/modules/config/modules.php config/modules.php
 ```
+
+Laravel loads only the `.php` files of `config/`, so the old file, which references removed classes, is not
+loaded anymore.
 
 | 2.x key                          | 3.0                                                                          |
 |----------------------------------|------------------------------------------------------------------------------|
@@ -76,12 +80,13 @@ layout:
 
 One command has one namespace. 2.x had separate API and WEB controllers and requests: generate the other
 kind with a fully qualified name, for example
-`make:controller "Modules\Blog\UI\WEB\Controllers\PostController" --module=blog`.
+`make:controller "Modules\Blog\UI\WEB\Controllers\PostController" --module=blog`. The namespaces also apply
+to the files that options such as `make:model -a` create.
 
 The `make:command` namespace is also where module commands are discovered, so it must match the directory
 of the existing commands.
 
-Delete `config/modules.v2.php` when everything is moved: it references classes that do not exist anymore.
+Delete `config/modules.php.v2` when everything is moved.
 
 ### 3. Remove the module service providers that only load resources
 
@@ -106,8 +111,10 @@ What 3.0 loads, and how it differs from the 2.x providers:
   not publishable anymore.
 - **Views and translations**: the namespace is the module directory name (`blog::`). In 2.x it was the kebab
   case name of the module; rename the directory or the references if they differ. Views published into
-  `resources/views/modules/<module>` do not override the module views anymore: move the changes into the module.
-- **Migrations and commands**: loaded in the console, like in 2.x.
+  `resources/views/modules/<module>` or `resources/views/vendor/<module>` do not override the module views
+  anymore: move the changes into the module. Translation overrides in `lang/vendor/<module>` still work.
+- **Migrations and commands**: registered only in the console. 2.x registered migrations for HTTP requests
+  too: `Artisan::call('migrate')` during an HTTP request does not see the module migrations anymore.
 
 Search for leftovers:
 
@@ -135,6 +142,10 @@ Two differences from `CanLoadRoutesFromDirectory`:
   prefix; now it gets `api/v1/admin`. Routes one directory deep keep their URIs.
 - The files of a directory are loaded before its subdirectories (2.x loaded subdirectories first), and
   groups are loaded for all modules in turn: first every `api` route, then every `web` route.
+- Route files are loaded while the package boots, before the providers of the application boot. 2.x loaded
+  them after the module route service provider booted. `Route::pattern()` and route macros defined in
+  `AppServiceProvider::boot()` do not reach module routes anymore: define them in the `register()` method
+  of a provider, or use `->where()` in the route files.
 
 When two routes can match the same URL (`posts/{post}` and `posts/export`), make sure the specific one is
 still registered first.
@@ -161,7 +172,12 @@ $this->call(Modules::seeders('', 'Deployment', 'Demo'));
 
 `runSeedersFromModules($directories)` always included `database/seeders`; with `Modules::seeders()`, `''` is
 `database/seeders` and you list it yourself. The order is the same: by the `_N` class name suffix, then by
-class name. Abstract classes and classes that are not seeders are skipped now.
+class name. Differences:
+
+- Abstract classes and classes that are not seeders are skipped.
+- Only direct subdirectories of `database/seeders` are read: `Modules::seeders('Demo/Extra')` returns nothing.
+- Class names come from the file paths, not from the namespace in the file: a seeder whose namespace does
+  not match its path is not found.
 
 If you overrode methods of the trait (`sortSeederClasses()`, `getSeederClassesFromModule()`), apply the same
 logic to the array that `Modules::seeders()` returns.
@@ -347,7 +363,7 @@ trait WithJsonResponseHelpers
 Then replace the imports. The calls stay the same:
 
 ```bash
-grep -rlZ "Laraneat\\\\Modules\\\\Support\\\\Concerns\\\\\(InteractsWithTestUser\|WithJsonResponseHelpers\)" app modules tests \
+grep -rl --null "Laraneat\\\\Modules\\\\Support\\\\Concerns\\\\\(InteractsWithTestUser\|WithJsonResponseHelpers\)" app modules tests \
   | xargs -0 perl -pi -e 's/Laraneat\\Modules\\Support\\Concerns\\InteractsWithTestUser/Tests\\Concerns\\InteractsWithTestUser/g; s/Laraneat\\Modules\\Support\\Concerns\\WithJsonResponseHelpers/App\\Support\\Concerns\\WithJsonResponseHelpers/g'
 ```
 
@@ -360,7 +376,11 @@ Two changes in `InteractsWithTestUser`:
 
 ### 7. Update the code that uses the package API
 
-- The facade is `Laraneat\Modules\Facades\Modules` (was `Laraneat\Modules\Support\Facades\Modules`).
+- The facade is `Laraneat\Modules\Facades\Modules` (was `Laraneat\Modules\Support\Facades\Modules`). The
+  global `Modules` alias points to the new facade.
+- `Laraneat\Modules\ModulesRepository` is `Laraneat\Modules\ModuleRepository`. The 2.x exceptions and the
+  classes of `Laraneat\Modules\Providers` are removed; the exceptions of 3.0 extend
+  `Laraneat\Modules\Exceptions\ModulesException`.
 - Modules are identified by their directory name, not by the package name.
 
 | 2.x                                        | 3.0                                           |
@@ -370,13 +390,19 @@ Two changes in `InteractsWithTestUser`:
 | `Modules::findOrFail('app/blog')`          | `Modules::get('blog')`                         |
 | `Modules::has('app/blog')`                 | `Modules::find('blog') !== null`              |
 | `Modules::count()`                         | `count(Modules::all())`                        |
+| `Modules::filterByName('blog')`, `filterByNameOrFail()` | `Modules::find('blog')`, `Modules::get('blog')` |
+| `Modules::getScanPaths()`, `addScanPath()` | the `path` config key: one directory of modules |
+| `Modules::toArray()`, `$module->toArray()` | `Modules::all()`, the public properties of `Module` |
 | `Modules::delete()`, `syncWithComposer()`  | `php artisan module:delete`, `module:sync`     |
 | `Modules::buildModulesManifest()`, `pruneModulesManifest()` | `php artisan module:cache`, `module:clear` |
 | `$module->getName()`, `getPackageName()`, `getNamespace()`, `getPath()` | `$module->name`, `->package`, `->namespace`, `->path` |
 | `$module->subPath('src')`, `subNamespace('Models')` | `$module->path.'/src'`, `$module->namespace.'\\Models'` |
+| `$module->getStudlyName()`, `getKebabName()`, `getSnakeName()` | `Str::studly($module->name)`, `$module->name`, `Str::snake(Str::camel($module->name))` |
+| `$module->getProviders()`, `getAliases()`  | `extra.laravel` of the module `composer.json`  |
 
 ```bash
-grep -rnE 'Laraneat\\Modules\\(Support|Enums|Module;)' app modules tests database routes config bootstrap
+grep -rnE 'Laraneat\\Modules\\(Support|Enums|Exceptions|Providers|ModulesRepository|Module;)|Modules::' \
+  app modules tests database routes config bootstrap
 ```
 
 ### 8. Reinstall the modules and sync them
@@ -409,6 +435,9 @@ The `module:make:*` commands are replaced by the Laravel generators with `--modu
 | `module:make:route`, `module:make:query-wizard` | removed: create the files by hand or with your own generator |
 | `module:stub:publish`, `custom_stubs`          | `php artisan stub:publish`, which customizes the Laravel stubs |
 
+`make:data` adds the `Data` suffix to names that do not end with it: `make:data CreatePostDTO` creates
+`CreatePostDTOData`. Pass the full name without a suffix, or configure the suffix of laravel-data.
+
 The generated code follows the Laravel stubs, not the Porto stubs of 2.x. If you relied on the 2.x stubs,
 put your versions in `stubs/` with `php artisan stub:publish`; they apply to the application and to the
 modules alike.
@@ -424,16 +453,17 @@ Module migrations are registered with the Laravel migrator:
 | `module:migrate:rollback`, `:refresh`, `:reset`, `:status` | `migrate:rollback`, `migrate:refresh`, `migrate:reset`, `migrate:status` |
 
 Update scripts, CI jobs and deployment that call the old commands. `module:delete` now deletes one module
-at a time, and needs `--force` in non-interactive mode.
+at a time, takes the directory name (`blog`, not `app/blog`), and needs `--force` in non-interactive mode.
 
 ### 11. Replace the module templates
 
 `module:make --preset=plain|base|api --entity=...` is replaced by module templates: `module:make blog
---preset=<preset>` renders `stubs/module/<preset>`. Start from the built-in template and add the files your
-modules begin with:
+--preset=<preset>` renders `stubs/module/<preset>`. Start from the built-in template, which is published to
+`stubs/module/default`, and add the files your modules begin with:
 
 ```bash
 php artisan vendor:publish --tag=modules-stubs
+cp -R stubs/module/default stubs/module/api
 ```
 
 The placeholders are described in the [README](README.md#module-templates). `--entity` is gone: use the
@@ -446,6 +476,7 @@ module name with filters, for example `{{ name|studly }}`.
   that create factories while serving HTTP requests.
 - Remove the deployment steps that cleared `bootstrap/cache` to refresh the module cache. Run
   `php artisan optimize` when you deploy; it caches the modules together with the config and routes.
+  2.x wrote the cache by itself in production, 3.0 does not: without `optimize`, every process scans the modules.
 - `octane.watch` does not need the modules path anymore; it is added automatically.
 
 ### Check the upgrade
@@ -453,8 +484,10 @@ module name with filters, for example `{{ name|studly }}`.
 ```bash
 php artisan optimize:clear
 php artisan module:doctor
-php artisan route:list --json > /tmp/routes-after.json
-diff <(jq -S . /tmp/routes-before.json) <(jq -S . /tmp/routes-after.json)
+php artisan route:list --json \
+  | php -r 'echo json_encode(json_decode(stream_get_contents(STDIN)), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), PHP_EOL;' \
+  > /tmp/routes-after.json
+diff /tmp/routes-before.json /tmp/routes-after.json
 php artisan test
 php artisan optimize && php artisan optimize:clear
 ```

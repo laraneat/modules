@@ -17,8 +17,10 @@ Version 3 is a rewrite. See [UPGRADE.md](UPGRADE.md) for the upgrade from 2.x.
 - `Modules::seeders()` returns the seeders of all modules, in the order of their `_N` suffix.
 - Module templates in `stubs/module/<preset>` with `{{ variable|filter }}` placeholders in paths and contents.
 - `module:doctor` checks the modules and how they are installed.
-- `module:make`, `module:sync` and `module:delete` run Composer themselves; `--no-update` prints the command instead.
-- Module vendors are excluded from Packagist, so a missing module is never replaced by a public package.
+- `--no-update` for `module:make`, `module:sync` and `module:delete`: edit `composer.json` and print the
+  Composer command instead of running it.
+- `module:sync` adds the `autoload-dev` of the module tests and updates only the modules that changed.
+- A Packagist mirror under the `packagist.org` repository key gets the exclusion of the module vendor too.
 - The module manifest is cached by `php artisan optimize` and cleared by `optimize:clear`; `MODULES_CACHE`
   changes the cache path.
 - The modules path is added to `octane.watch`.
@@ -30,9 +32,12 @@ Version 3 is a rewrite. See [UPGRADE.md](UPGRADE.md) for the upgrade from 2.x.
 - The facade is `Laraneat\Modules\Facades\Modules`; modules are identified by their directory name.
 - `Laraneat\Modules\Module` is a read-only value object with public properties.
 - The views and translations namespace of a module is its directory name.
-- `module:delete` deletes one module, uninstalls it with Composer before deleting its files, and never deletes
-  a symlinked module directory.
-- Without the cache file, the manifest is built once per process, so it is never stale in development.
+- `module:delete` deletes one module, found by its directory name, asks for confirmation and needs `--force`
+  in non-interactive mode.
+- The manifest cache is written only by `php artisan optimize` and `module:cache`, not automatically in production.
+- `Laraneat\Modules\ModulesRepository` is renamed to `Laraneat\Modules\ModuleRepository`.
+- The `composer.vendor` config key is renamed to `vendor`.
+- Migrations are registered only in the console.
 
 ### Removed
 
