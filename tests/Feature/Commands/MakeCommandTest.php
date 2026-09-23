@@ -60,7 +60,6 @@ it('creates a module and installs it with Composer', function () {
             'repositories' => [
                 ['type' => 'path', 'url' => 'modules/*', 'options' => ['symlink' => true]],
                 ['type' => 'composer', 'url' => 'https://repo.packagist.org', 'exclude' => ['app/*']],
-                ['packagist.org' => false],
             ],
             'autoload-dev' => ['psr-4' => ['Modules\\WikiPages\\Tests\\' => 'modules/wiki-pages/tests/']],
         ])

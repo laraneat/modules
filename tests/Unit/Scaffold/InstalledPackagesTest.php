@@ -48,6 +48,8 @@ it('compares the installed metadata with composer.json', function (array $compos
     expect($installed->isCurrent('app/blog', $composerJson))->toBe($current);
 })->with([
     'same' => [['name' => 'app/blog', 'require' => ['php' => '^8.3'], 'extra' => INSTALLED_BLOG['extra'], 'autoload' => INSTALLED_BLOG['autoload'], 'description' => 'changed'], true],
+    // Composer lowercases the names of the installed requirements.
+    'name in another case' => [['require' => ['PHP' => '^8.3'], 'extra' => INSTALLED_BLOG['extra'], 'autoload' => INSTALLED_BLOG['autoload']], true],
     'new provider' => [['require' => ['php' => '^8.3'], 'extra' => ['laravel' => ['providers' => ['A', 'B']]], 'autoload' => INSTALLED_BLOG['autoload']], false],
     'new namespace' => [['require' => ['php' => '^8.3'], 'extra' => INSTALLED_BLOG['extra'], 'autoload' => ['psr-4' => ['Modules\\Blog\\' => 'src/', 'X\\' => 'x/']]], false],
     'new dependency' => [['require' => ['php' => '^8.3', 'acme/lib' => '^1'], 'extra' => INSTALLED_BLOG['extra'], 'autoload' => INSTALLED_BLOG['autoload']], false],

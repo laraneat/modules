@@ -12,7 +12,8 @@ use stdClass;
 
 /**
  * Edits a composer.json file. The JSON is decoded to objects, so "{}" stays "{}",
- * and written back with the original indentation, atomically, only when it changed.
+ * and written back atomically, only when it changed. A changed file is re-encoded
+ * as pretty-printed JSON with its original indentation.
  *
  * @internal
  */
@@ -81,12 +82,11 @@ final class ComposerJson
     public function addModule(string $package, string $repository, array $autoloadDev): self
     {
         $this->addPathRepository($repository);
-        $this->excludeFromPackagist(strstr($package, '/', true).'/*');
-
-        $require = $this->object($this->data, 'require');
+        $this->excludeFromPackagist($package);
 
         // A path package has a "dev-*" version, which "minimum-stability": "stable" refuses without "@dev".
-        if (! isset($require->{$package})) {
+        if (! $this->requires($package)) {
+            $require = $this->object($this->data, 'require');
             $require->{$package} = '*@dev';
 
             if ($this->get('config.sort-packages') === true) {
@@ -107,8 +107,10 @@ final class ComposerJson
 
     public function removeRequire(string $package): self
     {
-        if (($this->data->require ?? null) instanceof stdClass) {
-            unset($this->data->require->{$package});
+        foreach (['require', 'require-dev'] as $key) {
+            if (($this->data->{$key} ?? null) instanceof stdClass) {
+                unset($this->data->{$key}->{$package});
+            }
         }
 
         return $this;
@@ -146,11 +148,20 @@ final class ComposerJson
         return $this;
     }
 
+    /**
+     * Whether "require" or "require-dev" has the package.
+     */
     public function requires(string $package): bool
     {
-        $require = $this->data->require ?? null;
+        foreach (['require', 'require-dev'] as $key) {
+            $require = $this->data->{$key} ?? null;
 
-        return $require instanceof stdClass && is_string($require->{$package} ?? null);
+            if ($require instanceof stdClass && is_string($require->{$package} ?? null)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -158,17 +169,17 @@ final class ComposerJson
      */
     public function isExcludedFromPackagist(string $package): bool
     {
-        foreach ($this->repositories() as $repository) {
-            if ($this->isPackagist($repository)) {
-                if (is_array($repository->only ?? null)) {
-                    return ! $this->matches($package, $repository->only);
-                }
+        $packagist = $this->packagist();
 
-                return $this->matches($package, is_array($repository->exclude ?? null) ? $repository->exclude : []);
-            }
+        if (! $packagist instanceof stdClass) {
+            return $packagist === false;
         }
 
-        return $this->isPackagistDisabled();
+        if (is_array($packagist->only ?? null)) {
+            return ! $this->matches($package, $packagist->only);
+        }
+
+        return $this->matches($package, is_array($packagist->exclude ?? null) ? $packagist->exclude : []);
     }
 
     public function isDirty(): bool
@@ -187,7 +198,10 @@ final class ComposerJson
     public function save(): void
     {
         if ($this->isDirty()) {
-            (new Filesystem)->replace($this->path, $this->saved = $this->contents());
+            // Without a mode, replace() makes the file executable.
+            $mode = fileperms($this->path);
+
+            (new Filesystem)->replace($this->path, $this->saved = $this->contents(), $mode === false ? null : $mode & 0777);
         }
     }
 
@@ -207,64 +221,75 @@ final class ComposerJson
      * directory (another branch, a partial checkout) makes Composer install a package with
      * the same name from Packagist instead of failing.
      */
-    private function excludeFromPackagist(string $pattern): void
+    private function excludeFromPackagist(string $package): void
     {
-        foreach ($this->repositories() as $repository) {
-            if (! $this->isPackagist($repository)) {
-                continue;
-            }
+        $packagist = $this->packagist();
 
-            // A repository restricted with "only" does not serve the vendor anyway.
-            if (! isset($repository->only)) {
-                $exclude = is_array($repository->exclude ?? null) ? $repository->exclude : [];
+        if ($packagist === false) {
+            return;
+        }
 
-                if (! in_array($pattern, $exclude, true)) {
-                    $repository->exclude = [...$exclude, $pattern];
-                }
+        $pattern = strstr($package, '/', true).'/*';
+
+        if ($packagist === null) {
+            // Composer replaces the default Packagist repository with a repository of its URL.
+            $this->addRepository('packagist.org', (object) ['type' => 'composer', 'url' => self::PACKAGIST, 'exclude' => [$pattern]]);
+
+            return;
+        }
+
+        // Composer does not accept "only" and "exclude" together.
+        if (is_array($packagist->only ?? null)) {
+            if ($this->matches($package, $packagist->only)) {
+                throw ComposerFailed::because("[{$this->path}] Packagist serves [{$package}] through \"only\": remove the pattern that matches it.");
             }
 
             return;
         }
 
-        if ($this->isPackagistDisabled()) {
-            return;
-        }
+        $exclude = is_array($packagist->exclude ?? null) ? $packagist->exclude : [];
 
-        $this->addRepository('packagist', (object) ['type' => 'composer', 'url' => self::PACKAGIST, 'exclude' => [$pattern]]);
-
-        if ($this->data->repositories instanceof stdClass) {
-            $this->data->repositories->{'packagist.org'} = false;
-        } else {
-            $this->addRepository('packagist.org', (object) ['packagist.org' => false]);
+        if (! in_array($pattern, $exclude, true)) {
+            $packagist->exclude = [...$exclude, $pattern];
         }
     }
 
     /**
-     * Composer replaces the default Packagist repository with a repository of this URL.
-     *
-     * @phpstan-assert-if-true stdClass $repository
+     * The repository Composer uses in place of the default Packagist repository: a composer repository
+     * with a packagist.org URL, or one named "packagist.org" or "packagist" whatever its URL (a mirror).
+     * False when Packagist is disabled, null for the default repository.
      */
-    private function isPackagist(mixed $repository): bool
+    private function packagist(): stdClass|false|null
     {
-        return $repository instanceof stdClass
-            && ($repository->type ?? null) === 'composer'
-            && is_string($repository->url ?? null)
-            && preg_match('{^https?://(?:[a-z0-9-.]+\.)?packagist\.org(/|$)}', $repository->url) === 1;
-    }
+        $disabled = false;
 
-    private function isPackagistDisabled(): bool
-    {
         foreach ($this->repositories() as $name => $repository) {
-            if (in_array($name, ['packagist', 'packagist.org'], true) && $repository === false) {
-                return true;
+            if (is_string($name) && in_array($name, ['packagist', 'packagist.org'], true)) {
+                if ($repository === false) {
+                    $disabled = true;
+
+                    continue;
+                }
+
+                if ($repository instanceof stdClass && ($repository->type ?? null) === 'composer') {
+                    return $repository;
+                }
             }
 
-            if ($repository instanceof stdClass && (($repository->{'packagist.org'} ?? null) === false || ($repository->packagist ?? null) === false)) {
-                return true;
+            if (! $repository instanceof stdClass) {
+                continue;
+            }
+
+            if (($repository->{'packagist.org'} ?? null) === false || ($repository->packagist ?? null) === false) {
+                $disabled = true;
+            } elseif (($repository->type ?? null) === 'composer'
+                && is_string($repository->url ?? null)
+                && preg_match('{^https?://(?:[a-z0-9-.]+\.)?packagist\.org(/|$)}', $repository->url) === 1) {
+                return $repository;
             }
         }
 
-        return false;
+        return $disabled ? false : null;
     }
 
     /**

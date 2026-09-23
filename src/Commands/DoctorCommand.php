@@ -14,6 +14,7 @@ use Laraneat\Modules\ModuleRepository;
 use Laraneat\Modules\Scaffold\ApplicationComposer;
 use Laraneat\Modules\Scaffold\ComposerJson;
 use Laraneat\Modules\Scaffold\InstalledPackages;
+use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
@@ -112,8 +113,11 @@ final class DoctorCommand extends Command
 
         if (! $installed->has($module->package)) {
             $problems[] = [true, "[{$module->package}] is not installed: run \"php artisan module:sync\"."];
-        } elseif (realpath($installed->path($module->package)) !== realpath($module->path)) {
-            $problems[] = [true, "[{$composer->relative($installed->path($module->package))}] is not a link to [{$composer->relative($module->path)}]."];
+        } elseif (realpath($vendorPath = $installed->path($module->package)) !== realpath($module->path)) {
+            // COMPOSER_MIRROR_PATH_REPOS=1 copies path packages, as Docker images often do.
+            $problems[] = is_dir($vendorPath) && ! is_link($vendorPath)
+                ? [false, "[{$composer->relative($vendorPath)}] is a copy, not a link to [{$composer->relative($module->path)}]: changes of the module need \"composer update\"."]
+                : [true, "[{$composer->relative($vendorPath)}] is not a link to [{$composer->relative($module->path)}]."];
         } elseif (! $installed->isCurrent($module->package, $composerJson->toArray())) {
             $problems[] = [false, 'composer.json changed since the module was installed: run "php artisan module:sync".'];
         }
@@ -168,17 +172,21 @@ final class DoctorCommand extends Command
         )));
 
         $files = [];
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($module->path, FilesystemIterator::SKIP_DOTS));
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveCallbackFilterIterator(
+                new RecursiveDirectoryIterator($module->path, FilesystemIterator::SKIP_DOTS),
+                static fn (SplFileInfo $file): bool => ! $file->isDir() || preg_match('{^(vendor|node_modules|tests|\..*)$}', $file->getFilename()) !== 1,
+            ),
+            RecursiveIteratorIterator::LEAVES_ONLY,
+            RecursiveIteratorIterator::CATCH_GET_CHILD,
+        );
         $iterator->setMaxDepth(6);
 
         /** @var SplFileInfo $file */
         foreach ($iterator as $file) {
             $path = substr(str_replace('\\', '/', $file->getPathname()), strlen($module->path) + 1);
 
-            if ($file->getExtension() === 'php'
-                && preg_match('{(^|/)routes/}', $path) === 1
-                && preg_match('{(^|/)(vendor|node_modules|tests|\.[^/]*)/}', $path) !== 1
-                && ! in_array($path, $loaded, true)) {
+            if ($file->getExtension() === 'php' && preg_match('{(^|/)routes/}', $path) === 1 && ! in_array($path, $loaded, true)) {
                 $files[] = $path;
             }
         }

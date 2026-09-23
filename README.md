@@ -89,8 +89,7 @@ A module is a directory in `modules/` with a `composer.json`:
     },
     "repositories": [
         {"type": "path", "url": "modules/*", "options": {"symlink": true}},
-        {"type": "composer", "url": "https://repo.packagist.org", "exclude": ["app/*"]},
-        {"packagist.org": false}
+        {"type": "composer", "url": "https://repo.packagist.org", "exclude": ["app/*"]}
     ]
 }
 ```
@@ -99,9 +98,10 @@ You do not have to write this by hand: `module:make` and `module:sync` maintain 
 
 - `*@dev` accepts the `dev-*` version of a path package with `"minimum-stability": "stable"`.
 - The Packagist repository excludes the vendor of the modules, so Composer fails instead of installing
-  a public package when a module directory is missing (another branch, a partial checkout). Pick a vendor
-  that you do not publish public packages under. If you use a Packagist mirror or a private repository
-  that proxies Packagist, exclude the vendor there as well.
+  a public package when a module directory is missing (another branch, a partial checkout). Composer uses
+  this repository in place of the default one. Pick a vendor that you do not publish public packages under.
+- A mirror that replaces Packagist under the `packagist.org` key of `"repositories": {...}` gets the
+  exclusion too. Exclude the vendor by hand in any other repository that proxies Packagist.
 
 ### Creating a module
 

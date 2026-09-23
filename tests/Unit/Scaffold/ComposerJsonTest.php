@@ -36,7 +36,7 @@ it('adds a module: path repository, requirement, dev autoload and the Packagist 
     expect($json)->toBe([
         'name' => 'demo/app',
         'require' => ['php' => '^8.3', 'app/blog' => '*@dev'],
-        'repositories' => [PATH_REPOSITORY, PACKAGIST_EXCLUDING_APP, ['packagist.org' => false]],
+        'repositories' => [PATH_REPOSITORY, PACKAGIST_EXCLUDING_APP],
         'autoload-dev' => ['psr-4' => ['Modules\\Blog\\Tests\\' => 'modules/blog/tests/']],
     ]);
 });
@@ -59,7 +59,6 @@ it('adds more modules to the same repository and filter', function () {
         ->and($json['repositories'])->toBe([
             PATH_REPOSITORY,
             ['type' => 'composer', 'url' => 'https://repo.packagist.org', 'exclude' => ['app/*', 'acme/*']],
-            ['packagist.org' => false],
         ]);
 });
 
@@ -100,7 +99,7 @@ it('reuses an existing path repository', function () {
         'repositories' => [['type' => 'path', 'url' => 'modules/*']],
     ], addBlog(...));
 
-    expect($json['repositories'])->toBe([['type' => 'path', 'url' => 'modules/*'], PACKAGIST_EXCLUDING_APP, ['packagist.org' => false]]);
+    expect($json['repositories'])->toBe([['type' => 'path', 'url' => 'modules/*'], PACKAGIST_EXCLUDING_APP]);
 });
 
 it('adds the path repository when others point elsewhere', function () {
@@ -128,8 +127,7 @@ it('extends an existing packagist repository', function (string $url) {
     ]);
 })->with(['https://repo.packagist.org', 'https://repo.packagist.org/', 'https://packagist.org', 'http://repo.packagist.org/packages']);
 
-it('does not disable the default packagist repository again when another one replaces it', function () {
-    // Composer disables the default repository when a repository has a packagist.org URL.
+it('adds the filter to a packagist repository without one', function () {
     $json = editComposerJson($this->directory, ['repositories' => [['type' => 'composer', 'url' => 'https://repo.packagist.org']]], addBlog(...));
 
     expect($json['repositories'])->toBe([PACKAGIST_EXCLUDING_APP, PATH_REPOSITORY]);
@@ -140,8 +138,20 @@ it('does not take a mirror for packagist', function () {
 
     $json = editComposerJson($this->directory, ['repositories' => [$mirror]], addBlog(...));
 
-    expect($json['repositories'])->toBe([$mirror, PATH_REPOSITORY, PACKAGIST_EXCLUDING_APP, ['packagist.org' => false]]);
+    expect($json['repositories'])->toBe([$mirror, PATH_REPOSITORY, PACKAGIST_EXCLUDING_APP]);
 });
+
+it('filters a mirror that replaces packagist by its name', function (string $name) {
+    $mirror = ['type' => 'composer', 'url' => 'https://mirror.example.com'];
+
+    $json = editComposerJson($this->directory, ['repositories' => [$name => $mirror, 'private' => ['type' => 'vcs', 'url' => 'x']]], addBlog(...));
+
+    expect($json['repositories'])->toBe([
+        $name => [...$mirror, 'exclude' => ['app/*']],
+        'private' => ['type' => 'vcs', 'url' => 'x'],
+        'modules' => PATH_REPOSITORY,
+    ]);
+})->with(['packagist.org', 'packagist']);
 
 it('leaves a packagist repository restricted with "only" untouched', function () {
     $repository = ['type' => 'composer', 'url' => 'https://repo.packagist.org', 'only' => ['laravel/*']];
@@ -149,6 +159,13 @@ it('leaves a packagist repository restricted with "only" untouched', function ()
     $json = editComposerJson($this->directory, ['repositories' => [$repository, ['packagist.org' => false]]], addBlog(...));
 
     expect($json['repositories'])->toBe([$repository, ['packagist.org' => false], PATH_REPOSITORY]);
+});
+
+it('fails when packagist serves the module through "only"', function () {
+    $contents = ['repositories' => [['type' => 'composer', 'url' => 'https://repo.packagist.org', 'only' => ['laravel/*', 'app/*']]]];
+
+    expect(fn () => editComposerJson($this->directory, $contents, addBlog(...)))
+        ->toThrow(ComposerFailed::class, 'Packagist serves [app/blog] through "only"');
 });
 
 it('does not enable packagist when it is disabled', function (array $disabled) {
@@ -169,8 +186,7 @@ it('supports repositories defined as an object', function () {
         'private' => ['type' => 'composer', 'url' => 'https://repo.example.com'],
         'modules' => ['type' => 'vcs', 'url' => 'x'],
         'modules-2' => PATH_REPOSITORY,
-        'packagist' => PACKAGIST_EXCLUDING_APP,
-        'packagist.org' => false,
+        'packagist.org' => PACKAGIST_EXCLUDING_APP,
     ]);
 });
 
@@ -183,7 +199,7 @@ it('does not enable packagist when it is disabled in repositories defined as an 
 it('ignores repository entries that are not objects', function () {
     $json = editComposerJson($this->directory, ['repositories' => ['modules/*', ['type' => 'path']]], addBlog(...));
 
-    expect($json['repositories'])->toBe(['modules/*', ['type' => 'path'], PATH_REPOSITORY, PACKAGIST_EXCLUDING_APP, ['packagist.org' => false]]);
+    expect($json['repositories'])->toBe(['modules/*', ['type' => 'path'], PATH_REPOSITORY, PACKAGIST_EXCLUDING_APP]);
 });
 
 it('keeps the formatting: empty objects, indentation, unicode and slashes', function () {
@@ -218,9 +234,6 @@ it('keeps the formatting: empty objects, indentation, unicode and slashes', func
           "exclude": [
             "app/*"
           ]
-        },
-        {
-          "packagist.org": false
         }
       ],
       "autoload-dev": {
@@ -253,6 +266,16 @@ it('does not write the file when nothing changed', function () {
 
     expect(file_get_contents($this->directory.'/composer.json'))->toBe($original);
 });
+
+it('keeps the file mode', function () {
+    file_put_contents($path = $this->directory.'/composer.json', '{}');
+    chmod($path, 0640);
+
+    ComposerJson::read($path)->addProvider('A')->save();
+    clearstatcache();
+
+    expect(fileperms($path) & 0777)->toBe(0640);
+})->skipOnWindows();
 
 it('replaces the file atomically', function () {
     editComposerJson($this->directory, ['name' => 'demo/app'], addBlog(...));
@@ -288,6 +311,17 @@ it('removes a requirement and dev autoload namespaces', function () {
     ]);
 });
 
+it('keeps a module required for development', function () {
+    $json = editComposerJson($this->directory, ['require-dev' => ['app/blog' => '*@dev']], addBlog(...));
+
+    expect($json)->not->toHaveKey('require')
+        ->and($json['require-dev'])->toBe(['app/blog' => '*@dev']);
+
+    $json = editComposerJson($this->directory, $json, fn (ComposerJson $composerJson) => $composerJson->removeRequire('app/blog'));
+
+    expect($json['require-dev'])->toBe([]);
+});
+
 it('removes nothing when there is nothing to remove', function () {
     $json = editComposerJson($this->directory, ['name' => 'demo/app'], function (ComposerJson $composerJson): void {
         $composerJson->removeRequire('app/blog')->removeAutoloadDev(['Modules\\Blog\\Tests\\']);
@@ -321,6 +355,7 @@ it('reads values', function () {
         ->and($composerJson->requires('app/blog'))->toBeTrue()
         ->and($composerJson->requires('vendor/pkg.name'))->toBeTrue()
         ->and($composerJson->requires('app/shop'))->toBeFalse()
+        ->and($composerJson->requires('php'))->toBeFalse()
         ->and($composerJson->toArray()['require'])->toBe(['app/blog' => '*', 'vendor/pkg.name' => '^1']);
 });
 
@@ -340,6 +375,10 @@ it('tells whether packagist can serve a package', function (array $repositories,
     'only the vendor' => [[['type' => 'composer', 'url' => 'https://repo.packagist.org', 'only' => ['app/*']], ['packagist.org' => false]], false],
     'disabled' => [[['packagist.org' => false]], true],
     'disabled by name' => [['packagist.org' => false], true],
+    'disabled, then redefined' => [[['packagist.org' => false], ['type' => 'composer', 'url' => 'https://repo.packagist.org']], false],
+    'mirror excluding the vendor' => [['packagist.org' => ['type' => 'composer', 'url' => 'https://mirror.example.com', 'exclude' => ['app/*']]], true],
+    'mirror' => [['packagist' => ['type' => 'composer', 'url' => 'https://mirror.example.com']], false],
+    'unnamed mirror' => [[['type' => 'composer', 'url' => 'https://mirror.example.com', 'exclude' => ['app/*']]], false],
 ]);
 
 it('fails on files it can not edit', function (?string $contents, string $message) {

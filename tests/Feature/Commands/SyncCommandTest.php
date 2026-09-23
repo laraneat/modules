@@ -23,7 +23,6 @@ it('adds every module to composer.json and installs them', function () {
         ->repositories->toBe([
             ['type' => 'path', 'url' => 'modules/*', 'options' => ['symlink' => true]],
             ['type' => 'composer', 'url' => 'https://repo.packagist.org', 'exclude' => ['app/*']],
-            ['packagist.org' => false],
         ])
         ->{'autoload-dev'}->toBe(['psr-4' => ['Modules\\Blog\\Tests\\' => 'modules/blog/tests/']]);
 });

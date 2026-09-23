@@ -35,15 +35,26 @@ it('reports modules that are not installed', function () {
         );
 });
 
-it('reports a package installed from elsewhere', function () {
+it('reports a package linked elsewhere', function () {
+    $this->installModules();
+    unlink($this->path('vendor/app/blog'));
+    symlink($this->path('modules/shop-order'), $this->path('vendor/app/blog'));
+
+    [$status, $output] = doctor();
+
+    expect($status)->toBe(1)
+        ->and($output)->toContain('✗ [vendor/app/blog] is not a link to [modules/blog].');
+});
+
+it('warns about a mirrored package', function () {
     $this->installModules();
     unlink($this->path('vendor/app/blog'));
     mkdir($this->path('vendor/app/blog'));
 
     [$status, $output] = doctor();
 
-    expect($status)->toBe(1)
-        ->and($output)->toContain('✗ [vendor/app/blog] is not a link to [modules/blog].');
+    expect($status)->toBe(0)
+        ->and($output)->toContain('! [vendor/app/blog] is a copy, not a link to [modules/blog]: changes of the module need "composer update".');
 });
 
 it('reports outdated installed metadata', function () {
@@ -69,6 +80,8 @@ it('reports problems of the module structure', function () {
         'modules/blog/routes/admin/users.php' => '<?php',
         'modules/blog/routes/web/.hidden/secret.php' => '<?php',
         'modules/blog/tests/routes/fixture.php' => '<?php',
+        'modules/blog/vendor/acme/lib/routes/web.php' => '<?php',
+        'modules/blog/node_modules/lib/routes/web.php' => '<?php',
     ]);
     $this->reboot();
 
@@ -84,8 +97,22 @@ it('reports problems of the module structure', function () {
             "    ! The route file [routes/admin/users.php] is not in a route group of config/modules.php.\n    ! The route file [routes/zeta/users.php] is not in a route group of config/modules.php.",
         )
         ->toMatch('/^  blog \\.+ FAIL$/m')
-        ->not->toContain('secret.php', 'fixture.php', 'routes/api/posts.php');
+        ->not->toContain('secret.php', 'fixture.php', 'lib/routes', 'routes/api/posts.php');
 });
+
+it('skips directories it can not read', function () {
+    $this->installModules();
+    $this->files(['modules/blog/private/routes/web.php' => '<?php']);
+    chmod($this->path('modules/blog/private'), 0);
+
+    try {
+        [$status, $output] = doctor();
+    } finally {
+        chmod($this->path('modules/blog/private'), 0755);
+    }
+
+    expect($status)->toBe(0)->and($output)->toContain('No problems found.');
+})->skip(fn (): bool => PHP_OS_FAMILY === 'Windows' || posix_geteuid() === 0, 'Permissions are not enforced.');
 
 it('accepts equivalent autoload paths and skips directories a module does not have', function () {
     // shop-order has no database/factories directory.

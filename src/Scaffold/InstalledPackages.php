@@ -52,13 +52,12 @@ final readonly class InstalledPackages
             return false;
         }
 
-        foreach (['require', 'autoload', 'extra'] as $key) {
-            if (($installed[$key] ?? []) != ($composerJson[$key] ?? [])) {
-                return false;
-            }
-        }
+        // Composer lowercases the package names of the installed requirements.
+        $require = is_array($composerJson['require'] ?? null) ? array_change_key_case($composerJson['require']) : [];
 
-        return true;
+        return ($installed['require'] ?? []) == $require
+            && ($installed['autoload'] ?? []) == ($composerJson['autoload'] ?? [])
+            && ($installed['extra'] ?? []) == ($composerJson['extra'] ?? []);
     }
 
     /**

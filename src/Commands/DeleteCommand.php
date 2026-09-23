@@ -57,7 +57,7 @@ final class DeleteCommand extends Command
 
         // Uninstall first: when Composer fails, the module and composer.json are left as they were.
         if (! $this->option('no-update') && ! $runner->remove([$module->package], $this->streamOutput(...))) {
-            $files->replace($composer->composerJsonPath(), $original);
+            $files->put($composer->composerJsonPath(), $original);
             $this->components->error('Composer failed to remove the module, nothing was deleted.');
 
             return self::FAILURE;
