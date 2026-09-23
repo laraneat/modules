@@ -20,11 +20,13 @@ final readonly class RouteRegistrar
     /**
      * @param  array<array-key, mixed>  $groups  The "routes" config.
      * @param  Manifest  $manifest
+     * @param  bool  $cached  Whether the manifest was read from the cache file: route files deleted since it was written are skipped.
      */
     public function __construct(
         private Router $router,
         private array $groups,
         private array $manifest,
+        private bool $cached = false,
     ) {}
 
     public function register(): void
@@ -44,8 +46,10 @@ final readonly class RouteRegistrar
                         : ['prefix' => ltrim($prefix.'/'.$directory, '/')] + $attributes;
 
                     foreach ($files as $file) {
-                        // A file deleted since the manifest was cached is skipped.
-                        if (is_file($path = $module['path'].'/'.$file)) {
+                        $path = $module['path'].'/'.$file;
+
+                        // A built manifest lists existing files, so only a cached one costs a check per file.
+                        if (! $this->cached || is_file($path)) {
                             $this->router->group($directoryAttributes, $path);
                         }
                     }

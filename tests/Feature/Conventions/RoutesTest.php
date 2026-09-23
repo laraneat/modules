@@ -78,3 +78,17 @@ it('skips route groups that are not arrays', function () {
 
     expect(array_map(static fn (RouteObject $route): string => $route->uri(), $router->getRoutes()->getRoutes()))->toBe(['blog', 'orders']);
 });
+
+it('checks the route files only of a cached manifest', function (bool $cached) {
+    app()->instance('router', $router = new Router(app('events'), app()));
+    Route::clearResolvedInstance('router');
+    $manifest = app(ModuleRepository::class)->manifest();
+    $manifest['blog']['routes']['web'][''][] = 'routes/web/deleted.php';
+
+    $register = fn () => (new RouteRegistrar($router, config('modules.routes'), $manifest, $cached))->register();
+
+    $cached
+        ? expect($register)->not->toThrow(Throwable::class)
+            ->and(array_map(static fn (RouteObject $route): string => $route->uri(), $router->getRoutes()->getRoutes()))->toContain('api/posts', 'blog')
+        : expect($register)->toThrow(ErrorException::class, 'routes/web/deleted.php');
+})->with(['cached' => true, 'built' => false]);

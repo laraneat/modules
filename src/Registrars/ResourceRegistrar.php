@@ -33,11 +33,13 @@ final readonly class ResourceRegistrar
 {
     /**
      * @param  Manifest  $manifest
+     * @param  bool  $cached  Whether the manifest was read from the cache file: config files deleted since it was written are skipped.
      * @param  string  $componentsNamespace  The namespace of Blade components inside a module.
      */
     public function __construct(
         private Application $app,
         private array $manifest,
+        private bool $cached = false,
         private string $componentsNamespace = 'View\\Components',
     ) {}
 
@@ -49,7 +51,6 @@ final readonly class ResourceRegistrar
 
     /**
      * Merge the config files of the modules; the application config wins.
-     * A file missing since the manifest was cached is skipped.
      */
     private function registerConfig(): void
     {
@@ -61,7 +62,10 @@ final readonly class ResourceRegistrar
 
         foreach ($this->manifest as $module) {
             foreach ($module['config'] as $key) {
-                if (! is_file($file = $module['path'].'/config/'.$key.'.php')) {
+                $file = $module['path'].'/config/'.$key.'.php';
+
+                // A built manifest lists existing files, so only a cached one costs a check per file.
+                if ($this->cached && ! is_file($file)) {
                     continue;
                 }
 

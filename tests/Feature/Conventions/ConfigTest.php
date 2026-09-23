@@ -49,3 +49,16 @@ it('refuses a config file that does not return an array', function () {
 
     expect(fn () => $this->reboot())->toThrow(InvalidModule::class, 'config/broken.php must return an array.');
 });
+
+it('checks the config files only of a cached manifest', function (bool $cached) {
+    $manifest = app(ModuleRepository::class)->manifest();
+    array_unshift($manifest['blog']['config'], 'deleted');
+    config(['blog' => null]);
+
+    $register = fn () => (new ResourceRegistrar($this->app, $manifest, $cached))->register();
+
+    $cached
+        ? expect($register)->not->toThrow(Throwable::class)
+            ->and(config('blog.title'))->toBe('Blog')
+        : expect($register)->toThrow(ErrorException::class, 'config/deleted.php');
+})->with(['cached' => true, 'built' => false]);

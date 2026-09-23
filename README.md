@@ -449,7 +449,8 @@ provider only reads the manifest, it never scans the modules while it boots.
 - Without the cache file, the manifest is built once per process, so it is never stale. The cache is written
   only by `optimize` and `module:cache`: a deploy that skips them scans the modules in every process.
 - The cached manifest lists the files it loads. After `php artisan optimize` on a development machine, new
-  route, config, seeder and command files are ignored until `php artisan optimize:clear`.
+  route, config, seeder and command files are ignored until `php artisan optimize:clear`, and deleted ones
+  are skipped. Only a cached manifest is checked for deleted files: a built one lists the files on disk.
 - `module:make`, `module:sync` and `module:delete` rebuild the cache file if it exists.
 - The config and route caches include the module config and routes, so the package skips them when they
   are cached.

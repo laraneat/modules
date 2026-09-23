@@ -36,6 +36,7 @@ final class ModulesServiceProvider extends ServiceProvider
         (new ResourceRegistrar(
             $this->app,
             $this->manifest(),
+            $this->isCached(),
             Config::string('modules.generators.make:component', 'View\\Components'),
         ))->register();
 
@@ -52,7 +53,7 @@ final class ModulesServiceProvider extends ServiceProvider
         $manifest = $this->manifest();
 
         if (! $this->app->routesAreCached()) {
-            (new RouteRegistrar($this->app->make('router'), Config::array('modules.routes', []), $manifest))->register();
+            (new RouteRegistrar($this->app->make('router'), Config::array('modules.routes', []), $manifest, $this->isCached()))->register();
         }
 
         if ($this->app->runningInConsole()) {
@@ -101,6 +102,11 @@ final class ModulesServiceProvider extends ServiceProvider
     private function manifest(): array
     {
         return $this->app->make(ModuleRepository::class)->manifest();
+    }
+
+    private function isCached(): bool
+    {
+        return $this->app->make(ModuleRepository::class)->isCached();
     }
 
     private static function manifestBuilder(Application $app): ManifestBuilder
