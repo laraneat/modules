@@ -117,6 +117,13 @@ it('imports the form requests of a controller from the module', function () {
         ->and($files)->toHaveKeys(['modules/blog/src/Http/Requests/StorePostRequest.php', 'modules/blog/src/Http/Requests/UpdatePostRequest.php']);
 });
 
+it('keeps the form requests of an application controller', function () {
+    $files = $this->generate('make:controller PostController --model=Post --requests --no-interaction');
+
+    expect($files['app/Http/Controllers/PostController.php'])
+        ->toContain("use App\\Http\\Requests\\StorePostRequest;\nuse App\\Http\\Requests\\UpdatePostRequest;");
+});
+
 it('maps namespaces relative to the root namespace of the generator', function (string $command, array $expected) {
     $this->files(['config/modules.php' => '<?php return ["generators" => ['.implode(', ', [
         '"make:test" => "Feature\\\\Api"',

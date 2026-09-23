@@ -112,7 +112,7 @@ it('skips directories it can not read', function () {
     }
 
     expect($status)->toBe(0)->and($output)->toContain('No problems found.');
-})->skip(fn (): bool => PHP_OS_FAMILY === 'Windows' || posix_geteuid() === 0, 'Permissions are not enforced.');
+})->skip(fn () => DIRECTORY_SEPARATOR === '\\' || posix_getuid() === 0, 'File permissions are not enforced.');
 
 it('accepts equivalent autoload paths and skips directories a module does not have', function () {
     // shop-order has no database/factories directory.
