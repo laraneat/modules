@@ -108,6 +108,27 @@ it('applies the "generators" config to the generators a generator calls', functi
         );
 });
 
+it('looks up --model and --parent in the "make:model" namespace', function () {
+    $this->files(['config/modules.php' => '<?php return ["generators" => ["make:model" => "Domain\\\\Models"]];']);
+    $this->reboot();
+
+    $policy = $this->generate('make:policy ShelfPolicy --model=Shelf --module=blog');
+    $controller = $this->generate('make:controller VolumeController --model=Volume --parent=Shelf --no-interaction --module=blog');
+    $qualified = $this->generate('make:observer PostObserver --model="Modules\\\\Blog\\\\Models\\\\Post" --module=blog');
+
+    expect($policy['modules/blog/src/Policies/ShelfPolicy.php'])->toContain('use Modules\\Blog\\Domain\\Models\\Shelf;')
+        ->and($controller['modules/blog/src/Http/Controllers/VolumeController.php'])->toContain(
+            'use Modules\\Blog\\Domain\\Models\\Shelf;',
+            'use Modules\\Blog\\Domain\\Models\\Volume;',
+        )
+        ->and(array_keys($controller))->toEqualCanonicalizing([
+            'modules/blog/src/Domain/Models/Shelf.php',
+            'modules/blog/src/Domain/Models/Volume.php',
+            'modules/blog/src/Http/Controllers/VolumeController.php',
+        ])
+        ->and($qualified['modules/blog/src/Observers/PostObserver.php'])->toContain('use Modules\\Blog\\Models\\Post;');
+});
+
 it('imports the form requests of a controller from the module', function () {
     $files = $this->generate('make:controller PostController --model=Post --requests --module=blog');
 
@@ -149,6 +170,10 @@ it('maps namespaces relative to the root namespace of the generator', function (
     ]],
     'factory' => ['make:factory PostFactory --module=blog', [
         'modules/blog/database/factories/Testing/PostFactory.php' => ['namespace Modules\\Blog\\Database\\Factories\\Testing;'],
+    ]],
+    'test of another generator' => ['make:job PublishPost --test --phpunit --module=blog', [
+        'modules/blog/src/Jobs/PublishPost.php' => ['namespace Modules\\Blog\\Jobs;'],
+        'modules/blog/tests/Feature/Api/Jobs/PublishPostTest.php' => ['namespace Modules\\Blog\\Tests\\Feature\\Api\\Jobs;'],
     ]],
     'component' => ['make:component Forms/Input --module=blog', [
         'modules/blog/src/UI/Components/Forms/Input.php' => ['namespace Modules\\Blog\\UI\\Components\\Forms;', "view('blog::components.forms.input')"],

@@ -24,6 +24,7 @@ use Illuminate\Routing\Console\ControllerMakeCommand as BaseControllerMakeComman
 use Illuminate\Support\Facades\Config;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModuleRepository;
+use Stringable;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -85,7 +86,7 @@ final class ModuleOption
             // A generator called by another one (make:model Post -a) runs in the module of the caller.
             if (! is_string($name)) {
                 if (($module = $context->module()) !== null) {
-                    ModuleOption::qualifyName($this, $input, $module);
+                    ModuleOption::qualify($this, $input, $module);
                 }
 
                 return $this->execute($input, $output);
@@ -100,7 +101,7 @@ final class ModuleOption
             }
 
             return $context->run($module, function () use ($input, $output, $module): int {
-                ModuleOption::qualifyName($this, $input, $module);
+                ModuleOption::qualify($this, $input, $module);
 
                 return $this->execute($input, $output);
             });
@@ -108,25 +109,50 @@ final class ModuleOption
     }
 
     /**
-     * Apply the "generators" config: "make:controller Post" becomes "Modules\Blog\<namespace>\Post".
+     * Apply the "generators" config: "make:controller Post" becomes "Modules\\Blog\\<namespace>\\Post".
      * The namespace is relative to the root namespace of the generator in the module, which is
-     * "Modules\Blog\Tests" for make:test and "Modules\Blog\Database\Seeders" for make:seeder.
+     * "Modules\\Blog\\Tests" for make:test and "Modules\\Blog\\Database\\Seeders" for make:seeder.
+     * The "make:model" namespace also applies to the --model and --parent options.
      * A name in the module namespace is left as it is.
      */
-    public static function qualifyName(Command $command, InputInterface $input, Module $module): void
+    public static function qualify(Command $command, InputInterface $input, Module $module): void
     {
-        $namespace = Config::array('modules.generators', [])[$command->getName()] ?? null;
-
-        if (! $command instanceof GeneratorCommand || ! is_string($namespace) || ! $input->hasArgument('name') || ! is_string($class = $input->getArgument('name'))) {
+        if (! $command instanceof GeneratorCommand) {
             return;
         }
 
-        $class = trim(str_replace('/', '\\', $class), '\\');
+        $generators = Config::array('modules.generators', []);
+        $namespace = $generators[$command->getName()] ?? null;
 
-        if ($class !== '' && ! str_starts_with($class, $module->namespace.'\\')) {
+        if (is_string($namespace) && $input->hasArgument('name')) {
             $root = (fn (): string => $this->rootNamespace())->call($command);
 
-            $input->setArgument('name', rtrim($root, '\\').'\\'.trim($namespace, '\\').'\\'.$class);
+            // The --test option of generators passes a Stringable.
+            self::qualifyInput($input->getArgument('name'), $module, $root, $namespace, static fn (string $class) => $input->setArgument('name', $class));
+        }
+
+        if (is_string($models = $generators['make:model'] ?? null)) {
+            foreach (['model', 'parent'] as $option) {
+                if ($input->hasOption($option)) {
+                    self::qualifyInput($input->getOption($option), $module, $module->namespace, $models, static fn (string $class) => $input->setOption($option, $class));
+                }
+            }
+        }
+    }
+
+    /**
+     * @param  Closure(string): void  $set
+     */
+    private static function qualifyInput(mixed $class, Module $module, string $root, string $namespace, Closure $set): void
+    {
+        if (! is_string($class) && ! $class instanceof Stringable) {
+            return;
+        }
+
+        $class = trim(str_replace('/', '\\', (string) $class), '\\');
+
+        if ($class !== '' && ! str_starts_with($class, $module->namespace.'\\')) {
+            $set(rtrim($root, '\\').'\\'.trim($namespace, '\\').'\\'.$class);
         }
     }
 }
