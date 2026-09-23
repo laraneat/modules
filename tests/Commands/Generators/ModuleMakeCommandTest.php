@@ -117,3 +117,36 @@ it('displays an error message when a module with the same folder name already ex
 
     assertMatchesFileSnapshot($this->app->basePath('/composer.json'));
 });
+
+it('rejects a vendor that is not a valid composer package name', function (string $name) {
+    $composer = Mockery::mock(Composer::class);
+    $composer->shouldNotReceive('updatePackages');
+    $this->instance(Composer::class, $composer);
+    $composerJsonBefore = file_get_contents($this->app->basePath('/composer.json'));
+
+    $this->artisan('module:make', ['name' => $name, '--preset' => 'plain'])
+        ->expectsOutputToContain('is not a valid composer package name')
+        ->assertFailed();
+
+    expect($this->app->basePath('/modules/blog'))->not->toBeDirectory()
+        ->and(file_get_contents($this->app->basePath('/composer.json')))->toBe($composerJsonBefore);
+})->with([
+    'json injection' => ['evil","scripts":{"x":"y"},"a":"/blog'],
+    'option-like vendor' => ['-evil/blog'],
+]);
+
+it('escapes the configured author when generating composer.json', function () {
+    $this->instance(Composer::class, $this->mockComposer(['updatePackages' => true]));
+    config([
+        'modules.composer.author.name' => 'Conan O"Brien \\ Co',
+        'modules.composer.author.email' => 'conan@example.com',
+    ]);
+
+    $this->artisan('module:make', ['name' => 'demo/blog', '--preset' => 'plain'])
+        ->assertSuccessful();
+
+    $composerJson = json_decode(file_get_contents($this->app->basePath('/modules/blog/composer.json')), true, 512, JSON_THROW_ON_ERROR);
+
+    expect($composerJson['authors'][0])->toBe(['name' => 'Conan O"Brien \\ Co', 'email' => 'conan@example.com'])
+        ->and(array_keys($composerJson))->not->toContain('scripts');
+});

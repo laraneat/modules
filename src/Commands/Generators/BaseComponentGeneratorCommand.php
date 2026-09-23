@@ -211,16 +211,17 @@ abstract class BaseComponentGeneratorCommand extends BaseCommand
     }
 
     /**
-     * Validate that the name is a valid PHP class name.
+     * Validate that the name is a valid PHP class name, optionally prefixed with sub-namespaces.
+     * Every segment is validated, so names like "../../Foo" can never escape the component directory.
      *
      * @throws InvalidClassName
      */
     protected function ensureNameIsValidClassName(string $name): void
     {
-        $classBaseName = class_basename($name);
-
-        if (! $this->isValidClassName($classBaseName)) {
-            throw InvalidClassName::make($classBaseName);
+        foreach (preg_split('#[/\\\\]+#', trim($name, '/\\')) ?: [] as $segment) {
+            if (! $this->isValidClassName($segment)) {
+                throw InvalidClassName::make($segment);
+            }
         }
     }
 

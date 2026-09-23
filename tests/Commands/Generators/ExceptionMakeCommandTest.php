@@ -20,3 +20,31 @@ it('generates exception for the module', function () {
     assertFileExists($filePath);
     assertMatchesFileSnapshot($filePath);
 });
+
+it('rejects names that would escape the component directory', function (string $name) {
+    $filesBefore = getRelativeFilePathsInDirectory($this->app->basePath());
+
+    $this->artisan('module:make:exception', [
+        'name' => $name,
+        'module' => 'Author',
+    ])
+        ->expectsOutputToContain('is not a valid PHP class name')
+        ->assertFailed();
+
+    expect(getRelativeFilePathsInDirectory($this->app->basePath()))->toBe($filesBefore);
+})->with([
+    '../../../../SecOne',
+    'Nested/../../Escape',
+    'Foo/Bar-Baz',
+    'Foo/./Bar',
+]);
+
+it('accepts sub-namespaces in the name', function () {
+    $this->artisan('module:make:exception', [
+        'name' => 'Nested\\Deeper/SomeAuthorException',
+        'module' => 'Author',
+    ])
+        ->assertSuccessful();
+
+    assertFileExists($this->app->basePath('/modules/author/src/Exceptions/Nested/Deeper/SomeAuthorException.php'));
+});

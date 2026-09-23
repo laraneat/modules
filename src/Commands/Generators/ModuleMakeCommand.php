@@ -96,6 +96,12 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
             $this->moduleName
         );
 
+        if (! Composer::isValidPackageName($this->modulePackageName)) {
+            $this->components->error("The package name '$this->modulePackageName' is not a valid composer package name!");
+
+            return self::FAILURE;
+        }
+
         if ($this->modulesRepository->has($this->modulePackageName)) {
             $this->components->error("Module '$this->modulePackageName' already exist!");
 
@@ -165,11 +171,19 @@ class ModuleMakeCommand extends BaseComponentGeneratorCommand implements Prompts
                 '\\\\',
                 GeneratorHelper::makeModuleNamespace($this->moduleName)
             ),
-            'authorName' => config('modules.composer.author.name', 'Example'),
-            'authorEmail' => config('modules.composer.author.email', 'example@example.com'),
+            'authorName' => $this->escapeJsonString(config('modules.composer.author.name', 'Example')),
+            'authorEmail' => $this->escapeJsonString(config('modules.composer.author.email', 'example@example.com')),
         ])->render();
 
         return $this->generate($path, $contents);
+    }
+
+    /**
+     * Escape a value for insertion between the quotes of a JSON string in the stub.
+     */
+    protected function escapeJsonString(mixed $value): string
+    {
+        return substr(json_encode((string) $value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 1, -1);
     }
 
     protected function generateComponents(Module $module): int
