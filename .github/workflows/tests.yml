@@ -46,6 +46,14 @@ jobs:
         if: matrix.laravel == '10.*' || matrix.laravel == '11.*'
         run: composer remove --dev roave/security-advisories --no-update --no-interaction
 
+      # PHP 8.1 is no longer supported either: the test tools that still run on it have advisories,
+      # and the later releases of the snapshot plugin that allow it are broken.
+      - name: Use the last test tools for PHP 8.1
+        if: matrix.php == '8.1'
+        run: |
+          composer config audit.block-insecure false
+          composer require --dev "spatie/pest-plugin-snapshots:2.2.1" "spatie/phpunit-snapshot-assertions:5.2.3" --no-update --no-interaction
+
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
