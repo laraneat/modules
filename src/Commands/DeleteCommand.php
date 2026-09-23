@@ -75,7 +75,10 @@ final class DeleteCommand extends Command
         }
 
         // Composer does not remove the link of a path package whose directory is gone.
-        // Windows removes a link to a directory, like the junction Composer creates there, with rmdir().
+        // The realpath cache may still resolve the link to the deleted directory. Windows removes a link
+        // to a directory, like the junction Composer creates there, with rmdir().
+        clearstatcache(true);
+
         if (is_link($vendorLink) && ! file_exists($vendorLink) && ! $files->delete($vendorLink)) {
             @rmdir($vendorLink);
         }
