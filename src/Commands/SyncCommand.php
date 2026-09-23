@@ -34,10 +34,14 @@ class SyncCommand extends BaseCommand
             $this->components->info("Modules completed successfully!");
         } catch (ModuleHasNoNamespace|ModuleHasNonUniquePackageName $e) {
             $this->components->error($e->getMessage());
+
+            return self::FAILURE;
         } catch (ComposerException $e) {
             $this->components->error($e->getMessage());
             $modulePackageNames = join(" ", array_keys($this->modulesRepository->getModules()));
             $this->components->info("Please run <info>composer update {$modulePackageNames}</info> manually");
+
+            return self::FAILURE;
         }
 
         return self::SUCCESS;

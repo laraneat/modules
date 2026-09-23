@@ -27,7 +27,7 @@ it('handles ModuleHasNoNamespace exception', function () {
 
     $this->artisan('module:sync')
         ->expectsOutputToContain('No namespace specified for module')
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 it('handles ModuleHasNonUniquePackageName exception', function () {
@@ -40,7 +40,7 @@ it('handles ModuleHasNonUniquePackageName exception', function () {
 
     $this->artisan('module:sync')
         ->expectsOutputToContain('test/module')
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 it('handles ComposerException and shows manual update hint', function () {
@@ -58,5 +58,5 @@ it('handles ComposerException and shows manual update hint', function () {
     $this->artisan('module:sync')
         ->expectsOutputToContain('Failed to update package with composer')
         ->expectsOutputToContain('composer update test/module-a test/module-b')
-        ->assertSuccessful();
+        ->assertFailed();
 });

@@ -58,6 +58,7 @@ class ComposerJsonFile
     public function addModule(string $modulePackageName, string $moduleRelativePath): static
     {
         $this->addPathRepository(dirname($moduleRelativePath));
+        $this->excludeFromPackagist(Str::before($modulePackageName, '/') . '/*');
 
         $packages = $this->get('require');
 
@@ -75,7 +76,7 @@ class ComposerJsonFile
 
         $repositories = $this->get('repositories', []);
         $repositoryAlreadyExists = collect($repositories)
-            ->contains(fn ($repository) => $repository['url'] === $path);
+            ->contains(fn ($repository) => is_array($repository) && ($repository['url'] ?? null) === $path);
 
         if ($repositoryAlreadyExists) {
             return $this;
@@ -90,6 +91,71 @@ class ComposerJsonFile
         $this->set('repositories', $repositories);
 
         return $this;
+    }
+
+    /**
+     * Never resolve the given package pattern (e.g. "app/*") from Packagist.
+     *
+     * Modules are required with "*" from a path repository. If a module directory is missing
+     * (deleted module, other branch, CI without the modules directory), Composer would otherwise
+     * fall back to Packagist and could install a foreign package with the same name.
+     */
+    public function excludeFromPackagist(string $packagePattern): static
+    {
+        $repositories = $this->get('repositories', []);
+
+        foreach ($repositories as $key => $repository) {
+            if (is_array($repository) && $this->isPackagistRepository($repository)) {
+                if (! isset($repository['only']) && ! in_array($packagePattern, $repository['exclude'] ?? [], true)) {
+                    $repositories[$key]['exclude'] = [...($repository['exclude'] ?? []), $packagePattern];
+                    $this->set('repositories', $repositories);
+                }
+
+                return $this;
+            }
+        }
+
+        if ($this->isPackagistDisabled($repositories)) {
+            return $this;
+        }
+
+        $packagist = ['type' => 'composer', 'url' => 'https://repo.packagist.org', 'exclude' => [$packagePattern]];
+
+        if (array_is_list($repositories)) {
+            $repositories[] = $packagist;
+            $repositories[] = ['packagist.org' => false];
+        } else {
+            $repositories['packagist'] = $packagist;
+            $repositories['packagist.org'] = false;
+        }
+
+        $this->set('repositories', $repositories);
+
+        return $this;
+    }
+
+    /**
+     * @param array<array-key, mixed> $repository
+     */
+    protected function isPackagistRepository(array $repository): bool
+    {
+        return ($repository['type'] ?? null) === 'composer'
+            && in_array(rtrim((string) ($repository['url'] ?? ''), '/'), ['https://repo.packagist.org', 'https://packagist.org'], true);
+    }
+
+    /**
+     * @param array<array-key, mixed> $repositories
+     */
+    protected function isPackagistDisabled(array $repositories): bool
+    {
+        foreach ($repositories as $key => $repository) {
+            if (($key === 'packagist.org' && $repository === false)
+                || (is_array($repository) && ($repository['packagist.org'] ?? null) === false)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

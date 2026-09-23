@@ -592,6 +592,18 @@ return [
 | `module:cache` | Build module manifest cache |
 | `module:cache:clear` | Clear module manifest cache |
 
+When a module is added to the application's `composer.json` (by `module:make` or `module:sync`), its vendor is also excluded from Packagist:
+
+```json
+"repositories": [
+    { "type": "path", "url": "modules/*", "options": { "symlink": true } },
+    { "type": "composer", "url": "https://repo.packagist.org", "exclude": ["app/*"] },
+    { "packagist.org": false }
+]
+```
+
+This way a missing module fails the install instead of silently pulling a same-named package from Packagist. If you configure Packagist yourself (for example with `only`), make sure the modules vendor is not resolved from there.
+
 ### Module Creation
 
 ```bash
