@@ -2,12 +2,11 @@
 
 namespace {{ namespace }};
 
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
-/**
- * @group {{ group }}
- * @group feature
- */
+#[Group('{{ group }}')]
+#[Group('feature')]
 class {{ class }} extends TestCase
 {
     public function test(): void

@@ -4,12 +4,11 @@ namespace Modules\ArticleComment\Tests\UI\API;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\ArticleComment\Models\ArticleComment;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
-/**
- * @group article-comment
- * @group api
- */
+#[Group('article-comment')]
+#[Group('api')]
 class DeleteArticleCommentTest extends TestCase
 {
     use RefreshDatabase;

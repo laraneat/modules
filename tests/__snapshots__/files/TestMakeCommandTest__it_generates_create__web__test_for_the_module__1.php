@@ -3,12 +3,11 @@
 namespace Modules\Author\Tests\UI\WEB;
 
 use Modules\Author\Models\Author;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
-/**
- * @group author
- * @group web
- */
+#[Group('author')]
+#[Group('web')]
 class CreateAuthorTest extends TestCase
 {
     /**

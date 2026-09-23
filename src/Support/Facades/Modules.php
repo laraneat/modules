@@ -20,8 +20,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @method static Module findOrFail(string $modulePackageName)
  * @method static array<string, Module> filterByName(string $moduleName)
  * @method static array<string, Module> filterByNameOrFail(string $moduleName)
- * @method static bool delete(string $modulePackageName)
- * @method static void syncWithComposer(\Closure|OutputInterface $output = null)
+ * @method static bool delete(string $modulePackageName, \Closure|OutputInterface|null $output = null)
+ * @method static void syncWithComposer(\Closure|OutputInterface|null $output = null)
  * @method static array<string, array> toArray()
  *
  * @see \Laraneat\Modules\ModulesRepository

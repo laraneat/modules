@@ -3,12 +3,11 @@
 namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
-/**
- * @group {{ group }}
- * @group web
- */
+#[Group('{{ group }}')]
+#[Group('web')]
 class {{ class }} extends TestCase
 {
     /**

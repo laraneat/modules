@@ -3,12 +3,11 @@
 namespace Modules\Author\Tests\UI\API;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
-/**
- * @group author
- * @group api
- */
+#[Group('author')]
+#[Group('api')]
 class ExampleTest extends TestCase
 {
     use RefreshDatabase;

@@ -2,12 +2,11 @@
 
 namespace Modules\Author\Tests\UI\WEB;
 
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
-/**
- * @group author
- * @group web
- */
+#[Group('author')]
+#[Group('web')]
 class ExampleTest extends TestCase
 {
     public function test(): void

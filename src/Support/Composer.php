@@ -20,7 +20,7 @@ class Composer extends BaseComposer
     public function updatePackages(
         array $packages,
         bool $dev = false,
-        Closure|OutputInterface $output = null,
+        Closure|OutputInterface|null $output = null,
         ?string $composerBinary = null
     ): bool {
         $command = collect([

@@ -5,12 +5,11 @@ namespace Modules\ArticleComment\Tests\UI\API;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Modules\ArticleComment\Models\ArticleComment;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
-/**
- * @group article-comment
- * @group api
- */
+#[Group('article-comment')]
+#[Group('api')]
 class ViewArticleCommentTest extends TestCase
 {
     use RefreshDatabase;

@@ -259,7 +259,7 @@ class ModulesRepository implements Arrayable
      * @throws ModuleNotFound
      * @throws ComposerException
      */
-    public function delete(string $modulePackageName, \Closure|OutputInterface $output = null): bool
+    public function delete(string $modulePackageName, \Closure|OutputInterface|null $output = null): bool
     {
         $module = $this->findOrFail($modulePackageName);
 
@@ -281,7 +281,7 @@ class ModulesRepository implements Arrayable
      * @throws ModuleHasNonUniquePackageName
      * @throws ComposerException
      */
-    public function syncWithComposer(\Closure|OutputInterface $output = null): void
+    public function syncWithComposer(\Closure|OutputInterface|null $output = null): void
     {
         $composerJsonPath = $this->basePath . '/' . Factory::getComposerFile();
         $composerJsonFile = ComposerJsonFile::create($composerJsonPath);

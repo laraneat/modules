@@ -3,12 +3,11 @@
 namespace {{ namespace }};
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
-/**
- * @group {{ group }}
- * @group api
- */
+#[Group('{{ group }}')]
+#[Group('api')]
 class {{ class }} extends TestCase
 {
     use RefreshDatabase;
