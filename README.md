@@ -107,8 +107,10 @@ You do not have to write this by hand: `module:make` and `module:sync` maintain 
   `"repositories": {...}`, and a list entry named `packagist` or `packagist.org`, which
   `composer config repo.packagist composer <url>` writes. Exclude the vendor by hand in any other repository
   that proxies Packagist.
-- The Packagist entry of the project also replaces a Packagist mirror set in the global Composer config
-  (`~/.composer/config.json`). Define such a mirror in the project `composer.json` instead.
+- A Packagist mirror of the global Composer config (`~/.composer/config.json`) is not edited: define it in
+  the project `composer.json` instead. The Packagist entry of the project replaces a global mirror under the
+  `packagist.org` key; a global mirror that Composer 2.10 wrote as a named list entry is still used, without
+  the exclusion.
 
 ### Creating a module
 
@@ -307,7 +309,7 @@ requests there, and the controller imports the requests from `UI\API\Requests`.
   `make:test`, `Modules\Blog\Database\Factories` for `make:factory`, `Modules\Blog\Database\Seeders`
   for `make:seeder` and `Modules\Blog` for the others.
 - A name that starts with the module namespace is used as it is: `make:action "Modules\Blog\Domain\Publish"`.
-- The `make:model` namespace also applies to `--model` and `--parent`. The factory of `make:model -f` goes
+- The `make:model` namespace also applies to `--model` and `--parent` of the Laravel generators. The factory of `make:model -f` goes
   where the factory resolver looks for it, whatever the `make:factory` namespace.
 - `Modules::seeders()` reads only direct subdirectories of `database/seeders`, so a `make:seeder` namespace
   has at most one segment.

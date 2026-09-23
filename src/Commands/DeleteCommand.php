@@ -27,7 +27,8 @@ final class DeleteCommand extends Command
         Filesystem $files,
     ): int {
         try {
-            $module = $modules->get($this->argument('name'));
+            $name = $this->input->getArgument('name');
+            $module = $modules->get(is_string($name) ? $name : '');
 
             if (is_link($module->path)) {
                 $this->components->error("[{$composer->relative($module->path)}] is a symbolic link. Remove the module by hand.");

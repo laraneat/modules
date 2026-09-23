@@ -34,7 +34,8 @@ final class MakeCommand extends Command
         Filesystem $files,
     ): int {
         try {
-            $name = Names::module($this->argument('name'));
+            $name = $this->input->getArgument('name');
+            $name = Names::module(is_string($name) ? $name : '');
             $package = Names::package(Config::string('modules.vendor'), $name);
             $path = $modules->modulesPath().'/'.$name;
 
@@ -44,7 +45,10 @@ final class MakeCommand extends Command
                 return self::FAILURE;
             }
 
-            $rendered = $renderer->render($this->template($preset = $this->option('preset') ?? 'default'), [
+            $preset = $this->input->getOption('preset');
+            $preset = is_string($preset) ? $preset : 'default';
+
+            $rendered = $renderer->render($this->template($preset), [
                 'name' => $name,
                 'namespace' => Names::namespace(Config::string('modules.namespace'), $name),
                 'package' => $package,
