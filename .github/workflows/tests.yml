@@ -24,15 +24,13 @@ jobs:
         os: [ubuntu-latest]
         php: ['8.3', '8.4', '8.5']
         dependencies: [stable]
-        framework: ['']
         experimental: [false]
         include:
-          - { os: ubuntu-latest, php: '8.3', dependencies: lowest, framework: '', experimental: false }
-          - { os: windows-latest, php: '8.4', dependencies: stable, framework: '', experimental: true }
-          - { os: ubuntu-latest, php: '8.6', dependencies: stable, framework: '', experimental: true }
-          - { os: ubuntu-latest, php: '8.5', dependencies: stable, framework: '14.x-dev as 13.999.0', experimental: true }
+          - { os: ubuntu-latest, php: '8.3', dependencies: lowest, experimental: false }
+          - { os: windows-latest, php: '8.4', dependencies: stable, experimental: true }
+          - { os: ubuntu-latest, php: '8.6', dependencies: stable, experimental: true }
 
-    name: PHP ${{ matrix.php }} - ${{ matrix.dependencies }}${{ matrix.framework && ' - Laravel 14.x-dev' || '' }}${{ matrix.os == 'windows-latest' && ' - Windows' || '' }}
+    name: PHP ${{ matrix.php }} - ${{ matrix.dependencies }}${{ matrix.os == 'windows-latest' && ' - Windows' || '' }}
 
     steps:
       - name: Checkout code
@@ -44,15 +42,12 @@ jobs:
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, json, pdo_sqlite
+          extensions: dom, curl, fileinfo, libxml, mbstring, zip, json, pdo_sqlite
           coverage: none
 
-      - name: Require the Laravel version
-        if: matrix.framework != ''
-        run: composer require "laravel/framework:${{ matrix.framework }}" --no-interaction --no-update
-
+      # Packages declare the PHP versions they support, and a PHP release in development is newer than all of them.
       - name: Install dependencies
-        run: composer update --prefer-dist --no-interaction ${{ matrix.dependencies == 'lowest' && '--prefer-lowest --prefer-stable' || '' }}
+        run: composer update --prefer-dist --no-interaction ${{ matrix.dependencies == 'lowest' && '--prefer-lowest --prefer-stable' || '' }} ${{ matrix.php == '8.6' && '--ignore-platform-req=php+' || '' }}
 
       - name: Run tests
         run: vendor/bin/pest --parallel --order-by=random
