@@ -103,8 +103,12 @@ You do not have to write this by hand: `module:make` and `module:sync` maintain 
 - The Packagist repository excludes the vendor of the modules, so Composer fails instead of installing
   a public package when a module directory is missing (another branch, a partial checkout). Composer uses
   this repository in place of the default one. Pick a vendor that you do not publish public packages under.
-- A mirror that replaces Packagist under the `packagist.org` key of `"repositories": {...}` gets the
-  exclusion too. Exclude the vendor by hand in any other repository that proxies Packagist.
+- Packagist mirrors defined in the project get the exclusion too: a mirror under the `packagist.org` key of
+  `"repositories": {...}`, and a list entry named `packagist` or `packagist.org`, which
+  `composer config repo.packagist composer <url>` writes. Exclude the vendor by hand in any other repository
+  that proxies Packagist.
+- The Packagist entry of the project also replaces a Packagist mirror set in the global Composer config
+  (`~/.composer/config.json`). Define such a mirror in the project `composer.json` instead.
 
 ### Creating a module
 
@@ -192,8 +196,8 @@ of the application config replace those of the module.
 knows its model, the way Laravel pairs `App\Models\Post` with `Database\Factories\PostFactory`. Classes outside
 the modules keep the Laravel behavior.
 
-The resolver is global (`Factory::guessFactoryNamesUsing()`): a resolver that the application sets itself
-replaces it.
+The resolver is global (`Factory::guessFactoryNamesUsing()`): a resolver that the application sets in the
+`boot()` method of its provider replaces it.
 
 The factory resolver is registered only in the console (tests, seeders, Tinker), because factories are not
 used while serving requests. If you create models with factories during HTTP requests, point the model at
@@ -280,8 +284,8 @@ Some generators are adjusted to the module:
 Nested commands run in the same module: `make:model Post --module=blog -mfs` creates the model, the
 migration, the factory and the seeder in `blog`.
 
-`--model` and `--parent` name models of the module: `--model=Post` is `Modules\Blog\Models\Post`. As in the
-application, they can not reference a model of another namespace.
+`--model` and `--parent` name models of the module: `--model=Post` is `Modules\Blog\Models\Post`, or a class of
+the `make:model` namespace (see below). As in the application, they can not reference a model of another namespace.
 
 ### Namespaces
 
@@ -303,6 +307,10 @@ requests there, and the controller imports the requests from `UI\API\Requests`.
   `make:test`, `Modules\Blog\Database\Factories` for `make:factory`, `Modules\Blog\Database\Seeders`
   for `make:seeder` and `Modules\Blog` for the others.
 - A name that starts with the module namespace is used as it is: `make:action "Modules\Blog\Domain\Publish"`.
+- The `make:model` namespace also applies to `--model` and `--parent`. The factory of `make:model -f` goes
+  where the factory resolver looks for it, whatever the `make:factory` namespace.
+- `Modules::seeders()` reads only direct subdirectories of `database/seeders`, so a `make:seeder` namespace
+  has at most one segment.
 - The `make:command` namespace is also where [module commands](#commands) are discovered, and the
   `make:component` namespace is where `<x-blog::...>` components are looked up.
 

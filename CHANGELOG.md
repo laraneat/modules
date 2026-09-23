@@ -20,7 +20,8 @@ Version 3 is a rewrite. See [UPGRADE.md](UPGRADE.md) for the upgrade from 2.x.
 - `--no-update` for `module:make`, `module:sync` and `module:delete`: edit `composer.json` and print the
   Composer command instead of running it.
 - `module:sync` adds the `autoload-dev` of the module tests and updates only the modules that changed.
-- A Packagist mirror under the `packagist.org` repository key gets the exclusion of the module vendor too.
+- Packagist mirrors defined in the project (under the `packagist.org` key, or named `packagist` in the list)
+  get the exclusion of the module vendor too.
 - The module manifest is cached by `php artisan optimize` and cleared by `optimize:clear`; `MODULES_CACHE`
   changes the cache path.
 - The modules path is added to `octane.watch`.
