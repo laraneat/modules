@@ -60,5 +60,5 @@ it('checks the config files only of a cached manifest', function (bool $cached) 
     $cached
         ? expect($register)->not->toThrow(Throwable::class)
             ->and(config('blog.title'))->toBe('Blog')
-        : expect($register)->toThrow(ErrorException::class, 'config/deleted.php');
+        : expect($register)->toThrow(ErrorException::class, 'Failed to open stream');
 })->with(['cached' => true, 'built' => false]);

@@ -21,7 +21,7 @@ final class Names
 
     private const string MODULE = '{^[a-z][a-z0-9]*(-[a-z0-9]+)*$}D';
 
-    private const string NAMESPACE = '{^[A-Za-z_][A-Za-z0-9_]*(\\\\[A-Za-z_][A-Za-z0-9_]*)*$}D';
+    private const string PHP_NAMESPACE = '{^[A-Za-z_][A-Za-z0-9_]*(\\\\[A-Za-z_][A-Za-z0-9_]*)*$}D';
 
     /**
      * Normalize a module name to kebab case: "ShopOrder", "shop_order" and "shop-order" are "shop-order".
@@ -72,7 +72,7 @@ final class Names
     {
         $prefix = trim($prefix, '\\');
 
-        if (preg_match(self::NAMESPACE, $prefix) !== 1) {
+        if (preg_match(self::PHP_NAMESPACE, $prefix) !== 1) {
             throw InvalidName::of('namespace', $prefix, 'it is not a valid PHP namespace.');
         }
 
@@ -81,6 +81,6 @@ final class Names
 
     public static function isNamespace(string $namespace): bool
     {
-        return preg_match(self::NAMESPACE, $namespace) === 1;
+        return preg_match(self::PHP_NAMESPACE, $namespace) === 1;
     }
 }

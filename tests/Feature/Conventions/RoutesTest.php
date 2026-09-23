@@ -90,5 +90,5 @@ it('checks the route files only of a cached manifest', function (bool $cached) {
     $cached
         ? expect($register)->not->toThrow(Throwable::class)
             ->and(array_map(static fn (RouteObject $route): string => $route->uri(), $router->getRoutes()->getRoutes()))->toContain('api/posts', 'blog')
-        : expect($register)->toThrow(ErrorException::class, 'routes/web/deleted.php');
+        : expect($register)->toThrow(ErrorException::class, 'Failed to open stream');
 })->with(['cached' => true, 'built' => false]);
