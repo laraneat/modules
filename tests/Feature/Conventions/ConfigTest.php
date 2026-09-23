@@ -38,7 +38,7 @@ it('does not read the module config when the config is cached', function () {
     $this->app->instance('config_loaded_from_cache', true);
     config(['blog' => null]);
 
-    (new ResourceRegistrar($this->app, app(ModuleRepository::class)->manifest()))->registerConfig();
+    (new ResourceRegistrar($this->app, app(ModuleRepository::class)->manifest()))->register();
 
     expect($this->app->configurationIsCached())->toBeTrue()
         ->and(config('blog'))->toBeNull();

@@ -40,7 +40,7 @@ it('adds the translations whether the translator is resolved before or after the
 
     $translator = $before ? $app->make('translator') : null;
 
-    (new ResourceRegistrar($app, $manifest))->boot();
+    (new ResourceRegistrar($app, $manifest))->register();
 
     $translator ??= $app->make('translator');
 

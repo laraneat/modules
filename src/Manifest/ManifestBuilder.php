@@ -70,6 +70,7 @@ final readonly class ManifestBuilder
     {
         $manifest = [];
         $packages = [];
+        $namespaces = [];
 
         foreach ($this->scan($this->modulesPath)[1] as $name) {
             $path = $this->modulesPath.'/'.$name;
@@ -84,7 +85,12 @@ final readonly class ManifestBuilder
                 throw InvalidModule::at($path, "the package name [{$module['package']}] is already used by the [{$packages[$module['package']]}] module.");
             }
 
+            if (isset($namespaces[$module['namespace']])) {
+                throw InvalidModule::at($path, "the namespace [{$module['namespace']}] is already used by the [{$namespaces[$module['namespace']]}] module.");
+            }
+
             $packages[$module['package']] = $name;
+            $namespaces[$module['namespace']] = $name;
             $manifest[$name] = $module;
         }
 

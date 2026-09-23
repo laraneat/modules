@@ -151,6 +151,16 @@ it('rejects two modules with the same package name', function () {
         ->toThrow(InvalidModule::class, 'the package name [app/blog] is already used by the [blog] module.');
 });
 
+it('rejects two modules with the same namespace', function () {
+    $modules = $this->files([
+        'blog/composer.json' => moduleComposerJson('app/blog', ['Modules\\Blog\\' => 'src/']),
+        'blog-copy/composer.json' => moduleComposerJson('app/blog-copy', ['Modules\\Blog\\' => 'src/']),
+    ]);
+
+    expect(fn () => manifestBuilder($modules)->build())
+        ->toThrow(InvalidModule::class, 'the namespace [Modules\\Blog] is already used by the [blog] module.');
+});
+
 it('finds config files by their key, top level php files only', function () {
     $modules = $this->files([
         'demo/composer.json' => moduleComposerJson('app/demo'),

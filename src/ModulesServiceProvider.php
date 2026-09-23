@@ -29,11 +29,15 @@ final class ModulesServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/modules.php', 'modules');
 
         $this->app->singleton(ModuleRepository::class, static fn (Application $app): ModuleRepository => new ModuleRepository(
-            self::manifestBuilder(),
+            self::manifestBuilder($app),
             new ManifestCache($app->make('files'), self::cachePath($app), $app->basePath()),
         ));
 
-        (new ResourceRegistrar($this->app, $this->manifest()))->registerConfig();
+        (new ResourceRegistrar(
+            $this->app,
+            $this->manifest(),
+            Config::string('modules.generators.make:component', 'View\\Components'),
+        ))->register();
 
         if ($this->app->runningInConsole()) {
             $this->app->singleton(ApplicationComposer::class, static fn (Application $app): ApplicationComposer => new ApplicationComposer($app->basePath()));
@@ -46,8 +50,6 @@ final class ModulesServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $manifest = $this->manifest();
-
-        (new ResourceRegistrar($this->app, $manifest))->boot();
 
         if (! $this->app->routesAreCached()) {
             (new RouteRegistrar($this->app->make('router'), Config::array('modules.routes', []), $manifest))->register();
@@ -101,7 +103,7 @@ final class ModulesServiceProvider extends ServiceProvider
         return $this->app->make(ModuleRepository::class)->manifest();
     }
 
-    private static function manifestBuilder(): ManifestBuilder
+    private static function manifestBuilder(Application $app): ManifestBuilder
     {
         $routes = [];
         $generators = Config::array('modules.generators', []);
@@ -120,8 +122,10 @@ final class ModulesServiceProvider extends ServiceProvider
             }
         }
 
+        $path = Config::string('modules.path');
+
         return new ManifestBuilder(
-            Config::string('modules.path'),
+            self::isAbsolute($path) ? $path : $app->basePath($path),
             $routes,
             $generators['make:command'] ?? 'Console\\Commands',
         );
@@ -138,6 +142,11 @@ final class ModulesServiceProvider extends ServiceProvider
             return $app->bootstrapPath('cache/modules.php');
         }
 
-        return str_starts_with($path, '/') || preg_match('{^[A-Za-z]:[/\\\\]}', $path) === 1 ? $path : $app->basePath($path);
+        return self::isAbsolute($path) ? $path : $app->basePath($path);
+    }
+
+    private static function isAbsolute(string $path): bool
+    {
+        return str_starts_with($path, '/') || str_starts_with($path, '\\') || preg_match('{^[A-Za-z]:[/\\\\]}', $path) === 1;
     }
 }

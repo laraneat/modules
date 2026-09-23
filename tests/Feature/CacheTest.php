@@ -36,6 +36,18 @@ it('boots from the cache without scanning the modules', function () {
         ->and(Route::has('blog.posts'))->toBeTrue();
 });
 
+it('skips the files of a module deleted since the cache was written', function () {
+    $this->artisan('module:cache');
+    TemporaryDirectory::delete($this->path('modules/blog'));
+    $this->reboot();
+
+    expect(config('blog'))->toBeNull()
+        ->and(Route::has('blog.posts'))->toBeFalse()
+        ->and(Route::has('shop-order.orders'))->toBeTrue();
+
+    $this->artisan('module:clear')->assertSuccessful();
+});
+
 it('works after the application moved', function () {
     $this->artisan('module:cache');
     $moved = $this->temporaryDirectory($this->basePath);

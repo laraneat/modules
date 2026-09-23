@@ -21,6 +21,14 @@ use Orchestra\Testbench\TestCase as Orchestra;
  */
 abstract class TestCase extends Orchestra
 {
+    /**
+     * Providers registered before the package provider, like module providers of packages
+     * whose names sort before "laraneat/modules".
+     *
+     * @var list<class-string>
+     */
+    protected array $providersBeforeModules = [];
+
     protected string $basePath;
 
     private Closure $autoloader;
@@ -89,7 +97,7 @@ abstract class TestCase extends Orchestra
      */
     protected function getPackageProviders($app): array
     {
-        return self::composerJson()['extra']['laravel']['providers'];
+        return [...$this->providersBeforeModules, ...self::composerJson()['extra']['laravel']['providers']];
     }
 
     protected function getPackageAliases($app): array

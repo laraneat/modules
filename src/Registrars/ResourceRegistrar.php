@@ -17,6 +17,10 @@ use Laraneat\Modules\Manifest\ManifestBuilder;
 /**
  * Config, translations, views, Blade components and migrations of the modules.
  *
+ * Everything is registered while the package provider registers: module providers may boot
+ * before it, and they can use the module views and translations. The callbacks run only when
+ * the translator, the view factory, Blade or the migrator is resolved.
+ *
  * Views and translations are added in one callback for all modules, without the
  * "vendor/<namespace>" override lookup of loadViewsFrom(): modules belong to the
  * application. JSON translation paths are added only for modules that have them.
@@ -29,17 +33,25 @@ final readonly class ResourceRegistrar
 {
     /**
      * @param  Manifest  $manifest
+     * @param  string  $componentsNamespace  The namespace of Blade components inside a module.
      */
     public function __construct(
         private Application $app,
         private array $manifest,
+        private string $componentsNamespace = 'View\\Components',
     ) {}
 
+    public function register(): void
+    {
+        $this->registerConfig();
+        $this->registerCallbacks();
+    }
+
     /**
-     * Merge the config files of the modules; the application config wins. Runs in register(),
-     * so the config is complete before any provider boots.
+     * Merge the config files of the modules; the application config wins.
+     * A file missing since the manifest was cached is skipped.
      */
-    public function registerConfig(): void
+    private function registerConfig(): void
     {
         if ($this->app instanceof CachesConfiguration && $this->app->configurationIsCached()) {
             return;
@@ -49,7 +61,11 @@ final readonly class ResourceRegistrar
 
         foreach ($this->manifest as $module) {
             foreach ($module['config'] as $key) {
-                $values = require $module['path'].'/config/'.$key.'.php';
+                if (! is_file($file = $module['path'].'/config/'.$key.'.php')) {
+                    continue;
+                }
+
+                $values = require $file;
 
                 if (! is_array($values)) {
                     throw InvalidModule::at($module['path'], "config/{$key}.php must return an array.");
@@ -60,7 +76,7 @@ final readonly class ResourceRegistrar
         }
     }
 
-    public function boot(): void
+    private function registerCallbacks(): void
     {
         $lang = array_filter($this->manifest, static fn (array $module): bool => $module['lang']);
         $views = array_filter($this->manifest, static fn (array $module): bool => $module['views']);
@@ -86,10 +102,12 @@ final readonly class ResourceRegistrar
         }
 
         if ($this->manifest !== []) {
-            // <x-blog::alert /> renders Modules\Blog\View\Components\Alert, or the "blog::components.alert" view.
-            $this->afterResolving('blade.compiler', function (BladeCompiler $blade): void {
+            // <x-blog::alert /> renders the Alert class of the components namespace, or the "blog::components.alert" view.
+            $namespace = trim($this->componentsNamespace, '\\');
+
+            $this->afterResolving('blade.compiler', function (BladeCompiler $blade) use ($namespace): void {
                 foreach ($this->manifest as $name => $module) {
-                    $blade->componentNamespace($module['namespace'].'\\View\\Components', $name);
+                    $blade->componentNamespace($module['namespace'].'\\'.$namespace, $name);
                 }
             });
         }

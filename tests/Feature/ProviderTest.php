@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Laraneat\Modules\Exceptions\InvalidConfiguration;
 use Laraneat\Modules\Facades\Modules;
@@ -114,6 +115,26 @@ it('refuses a generator namespace that is not a string', function () {
     expect(fn () => $this->reboot())->toThrow(InvalidConfiguration::class, 'the namespace of the [make:controller] generator must be a string.');
 });
 
+it('resolves a relative modules path against the application', function () {
+    $this->files(['config/modules.php' => '<?php return ["path" => "modules"];']);
+    chdir(sys_get_temp_dir());
+    $this->reboot();
+
+    expect(array_keys(Modules::all()))->toBe(['blog', 'shop-order'])
+        ->and(Modules::get('blog')->path)->toBe($this->path('modules/blog'));
+});
+
+it('lets module providers that boot first use the module translations, views and components', function () {
+    $this->providersBeforeModules = [ModuleProviderBootingFirst::class];
+    $this->reboot();
+
+    expect(ModuleProviderBootingFirst::$seen)->toBe([
+        'Welcome to the blog',
+        true,
+        'Modules\\Blog\\View\\Components',
+    ]);
+});
+
 it('stores the manifest cache where MODULES_CACHE points', function (string $path, string $expected) {
     $_ENV['MODULES_CACHE'] = $path;
     $this->reboot();
@@ -130,3 +151,20 @@ it('stores the manifest cache where MODULES_CACHE points', function (string $pat
     'relative' => ['storage/modules.php', '{base}/storage/modules.php'],
     'absolute' => [fn () => $this->path('storage/framework/modules.php'), '{base}/storage/framework/modules.php'],
 ]);
+
+final class ModuleProviderBootingFirst extends ServiceProvider
+{
+    /**
+     * @var list<mixed>
+     */
+    public static array $seen = [];
+
+    public function boot(): void
+    {
+        self::$seen = [
+            __('blog::messages.welcome'),
+            view()->exists('blog::index'),
+            Blade::getClassComponentNamespaces()['blog'] ?? null,
+        ];
+    }
+}

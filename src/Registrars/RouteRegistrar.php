@@ -44,7 +44,10 @@ final readonly class RouteRegistrar
                         : ['prefix' => ltrim($prefix.'/'.$directory, '/')] + $attributes;
 
                     foreach ($files as $file) {
-                        $this->router->group($directoryAttributes, $module['path'].'/'.$file);
+                        // A file deleted since the manifest was cached is skipped.
+                        if (is_file($path = $module['path'].'/'.$file)) {
+                            $this->router->group($directoryAttributes, $path);
+                        }
                     }
                 }
             }
