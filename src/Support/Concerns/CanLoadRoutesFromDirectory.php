@@ -39,10 +39,12 @@ trait CanLoadRoutesFromDirectory
             );
         }
 
+        // Only "*.php" files are routes: leftovers like "*.php.orig" or "README.md" must never be required.
         /** @var SplFileInfo[] $files */
-        $files = Arr::sort(File::files($directory), function (SplFileInfo $file) {
-            return $file->getFilename();
-        });
+        $files = Arr::sort(
+            array_filter(File::files($directory), static fn (SplFileInfo $file) => $file->getExtension() === 'php'),
+            static fn (SplFileInfo $file) => $file->getFilename()
+        );
 
         Route::prefix($routePrefix)->group(function () use ($files) {
             foreach ($files as $file) {

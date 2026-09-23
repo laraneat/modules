@@ -87,10 +87,10 @@ abstract class ModuleServiceProvider extends ServiceProvider
     protected function loadFiles(string $directory): void
     {
         if (File::isDirectory($directory)) {
-            $files = File::files($directory);
-
-            foreach ($files as $file) {
-                require_once $file;
+            foreach (File::files($directory) as $file) {
+                if ($file->getExtension() === 'php') {
+                    require_once $file;
+                }
             }
         }
     }
@@ -101,10 +101,10 @@ abstract class ModuleServiceProvider extends ServiceProvider
     protected function loadAllFiles(string $directory): void
     {
         if (File::isDirectory($directory)) {
-            $files = File::allFiles($directory);
-
-            foreach ($files as $file) {
-                require_once $file;
+            foreach (File::allFiles($directory) as $file) {
+                if ($file->getExtension() === 'php') {
+                    require_once $file;
+                }
             }
         }
     }

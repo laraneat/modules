@@ -33,39 +33,41 @@ trait CanRunModuleSeeders
         }
     }
 
+    /**
+     * Seeders run in the order of their integer "_N" suffix (e.g. "PermissionsSeeder_1"),
+     * seeders without such a suffix run last; ties are ordered by class name.
+     */
     protected function sortSeederClasses(array $seedersClasses): array
     {
-        return Arr::sort($seedersClasses, function (string $seederClass) {
-            $baseClass = class_basename($seederClass);
+        $order = static function (string $seederClass): int {
+            $suffix = Str::afterLast(class_basename($seederClass), '_');
 
-            if (Str::contains($baseClass, '_')) {
-                return Str::afterLast($baseClass, '_');
-            }
+            return $suffix !== class_basename($seederClass) && ctype_digit($suffix) ? (int) $suffix : PHP_INT_MAX;
+        };
 
-            return 'z';
-        });
+        usort($seedersClasses, static fn (string $a, string $b): int => [$order($a), $a] <=> [$order($b), $b]);
+
+        return $seedersClasses;
     }
 
     protected function getSeederClassesFromModule(Module $module, array $subdirectories = []): array
     {
-        $moduleSeedersPath = GeneratorHelper::component(ModuleComponentType::Seeder)->getFullPath($module);
-        $paths = [$moduleSeedersPath];
-
-        if (! empty($subdirectories)) {
-            $paths += array_map(
-                static fn ($subdirectory)
-                    => rtrim($moduleSeedersPath, '/') . '/' . ltrim($subdirectory, '/'),
+        $moduleSeedersPath = rtrim(GeneratorHelper::component(ModuleComponentType::Seeder)->getFullPath($module), '/');
+        $paths = array_unique([
+            $moduleSeedersPath,
+            ...array_map(
+                static fn ($subdirectory) => rtrim($moduleSeedersPath . '/' . trim($subdirectory, '/'), '/'),
                 $subdirectories
-            );
-        }
+            ),
+        ]);
 
         $seederClasses = [];
         foreach ($paths as $path) {
             if (File::isDirectory($path)) {
-                $allFiles = File::files($path);
-
-                foreach ($allFiles as $file) {
-                    $seederClasses[] = $this->getClassFullNameFromFile($file->getPathname());
+                foreach (File::files($path) as $file) {
+                    if ($file->getExtension() === 'php') {
+                        $seederClasses[] = $this->getClassFullNameFromFile($file->getPathname());
+                    }
                 }
             }
         }
