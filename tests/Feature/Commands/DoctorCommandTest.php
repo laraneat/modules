@@ -57,6 +57,23 @@ it('warns about a mirrored package', function () {
         ->and($output)->toContain('! [vendor/app/blog] is a copy, not a link to [modules/blog]: changes of the module need "composer update".');
 });
 
+it('reports a package installed from another repository', function (array $dist) {
+    $this->installModules();
+    unlink($this->path('vendor/app/blog'));
+    mkdir($this->path('vendor/app/blog'));
+    $installed = $this->readJson('vendor/composer/installed.json');
+    $installed['packages'][0]['dist'] = $dist;
+    $this->files(['vendor/composer/installed.json' => json_encode($installed)]);
+
+    [$status, $output] = doctor();
+
+    expect($status)->toBe(1)
+        ->and($output)->toContain('✗ [vendor/app/blog] is not a link to [modules/blog].');
+})->with([
+    'Packagist' => [['type' => 'zip', 'url' => 'https://api.github.com/repos/app/blog/zipball/1', 'reference' => '1']],
+    'another path' => [['type' => 'path', 'url' => 'modules/shop-order', 'reference' => null]],
+]);
+
 it('reports outdated installed metadata', function () {
     $this->installModules();
     $this->files(['modules/blog/composer.json' => json_encode([...$this->readJson('modules/blog/composer.json'), 'require' => ['php' => '^8.4']])]);

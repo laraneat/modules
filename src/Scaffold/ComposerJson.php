@@ -165,21 +165,19 @@ final class ComposerJson
     }
 
     /**
-     * Whether Composer never looks the package up on Packagist.
+     * Whether Composer never looks the package up on Packagist or on a Packagist mirror.
      */
     public function isExcludedFromPackagist(string $package): bool
     {
+        foreach ($this->namedMirrors() as $mirror) {
+            if (! $this->excludes($mirror, $package)) {
+                return false;
+            }
+        }
+
         $packagist = $this->packagist();
 
-        if (! $packagist instanceof stdClass) {
-            return $packagist === false;
-        }
-
-        if (is_array($packagist->only ?? null)) {
-            return ! $this->matches($package, $packagist->only);
-        }
-
-        return $this->matches($package, is_array($packagist->exclude ?? null) ? $packagist->exclude : []);
+        return $packagist instanceof stdClass ? $this->excludes($packagist, $package) : $packagist === false;
     }
 
     public function isDirty(): bool
@@ -223,35 +221,65 @@ final class ComposerJson
      */
     private function excludeFromPackagist(string $package): void
     {
-        $packagist = $this->packagist();
-
-        if ($packagist === false) {
-            return;
-        }
-
         $pattern = strstr($package, '/', true).'/*';
+        $repositories = $this->namedMirrors();
+        $packagist = $this->packagist();
 
         if ($packagist === null) {
             // Composer replaces the default Packagist repository with a repository of its URL.
             $this->addRepository('packagist.org', (object) ['type' => 'composer', 'url' => self::PACKAGIST, 'exclude' => [$pattern]]);
-
-            return;
+        } elseif ($packagist !== false) {
+            $repositories[] = $packagist;
         }
 
-        // Composer does not accept "only" and "exclude" together.
-        if (is_array($packagist->only ?? null)) {
-            if ($this->matches($package, $packagist->only)) {
-                throw ComposerFailed::because("[{$this->path}] Packagist serves [{$package}] through \"only\": remove the pattern that matches it.");
+        foreach ($repositories as $repository) {
+            // Composer does not accept "only" and "exclude" together.
+            if (is_array($repository->only ?? null)) {
+                if ($this->matches($package, $repository->only)) {
+                    throw ComposerFailed::because("[{$this->path}] a Packagist repository serves [{$package}] through \"only\": remove the pattern that matches it.");
+                }
+
+                continue;
             }
 
-            return;
+            $exclude = is_array($repository->exclude ?? null) ? $repository->exclude : [];
+
+            if (! in_array($pattern, $exclude, true)) {
+                $repository->exclude = [...$exclude, $pattern];
+            }
+        }
+    }
+
+    private function excludes(stdClass $repository, string $package): bool
+    {
+        if (is_array($repository->only ?? null)) {
+            return ! $this->matches($package, $repository->only);
         }
 
-        $exclude = is_array($packagist->exclude ?? null) ? $packagist->exclude : [];
+        return $this->matches($package, is_array($repository->exclude ?? null) ? $repository->exclude : []);
+    }
 
-        if (! in_array($pattern, $exclude, true)) {
-            $packagist->exclude = [...$exclude, $pattern];
+    /**
+     * Mirrors in the repository list with the "packagist.org" or "packagist" name, as Composer 2.10
+     * writes them for "composer config repo.packagist composer <url>". Composer ignores the name:
+     * they are used next to the default Packagist repository, not in its place.
+     *
+     * @return list<stdClass>
+     */
+    private function namedMirrors(): array
+    {
+        $mirrors = [];
+
+        foreach ($this->repositories() as $name => $repository) {
+            if (is_int($name)
+                && $repository instanceof stdClass
+                && ($repository->type ?? null) === 'composer'
+                && in_array($repository->name ?? null, ['packagist', 'packagist.org'], true)) {
+                $mirrors[] = $repository;
+            }
         }
+
+        return $mirrors;
     }
 
     /**

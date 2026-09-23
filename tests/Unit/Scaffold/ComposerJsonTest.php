@@ -153,6 +153,15 @@ it('filters a mirror that replaces packagist by its name', function (string $nam
     ]);
 })->with(['packagist.org', 'packagist']);
 
+it('filters a mirror named packagist in the repository list and the default repository', function (string $name) {
+    // "composer config repo.packagist composer <url>" writes this; Composer still uses the default repository.
+    $mirror = ['name' => $name, 'type' => 'composer', 'url' => 'https://mirror.example.com'];
+
+    $json = editComposerJson($this->directory, ['repositories' => [$mirror]], addBlog(...));
+
+    expect($json['repositories'])->toBe([[...$mirror, 'exclude' => ['app/*']], PATH_REPOSITORY, PACKAGIST_EXCLUDING_APP]);
+})->with(['packagist.org', 'packagist']);
+
 it('leaves a packagist repository restricted with "only" untouched', function () {
     $repository = ['type' => 'composer', 'url' => 'https://repo.packagist.org', 'only' => ['laravel/*']];
 
@@ -165,7 +174,7 @@ it('fails when packagist serves the module through "only"', function () {
     $contents = ['repositories' => [['type' => 'composer', 'url' => 'https://repo.packagist.org', 'only' => ['laravel/*', 'app/*']]]];
 
     expect(fn () => editComposerJson($this->directory, $contents, addBlog(...)))
-        ->toThrow(ComposerFailed::class, 'Packagist serves [app/blog] through "only"');
+        ->toThrow(ComposerFailed::class, 'a Packagist repository serves [app/blog] through "only"');
 });
 
 it('does not enable packagist when it is disabled', function (array $disabled) {
@@ -382,6 +391,10 @@ it('tells whether packagist can serve a package', function (array $repositories,
     'replaced by another kind of repository' => [['packagist.org' => ['type' => 'vcs', 'url' => 'https://example.com/repo.git']], true],
     'disabled by name, then redefined' => [['packagist.org' => false, 'main' => ['type' => 'composer', 'url' => 'https://repo.packagist.org']], false],
     'after entries that are not objects' => [['modules/*', PACKAGIST_EXCLUDING_APP], true],
+    'named mirror' => [[['name' => 'packagist', 'type' => 'composer', 'url' => 'https://mirror.example.com'], PACKAGIST_EXCLUDING_APP], false],
+    'named mirror excluding the vendor' => [[['name' => 'packagist.org', 'type' => 'composer', 'url' => 'https://mirror.example.com', 'exclude' => ['app/*']], PACKAGIST_EXCLUDING_APP], true],
+    'named mirror next to the default repository' => [[['name' => 'packagist.org', 'type' => 'composer', 'url' => 'https://mirror.example.com', 'exclude' => ['app/*']]], false],
+    'named mirror restricted to other vendors' => [[['name' => 'packagist', 'type' => 'composer', 'url' => 'https://mirror.example.com', 'only' => ['laravel/*']], ['packagist.org' => false]], true],
     'not a composer repository' => [[['type' => 'vcs', 'url' => 'https://packagist.org/app/blog', 'exclude' => ['app/*']]], false],
 ]);
 

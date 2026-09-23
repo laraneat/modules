@@ -61,6 +61,16 @@ final readonly class InstalledPackages
     }
 
     /**
+     * The directory of the path repository the package was installed from, as Composer wrote it.
+     */
+    public function pathSource(string $package): ?string
+    {
+        $dist = $this->packages[$package]['dist'] ?? null;
+
+        return is_array($dist) && ($dist['type'] ?? null) === 'path' && is_string($dist['url'] ?? null) ? $dist['url'] : null;
+    }
+
+    /**
      * The directory the package is installed in.
      */
     public function path(string $package): string

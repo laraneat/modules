@@ -82,7 +82,10 @@ final readonly class ApplicationComposer
         return str_starts_with($path.'/', $this->basePath.'/') ? ltrim(substr($path, strlen($this->basePath)), '/') : $path;
     }
 
-    private function absolute(string $path): string
+    /**
+     * A path relative to the application made absolute.
+     */
+    public function absolute(string $path): string
     {
         return preg_match('{^(/|[A-Za-z]:[/\\\\])}', $path) === 1 ? $path : $this->basePath.'/'.$path;
     }
