@@ -1,0 +1,17 @@
+{
+    "name": "app/blog",
+    "description": "The blog module.",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Modules\\Blog\\": "src/",
+            "Modules\\Blog\\Database\\Factories\\": "database/factories/",
+            "Modules\\Blog\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Blog\\Tests\\": "tests/"
+        }
+    }
+}

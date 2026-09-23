@@ -1,0 +1,12 @@
+{
+    "name": "app/shop-order",
+    "description": "The shop order module.",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Modules\\ShopOrder\\": "src/",
+            "Modules\\ShopOrder\\Database\\Factories\\": "database/factories/",
+            "Modules\\ShopOrder\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}
