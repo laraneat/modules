@@ -57,6 +57,16 @@ it('warns about a mirrored package', function () {
         ->and($output)->toContain('! [vendor/app/blog] is a copy, not a link to [modules/blog]: changes of the module need "composer update".');
 });
 
+it('reports a missing installed package', function () {
+    $this->installModules();
+    unlink($this->path('vendor/app/blog'));
+
+    [$status, $output] = doctor();
+
+    expect($status)->toBe(1)
+        ->and($output)->toContain('✗ [vendor/app/blog] is not a link to [modules/blog].');
+});
+
 it('reports a package installed from another repository', function (array $dist) {
     $this->installModules();
     unlink($this->path('vendor/app/blog'));

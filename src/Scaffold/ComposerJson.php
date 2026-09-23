@@ -169,15 +169,19 @@ final class ComposerJson
      */
     public function isExcludedFromPackagist(string $package): bool
     {
-        foreach ($this->namedMirrors() as $mirror) {
-            if (! $this->excludes($mirror, $package)) {
+        [$repositories, $default] = $this->packagist();
+
+        if ($default) {
+            return false;
+        }
+
+        foreach ($repositories as $repository) {
+            if (! $this->excludes($repository, $package)) {
                 return false;
             }
         }
 
-        $packagist = $this->packagist();
-
-        return $packagist instanceof stdClass ? $this->excludes($packagist, $package) : $packagist === false;
+        return true;
     }
 
     public function isDirty(): bool
@@ -222,14 +226,11 @@ final class ComposerJson
     private function excludeFromPackagist(string $package): void
     {
         $pattern = strstr($package, '/', true).'/*';
-        $repositories = $this->namedMirrors();
-        $packagist = $this->packagist();
+        [$repositories, $default] = $this->packagist();
 
-        if ($packagist === null) {
+        if ($default) {
             // Composer replaces the default Packagist repository with a repository of its URL.
             $this->addRepository('packagist.org', (object) ['type' => 'composer', 'url' => self::PACKAGIST, 'exclude' => [$pattern]]);
-        } elseif ($packagist !== false) {
-            $repositories[] = $packagist;
         }
 
         foreach ($repositories as $repository) {
@@ -260,47 +261,27 @@ final class ComposerJson
     }
 
     /**
-     * Mirrors in the repository list with the "packagist.org" or "packagist" name, as Composer 2.10
-     * writes them for "composer config repo.packagist composer <url>". Composer ignores the name:
-     * they are used next to the default Packagist repository, not in its place.
+     * The repositories that serve the packages of Packagist, and whether Composer still uses
+     * the default Packagist repository. Composer semantics:
      *
-     * @return list<stdClass>
+     * - any value under the "packagist.org" or "packagist" key replaces the default repository,
+     *   and false, or a {"packagist.org": false} entry, disables it;
+     * - a composer repository with a packagist.org URL disables the default repository;
+     * - a list entry named "packagist.org" or "packagist" (a mirror, as Composer 2.10 writes it)
+     *   is used next to the default repository: Composer ignores the name.
+     *
+     * @return array{list<stdClass>, bool}
      */
-    private function namedMirrors(): array
+    private function packagist(): array
     {
-        $mirrors = [];
+        $repositories = [];
+        $default = true;
 
         foreach ($this->repositories() as $name => $repository) {
-            if (is_int($name)
-                && $repository instanceof stdClass
-                && ($repository->type ?? null) === 'composer'
-                && in_array($repository->name ?? null, ['packagist', 'packagist.org'], true)) {
-                $mirrors[] = $repository;
-            }
-        }
+            $slot = is_string($name) && in_array($name, ['packagist', 'packagist.org'], true);
 
-        return $mirrors;
-    }
-
-    /**
-     * The repository Composer uses in place of the default Packagist repository: a composer repository
-     * with a packagist.org URL, or one named "packagist.org" or "packagist" whatever its URL (a mirror).
-     * False when Packagist is disabled or replaced by another kind of repository, null for the default one.
-     */
-    private function packagist(): stdClass|false|null
-    {
-        $disabled = false;
-
-        foreach ($this->repositories() as $name => $repository) {
-            // A repository under this name takes the place of the default one, false disables it.
-            if (is_string($name) && in_array($name, ['packagist', 'packagist.org'], true)) {
-                if ($repository instanceof stdClass && ($repository->type ?? null) === 'composer') {
-                    return $repository;
-                }
-
-                $disabled = true;
-
-                continue;
+            if ($slot) {
+                $default = false;
             }
 
             if (! $repository instanceof stdClass) {
@@ -308,15 +289,27 @@ final class ComposerJson
             }
 
             if (($repository->{'packagist.org'} ?? null) === false || ($repository->packagist ?? null) === false) {
-                $disabled = true;
-            } elseif (($repository->type ?? null) === 'composer'
-                && is_string($repository->url ?? null)
-                && preg_match('{^https?://(?:[a-z0-9-.]+\.)?packagist\.org(/|$)}', $repository->url) === 1) {
-                return $repository;
+                $default = false;
+
+                continue;
+            }
+
+            if (($repository->type ?? null) !== 'composer') {
+                continue;
+            }
+
+            $url = is_string($repository->url ?? null) && preg_match('{^https?://(?:[a-z0-9-.]+\.)?packagist\.org(/|$)}', $repository->url) === 1;
+
+            if ($url) {
+                $default = false;
+            }
+
+            if ($slot || $url || (is_int($name) && in_array($repository->name ?? null, ['packagist', 'packagist.org'], true))) {
+                $repositories[] = $repository;
             }
         }
 
-        return $disabled ? false : null;
+        return [$repositories, $default];
     }
 
     /**

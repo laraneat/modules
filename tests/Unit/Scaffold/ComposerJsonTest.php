@@ -162,6 +162,19 @@ it('filters a mirror named packagist in the repository list and the default repo
     expect($json['repositories'])->toBe([[...$mirror, 'exclude' => ['app/*']], PATH_REPOSITORY, PACKAGIST_EXCLUDING_APP]);
 })->with(['packagist.org', 'packagist']);
 
+it('filters every repository that serves packagist', function () {
+    $mirror = ['type' => 'composer', 'url' => 'https://mirror.example.com'];
+    $packagist = ['type' => 'composer', 'url' => 'https://repo.packagist.org'];
+
+    $json = editComposerJson($this->directory, ['repositories' => ['packagist.org' => $mirror, 'main' => $packagist]], addBlog(...));
+
+    expect($json['repositories'])->toBe([
+        'packagist.org' => [...$mirror, 'exclude' => ['app/*']],
+        'main' => [...$packagist, 'exclude' => ['app/*']],
+        'modules' => PATH_REPOSITORY,
+    ]);
+});
+
 it('leaves a packagist repository restricted with "only" untouched', function () {
     $repository = ['type' => 'composer', 'url' => 'https://repo.packagist.org', 'only' => ['laravel/*']];
 
@@ -395,6 +408,7 @@ it('tells whether packagist can serve a package', function (array $repositories,
     'named mirror excluding the vendor' => [[['name' => 'packagist.org', 'type' => 'composer', 'url' => 'https://mirror.example.com', 'exclude' => ['app/*']], PACKAGIST_EXCLUDING_APP], true],
     'named mirror next to the default repository' => [[['name' => 'packagist.org', 'type' => 'composer', 'url' => 'https://mirror.example.com', 'exclude' => ['app/*']]], false],
     'named mirror restricted to other vendors' => [[['name' => 'packagist', 'type' => 'composer', 'url' => 'https://mirror.example.com', 'only' => ['laravel/*']], ['packagist.org' => false]], true],
+    'one of the packagist repositories not excluding the vendor' => [['packagist.org' => ['type' => 'composer', 'url' => 'https://mirror.example.com', 'exclude' => ['app/*']], 'main' => ['type' => 'composer', 'url' => 'https://repo.packagist.org']], false],
     'not a composer repository' => [[['type' => 'vcs', 'url' => 'https://packagist.org/app/blog', 'exclude' => ['app/*']]], false],
 ]);
 

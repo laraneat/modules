@@ -117,7 +117,7 @@ final class DoctorCommand extends Command
             $source = $installed->pathSource($module->package);
 
             // COMPOSER_MIRROR_PATH_REPOS=1 copies path packages, as Docker images often do.
-            $problems[] = $source !== null && ! is_link($vendorPath) && realpath($composer->absolute($source)) === realpath($module->path)
+            $problems[] = $source !== null && is_dir($vendorPath) && ! is_link($vendorPath) && realpath($composer->absolute($source)) === realpath($module->path)
                 ? [false, "[{$composer->relative($vendorPath)}] is a copy, not a link to [{$composer->relative($module->path)}]: changes of the module need \"composer update\"."]
                 : [true, "[{$composer->relative($vendorPath)}] is not a link to [{$composer->relative($module->path)}]."];
         } elseif (! $installed->isCurrent($module->package, $composerJson->toArray())) {
