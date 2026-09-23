@@ -67,9 +67,13 @@ it('renders placeholders in directory and file names', function () {
         'database/migrations/2026_09_23_120000_create_article_categories_table.php' => '<?php',
         'src/ArticleCategory/ArticleCategoryService.php' => 'namespace Modules\\ArticleCategory\\ArticleCategory;',
     ]);
-});
+})->skip(DIRECTORY_SEPARATOR === '\\', 'Windows does not allow "|" in file names.');
 
 it('fails on unknown variables and filters before anything is written', function (string $file, string $contents, string $reason) {
+    if (DIRECTORY_SEPARATOR === '\\' && str_contains($file, '|')) {
+        $this->markTestSkipped('Windows does not allow "|" in file names.');
+    }
+
     $template = $this->files([$file => $contents]);
 
     expect(fn () => (new TemplateRenderer)->render($template, TEMPLATE_VARIABLES))

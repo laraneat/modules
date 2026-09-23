@@ -37,7 +37,7 @@ it('creates a module and installs it with Composer', function () {
         'autoload-dev' => ['psr-4' => ['Modules\\WikiPages\\Tests\\' => 'tests/']],
     ])
         ->and(collect(File::allFiles($this->path('modules/wiki-pages'), true))
-            ->map(fn (SplFileInfo $file): string => $file->getRelativePathname())->sort()->values()->all())
+            ->map(fn (SplFileInfo $file): string => str_replace('\\', '/', $file->getRelativePathname()))->sort()->values()->all())
         ->toBe([
             'composer.json',
             'database/factories/.gitkeep',
@@ -134,7 +134,7 @@ it('renders a preset of the application', function () {
         ->toBe('<?php // shop_items')
         ->and(file_get_contents($this->path('modules/shop-items/README.md')))->toBe('# {{ name }} stays as is')
         ->and($this->readJson('modules/shop-items/composer.json')['extra'])->toBe(['module' => 'ShopItems', 'vendor' => 'app']);
-});
+})->skip(DIRECTORY_SEPARATOR === '\\', 'Windows does not allow "|" in file names.');
 
 it('prefers the published default template', function () {
     $this->files([

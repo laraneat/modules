@@ -25,7 +25,7 @@ it('is registered by package discovery with the Modules alias', function () {
 
 it('merges its config with the config of the application', function () {
     expect(config('modules'))->toBe([
-        'path' => $this->path('modules'),
+        'path' => base_path('modules'),
         'namespace' => 'Modules',
         'vendor' => 'app',
         'routes' => [
@@ -48,9 +48,9 @@ it('publishes the config and the module template', function () {
         ->all();
 
     expect($published('modules-config'))
-        ->toBe([realpath(__DIR__.'/../../config/modules.php') => $this->path('config/modules.php')])
+        ->toBe([realpath(__DIR__.'/../../config/modules.php') => config_path('modules.php')])
         ->and($published('modules-stubs'))
-        ->toBe([realpath(__DIR__.'/../../resources/stubs/module/default') => $this->path('stubs/module/default')]);
+        ->toBe([realpath(__DIR__.'/../../resources/stubs/module/default') => base_path('stubs/module/default')]);
 
     $this->artisan('vendor:publish --tag=modules-stubs')->assertSuccessful();
 
@@ -145,11 +145,11 @@ it('stores the manifest cache where MODULES_CACHE points', function (string $pat
 
     $this->artisan('module:cache')->assertSuccessful();
 
-    expect(app(ModuleRepository::class)->cachePath())->toBe(str_replace('{base}', $this->basePath, $expected))
-        ->and(file_exists(str_replace('{base}', $this->basePath, $expected)))->toBeTrue();
+    expect(app(ModuleRepository::class)->cachePath())->toBe($expected)
+        ->and(file_exists($expected))->toBeTrue();
 })->with([
-    'relative' => ['storage/modules.php', '{base}/storage/modules.php'],
-    'absolute' => [fn () => $this->path('storage/framework/modules.php'), '{base}/storage/framework/modules.php'],
+    'relative' => ['storage/modules.php', fn () => base_path('storage/modules.php')],
+    'absolute' => [fn () => $this->path('storage/framework/modules.php'), fn () => $this->path('storage/framework/modules.php')],
 ]);
 
 final class ModuleProviderBootingFirst extends ServiceProvider

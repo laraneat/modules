@@ -22,7 +22,8 @@ abstract class GeneratorsTestCase extends TestCase
     }
 
     /**
-     * Run a generator and return the files it created, with migration dates as "{date}".
+     * Run a generator and return the files it created, with migration dates as "{date}". Line endings are
+     * normalized: Laravel joins some generated lines with PHP_EOL.
      *
      * @return array<string, string> Contents by path relative to the application.
      */
@@ -35,7 +36,7 @@ abstract class GeneratorsTestCase extends TestCase
         $files = [];
 
         foreach (array_diff($this->applicationFiles(), $before) as $path) {
-            $files[(string) preg_replace('/\d{4}_\d{2}_\d{2}_\d{6}_/', '{date}_', $path)] = (string) file_get_contents($this->path($path));
+            $files[(string) preg_replace('/\d{4}_\d{2}_\d{2}_\d{6}_/', '{date}_', $path)] = str_replace("\r\n", "\n", (string) file_get_contents($this->path($path)));
         }
 
         return $files;

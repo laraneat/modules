@@ -181,7 +181,8 @@ abstract class TestCase extends Orchestra
             ];
 
             (new Filesystem)->ensureDirectoryExists($this->path('vendor/app'));
-            symlink('../../modules/'.$name, $this->path('vendor/app/'.$name));
+            // Composer links path repositories with a relative symlink, or with an absolute junction on Windows.
+            symlink(DIRECTORY_SEPARATOR === '\\' ? $this->path('modules/'.$name) : '../../modules/'.$name, $this->path('vendor/app/'.$name));
         }
 
         $root->save();

@@ -18,7 +18,7 @@ function moduleComposerJson(string $name, array $psr4 = ['Modules\\Demo\\' => 's
 }
 
 it('describes every module of the fixture application', function () {
-    $modules = realpath(FIXTURE_MODULES);
+    $modules = str_replace('\\', '/', (string) realpath(FIXTURE_MODULES));
 
     expect(manifestBuilder($modules)->build())->toBe([
         'blog' => [

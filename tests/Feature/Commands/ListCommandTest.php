@@ -8,7 +8,7 @@ function listModules(array $options = []): string
 {
     Artisan::call('module:list', $options);
 
-    return preg_replace('/ +$/m', '', Artisan::output());
+    return preg_replace('/ +$/m', '', str_replace("\r\n", "\n", Artisan::output()));
 }
 
 it('lists the modules', function () {
