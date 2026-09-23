@@ -1,257 +1,46 @@
 # Laraneat Modules
 
-A Laravel package that provides a powerful modular architecture system for organizing large-scale applications into self-contained, reusable modules.
+Modular monolith infrastructure for Laravel. Every module is a Composer path package in `modules/`;
+one service provider loads its config, routes, views, translations, migrations and commands by convention.
+Any `make:*` command can generate into a module with `--module`.
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Performance Comparison](#performance-comparison-with-nwidartlaravel-modules)
-- [Architecture Diagram](#architecture-diagram)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Module Structure](#module-structure)
-- [Core Concepts](#core-concepts)
-- [Configuration](#configuration)
-- [Artisan Commands](#artisan-commands)
-- [Component Types](#component-types)
-- [Module Presets](#module-presets)
-- [Best Practices](#best-practices)
-
-## Overview
-
-Laraneat Modules helps you build maintainable, scalable Laravel applications. Inspired by the [Porto SAP (Software Architectural Pattern)](https://github.com/Mahmoudz/Porto), it encourages organizing code by business domains (modules) instead of technical layers.
-
-### Why Modular Architecture?
-
-| Traditional Laravel | Modular Approach |
-|---------------------|------------------|
-| All controllers in `app/Http/Controllers` | Each module has its own controllers |
-| All models in `app/Models` | Each module has its own models |
-| Coupled, hard to maintain | Decoupled, easy to maintain |
-| Difficult to reuse | Easy to extract and reuse |
-| Complex routing | Module-scoped routing |
-
-## Performance Comparison with nWidart/laravel-modules
-
-This package is designed with performance in mind. **With caching enabled, it adds virtually zero overhead** — the cached manifest is a simple PHP array that loads in microseconds, and all core services use lazy loading.
-
-Here's how it compares to the popular [nWidart/laravel-modules](https://github.com/nWidart/laravel-modules):
-
-### Key Differences
-
-| Feature | Laraneat Modules | nWidart/laravel-modules |
-|---------|------------------|-------------------------|
-| **Module manifest** | `composer.json` only | `module.json` + `composer.json` |
-| **Cache type** | Persistent file cache | In-memory only (per request) |
-| **Service providers** | DeferrableProvider (lazy) | Eager loading |
-| **Enable/disable modules** | Not supported | Supported via JSON file |
-| **Architecture pattern** | Domain-driven (Porto-inspired) | Flexible structure |
-
-### Performance Impact
-
-#### Production (with cache enabled)
-
-| Metric | Laraneat | nWidart |
-|--------|----------|---------|
-| File operations (first request) | 1 (cached manifest) | N (module.json × modules) |
-| File operations (subsequent) | 1 | N |
-| Providers loaded | On-demand | All modules |
-
-#### Development (without cache)
-
-Both packages scan the filesystem on each request. However, Laraneat uses `DeferrableProvider`, so the `ModulesRepository` is only instantiated when actually needed.
-
-### Why Laraneat is Faster
-
-1. **Persistent manifest cache** — Module metadata is cached to `bootstrap/cache/laraneat-modules.php`, eliminating filesystem scans in production.
-
-2. **DeferrableProvider** — Core services (`ModulesRepository`, `Composer`, console commands) implement Laravel's `DeferrableProvider` interface, loading only when requested.
-
-3. **Single manifest file** — Uses existing `composer.json` instead of requiring an additional `module.json` per module.
-
-4. **No status file I/O** — No `modules_statuses.json` reads on every request (unlike nWidart's enabled/disabled feature).
-
-### Recommendations
-
-```php
-// config/modules.php - Enable cache in production
-'cache' => [
-    'enabled' => env('APP_ENV') === 'production',
-],
-```
-
-After deployment:
 ```bash
-php artisan module:cache
+php artisan module:make blog
+php artisan make:model Post --module=blog -mfs
+php artisan make:controller PostController --module=blog --api
 ```
 
-For development with many modules, consider enabling cache manually to avoid repeated filesystem scans.
+- **No boilerplate in modules.** A module needs only a `composer.json`. It gets its own service provider only
+  when it has bindings, policies or events to register.
+- **Laravel-native.** Modules use the Laravel generators, stubs and conventions (`Models`, `Http\Controllers`, ...)
+  unless you map them elsewhere.
+- **Fast.** The package scans the modules once and caches the result with `php artisan optimize`. A cached
+  application does no filesystem scans, and HTTP requests never run the console-only parts.
+- **Safe with Composer.** Modules are installed as symlinked path packages; their vendor is excluded from
+  Packagist, so a missing module can never be replaced by a public package with the same name.
 
-## Architecture Diagram
+## Contents
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                              LARAVEL APPLICATION                             │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  ┌────────────────────────────────────────────────────────────────────────┐  │
-│  │                            ModulesRepository                           │  │
-│  │  - Discovers modules by scanning configured paths                      │  │
-│  │  - Manages module manifest (cached in production)                      │  │
-│  │  - Provides find, filter, delete operations                            │  │
-│  └────────────────────────────────────┬───────────────────────────────────┘  │
-│                                       │                                      │
-│                    ┌──────────────────┼─────────────────┐                    │
-│                    │                  │                 │                    │
-│                    ▼                  ▼                 ▼                    │
-│  ┌──────────────────────┐ ┌──────────────────────┐ ┌──────────────────────┐  │
-│  │   MODULE: Users      │ │  MODULE: Articles    │ │  MODULE: Orders      │  │
-│  │                      │ │                      │ │                      │  │
-│  │  ┌────────────────┐  │ │  ┌────────────────┐  │ │  ┌────────────────┐  │  │
-│  │  │  composer.json │  │ │  │  composer.json │  │ │  │  composer.json │  │  │
-│  │  │  - providers   │  │ │  │  - providers   │  │ │  │  - providers   │  │  │
-│  │  │  - aliases     │  │ │  │  - aliases     │  │ │  │  - aliases     │  │  │
-│  │  │  - namespace   │  │ │  │  - namespace   │  │ │  │  - namespace   │  │  │
-│  │  └────────────────┘  │ │  └────────────────┘  │ │  └────────────────┘  │  │
-│  │                      │ │                      │ │                      │  │
-│  │  src/                │ │  src/                │ │  src/                │  │
-│  │  ├── Actions/        │ │  ├── Actions/        │ │  ├── Actions/        │  │
-│  │  ├── Models/         │ │  ├── Models/         │ │  ├── Models/         │  │
-│  │  ├── Providers/      │ │  ├── Providers/      │ │  ├── Providers/      │  │
-│  │  └── UI/             │ │  └── UI/             │ │  └── UI/             │  │
-│  │      ├── API/        │ │      ├── API/        │ │      ├── API/        │  │
-│  │      ├── WEB/        │ │      ├── WEB/        │ │      ├── WEB/        │  │
-│  │      └── CLI/        │ │      └── CLI/        │ │      └── CLI/        │  │
-│  │                      │ │                      │ │                      │  │
-│  │  database/           │ │  database/           │ │  database/           │  │
-│  │  └── migrations/     │ │  └── migrations/     │ │  └── migrations/     │  │
-│  │                      │ │                      │ │                      │  │
-│  │  tests/              │ │  tests/              │ │  tests/              │  │
-│  └──────────────────────┘ └──────────────────────┘ └──────────────────────┘  │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Modules](#modules)
+- [Conventions](#conventions)
+- [Routes](#routes)
+- [Generators](#generators)
+- [Module service providers](#module-service-providers)
+- [Seeders](#seeders)
+- [Tests](#tests)
+- [Commands](#commands)
+- [Configuration](#configuration)
+- [Performance and caching](#performance-and-caching)
+- [Octane](#octane)
+- [Upgrading](#upgrading)
 
-### Module Internal Architecture
+## Requirements
 
-```
-┌───────────────────────────────────────────────────────────┐
-│                          MODULE                           │
-├───────────────────────────────────────────────────────────┤
-│                                                           │
-│  ┌───────────────────── UI LAYER ──────────────────────┐  │
-│  │                                                     │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │  │
-│  │  │     API     │  │     WEB     │  │     CLI     │  │  │
-│  │  │ Controllers │  │ Controllers │  │  Commands   │  │  │
-│  │  │  Requests   │  │  Requests   │  │             │  │  │
-│  │  │  Resources  │  │   Views     │  │             │  │  │
-│  │  │   Routes    │  │   Routes    │  │             │  │  │
-│  │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  │  │
-│  │         │                │                │         │  │
-│  └─────────┼────────────────┼────────────────┼─────────┘  │
-│            │                │                │            │
-│            └────────────────┼────────────────┘            │
-│                             ▼                             │
-│  ┌─────────────────── DOMAIN LAYER ────────────────────┐  │
-│  │                                                     │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │  │
-│  │  │   Actions   │  │    DTOs     │  │   Events    │  │  │
-│  │  │  (Business  │  │   (Data     │  │  (Domain    │  │  │
-│  │  │    Logic)   │  │  Transfer)  │  │   Events)   │  │  │
-│  │  └──────┬──────┘  └─────────────┘  └─────────────┘  │  │
-│  │         │                                           │  │
-│  │         ▼                                           │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │  │
-│  │  │   Models    │  │  Observers  │  │    Rules    │  │  │
-│  │  │ (Entities)  │  │             │  │ (Validation)│  │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘  │  │
-│  │                                                     │  │
-│  └─────────────────────────────────────────────────────┘  │
-│                                                           │
-│  ┌─────────────── INFRASTRUCTURE LAYER ────────────────┐  │
-│  │                                                     │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │  │
-│  │  │  Providers  │  │  Middleware │  │  Policies   │  │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘  │  │
-│  │                                                     │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │  │
-│  │  │    Mails    │  │Notifications│  │    Jobs     │  │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘  │  │
-│  │                                                     │  │
-│  └─────────────────────────────────────────────────────┘  │
-│                                                           │
-│  ┌────────────────── DATABASE LAYER ───────────────────┐  │
-│  │                                                     │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │  │
-│  │  │  Migrations │  │   Seeders   │  │  Factories  │  │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘  │  │
-│  │                                                     │  │
-│  └─────────────────────────────────────────────────────┘  │
-│                                                           │
-└───────────────────────────────────────────────────────────┘
-```
-
-### Request Flow Through Module
-
-Actions serve as controllers using the `lorisleiva/laravel-actions` package. Each Action has two entry points:
-- `handle()` - Core business logic (can be called from anywhere)
-- `asController()` - HTTP entry point (receives Request, returns Response)
-
-```
-┌──────────┐     ┌───────────┐     ┌────────────┐
-│  HTTP    │────▶│  Routes   │────▶│ Middleware │
-│ Request  │     │           │     │            │
-└──────────┘     └───────────┘     └─────┬──────┘
-                                         │
-                 ┌───────────────────────┘
-                 ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                             ACTION                              │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  asController(Request $request)     ◀── HTTP Entry      │    │
-│  │    │                                                    │    │
-│  │    ├── $request->toDTO()  ─────────▶  DTO               │    │
-│  │    │                                                    │    │
-│  │    └── $this->handle($dto)                              │    │
-│  └─────────────────────┬───────────────────────────────────┘    │
-│                        ▼                                        │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  handle(DTO $dto)                   ◀── Business Logic  │    │
-│  │    │                                                    │    │
-│  │    └── Model::create($dto->all())  ──▶  Database        │    │
-│  └─────────────────────┬───────────────────────────────────┘    │
-│                        │                                        │
-└────────────────────────┼────────────────────────────────────────┘
-                         ▼
-                 ┌────────────────┐     ┌─────────────┐
-                 │    Resource    │────▶│    HTTP     │
-                 │   (Format)     │     │  Response   │
-                 └────────────────┘     └─────────────┘
-```
-
-**Example Action:**
-
-```php
-class CreatePostAction
-{
-    use AsAction;
-
-    // Business logic - can be called from anywhere
-    public function handle(CreatePostDTO $dto): Post
-    {
-        return Post::create($dto->all());
-    }
-
-    // HTTP entry point - acts as controller
-    public function asController(CreatePostRequest $request): JsonResponse
-    {
-        $post = $this->handle($request->toDTO());
-
-        return (new PostResource($post))->created();
-    }
-}
-```
+- PHP 8.3 or newer
+- Laravel 13.12 or newer
+- Composer 2
 
 ## Installation
 
@@ -259,625 +48,385 @@ class CreatePostAction
 composer require laraneat/modules
 ```
 
-Publish the configuration file:
+The service provider and the `Modules` facade are registered by package discovery. Publish the config
+when you want to change the defaults:
 
 ```bash
-php artisan vendor:publish --provider="Laraneat\Modules\Providers\ModulesServiceProvider"
+php artisan vendor:publish --tag=modules-config
 ```
 
-## Quick Start
+## Modules
 
-### 1. Create Your First Module
-
-```bash
-php artisan module:make Blog
-```
-
-This creates a new module at `modules/blog/` with basic structure.
-
-### 2. Create Module with Full API
-
-```bash
-php artisan module:make Blog --preset=api --entity=Post
-```
-
-This creates a complete REST API module with:
-- Controllers for CRUD operations
-- Request validation classes
-- API resources for JSON responses
-- Database migrations and seeders
-- Complete test suite
-
-### 3. Generate Components
-
-```bash
-# Create a model
-php artisan module:make:model Post app/blog
-
-# Create a controller
-php artisan module:make:controller PostController app/blog --ui=api
-
-# Create a migration
-php artisan module:make:migration create_posts_table app/blog
-
-# Create an action
-php artisan module:make:action CreatePostAction app/blog
-```
-
-### 4. Run Module Migrations
-
-```bash
-php artisan module:migrate
-```
-
-## Module Structure
-
-A complete module follows this structure:
-
-```
-modules/blog/
-├── composer.json              # Module package definition
-├── src/
-│   ├── Actions/               # Business logic actions
-│   │   ├── CreatePostAction.php
-│   │   ├── UpdatePostAction.php
-│   │   └── DeletePostAction.php
-│   │
-│   ├── Models/                # Eloquent models
-│   │   └── Post.php
-│   │
-│   ├── DTO/                   # Data Transfer Objects
-│   │   ├── CreatePostDTO.php
-│   │   └── UpdatePostDTO.php
-│   │
-│   ├── Events/                # Domain events
-│   │   └── PostCreated.php
-│   │
-│   ├── Listeners/             # Event listeners
-│   │   └── SendPostNotification.php
-│   │
-│   ├── Jobs/                  # Queued jobs
-│   │   └── ProcessPost.php
-│   │
-│   ├── Policies/              # Authorization policies
-│   │   └── PostPolicy.php
-│   │
-│   ├── Providers/             # Service providers
-│   │   ├── BlogServiceProvider.php
-│   │   └── RouteServiceProvider.php
-│   │
-│   └── UI/
-│       ├── API/
-│       │   ├── Controllers/
-│       │   │   └── PostController.php
-│       │   ├── Requests/
-│       │   │   ├── CreatePostRequest.php
-│       │   │   └── UpdatePostRequest.php
-│       │   ├── Resources/
-│       │   │   └── PostResource.php
-│       │   ├── QueryWizards/
-│       │   │   └── PostsQueryWizard.php
-│       │   └── routes/
-│       │       └── v1.php
-│       │
-│       ├── WEB/
-│       │   ├── Controllers/
-│       │   ├── Requests/
-│       │   └── routes/
-│       │
-│       └── CLI/
-│           └── Commands/
-│
-├── database/
-│   ├── migrations/
-│   │   └── 2024_01_01_create_posts_table.php
-│   ├── seeders/
-│   │   └── PostSeeder.php
-│   └── factories/
-│       └── PostFactory.php
-│
-├── resources/
-│   └── views/
-│
-├── lang/
-│
-├── config/
-│
-└── tests/
-    ├── Unit/
-    ├── Feature/
-    └── API/
-```
-
-## Core Concepts
-
-### Module
-
-A **Module** represents a self-contained business domain. It's identified by its Composer package name (e.g., `app/blog`).
-
-```php
-use Laraneat\Modules\ModulesRepository;
-
-$repository = app(ModulesRepository::class);
-
-// Find a module
-$module = $repository->find('app/blog');
-
-// Get module properties
-$module->getName();           // "blog"
-$module->getStudlyName();     // "Blog"
-$module->getNamespace();      // "Modules\Blog"
-$module->getPath();           // "/path/to/modules/blog"
-$module->getProviders();      // ["Modules\Blog\Providers\BlogServiceProvider"]
-```
-
-### ModulesRepository
-
-The **ModulesRepository** discovers and manages all modules in your application.
-
-```php
-use Laraneat\Modules\ModulesRepository;
-
-$repository = app(ModulesRepository::class);
-
-// Get all modules
-$modules = $repository->getModules();
-
-// Check if module exists
-$repository->has('app/blog');
-
-// Find module by name
-$repository->filterByName('Blog');
-
-// Delete a module
-$repository->delete('app/blog');
-```
-
-### Actions
-
-**Actions** are the core of the architecture. Using `lorisleiva/laravel-actions`, they serve dual purposes:
-- **Business Logic** via `handle()` method - can be called from anywhere (other actions, jobs, commands)
-- **HTTP Controller** via `asController()` method - handles HTTP requests directly
-
-```php
-// src/Actions/CreatePostAction.php
-namespace Modules\Blog\Actions;
-
-use Lorisleiva\Actions\Concerns\AsAction;
-use Modules\Blog\DTO\CreatePostDTO;
-use Modules\Blog\Models\Post;
-use Modules\Blog\UI\API\Requests\CreatePostRequest;
-use Modules\Blog\UI\API\Resources\PostResource;
-use Illuminate\Http\JsonResponse;
-
-class CreatePostAction
-{
-    use AsAction;
-
-    // Core business logic - reusable from anywhere
-    public function handle(CreatePostDTO $dto): Post
-    {
-        return Post::create($dto->all());
-    }
-
-    // HTTP entry point - acts as controller
-    public function asController(CreatePostRequest $request): JsonResponse
-    {
-        $post = $this->handle($request->toDTO());
-
-        return (new PostResource($post))->created();
-    }
-}
-```
-
-**Routes point directly to Actions:**
-
-```php
-// routes/v1.php
-Route::post('/posts', CreatePostAction::class);
-Route::get('/posts', ListPostsAction::class);
-Route::get('/posts/{post}', ViewPostAction::class);
-Route::put('/posts/{post}', UpdatePostAction::class);
-Route::delete('/posts/{post}', DeletePostAction::class);
-```
-
-### DTOs (Data Transfer Objects)
-
-**DTOs** are simple objects that carry data between layers.
-
-```php
-// src/DTO/CreatePostDTO.php
-namespace Modules\Blog\DTO;
-
-class CreatePostDTO
-{
-    public function __construct(
-        public readonly string $title,
-        public readonly string $content,
-        public readonly int $authorId,
-    ) {}
-
-    public static function fromRequest(CreatePostRequest $request): self
-    {
-        return new self(
-            title: $request->validated('title'),
-            content: $request->validated('content'),
-            authorId: $request->user()->id,
-        );
-    }
-}
-```
-
-### Module Service Provider
-
-Each module has a service provider that extends `ModuleServiceProvider`:
-
-```php
-// src/Providers/BlogServiceProvider.php
-namespace Modules\Blog\Providers;
-
-use Laraneat\Modules\Support\ModuleServiceProvider;
-
-class BlogServiceProvider extends ModuleServiceProvider
-{
-    public function boot(): void
-    {
-        // Load module commands
-        $this->loadCommandsFrom([
-            'Modules\\Blog\\UI\\CLI\\Commands' => __DIR__ . '/../UI/CLI/Commands',
-        ]);
-
-        // Load migrations
-        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
-
-        // Load views
-        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'blog');
-    }
-}
-```
-
-## Configuration
-
-After publishing, edit `config/modules.php`:
-
-```php
-return [
-    // Where modules are stored
-    'path' => base_path('modules'),
-
-    // Base namespace for all modules
-    'namespace' => 'Modules',
-
-    // Custom stubs location (optional)
-    'custom_stubs' => base_path('stubs/modules'),
-
-    // Composer settings for generated modules
-    'composer' => [
-        'vendor' => 'app',
-        'author' => [
-            'name' => 'Your Name',
-            'email' => 'your@email.com',
-        ],
-    ],
-
-    // Component path/namespace mappings
-    'components' => [
-        'action' => [
-            'path' => 'src/Actions',
-            'namespace' => 'Actions',
-        ],
-        'model' => [
-            'path' => 'src/Models',
-            'namespace' => 'Models',
-        ],
-        // ... more components
-    ],
-
-    // Enable manifest caching (recommended for production)
-    'cache' => [
-        'enabled' => env('APP_ENV') === 'production',
-    ],
-];
-```
-
-## Artisan Commands
-
-### Module Management
-
-| Command | Description |
-|---------|-------------|
-| `module:list` | Display all registered modules |
-| `module:sync` | Refresh manifest and sync with Composer |
-| `module:delete {package}` | Delete a module completely |
-| `module:cache` | Build module manifest cache |
-| `module:cache:clear` | Clear module manifest cache |
-
-When a module is added to the application's `composer.json` (by `module:make` or `module:sync`), its vendor is also excluded from Packagist:
+A module is a directory in `modules/` with a `composer.json`:
 
 ```json
-"repositories": [
-    { "type": "path", "url": "modules/*", "options": { "symlink": true } },
-    { "type": "composer", "url": "https://repo.packagist.org", "exclude": ["app/*"] },
-    { "packagist.org": false }
-]
-```
-
-This way a missing module fails the install instead of silently pulling a same-named package from Packagist. If you configure Packagist yourself (for example with `only`), make sure the modules vendor is not resolved from there.
-
-### Module Creation
-
-```bash
-# Create module with interactive preset selection
-php artisan module:make Blog
-
-# Create with specific preset
-php artisan module:make Blog --preset=api --entity=Post
-```
-
-### Component Generators
-
-| Command | Description |
-|---------|-------------|
-| `module:make:action` | Create an Action class |
-| `module:make:controller` | Create a Controller (--ui=api\|web) |
-| `module:make:model` | Create an Eloquent Model |
-| `module:make:migration` | Create a database migration |
-| `module:make:request` | Create a Form Request |
-| `module:make:resource` | Create an API Resource |
-| `module:make:dto` | Create a DTO class |
-| `module:make:event` | Create an Event class |
-| `module:make:listener` | Create an Event Listener |
-| `module:make:job` | Create a Job class |
-| `module:make:policy` | Create a Policy class |
-| `module:make:provider` | Create a Service Provider |
-| `module:make:middleware` | Create Middleware |
-| `module:make:command` | Create a Console Command |
-| `module:make:factory` | Create a Model Factory |
-| `module:make:seeder` | Create a Database Seeder |
-| `module:make:test` | Create a Test class |
-| `module:make:observer` | Create a Model Observer |
-| `module:make:notification` | Create a Notification |
-| `module:make:mail` | Create a Mailable |
-| `module:make:rule` | Create a Validation Rule |
-| `module:make:query-wizard` | Create a QueryWizard |
-| `module:make:route` | Create a Route file |
-| `module:make:exception` | Create an Exception class |
-
-### Migration Commands
-
-| Command | Description |
-|---------|-------------|
-| `module:migrate` | Run module migrations |
-| `module:migrate:rollback` | Rollback module migrations |
-| `module:migrate:reset` | Reset all module migrations |
-| `module:migrate:refresh` | Refresh module migrations |
-| `module:migrate:status` | Show migration status |
-
-## Component Types
-
-The package supports 30+ component types organized by architectural layers:
-
-### UI Layer
-
-**API Components:**
-- `ApiController` - REST API controllers
-- `ApiRequest` - API form requests
-- `ApiResource` - API JSON resources
-- `ApiRoute` - API route files
-- `ApiQueryWizard` - Query builder wrappers
-- `ApiTest` - API integration tests
-
-**WEB Components:**
-- `WebController` - Web controllers
-- `WebRequest` - Web form requests
-- `WebRoute` - Web route files
-- `WebTest` - Web integration tests
-
-**CLI Components:**
-- `CliCommand` - Artisan commands
-- `CliTest` - Command tests
-
-### Domain Layer
-
-- `Action` - Business logic actions
-- `Model` - Eloquent models
-- `Dto` - Data Transfer Objects
-- `Event` - Domain events
-- `Listener` - Event listeners
-- `Job` - Queued jobs
-- `Rule` - Validation rules
-- `Observer` - Model observers
-
-### Infrastructure Layer
-
-- `Provider` - Service providers
-- `Middleware` - HTTP middleware
-- `Policy` - Authorization policies
-- `Mail` - Mailable classes
-- `Notification` - Notifications
-
-### Database Layer
-
-- `Migration` - Database migrations
-- `Seeder` - Database seeders
-- `Factory` - Model factories
-
-## Module Presets
-
-### Plain Preset (Default)
-
-Basic module with minimal structure:
-- Service providers only
-- Empty directory structure
-
-```bash
-php artisan module:make Blog --preset=plain
-```
-
-### Base Preset
-
-Includes database layer components:
-- Model with migrations
-- Factory for testing
-- Seeder with permissions
-- Authorization policy
-
-```bash
-php artisan module:make Blog --preset=base --entity=Post
-```
-
-### API Preset
-
-Complete REST API module:
-- All base preset components
-- CRUD controllers
-- Form requests (create, update, delete, list, view)
-- API resources
-- QueryWizard for filtering/sorting
-- DTOs for data transfer
-- Complete route file
-- Full test coverage
-
-```bash
-php artisan module:make Blog --preset=api --entity=Post
-```
-
-## Best Practices
-
-### 1. Keep Modules Independent
-
-Modules should be loosely coupled. If module A depends on module B, consider:
-- Using events for communication
-- Creating shared interfaces
-- Moving shared code to a separate package
-
-### 2. Separate HTTP Logic from Business Logic
-
-Keep `asController()` thin - it should only handle HTTP concerns. Put business logic in `handle()`:
-
-```php
-class CreatePostAction
 {
-    use AsAction;
-
-    // Business logic - reusable, testable
-    public function handle(CreatePostDTO $dto): Post
-    {
-        $post = Post::create($dto->all());
-        event(new PostCreated($post));
-
-        return $post;
-    }
-
-    // HTTP concerns only - request/response handling
-    public function asController(CreatePostRequest $request): JsonResponse
-    {
-        $post = $this->handle($request->toDTO());
-
-        return (new PostResource($post))->created();
-    }
-}
-```
-
-### 3. Reuse Actions Across Contexts
-
-Actions can be called from multiple places:
-
-```php
-// From another Action
-class ImportPostsAction
-{
-    public function __construct(private CreatePostAction $createPost) {}
-
-    public function handle(array $posts): void
-    {
-        foreach ($posts as $postData) {
-            $this->createPost->handle(new CreatePostDTO(...$postData));
+    "name": "app/blog",
+    "autoload": {
+        "psr-4": {
+            "Modules\\Blog\\": "src/",
+            "Modules\\Blog\\Database\\Factories\\": "database/factories/",
+            "Modules\\Blog\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Blog\\Tests\\": "tests/"
         }
     }
 }
-
-// From a Job
-class ProcessImportJob implements ShouldQueue
-{
-    public function handle(CreatePostAction $action): void
-    {
-        $action->handle($this->dto);
-    }
-}
-
-// From a Command
-class SeedPostsCommand extends Command
-{
-    public function handle(CreatePostAction $action): void
-    {
-        $action->handle(new CreatePostDTO(...));
-    }
-}
 ```
 
-### 4. Use DTOs for Data Transfer
+- The directory name (`blog`) is the module name. It is also the namespace of the module views,
+  translations and Blade components: `view('blog::index')`, `__('blog::messages.welcome')`, `<x-blog::alert />`.
+- The first `autoload.psr-4` entry is the root namespace of the module.
+- The module is required by the application like any other package:
 
-DTOs provide type safety and clear contracts:
-
-```php
-class CreatePostDTO
+```json
 {
-    public function __construct(
-        public readonly string $title,
-        public readonly string $content,
-        public readonly int $authorId,
-    ) {}
-
-    public function all(): array
-    {
-        return [
-            'title' => $this->title,
-            'content' => $this->content,
-            'author_id' => $this->authorId,
-        ];
-    }
+    "require": {
+        "app/blog": "*@dev"
+    },
+    "repositories": [
+        {"type": "path", "url": "modules/*", "options": {"symlink": true}},
+        {"type": "composer", "url": "https://repo.packagist.org", "exclude": ["app/*"]},
+        {"packagist.org": false}
+    ]
 }
 ```
 
-### 5. Organize Routes by Version
+You do not have to write this by hand: `module:make` and `module:sync` maintain it.
 
-For APIs, version your routes:
+- `*@dev` accepts the `dev-*` version of a path package with `"minimum-stability": "stable"`.
+- The Packagist repository excludes the vendor of the modules, so Composer fails instead of installing
+  a public package when a module directory is missing (another branch, a partial checkout). Pick a vendor
+  that you do not publish public packages under. If you use a Packagist mirror or a private repository
+  that proxies Packagist, exclude the vendor there as well.
 
-```
-routes/
-├── v1.php    # Version 1 routes
-└── v2.php    # Version 2 routes
-```
-
-### 6. Write Tests
-
-Each module should have comprehensive tests:
+### Creating a module
 
 ```bash
-# Run all module tests
-./vendor/bin/pest modules/blog/tests
-
-# Run specific test
-./vendor/bin/pest --filter "can create post"
+php artisan module:make blog
+php artisan module:make shop-order --preset=api
+php artisan module:make blog --no-update
 ```
 
-### 7. Use Caching in Production
+`module:make`:
 
-Enable manifest caching for better performance:
+1. renders the module template into `modules/blog`;
+2. adds the module to the `composer.json` of the application: the path repository, the requirement,
+   the Packagist exclusion, and the `autoload-dev` entries of the module tests;
+3. runs `composer update app/blog`. With `--no-update` it only prints the command, which is useful in CI
+   or when an agent drives the work.
+
+The name is normalized to kebab case (`ShopOrder` becomes `shop-order`, namespace `Modules\ShopOrder`).
+
+### Module templates
+
+The built-in template has a `composer.json` and empty convention directories. Your own templates live
+in `stubs/module/<preset>`: `--preset=api` uses `stubs/module/api`, and `stubs/module/default` replaces the
+built-in template. Start from a copy of the built-in one:
+
+```bash
+php artisan vendor:publish --tag=modules-stubs
+```
+
+- Files ending in `.stub` are rendered and lose the extension. Other files are copied as they are.
+- Placeholders work in file contents and in paths: `{{ variable }}` or `{{ variable|filter|filter }}`.
+- Variables:
+
+  | Variable    | Example value            |
+  |-------------|--------------------------|
+  | `name`      | `article-category`       |
+  | `namespace` | `Modules\ArticleCategory` |
+  | `package`   | `app/article-category`   |
+  | `vendor`    | `app`                    |
+  | `date`      | `2026_09_23_120000` (for migration names) |
+
+- Filters: `studly`, `camel`, `snake`, `kebab`, `plural`, `singular`, `lower`, `upper`, `title`, and `json`
+  (escapes backslashes for JSON strings). They apply from left to right: `{{ name|plural|snake }}` is
+  `article_categories`.
+- An unknown variable or filter is an error, and nothing is written.
+- Rendered paths must stay inside the module directory.
+- The template must have a `composer.json` (or `composer.json.stub`), and its package name must match the module.
+
+```text
+stubs/module/api/
+├── composer.json.stub
+├── routes/api/{{ name }}.php.stub
+├── src/Models/{{ name|studly }}.php.stub
+└── database/migrations/{{ date }}_create_{{ name|plural|snake }}_table.php.stub
+```
+
+## Conventions
+
+The package loads everything it finds in a module. A missing directory is skipped.
+
+| Module path                         | Loaded as                                                              |
+|-------------------------------------|------------------------------------------------------------------------|
+| `config/*.php`                      | config keyed by the file name: `config/blog.php` is `config('blog')`. The application config wins. |
+| `lang/`                             | translations: `__('blog::messages.welcome')`, plus JSON files          |
+| `resources/views/`                  | views: `view('blog::posts.index')`                                     |
+| `src/View/Components/`              | Blade components: `<x-blog::alert />`                                  |
+| `database/migrations/`              | migrations of `php artisan migrate` (console only)                     |
+| `database/factories/`               | factories of the module models (console only, see below)               |
+| `database/seeders/`                 | seeders of `Modules::seeders()`                                        |
+| `routes/api/`, `routes/web/`        | [route groups](#routes)                                                |
+| `src/Console/Commands/`             | Artisan commands (console only)                                        |
+
+`src/` is the directory of the root namespace of the module: `View/Components` and `Console/Commands` are
+looked up there.
+
+### Factories
+
+`Modules\Blog\Models\Post::factory()` uses `Modules\Blog\Database\Factories\PostFactory`, and the factory
+knows its model, the way Laravel pairs `App\Models\Post` with `Database\Factories\PostFactory`. Classes outside
+the modules keep the Laravel behavior.
+
+The factory resolver is registered only in the console (tests, seeders, Tinker), because factories are not
+used while serving requests. If you create models with factories during HTTP requests, point the model at
+its factory:
 
 ```php
-// config/modules.php
-'cache' => [
-    'enabled' => env('APP_ENV') === 'production',
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
+
+#[UseFactory(PostFactory::class)]
+final class Post extends Model
+{
+    use HasFactory;
+}
+```
+
+### Commands
+
+Classes in the `make:command` namespace of a module (`src/Console/Commands`, including subdirectories) are
+registered as Artisan commands. Abstract classes and other classes are skipped. Commands with the
+`#[AsCommand]` attribute are loaded lazily.
+
+### Policies and events
+
+Laravel already finds `Modules\Blog\Policies\PostPolicy` for `Modules\Blog\Models\Post`. Events and
+listeners are not discovered: register them in a [module service provider](#module-service-providers).
+
+## Routes
+
+Route groups are defined in `config/modules.php`:
+
+```php
+'routes' => [
+    'api' => ['path' => 'routes/api', 'prefix' => 'api', 'middleware' => ['api']],
+    'web' => ['path' => 'routes/web', 'middleware' => ['web']],
 ],
 ```
 
-Run after deployment:
-```bash
-php artisan module:cache
+- Every `*.php` file in the `path` directory of a module is loaded inside `Route::group()` with the
+  other attributes, so `prefix`, `middleware`, `as`, `domain`, `where` and the rest work as usual.
+- Nested directories are appended to the prefix: `routes/api/v1/admin/stats.php` is loaded with the
+  `api/v1/admin` prefix.
+- Files of a directory are loaded before its subdirectories, in alphabetical order.
+- Groups apply to all modules. A module with its own layout can load its routes in its service provider.
+- Nothing is loaded when the routes are cached: `php artisan route:cache` includes the module routes.
+
+```php
+// modules/blog/routes/api/posts.php
+use Illuminate\Support\Facades\Route;
+use Modules\Blog\Http\Controllers\PostController;
+
+Route::apiResource('posts', PostController::class); // /api/posts
 ```
+
+## Generators
+
+Every generator accepts `--module`: all `make:*` commands of Laravel, `make:migration`, the table migrations
+(`make:queue-table`, `make:session-table`, ...) and the generators of other packages that extend
+`GeneratorCommand` (`make:action` of laravel-actions, `make:data` of laravel-data, ...).
+
+```bash
+php artisan make:model Post --module=blog -mfs --policy
+php artisan make:request StorePostRequest --module=blog
+php artisan make:migration create_comments_table --module=blog
+php artisan make:test PostTest --module=blog
+```
+
+Classes go where Laravel puts them in the application, relative to the root namespace of the module.
+Some generators are adjusted to the module:
+
+| Command                      | In the `blog` module                                                        |
+|------------------------------|-----------------------------------------------------------------------------|
+| `make:model`                 | `src/Models` (if the directory exists, like in Laravel). With `-f`, the factory goes to `database/factories`. |
+| `make:factory`, `make:seeder` | `database/factories`, `database/seeders` with the `Modules\Blog\Database\*` namespaces |
+| `make:migration`             | `database/migrations`                                                       |
+| `make:test`                  | `tests/Feature` or `tests/Unit` with the `Modules\Blog\Tests\*` namespaces  |
+| `make:view`, `make:component`, `make:mail`, `make:notification` | views in `resources/views`, referenced as `blog::...` |
+| `make:provider`              | `src/Providers`, registered in `extra.laravel.providers` of the module `composer.json` |
+| `make:config`                | `config`                                                                    |
+
+Nested commands run in the same module: `make:model Post --module=blog -mfs` creates the model, the
+migration, the factory and the seeder in `blog`.
+
+### Namespaces
+
+To use another layout, map a command to a namespace of the module in `config/modules.php`:
+
+```php
+'generators' => [
+    'make:controller' => 'UI\API\Controllers',
+    'make:request' => 'UI\API\Requests',
+    'make:command' => 'UI\CLI\Commands',
+],
+```
+
+`make:controller PostController --module=blog` then creates `Modules\Blog\UI\API\Controllers\PostController`.
+A fully qualified name is used as it is. The `make:command` namespace is also where
+[module commands](#commands) are discovered.
+
+The stubs of the generators are the Laravel ones: customize them with `php artisan stub:publish`.
+
+## Module service providers
+
+A module does not need a service provider. Add one for bindings, event listeners, gates or anything the
+conventions do not cover:
+
+```bash
+php artisan make:provider BlogServiceProvider --module=blog
+php artisan module:sync
+```
+
+The provider is registered in `extra.laravel.providers` of the module `composer.json`; `module:sync` installs
+the changed module, so that Laravel package discovery picks it up.
+
+Module providers are loaded by package discovery, in the order of the package names. The module config
+is merged while the Laraneat provider registers, which may happen after the `register()` of a module
+provider. Read config in `boot()`, or inside the closures of your bindings, not directly in `register()`.
+
+## Seeders
+
+`Modules::seeders()` returns the seeder classes of all modules, ready for `$this->call()`:
+
+```php
+use Laraneat\Modules\Facades\Modules;
+
+final class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $this->call(Modules::seeders());
+    }
+}
+```
+
+- Without arguments it returns the seeders of `database/seeders`. Pass subdirectories to add them:
+  `Modules::seeders('', 'Demo')` returns `database/seeders` and `database/seeders/Demo`,
+  `Modules::seeders('Demo')` only `database/seeders/Demo`. Subdirectories are not searched recursively.
+- Seeders run in the order of their integer `_N` class name suffix (`PermissionsSeeder_1` before
+  `UsersSeeder_2`); seeders without a suffix run last. Equal suffixes run in the order of the class names.
+- Abstract classes and classes that do not extend `Seeder` are skipped.
+
+## Tests
+
+Module tests live in `modules/<module>/tests`. `module:make` and `module:sync` add their namespace to the
+`autoload-dev` of the application, because Composer does not autoload the `autoload-dev` of dependencies.
+
+Add the module tests to `phpunit.xml`:
+
+```xml
+<testsuite name="Feature">
+    <directory>tests/Feature</directory>
+    <directory>modules/*/tests/Feature</directory>
+</testsuite>
+<testsuite name="Unit">
+    <directory>tests/Unit</directory>
+    <directory>modules/*/tests/Unit</directory>
+</testsuite>
+```
+
+With Pest, also extend the test case in `tests/Pest.php`:
+
+```php
+pest()->extend(Tests\TestCase::class)->in('Feature', '../modules/*/tests/Feature');
+```
+
+## Commands
+
+| Command                         | Description |
+|---------------------------------|-------------|
+| `module:make <name>`            | Create a module. `--preset=<preset>` picks the template, `--no-update` skips `composer update`. |
+| `module:sync`                   | Add every module to the `composer.json` of the application and run `composer update` for the modules that changed. `--no-update` only prints the command. |
+| `module:delete <name>`          | Run `composer remove` for the module, then delete its directory. Asks for confirmation; `--force` skips it. `--no-update` only edits `composer.json`. A symlinked module directory is never deleted. |
+| `module:doctor`                 | Check the modules and how they are installed. Read-only; fails when it finds errors. |
+| `module:list`                   | List the modules. With `-v`, also what is loaded from each of them. |
+| `module:cache`                  | Cache the module manifest. Part of `php artisan optimize`. |
+| `module:clear`                  | Remove the module manifest cache. Part of `php artisan optimize:clear`. |
+
+`module:doctor` checks:
+
+- that every module is required, excluded from Packagist and installed, and that the installed package
+  links to the module directory;
+- that the installed package matches the module `composer.json` (providers, autoload);
+- the `autoload-dev` entries of the module tests;
+- that the root namespace directory exists and that factories and seeders are autoloaded;
+- that the `extra.laravel.providers` classes exist;
+- route files outside of the configured route groups;
+- unknown keys in `config/modules.php`, an outdated manifest cache, and a modules path that
+  `octane:start --watch` can not watch.
+
+Most problems are fixed by `php artisan module:sync`.
+
+The `about` command shows the number of modules, their path and whether the manifest is cached.
+
+## Configuration
+
+```php
+return [
+    // The directory of the modules. Every subdirectory with a composer.json is a module.
+    'path' => base_path('modules'),
+
+    // The namespace prefix and the Composer vendor of new modules.
+    'namespace' => 'Modules',
+    'vendor' => 'app',
+
+    // Route groups, see "Routes".
+    'routes' => [
+        'api' => ['path' => 'routes/api', 'prefix' => 'api', 'middleware' => ['api']],
+        'web' => ['path' => 'routes/web', 'middleware' => ['web']],
+    ],
+
+    // Namespaces of the generators inside a module, see "Generators".
+    'generators' => [],
+];
+```
+
+## Performance and caching
+
+The package builds a manifest of the modules: their packages, namespaces and the files it loads. The
+provider only reads the manifest, it never scans the modules while it boots.
+
+- `php artisan optimize` (or `module:cache`) writes the manifest to `bootstrap/cache/modules.php`, next to
+  the config and route caches. A cached application loads it with one `require`. Set `MODULES_CACHE` to
+  store it elsewhere, like `APP_CONFIG_CACHE`.
+- Without the cache file, the manifest is built once per process. There is no stale cache in development.
+- `module:make`, `module:sync` and `module:delete` rebuild the cache file if it exists.
+- The config and route caches include the module config and routes, so the package skips them when they
+  are cached.
+- Migrations, commands, factories, Tinker aliases and the Octane watcher are registered only in the console.
+
+Cache the application when you deploy:
+
+```bash
+php artisan optimize
+```
+
+## Octane
+
+The package keeps no state that changes after boot, so it is safe for Octane workers.
+
+`php artisan octane:start --watch` restarts the workers when module files change: the modules path is
+added to `octane.watch` automatically, if the modules are inside the application.
+
+## Upgrading
+
+See [UPGRADE.md](UPGRADE.md) for the upgrade from 2.x, and [CHANGELOG.md](CHANGELOG.md) for the changes.
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+The MIT License (MIT). See [LICENSE](LICENSE).
