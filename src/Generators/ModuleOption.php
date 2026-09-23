@@ -20,6 +20,7 @@ use Illuminate\Foundation\Console\NotificationMakeCommand as BaseNotificationMak
 use Illuminate\Foundation\Console\ProviderMakeCommand as BaseProviderMakeCommand;
 use Illuminate\Foundation\Console\TestMakeCommand as BaseTestMakeCommand;
 use Illuminate\Foundation\Console\ViewMakeCommand as BaseViewMakeCommand;
+use Illuminate\Routing\Console\ControllerMakeCommand as BaseControllerMakeCommand;
 use Illuminate\Support\Facades\Config;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModuleRepository;
@@ -38,6 +39,7 @@ final class ModuleOption
 {
     private const array GENERATORS = [
         BaseComponentMakeCommand::class => ComponentMakeCommand::class,
+        BaseControllerMakeCommand::class => ControllerMakeCommand::class,
         BaseFactoryMakeCommand::class => FactoryMakeCommand::class,
         BaseMailMakeCommand::class => MailMakeCommand::class,
         BaseModelMakeCommand::class => ModelMakeCommand::class,
@@ -78,13 +80,18 @@ final class ModuleOption
         $command->setCode(Closure::bind(function (InputInterface $input, OutputInterface $output): int {
             /** @var Command $this */
             $name = $input->getOption('module');
+            $context = $this->getLaravel()->make(ModuleContext::class);
 
+            // A generator called by another one (make:model Post -a) runs in the module of the caller.
             if (! is_string($name)) {
+                if (($module = $context->module()) !== null) {
+                    ModuleOption::qualifyName($this, $input, $module);
+                }
+
                 return $this->execute($input, $output);
             }
 
-            $laravel = $this->getLaravel();
-            $module = $laravel->make(ModuleRepository::class)->find($name);
+            $module = $this->getLaravel()->make(ModuleRepository::class)->find($name);
 
             if ($module === null) {
                 $this->components->error("Module [{$name}] not found.");
@@ -92,30 +99,34 @@ final class ModuleOption
                 return Command::FAILURE;
             }
 
-            ModuleOption::qualifyName($this, $input, $module, Config::array('modules.generators', []));
+            return $context->run($module, function () use ($input, $output, $module): int {
+                ModuleOption::qualifyName($this, $input, $module);
 
-            return $laravel->make(ModuleContext::class)->run($module, fn (): int => $this->execute($input, $output));
+                return $this->execute($input, $output);
+            });
         }, $command, $command::class));
     }
 
     /**
      * Apply the "generators" config: "make:controller Post" becomes "Modules\Blog\<namespace>\Post".
-     * A fully qualified name is left as is by the generator.
-     *
-     * @param  array<array-key, mixed>  $generators
+     * The namespace is relative to the root namespace of the generator in the module, which is
+     * "Modules\Blog\Tests" for make:test and "Modules\Blog\Database\Seeders" for make:seeder.
+     * A name in the module namespace is left as it is.
      */
-    public static function qualifyName(Command $command, InputInterface $input, Module $module, array $generators): void
+    public static function qualifyName(Command $command, InputInterface $input, Module $module): void
     {
-        $namespace = $generators[$command->getName()] ?? null;
+        $namespace = Config::array('modules.generators', [])[$command->getName()] ?? null;
 
-        if (! is_string($namespace) || ! $input->hasArgument('name') || ! is_string($class = $input->getArgument('name'))) {
+        if (! $command instanceof GeneratorCommand || ! is_string($namespace) || ! $input->hasArgument('name') || ! is_string($class = $input->getArgument('name'))) {
             return;
         }
 
         $class = trim(str_replace('/', '\\', $class), '\\');
 
         if ($class !== '' && ! str_starts_with($class, $module->namespace.'\\')) {
-            $input->setArgument('name', $module->namespace.'\\'.trim($namespace, '\\').'\\'.$class);
+            $root = (fn (): string => $this->rootNamespace())->call($command);
+
+            $input->setArgument('name', rtrim($root, '\\').'\\'.trim($namespace, '\\').'\\'.$class);
         }
     }
 }

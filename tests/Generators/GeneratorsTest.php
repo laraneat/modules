@@ -75,6 +75,87 @@ it('uses the namespaces of the "generators" config', function (string $command, 
     'without --module' => ['make:action PublishPost', 'app/Actions/PublishPost.php'],
 ]);
 
+it('applies the "generators" config to the generators a generator calls', function () {
+    $this->files(['config/modules.php' => '<?php return ["generators" => ['.implode(', ', [
+        '"make:model" => "Domain\\\\Models"',
+        '"make:controller" => "UI\\\\API\\\\Controllers"',
+        '"make:request" => "UI\\\\API\\\\Requests"',
+        '"make:policy" => "Domain\\\\Policies"',
+    ]).']];']);
+    $this->reboot();
+
+    $files = $this->generate('make:model Book -a --module=blog');
+
+    expect(array_keys($files))->toEqualCanonicalizing([
+        'modules/blog/src/Domain/Models/Book.php',
+        'modules/blog/src/Domain/Policies/BookPolicy.php',
+        'modules/blog/src/UI/API/Controllers/BookController.php',
+        'modules/blog/src/UI/API/Requests/StoreBookRequest.php',
+        'modules/blog/src/UI/API/Requests/UpdateBookRequest.php',
+        'modules/blog/database/factories/Domain/Models/BookFactory.php',
+        'modules/blog/database/migrations/{date}_create_books_table.php',
+        'modules/blog/database/seeders/BookSeeder.php',
+    ])
+        ->and($files['modules/blog/src/Domain/Models/Book.php'])->toContain('HasFactory<\\Modules\\Blog\\Database\\Factories\\Domain\\Models\\BookFactory>')
+        ->and($files['modules/blog/src/UI/API/Controllers/BookController.php'])->toContain(
+            'namespace Modules\\Blog\\UI\\API\\Controllers;',
+            'use Modules\\Blog\\Domain\\Models\\Book;',
+            "use Modules\\Blog\\UI\\API\\Requests\\StoreBookRequest;\nuse Modules\\Blog\\UI\\API\\Requests\\UpdateBookRequest;",
+        )
+        ->and($files['modules/blog/database/factories/Domain/Models/BookFactory.php'])->toContain(
+            'namespace Modules\\Blog\\Database\\Factories\\Domain\\Models;',
+            'use Modules\\Blog\\Domain\\Models\\Book;',
+        );
+});
+
+it('imports the form requests of a controller from the module', function () {
+    $files = $this->generate('make:controller PostController --model=Post --requests --module=blog');
+
+    expect($files['modules/blog/src/Http/Controllers/PostController.php'])
+        ->toContain("use Modules\\Blog\\Http\\Requests\\StorePostRequest;\nuse Modules\\Blog\\Http\\Requests\\UpdatePostRequest;")
+        ->not->toContain('App\\')
+        ->and($files)->toHaveKeys(['modules/blog/src/Http/Requests/StorePostRequest.php', 'modules/blog/src/Http/Requests/UpdatePostRequest.php']);
+});
+
+it('maps namespaces relative to the root namespace of the generator', function (string $command, array $expected) {
+    $this->files(['config/modules.php' => '<?php return ["generators" => ['.implode(', ', [
+        '"make:test" => "Feature\\\\Api"',
+        '"make:seeder" => "Demo"',
+        '"make:factory" => "Testing"',
+        '"make:component" => "UI\\\\Components"',
+    ]).']];']);
+    $this->reboot();
+
+    $files = $this->generate($command);
+
+    expect(array_keys($files))->toEqualCanonicalizing(array_keys($expected));
+
+    foreach ($expected as $path => $contains) {
+        expect($files[$path])->toContain(...$contains);
+    }
+})->with([
+    'test' => ['make:test PostTest --phpunit --module=blog', [
+        'modules/blog/tests/Feature/Api/PostTest.php' => ['namespace Modules\\Blog\\Tests\\Feature\\Api;'],
+    ]],
+    'seeder' => ['make:seeder PostSeeder --module=blog', [
+        'modules/blog/database/seeders/Demo/PostSeeder.php' => ['namespace Modules\\Blog\\Database\\Seeders\\Demo;'],
+    ]],
+    'factory' => ['make:factory PostFactory --module=blog', [
+        'modules/blog/database/factories/Testing/PostFactory.php' => ['namespace Modules\\Blog\\Database\\Factories\\Testing;'],
+    ]],
+    'component' => ['make:component Forms/Input --module=blog', [
+        'modules/blog/src/UI/Components/Forms/Input.php' => ['namespace Modules\\Blog\\UI\\Components\\Forms;', "view('blog::components.forms.input')"],
+        'modules/blog/resources/views/components/forms/input.blade.php' => ['<div>'],
+    ]],
+]);
+
+it('creates a factory with a fully qualified name in the module', function () {
+    $files = $this->generate('make:factory "Modules\\\\Blog\\\\Database\\\\Factories\\\\Admin\\\\TagFactory" --module=blog');
+
+    expect(array_keys($files))->toBe(['modules/blog/database/factories/Admin/TagFactory.php'])
+        ->and($files['modules/blog/database/factories/Admin/TagFactory.php'])->toContain('namespace Modules\\Blog\\Database\\Factories\\Admin;');
+});
+
 it('generates into the application without --module', function (string $command, array $paths) {
     expect(array_keys($this->generate($command)))->toEqualCanonicalizing($paths);
 })->with([

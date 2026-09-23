@@ -16,6 +16,23 @@ final class FactoryMakeCommand extends BaseFactoryMakeCommand
 {
     use ResolvesModule;
 
+    /**
+     * "Modules\Blog\Database\Factories\PostFactory" is "PostFactory" of the module, not
+     * a factory in "database/factories/Database/Factories".
+     */
+    #[Override]
+    protected function qualifyClass($name)
+    {
+        $module = $this->currentModule();
+        $name = str_replace('/', '\\', ltrim($name, '\\/'));
+
+        if ($module !== null && str_starts_with($name, $factories = $module->namespace.'\\Database\\Factories\\')) {
+            $name = $module->namespace.'\\'.substr($name, strlen($factories));
+        }
+
+        return parent::qualifyClass($name);
+    }
+
     #[Override]
     protected function buildClass($name)
     {

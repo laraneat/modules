@@ -46,6 +46,8 @@ trait NamespacesViews
 
     /**
      * Not marked as an override: make:notification has getView() only since Laravel 13.33.
+     *
+     * @return string
      */
     protected function getView()
     {

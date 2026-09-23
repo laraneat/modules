@@ -264,6 +264,9 @@ Some generators are adjusted to the module:
 Nested commands run in the same module: `make:model Post --module=blog -mfs` creates the model, the
 migration, the factory and the seeder in `blog`.
 
+`--model` and `--parent` name models of the module: `--model=Post` is `Modules\Blog\Models\Post`. As in the
+application, they can not reference a model of another namespace.
+
 ### Namespaces
 
 To use another layout, map a command to a namespace of the module in `config/modules.php`:
@@ -277,8 +280,15 @@ To use another layout, map a command to a namespace of the module in `config/mod
 ```
 
 `make:controller PostController --module=blog` then creates `Modules\Blog\UI\API\Controllers\PostController`.
-A fully qualified name is used as it is. The `make:command` namespace is also where
-[module commands](#commands) are discovered.
+Nested commands use the config too: `make:model Post -a --module=blog` puts the controller and the form
+requests there, and the controller imports the requests from `UI\API\Requests`.
+
+- A namespace is relative to where the generator puts classes in a module: `Modules\Blog\Tests` for
+  `make:test`, `Modules\Blog\Database\Factories` for `make:factory`, `Modules\Blog\Database\Seeders`
+  for `make:seeder` and `Modules\Blog` for the others.
+- A name that starts with the module namespace is used as it is: `make:action "Modules\Blog\Domain\Publish"`.
+- The `make:command` namespace is also where [module commands](#commands) are discovered, and the
+  `make:component` namespace is where `<x-blog::...>` components are looked up.
 
 The stubs of the generators are the Laravel ones: customize them with `php artisan stub:publish`.
 

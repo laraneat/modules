@@ -6,7 +6,6 @@ namespace Laraneat\Modules\Generators;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Console\ModelMakeCommand as BaseModelMakeCommand;
-use Illuminate\Support\Str;
 use Override;
 
 /**
@@ -22,16 +21,15 @@ final class ModelMakeCommand extends BaseModelMakeCommand
     #[Override]
     protected function createFactory()
     {
-        $module = $this->currentModule();
-
-        if ($module === null) {
+        if ($this->currentModule() === null) {
             parent::createFactory();
 
             return;
         }
 
         $this->call('make:factory', [
-            'name' => Str::after($this->factoryClass(), $module->namespace.'\\Database\\Factories\\'),
+            // Fully qualified, so the "generators" config does not move it away from the factory resolver.
+            'name' => $this->factoryClass(),
             '--model' => $this->qualifyClass($this->getNameInput()),
         ]);
     }

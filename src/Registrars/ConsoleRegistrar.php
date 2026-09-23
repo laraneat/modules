@@ -91,9 +91,13 @@ final readonly class ConsoleRegistrar
 
             $name = Str::replaceLast('Factory', '', Str::replaceFirst($factories, '', $factory::class));
 
-            return class_exists($root.'Models\\'.$name)
-                ? $root.'Models\\'.$name
-                : $root.Str::replaceLast('Factory', '', class_basename($factory));
+            foreach ([$root.'Models\\'.$name, $root.$name] as $model) {
+                if (class_exists($model)) {
+                    return $model;
+                }
+            }
+
+            return $root.Str::replaceLast('Factory', '', class_basename($factory));
         });
     }
 
