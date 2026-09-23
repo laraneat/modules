@@ -1,0 +1,17 @@
+{
+    "name": "{{ package }}",
+    "description": "The {{ name }} module.",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "{{ namespace|json }}\\": "src/",
+            "{{ namespace|json }}\\Database\\Factories\\": "database/factories/",
+            "{{ namespace|json }}\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "{{ namespace|json }}\\Tests\\": "tests/"
+        }
+    }
+}
