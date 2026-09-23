@@ -41,6 +41,11 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, json
           coverage: none
 
+      # Laravel 10 and 11 are no longer supported and get no security fixes, so the advisories block them.
+      - name: Allow unsupported Laravel versions
+        if: matrix.laravel == '10.*' || matrix.laravel == '11.*'
+        run: composer remove --dev roave/security-advisories --no-update --no-interaction
+
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
