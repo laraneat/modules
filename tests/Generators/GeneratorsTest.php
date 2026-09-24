@@ -138,6 +138,20 @@ it('maps to the module root with an empty namespace', function () {
     expect($files['modules/blog/src/RackPolicy.php'])->toContain('namespace Modules\\Blog;', 'use Modules\\Blog\\Rack;');
 });
 
+it('imports form requests and names component views in the module root with an empty namespace', function () {
+    $this->files(['config/modules.php' => '<?php return ["generators" => ["make:request" => "", "make:component" => ""]];']);
+    $this->reboot();
+
+    $controller = $this->generate('make:controller PostController --model=Post --requests --module=blog');
+    $component = $this->generate('make:component Forms/Input --module=blog');
+
+    expect($controller['modules/blog/src/Http/Controllers/PostController.php'])
+        ->toContain("use Modules\\Blog\\StorePostRequest;\nuse Modules\\Blog\\UpdatePostRequest;")
+        ->and($controller)->toHaveKeys(['modules/blog/src/StorePostRequest.php', 'modules/blog/src/UpdatePostRequest.php'])
+        ->and($component['modules/blog/src/Forms/Input.php'])->toContain("view('blog::components.forms.input')")
+        ->and($component)->toHaveKey('modules/blog/resources/views/components/forms/input.blade.php');
+});
+
 it('leaves the --model option of other generators alone', function () {
     $this->files(['config/modules.php' => '<?php return ["generators" => ["make:model" => "Domain\\\\Models"]];']);
     $this->reboot();

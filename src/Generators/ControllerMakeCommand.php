@@ -6,6 +6,7 @@ namespace Laraneat\Modules\Generators;
 
 use Illuminate\Routing\Console\ControllerMakeCommand as BaseControllerMakeCommand;
 use Illuminate\Support\Facades\Config;
+use Laraneat\Modules\Scaffold\Names;
 use Override;
 
 /**
@@ -39,7 +40,7 @@ final class ControllerMakeCommand extends BaseControllerMakeCommand
             return $replace;
         }
 
-        $namespace = $module->namespace.'\\'.trim(Config::string('modules.generators.make:request', 'Http\\Requests'), '\\').'\\';
+        $namespace = Names::qualify($module->namespace, Config::string('modules.generators.make:request', 'Http\\Requests')).'\\';
 
         foreach (self::REQUEST_REPLACEMENTS as $key) {
             if (is_string($replace[$key] ?? null)) {

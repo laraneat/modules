@@ -24,6 +24,7 @@ use Illuminate\Routing\Console\ControllerMakeCommand as BaseControllerMakeComman
 use Illuminate\Support\Facades\Config;
 use Laraneat\Modules\Module;
 use Laraneat\Modules\ModuleRepository;
+use Laraneat\Modules\Scaffold\Names;
 use Stringable;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -162,7 +163,7 @@ final class ModuleOption
         $class = trim(str_replace('/', '\\', (string) $class), '\\');
 
         if ($class !== '' && ! str_starts_with($class, $module->namespace.'\\')) {
-            $set(implode('\\', array_filter([rtrim($root, '\\'), trim($namespace, '\\'), $class], static fn (string $part): bool => $part !== '')));
+            $set(Names::qualify($root, $namespace, $class));
         }
     }
 }

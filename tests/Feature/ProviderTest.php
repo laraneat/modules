@@ -115,6 +115,12 @@ it('refuses a generator namespace that is not a string', function () {
     expect(fn () => $this->reboot())->toThrow(InvalidConfiguration::class, 'the namespace of the [make:controller] generator must be a string.');
 });
 
+it('refuses an empty make:command namespace', function (string $namespace) {
+    $this->files(['config/modules.php' => '<?php return ["generators" => ["make:command" => '.var_export($namespace, true).']];']);
+
+    expect(fn () => $this->reboot())->toThrow(InvalidConfiguration::class, 'the namespace of the [make:command] generator can not be empty');
+})->with(['', '\\']);
+
 it('resolves a relative modules path against the application', function () {
     $this->files(['config/modules.php' => '<?php return ["path" => "modules"];']);
     chdir(sys_get_temp_dir());

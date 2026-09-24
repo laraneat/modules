@@ -13,6 +13,7 @@ use Illuminate\Translation\Translator;
 use Illuminate\View\Compilers\BladeCompiler;
 use Laraneat\Modules\Exceptions\InvalidModule;
 use Laraneat\Modules\Manifest\ManifestBuilder;
+use Laraneat\Modules\Scaffold\Names;
 
 /**
  * Config, translations, views, Blade components and migrations of the modules.
@@ -107,11 +108,9 @@ final readonly class ResourceRegistrar
 
         if ($this->manifest !== []) {
             // <x-blog::alert /> renders the Alert class of the components namespace, or the "blog::components.alert" view.
-            $namespace = trim($this->componentsNamespace, '\\');
-
-            $this->afterResolving('blade.compiler', function (BladeCompiler $blade) use ($namespace): void {
+            $this->afterResolving('blade.compiler', function (BladeCompiler $blade): void {
                 foreach ($this->manifest as $name => $module) {
-                    $blade->componentNamespace($module['namespace'].'\\'.$namespace, $name);
+                    $blade->componentNamespace(Names::qualify($module['namespace'], $this->componentsNamespace), $name);
                 }
             });
         }

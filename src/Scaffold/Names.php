@@ -24,11 +24,14 @@ final class Names
     private const string PHP_NAMESPACE = '{^[A-Za-z_][A-Za-z0-9_]*(\\\\[A-Za-z_][A-Za-z0-9_]*)*$}D';
 
     /**
-     * Normalize a module name to kebab case: "ShopOrder", "shop_order" and "shop-order" are "shop-order".
+     * Normalize a module name to kebab case: "ShopOrder", "shop_order" and "shop-order" are "shop-order",
+     * "HTTPClient" is "http-client". A name in kebab case is kept as it is: "shop-order-2".
      */
     public static function module(string $name): string
     {
-        $module = Str::kebab(Str::studly(trim($name)));
+        $name = trim($name);
+        $words = preg_split('/[-_\s]+|(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $module = strtolower(implode('-', $words));
 
         if (preg_match(self::MODULE, $module) !== 1) {
             throw InvalidName::of('module name', $name, 'use latin letters, digits and dashes, starting with a letter.');
@@ -82,5 +85,16 @@ final class Names
     public static function isNamespace(string $namespace): bool
     {
         return preg_match(self::PHP_NAMESPACE, $namespace) === 1;
+    }
+
+    /**
+     * Join namespace segments, skipping empty ones: "Modules\Blog", "" and "Post" give "Modules\Blog\Post".
+     */
+    public static function qualify(string ...$segments): string
+    {
+        return implode('\\', array_filter(
+            array_map(static fn (string $segment): string => trim($segment, '\\'), $segments),
+            static fn (string $segment): bool => $segment !== '',
+        ));
     }
 }

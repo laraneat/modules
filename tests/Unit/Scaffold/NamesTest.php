@@ -17,6 +17,11 @@ it('normalizes module names to kebab case', function (string $name, string $modu
     ['shop order', 'shop-order'],
     ['  blog  ', 'blog'],
     ['api-v2', 'api-v2'],
+    ['shop-order-2', 'shop-order-2'],
+    ['ShopOrder2', 'shop-order2'],
+    ['API', 'api'],
+    ['HTTPClient', 'http-client'],
+    ['Shop-Order', 'shop-order'],
     ['blog2', 'blog2'],
     ['list', 'list'],
     'leading dash' => ['-blog', 'blog'],
@@ -96,6 +101,16 @@ it('builds the namespace of a module', function (string $prefix, string $module,
 it('rejects an invalid namespace prefix', function (string $prefix) {
     expect(fn () => Names::namespace($prefix, 'blog'))->toThrow(InvalidName::class, 'Invalid namespace');
 })->with(['', 'App\\\\Modules', '1Modules', 'App-Modules', 'App\\Modules;']);
+
+it('joins namespace segments without the empty ones', function (array $segments, string $namespace) {
+    expect(Names::qualify(...$segments))->toBe($namespace);
+})->with([
+    [['Modules\\Blog', 'Http\\Requests'], 'Modules\\Blog\\Http\\Requests'],
+    [['Modules\\Blog\\', '\\UI\\Components\\', 'Alert'], 'Modules\\Blog\\UI\\Components\\Alert'],
+    [['Modules\\Blog', '', 'Post'], 'Modules\\Blog\\Post'],
+    [['Modules\\Blog', '\\'], 'Modules\\Blog'],
+    [['Modules\\Blog', '0'], 'Modules\\Blog\\0'],
+]);
 
 it('validates namespaces', function (string $namespace, bool $valid) {
     expect(Names::isNamespace($namespace))->toBe($valid);

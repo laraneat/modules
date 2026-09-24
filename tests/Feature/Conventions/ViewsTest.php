@@ -39,6 +39,30 @@ it('registers the Blade components of the modules under their names', function (
     expect(Blade::render('<x-blog::badge /> <x-blog::card />'))->toBe('class badge anonymous card');
 });
 
+it('registers the Blade components in the module root with an empty make:component namespace', function () {
+    $this->files([
+        'config/modules.php' => '<?php return ["generators" => ["make:component" => ""]];',
+        'modules/blog/src/Badge.php' => <<<'PHP'
+            <?php
+
+            namespace Modules\Blog;
+
+            use Illuminate\View\Component;
+
+            class Badge extends Component
+            {
+                public function render(): string
+                {
+                    return 'root badge';
+                }
+            }
+            PHP,
+    ]);
+    $this->reboot();
+
+    expect(Blade::render('<x-blog::badge />'))->toBe('root badge');
+});
+
 it('registers the Blade components in the namespace of make:component', function () {
     $this->files([
         'config/modules.php' => '<?php return ["generators" => ["make:component" => "\\\\UI\\\\Components\\\\"]];',

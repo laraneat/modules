@@ -6,6 +6,7 @@ namespace Laraneat\Modules\Generators;
 
 use Illuminate\Foundation\Console\ComponentMakeCommand as BaseComponentMakeCommand;
 use Illuminate\Support\Facades\Config;
+use Laraneat\Modules\Scaffold\Names;
 use Override;
 
 /**
@@ -30,7 +31,7 @@ final class ComponentMakeCommand extends BaseComponentMakeCommand
             return $this->namespacedView();
         }
 
-        $components = $module->namespace.'\\'.trim(Config::string('modules.generators.make:component', 'View\\Components'), '\\').'\\';
+        $components = Names::qualify($module->namespace, Config::string('modules.generators.make:component', 'View\\Components')).'\\';
         $class = str_replace('/', '\\', ltrim($name, '\\/'));
 
         if (! str_starts_with($class, $components)) {
