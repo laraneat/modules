@@ -12,6 +12,11 @@ function manifestBuilder(string $modulesPath, array $routes = ['api' => 'routes/
     return new ManifestBuilder($modulesPath, $routes, $commands);
 }
 
+function phpClass(string $class, string $declaration = 'class'): string
+{
+    return "<?php\n\n{$declaration} {$class}\n{\n}\n";
+}
+
 function moduleComposerJson(string $name, array $psr4 = ['Modules\\Demo\\' => 'src/'], array $extra = []): string
 {
     return json_encode(['name' => $name, 'autoload' => ['psr-4' => $psr4], ...$extra], JSON_THROW_ON_ERROR);
@@ -54,7 +59,6 @@ it('describes every module of the fixture application', function () {
             'commands' => [
                 'Modules\\Blog\\Console\\Commands\\BlogCommand',
                 'Modules\\Blog\\Console\\Commands\\PublishPostsCommand',
-                'Modules\\Blog\\Console\\Commands\\helpers',
                 'Modules\\Blog\\Console\\Commands\\Nested\\ArchivePostsCommand',
             ],
         ],
@@ -242,10 +246,10 @@ it('uses the route directories of the config', function () {
 it('collects seeders of database/seeders and its direct subdirectories only', function () {
     $modules = $this->files([
         'demo/composer.json' => moduleComposerJson('app/demo'),
-        'demo/database/seeders/RootSeeder.php' => '<?php',
-        'demo/database/seeders/Deployment/DeploySeeder_1.php' => '<?php',
-        'demo/database/seeders/Deployment/Deeper/IgnoredSeeder.php' => '<?php',
-        'demo/database/seeders/not-a-namespace/IgnoredSeeder.php' => '<?php',
+        'demo/database/seeders/RootSeeder.php' => phpClass('RootSeeder'),
+        'demo/database/seeders/Deployment/DeploySeeder_1.php' => phpClass('DeploySeeder_1'),
+        'demo/database/seeders/Deployment/Deeper/IgnoredSeeder.php' => phpClass('IgnoredSeeder'),
+        'demo/database/seeders/not-a-namespace/IgnoredSeeder.php' => phpClass('IgnoredSeeder'),
         'demo/database/seeders/not-a-class.php' => '<?php',
         'demo/database/seeders/Empty/.gitkeep' => '',
     ]);
@@ -259,10 +263,10 @@ it('collects seeders of database/seeders and its direct subdirectories only', fu
 it('collects commands recursively from the make:command namespace', function (string $namespace, string $directory) {
     $modules = $this->files([
         'demo/composer.json' => moduleComposerJson('app/demo', ['Modules\\Demo\\' => 'app/']),
-        "demo/app/{$directory}/SendCommand.php" => '<?php',
-        "demo/app/{$directory}/Deep/Er/CleanCommand.php" => '<?php',
-        "demo/app/{$directory}/not-a-namespace/IgnoredCommand.php" => '<?php',
-        'demo/app/Other/IgnoredCommand.php' => '<?php',
+        "demo/app/{$directory}/SendCommand.php" => phpClass('SendCommand'),
+        "demo/app/{$directory}/Deep/Er/CleanCommand.php" => phpClass('CleanCommand'),
+        "demo/app/{$directory}/not-a-namespace/IgnoredCommand.php" => phpClass('IgnoredCommand'),
+        'demo/app/Other/IgnoredCommand.php' => phpClass('IgnoredCommand'),
     ]);
 
     expect(manifestBuilder($modules, [], $namespace)->build()['demo']['commands'])->toBe([
@@ -277,10 +281,38 @@ it('collects commands recursively from the make:command namespace', function (st
 it('collects commands of a module whose root namespace is its directory', function () {
     $modules = $this->files([
         'demo/composer.json' => moduleComposerJson('app/demo', ['Modules\\Demo\\' => '']),
-        'demo/Console/Commands/SendCommand.php' => '<?php',
+        'demo/Console/Commands/SendCommand.php' => phpClass('SendCommand'),
     ]);
 
     expect(manifestBuilder($modules)->build()['demo']['commands'])->toBe(['Modules\\Demo\\Console\\Commands\\SendCommand']);
+});
+
+it('leaves out files that do not declare a class of their name', function () {
+    $modules = $this->files([
+        'demo/composer.json' => moduleComposerJson('app/demo'),
+        'demo/src/Console/Commands/AbstractCommand.php' => phpClass('AbstractCommand', 'abstract class'),
+        'demo/src/Console/Commands/AttributeCommand.php' => "<?php\n\n#[AsCommand('demo:attribute')] final class AttributeCommand {}\n",
+        'demo/src/Console/Commands/CommandContract.php' => phpClass('CommandContract', 'interface'),
+        'demo/src/Console/Commands/CommandTrait.php' => phpClass('CommandTrait', 'trait'),
+        'demo/src/Console/Commands/IndentedCommand.php' => "<?php\n\nnamespace Demo {\n    final readonly class IndentedCommand {}\n}\n",
+        'demo/src/Console/Commands/Status.php' => phpClass('Status', 'enum'),
+        'demo/src/Console/Commands/helpers.php' => "<?php\n\nfunction helpers(): void {}\n",
+        'demo/src/Console/Commands/Commented.php' => "<?php\n\n// class Commented\n/**\n * class Commented\n */\n",
+        'demo/src/Console/Commands/Other.php' => phpClass('OtherCommand'),
+        'demo/src/Console/Commands/Prefix.php' => phpClass('PrefixCommand'),
+        'demo/database/seeders/helpers.php' => "<?php\n\nfunction seed(): void {}\n",
+    ]);
+
+    $module = manifestBuilder($modules)->build()['demo'];
+
+    expect($module['commands'])->toBe([
+        'Modules\\Demo\\Console\\Commands\\AbstractCommand',
+        'Modules\\Demo\\Console\\Commands\\AttributeCommand',
+        'Modules\\Demo\\Console\\Commands\\CommandContract',
+        'Modules\\Demo\\Console\\Commands\\CommandTrait',
+        'Modules\\Demo\\Console\\Commands\\IndentedCommand',
+        'Modules\\Demo\\Console\\Commands\\Status',
+    ])->and($module['seeders'])->toBe([]);
 });
 
 it('has a key that changes with the settings', function () {

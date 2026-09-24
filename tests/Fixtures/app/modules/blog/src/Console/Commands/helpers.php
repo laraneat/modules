@@ -1,3 +1,4 @@
 <?php
 
-// Not a class: must be ignored by the command discovery.
+// Not a class: the command discovery must leave it out, or Composer would include it again on every lookup.
+function blog_command_helper(): void {}

@@ -209,12 +209,12 @@ final readonly class ManifestBuilder
         [$files, $directories] = $this->scan($directory);
         $seeders = [];
 
-        foreach ($this->classes($files) as $class) {
+        foreach ($this->classes($directory, $files) as $class) {
             $seeders[''][] = $namespace.$class;
         }
 
         foreach (array_filter($directories, $this->isIdentifier(...)) as $subdirectory) {
-            foreach ($this->classes($this->scan($directory.'/'.$subdirectory)[0]) as $class) {
+            foreach ($this->classes($directory.'/'.$subdirectory, $this->scan($directory.'/'.$subdirectory)[0]) as $class) {
                 $seeders[$subdirectory][] = $namespace.$subdirectory.'\\'.$class;
             }
         }
@@ -240,7 +240,7 @@ final readonly class ManifestBuilder
     private function classesIn(string $directory, string $namespace): array
     {
         [$files, $directories] = $this->scan($directory);
-        $classes = array_map(static fn (string $class): string => $namespace.$class, $this->classes($files));
+        $classes = array_map(static fn (string $class): string => $namespace.$class, $this->classes($directory, $files));
 
         foreach (array_filter($directories, $this->isIdentifier(...)) as $subdirectory) {
             array_push($classes, ...$this->classesIn($directory.'/'.$subdirectory, $namespace.$subdirectory.'\\'));
@@ -250,17 +250,30 @@ final readonly class ManifestBuilder
     }
 
     /**
-     * Class names of PHP files.
+     * Class names of the PHP files that declare a class of their name. Files without one are left out:
+     * Composer includes a file every time a class is looked up in it, so a file of functions would be
+     * included again, and fail, each time the provider checks it for a command or a seeder.
      *
      * @param  list<string>  $files
      * @return list<string>
      */
-    private function classes(array $files): array
+    private function classes(string $directory, array $files): array
     {
         return array_values(array_filter(
             array_map(static fn (string $file): string => substr($file, 0, -4), $files),
-            $this->isIdentifier(...),
+            fn (string $class): bool => $this->isIdentifier($class) && $this->declares($directory.'/'.$class.'.php', $class),
         ));
+    }
+
+    /**
+     * Whether a line of the file declares a class, an interface, a trait or an enum of the name.
+     */
+    private function declares(string $file, string $class): bool
+    {
+        return preg_match(
+            '/^[ \t]*(?:#\[.*\][ \t]*)?(?:(?:abstract|final|readonly)[ \t]+)*(?:class|interface|trait|enum)[ \t]+'.$class.'\b/mi',
+            (string) file_get_contents($file),
+        ) === 1;
     }
 
     /**
