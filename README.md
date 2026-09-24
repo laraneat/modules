@@ -10,19 +10,51 @@ php artisan make:model Post --module=blog -mfs
 php artisan make:controller PostController --module=blog --api
 ```
 
-- **No boilerplate in modules.** A module needs only a `composer.json`. It gets its own service provider only
-  when it has bindings, policies or events to register.
+## Why
+
+In a Laravel application the code is grouped by type: one feature is spread over `app/Models`,
+`app/Http/Controllers`, `database/migrations`, `routes/api.php` and `resources/views`, next to every other
+feature. A modular monolith groups the code by feature instead and is still one application with one deploy.
+Laravel has no built-in support for it: something has to autoload every module, load its routes, views,
+translations, migrations and commands, and make the generators write into it. This package does that, and
+stays out of the module code:
+
+- **Modules are plain Composer packages.** A module needs only a `composer.json` with its autoload and
+  dependencies. Its code does not use this package: no base classes, no `module.json`, no required service
+  provider. It gets a provider only when it has bindings, event listeners or gates to register.
 - **Laravel-native.** Modules use the Laravel generators, stubs and conventions (`Models`, `Http\Controllers`, ...)
-  unless you map them elsewhere.
+  unless you map them elsewhere. `migrate`, `route:cache`, `optimize`, Tinker and Octane work as usual.
 - **Fast.** The package scans the modules once and caches the result with `php artisan optimize`. A cached
   application does no filesystem scans, and HTTP requests never run the console-only parts.
 - **Safe with Composer.** Modules are installed as symlinked path packages; their vendor is excluded from
-  Packagist, so a missing module can never be replaced by a public package with the same name.
+  Packagist, so a missing module cannot be replaced by a public package with the same name.
+  `module:doctor` checks the whole setup.
+
+### Compared to other packages
+
+As of September 2026:
+
+|                           | Laraneat Modules                                              | [InterNACHI/modular](https://github.com/InterNACHI/modular) | [nWidart/laravel-modules](https://github.com/nWidart/laravel-modules) |
+|---------------------------|---------------------------------------------------------------|--------------------------------------------|------------------------------------------------|
+| Laravel                   | 13.12+                                                        | 11–13                                      | 13 (older majors: 5.4–12)                      |
+| A module is               | a Composer path package                                       | a Composer path package                    | a directory with `module.json`; its `composer.json` is merged by `composer-merge-plugin` |
+| Service provider per module | not needed                                                  | not needed                                 | generated; extends a provider class of the package and loads the routes, views and config of the module |
+| Generators                | `--module` on every `GeneratorCommand`, of Laravel and of other packages | `--module` on a list of Laravel generators | own `module:make-*` commands and stubs         |
+| Routes                    | route groups with a prefix and middleware from the config     | `routes/*.php` loaded as they are          | route service provider of the module           |
+| Module config files       | merged                                                        | not loaded                                 | loaded by the module provider                  |
+| Composer                  | `module:make`, `module:sync` and `module:delete` run it; Packagist exclusion | the application `composer.json` is edited, you run Composer | `composer-merge-plugin`                        |
+| Event discovery           | no                                                            | yes                                        | yes, in the generated event provider           |
+| Enable and disable modules | no                                                           | no                                         | yes                                            |
+
+Choose nWidart/laravel-modules to enable and disable modules or to build module assets with their own Vite
+config, and InterNACHI/modular on Laravel 11 or 12.
 
 ## Contents
 
+- [Why](#why)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Quick start](#quick-start)
 - [Modules](#modules)
 - [Conventions](#conventions)
 - [Routes](#routes)
@@ -55,6 +87,50 @@ when you want to change the defaults:
 php artisan vendor:publish --tag=modules-config
 ```
 
+## Quick start
+
+Create a module, a model with its migration, factory and seeder, a controller and a test:
+
+```bash
+php artisan module:make blog
+php artisan make:model Post --module=blog -mfs
+php artisan make:controller PostController --module=blog --api --model=Post
+php artisan make:test PostTest --module=blog
+```
+
+Add a route file, then migrate:
+
+```php
+// modules/blog/routes/api/posts.php
+use Illuminate\Support\Facades\Route;
+use Modules\Blog\Http\Controllers\PostController;
+
+Route::apiResource('posts', PostController::class); // /api/posts
+```
+
+```bash
+php artisan migrate
+```
+
+The module now looks like this, and nothing in it depends on this package:
+
+```text
+modules/blog/
+├── composer.json                  app/blog, namespace Modules\Blog
+├── database/
+│   ├── factories/PostFactory.php
+│   ├── migrations/2026_09_24_120000_create_posts_table.php
+│   └── seeders/PostSeeder.php
+├── routes/api/posts.php           loaded with the "api" prefix and middleware
+├── src/
+│   ├── Http/Controllers/PostController.php
+│   └── Models/Post.php
+└── tests/Feature/PostTest.php
+```
+
+Next steps: add the module tests to `phpunit.xml` ([Tests](#tests)), call `Modules::seeders()` from the
+`DatabaseSeeder` ([Seeders](#seeders)), and cache the modules on deploy with `php artisan optimize`.
+
 ## Modules
 
 A module is a directory in `modules/` with a `composer.json`:
@@ -81,9 +157,11 @@ A module is a directory in `modules/` with a `composer.json`:
   translations and Blade components: `view('blog::index')`, `__('blog::messages.welcome')`, `<x-blog::alert />`.
 - The first `autoload.psr-4` entry is the root namespace of the module.
 - Every module must have a valid `composer.json` with a unique package name and namespace. An invalid
-  module is an error while the application boots, for HTTP requests too: `module:doctor` and the tests
-  catch it before a deploy.
-- The module is required by the application like any other package:
+  module is an error while the application boots, for HTTP requests too. Artisan commands and the tests
+  fail the same way, so it is caught before a deploy.
+
+The application requires every module like any other package. You do not have to write this by hand:
+`module:make` and `module:sync` maintain it.
 
 ```json
 {
@@ -93,24 +171,62 @@ A module is a directory in `modules/` with a `composer.json`:
     "repositories": [
         {"type": "path", "url": "modules/*", "options": {"symlink": true}},
         {"type": "composer", "url": "https://repo.packagist.org", "exclude": ["app/*"]}
-    ]
+    ],
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Blog\\Tests\\": "modules/blog/tests/"
+        }
+    }
 }
 ```
-
-You do not have to write this by hand: `module:make` and `module:sync` maintain it.
 
 - `*@dev` accepts the `dev-*` version of a path package with `"minimum-stability": "stable"`.
 - The Packagist repository excludes the vendor of the modules, so Composer fails instead of installing
   a public package when a module directory is missing (another branch, a partial checkout). Composer uses
   this repository in place of the default one. Pick a vendor that you do not publish public packages under.
-- Packagist mirrors defined in the project get the exclusion too: a mirror under the `packagist.org` key of
-  `"repositories": {...}`, and a list entry named `packagist` or `packagist.org`, which
-  `composer config repo.packagist composer <url>` writes. Exclude the vendor by hand in any other repository
-  that proxies Packagist.
-- A Packagist mirror of the global Composer config (`~/.composer/config.json`) is not edited: define it in
-  the project `composer.json` instead. The Packagist entry of the project replaces a global mirror under the
-  `packagist.org` key; a global mirror that Composer 2.10 wrote as a named list entry is still used, without
-  the exclusion.
+- Packagist mirrors defined in the project get the exclusion too: a repository with a `packagist.org` URL,
+  a mirror under the `packagist` or `packagist.org` key of `"repositories": {...}`, and a list entry named
+  `packagist` or `packagist.org`, which `composer config repo.packagist composer <url>` writes. Exclude the
+  vendor by hand in any other repository that proxies Packagist.
+- Mirrors of the global Composer config (`~/.composer/config.json`) are not edited, so define your mirror in
+  the project `composer.json`. A global mirror under the `packagist.org` key is replaced by the Packagist
+  entry of the project and is no longer used. A global mirror that Composer 2.10 wrote as a named list entry
+  is still used, without the exclusion.
+
+### Dependencies between modules
+
+A module declares what it uses in its `composer.json`, other modules included:
+
+```json
+{
+    "name": "app/blog",
+    "require": {
+        "app/users": "*"
+    }
+}
+```
+
+- Use `*`, not `*@dev`: Composer reads stability flags only from the application `composer.json`, which
+  already requires every module with `*@dev`.
+- After a change of `require`, run `php artisan module:sync`: it runs `composer update` for the module.
+- `module:delete` fails while another module requires the module, and nothing is deleted. With `--no-update`
+  Composer does not run, so this is not checked.
+
+### Finding modules
+
+The `Modules` facade finds modules by their directory name:
+
+```php
+use Laraneat\Modules\Facades\Modules;
+
+Modules::all();         // array of Module, keyed by name
+Modules::find('blog');  // Module or null
+Modules::get('blog');   // Module, or throws ModuleNotFound
+```
+
+`Laraneat\Modules\Module` is a read-only object with the `name` (`shop-order`), `package` (`app/shop-order`),
+`namespace` (`Modules\ShopOrder`), `path` and `sourcePath` (the absolute directory of the root namespace)
+properties.
 
 ### Creating a module
 
@@ -147,12 +263,12 @@ cp -R stubs/module/default stubs/module/api
   `{{ variable|filter|filter }}`.
 - Variables:
 
-  | Variable    | Example value            |
-  |-------------|--------------------------|
-  | `name`      | `article-category`       |
-  | `namespace` | `Modules\ArticleCategory` |
-  | `package`   | `app/article-category`   |
-  | `vendor`    | `app`                    |
+  | Variable    | Example value                             |
+  |-------------|-------------------------------------------|
+  | `name`      | `article-category`                        |
+  | `namespace` | `Modules\ArticleCategory`                 |
+  | `package`   | `app/article-category`                    |
+  | `vendor`    | `app`                                     |
   | `date`      | `2026_09_23_120000` (for migration names) |
 
 - Filters: `studly`, `camel`, `snake`, `kebab`, `plural`, `singular`, `lower`, `upper`, `title`, and `json`
@@ -179,15 +295,16 @@ The package loads everything it finds in a module. A missing directory is skippe
 | `config/*.php`                      | config keyed by the file name: `config/blog.php` is `config('blog')`. The application config wins. |
 | `lang/`                             | translations: `__('blog::messages.welcome')`, plus JSON files          |
 | `resources/views/`                  | views: `view('blog::posts.index')`                                     |
-| `src/View/Components/`              | Blade components: `<x-blog::alert />`                                  |
+| `src/View/Components/`              | Blade components: `<x-blog::alert />`, or the anonymous component `resources/views/components/alert.blade.php` |
 | `database/migrations/`              | migrations of `php artisan migrate` (console only)                     |
 | `database/factories/`               | factories of the module models (console only, see below)               |
 | `database/seeders/`                 | seeders of `Modules::seeders()`                                        |
 | `routes/api/`, `routes/web/`        | [route groups](#routes)                                                |
 | `src/Console/Commands/`             | Artisan commands (console only)                                        |
 
-`src/` is the directory of the root namespace of the module: `View/Components` and `Console/Commands` are
-looked up there.
+`src/` stands for the directory of the root namespace (the first `autoload.psr-4` entry): `View/Components`
+and `Console/Commands` are looked up there, or in the [namespaces](#namespaces) of `make:component` and
+`make:command`.
 
 A module config file can extend any key, `config/app.php` included. The merge is shallow: the top-level keys
 of the application config replace those of the module.
@@ -215,12 +332,16 @@ final class Post extends Model
 }
 ```
 
-### Commands
+### Module commands
 
 Classes in the `make:command` namespace of a module (`src/Console/Commands`, including subdirectories) are
-registered as Artisan commands. Abstract classes and other classes are skipped. Commands with the
-`#[AsCommand]` attribute are loaded lazily. Like migrations, module commands are registered only in the
-console, so `Artisan::call()` can not run them during an HTTP request.
+registered as Artisan commands. Abstract classes and classes that are not commands are skipped. Commands
+with the `#[AsCommand]` attribute are loaded lazily. Like migrations, module commands are registered only
+in the console, so `Artisan::call()` cannot run them during an HTTP request.
+
+### Tinker
+
+Tinker aliases the module classes like the application classes: `Post::first()` works without the namespace.
 
 ### Policies and events
 
@@ -287,7 +408,7 @@ Nested commands run in the same module: `make:model Post --module=blog -mfs` cre
 migration, the factory and the seeder in `blog`.
 
 `--model` and `--parent` name models of the module: `--model=Post` is `Modules\Blog\Models\Post`, or a class of
-the `make:model` namespace (see below). As in the application, they can not reference a model of another namespace.
+the `make:model` namespace (see below). As in the application, they cannot reference a model of another namespace.
 
 ### Namespaces
 
@@ -309,11 +430,11 @@ requests there, and the controller imports the requests from `UI\API\Requests`.
   `make:test`, `Modules\Blog\Database\Factories` for `make:factory`, `Modules\Blog\Database\Seeders`
   for `make:seeder` and `Modules\Blog` for the others.
 - A name that starts with the module namespace is used as it is: `make:action "Modules\Blog\Domain\Publish"`.
-- The `make:model` namespace also applies to `--model` and `--parent` of the Laravel generators. The factory of `make:model -f` goes
-  where the factory resolver looks for it, whatever the `make:factory` namespace.
+- The `make:model` namespace also applies to `--model` and `--parent` of the Laravel generators. The factory
+  of `make:model -f` goes where the factory resolver looks for it, whatever the `make:factory` namespace.
 - `Modules::seeders()` reads only direct subdirectories of `database/seeders`, so a `make:seeder` namespace
   has at most one segment.
-- The `make:command` namespace is also where [module commands](#commands) are discovered, and the
+- The `make:command` namespace is also where [module commands](#module-commands) are discovered, and the
   `make:component` namespace is where `<x-blog::...>` components are looked up.
 
 The stubs of the generators are the Laravel ones: customize them with `php artisan stub:publish`.
@@ -385,19 +506,26 @@ With Pest, also extend the test case in `tests/Pest.php`:
 pest()->extend(Tests\TestCase::class)->in('Feature', '../modules/*/tests/Feature');
 ```
 
+Run the tests of one module by its path:
+
+```bash
+php artisan test modules/blog/tests
+```
+
 ## Commands
 
 | Command                         | Description |
 |---------------------------------|-------------|
 | `module:make <name>`            | Create a module. `--preset=<preset>` picks the template, `--no-update` skips `composer update`. |
 | `module:sync`                   | Add every module to the `composer.json` of the application and run `composer update` for the modules that changed. `--no-update` only prints the command. |
-| `module:delete <name>`          | Run `composer remove` for the module, then delete its directory. Asks for confirmation; `--force` skips it. With `--no-update`, it edits `composer.json` instead of running Composer, deletes the directory and prints the `composer update` command to run. A symlinked module directory is never deleted. |
+| `module:delete <name>`          | Remove the `autoload-dev` entries of the module, run `composer remove` for it, then delete its directory. Asks for confirmation; `--force` skips it and is required in non-interactive mode. With `--no-update`, it edits `composer.json` instead of running Composer, deletes the directory and prints the `composer update` command to run. A symlinked module directory is never deleted. |
 | `module:doctor`                 | Check the modules and how they are installed. Read-only; fails when it finds errors. |
 | `module:list`                   | List the modules. With `-v`, also what is loaded from each of them. |
 | `module:cache`                  | Cache the module manifest. Part of `php artisan optimize`. |
 | `module:clear`                  | Remove the module manifest cache. Part of `php artisan optimize:clear`. |
 
 Commands and `--module` take the module directory name (`blog`), not the package name (`app/blog`).
+Composer runs in the application directory: `composer.phar` there if it exists, otherwise `composer` from `PATH`.
 
 `module:doctor` checks:
 
@@ -409,7 +537,7 @@ Commands and `--module` take the module directory name (`blog`), not the package
 - that the `extra.laravel.providers` classes exist;
 - route files outside of the configured route groups;
 - unknown keys in `config/modules.php`, an outdated manifest cache, and a modules path that
-  `octane:start --watch` can not watch.
+  `octane:start --watch` cannot watch.
 
 Most problems are fixed by `php artisan module:sync`.
 
@@ -419,7 +547,7 @@ The `about` command shows the number of modules, their path and whether the mani
 
 ```php
 return [
-    // The directory of the modules. Every subdirectory with a composer.json is a module.
+    // The directory of the modules. Every direct subdirectory with a composer.json is a module.
     'path' => base_path('modules'),
 
     // The namespace prefix and the Composer vendor of new modules.
@@ -440,7 +568,7 @@ return [
 ## Performance and caching
 
 The package builds a manifest of the modules: their packages, namespaces and the files it loads. The
-provider only reads the manifest, it never scans the modules while it boots.
+provider loads everything from the manifest and does not look for module files by itself.
 
 - `php artisan optimize` (or `module:cache`) writes the manifest to `bootstrap/cache/modules.php`, next to
   the config and route caches. A cached application loads it with one `require`. Set `MODULES_CACHE` to
@@ -449,8 +577,8 @@ provider only reads the manifest, it never scans the modules while it boots.
 - Without the cache file, the manifest is built once per process, so it is never stale. The cache is written
   only by `optimize` and `module:cache`: a deploy that skips them scans the modules in every process.
 - The cached manifest lists the files it loads. After `php artisan optimize` on a development machine, new
-  route, config, seeder and command files are ignored until `php artisan optimize:clear`, and deleted ones
-  are skipped. Only a cached manifest is checked for deleted files: a built one lists the files on disk.
+  modules and new route, config, seeder and command files are ignored until `php artisan optimize:clear`
+  (or `module:clear`); deleted files are skipped.
 - `module:make`, `module:sync` and `module:delete` rebuild the cache file if it exists.
 - The config and route caches include the module config and routes, so the package skips them when they
   are cached.
