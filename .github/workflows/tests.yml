@@ -27,7 +27,7 @@ jobs:
         experimental: [false]
         include:
           - { os: ubuntu-latest, php: '8.3', dependencies: lowest, experimental: false }
-          - { os: windows-latest, php: '8.4', dependencies: stable, experimental: true }
+          - { os: windows-latest, php: '8.4', dependencies: stable, experimental: false }
           - { os: ubuntu-latest, php: '8.6', dependencies: stable, experimental: true }
 
     name: PHP ${{ matrix.php }} - ${{ matrix.dependencies }}${{ matrix.os == 'windows-latest' && ' - Windows' || '' }}

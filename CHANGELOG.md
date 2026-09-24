@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## 3.0.0 - Unreleased
+## 3.0.0 - 2026-09-24
 
 Version 3 is a rewrite. See [UPGRADE.md](UPGRADE.md) for the upgrade from 2.x.
 
