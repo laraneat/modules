@@ -244,7 +244,8 @@ php artisan module:make blog --no-update
 3. runs `composer update app/blog`. With `--no-update` it only prints the command, which is useful in CI
    or when an agent drives the work.
 
-The name is normalized to kebab case (`ShopOrder` becomes `shop-order`, namespace `Modules\ShopOrder`).
+The name is normalized to kebab case: `ShopOrder` becomes `shop-order` (namespace `Modules\ShopOrder`), `API`
+becomes `api`. A name in kebab case is kept as it is.
 
 ### Module templates
 
@@ -335,7 +336,8 @@ final class Post extends Model
 ### Module commands
 
 Classes in the `make:command` namespace of a module (`src/Console/Commands`, including subdirectories) are
-registered as Artisan commands. Abstract classes and classes that are not commands are skipped. Commands
+registered as Artisan commands. Abstract classes, classes that are not commands and files that do not declare
+a class of their name are skipped. Commands
 with the `#[AsCommand]` attribute are loaded lazily. Like migrations, module commands are registered only
 in the console, so `Artisan::call()` cannot run them during an HTTP request.
 
@@ -430,6 +432,8 @@ requests there, and the controller imports the requests from `UI\API\Requests`.
   `make:test`, `Modules\Blog\Database\Factories` for `make:factory`, `Modules\Blog\Database\Seeders`
   for `make:seeder` and `Modules\Blog` for the others.
 - A name that starts with the module namespace is used as it is: `make:action "Modules\Blog\Domain\Publish"`.
+- An empty namespace is the root namespace of the module: `'make:policy' => ''` creates `Modules\Blog\PostPolicy`.
+  The `make:command` namespace can not be empty, because module commands are discovered in it.
 - The `make:model` namespace also applies to `--model` and `--parent` of the Laravel generators. The factory
   of `make:model -f` goes where the factory resolver looks for it, whatever the `make:factory` namespace.
 - `Modules::seeders()` reads only direct subdirectories of `database/seeders`, so a `make:seeder` namespace
@@ -577,8 +581,9 @@ provider loads everything from the manifest and does not look for module files b
 - Without the cache file, the manifest is built once per process, so it is never stale. The cache is written
   only by `optimize` and `module:cache`: a deploy that skips them scans the modules in every process.
 - The cached manifest lists the files it loads. After `php artisan optimize` on a development machine, new
-  modules and new route, config, seeder and command files are ignored until `php artisan optimize:clear`
-  (or `module:clear`); deleted files are skipped.
+  modules, new `lang`, `resources/views` and `database/migrations` directories, and new route, config, seeder
+  and command files are ignored until `php artisan optimize:clear` (or `module:clear`); deleted files are
+  skipped.
 - `module:make`, `module:sync` and `module:delete` rebuild the cache file if it exists.
 - The config and route caches include the module config and routes, so the package skips them when they
   are cached.

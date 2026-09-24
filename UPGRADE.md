@@ -10,7 +10,8 @@ every step, and run the checks at the end.
 
 ### Before you start
 
-- The application runs Laravel 13.12 or newer with the latest `laraneat/modules` 2.x, and PHP 8.3 or newer.
+- The application runs Laravel 13.12 or newer and PHP 8.3 or newer, with `laraneat/modules` 2.1 or newer: the
+  first 2.x release that supports Laravel 13. The steps compare 3.0 with it.
 - The test suite passes.
 - Save the routes of the application to compare them later:
 
@@ -59,7 +60,8 @@ loaded anymore.
 | `components` without a namespace (`config`, `lang`, `migration`, `view`) | fixed: `config`, `lang`, `database/migrations`, `resources/views` |
 | `custom_stubs`                   | removed, see [step 9](#9-replace-the-generators)                              |
 | `composer.author`                | removed: put authors in the module templates                                 |
-| `user_model`, `create_permission` | removed, see [step 6](#6-copy-the-test-and-response-helpers-into-the-application) |
+| `user_model`                     | removed, see [step 6](#6-copy-the-test-and-response-helpers-into-the-application) |
+| `create_permission`              | removed: only the 2.x generators used it                                     |
 | `cache.enabled`                  | removed: the cache is built by `php artisan optimize`                        |
 
 `generators` maps a generator command to a namespace inside the module. It replaces the `namespace` of the
@@ -77,6 +79,9 @@ layout:
     'make:middleware' => 'Middleware',
 ],
 ```
+
+Laravel puts models in `Models` only when the module has a `src/Models` directory, and in the root namespace
+otherwise. Add `'make:model' => 'Models'` to always use `Models`, as 2.x did.
 
 One command has one namespace. 2.x had separate API and WEB controllers and requests: generate the other
 kind with a fully qualified name, for example
@@ -102,6 +107,11 @@ The package now loads the resources of every module. For each module in `modules
 3. Delete the route service provider that uses `Laraneat\Modules\Support\Concerns\CanLoadRoutesFromDirectory`
    and remove it from `extra.laravel.providers`. Keep anything it does besides loading routes (route
    patterns, model bindings, rate limiters) in another provider.
+4. Remove the calls that load the module directories themselves: `mergeConfigFrom()`, `loadMigrationsFrom()`,
+   `loadViewsFrom()` and `loadTranslationsFrom()` with paths of the module.
+
+The publish tags of the 2.x module providers (`<module>-config`, `-migrations`, `-translations`, `-views`)
+are gone with them: update the scripts that call `vendor:publish` with these tags.
 
 What 3.0 loads, and how it differs from the 2.x providers:
 
@@ -115,6 +125,8 @@ What 3.0 loads, and how it differs from the 2.x providers:
   anymore: move the changes into the module. Translation overrides in `lang/vendor/<module>` still work.
 - **Migrations and commands**: registered only in the console. 2.x registered migrations for HTTP requests
   too: `Artisan::call('migrate')` during an HTTP request does not see the module migrations anymore.
+- **Everything is loaded**: the 2.x provider stub had `loadCommands()`, `loadTranslations()` and `loadViews()`
+  commented out. 3.0 loads the commands, translations and views of every module that has them.
 
 Search for leftovers:
 
@@ -136,16 +148,16 @@ Module routes are loaded by the route groups of `config/modules.php`. For the de
 Use the prefix, middleware and other attributes of the deleted route service providers. A module whose routes
 do not fit the groups loads them in its own service provider with `Route::group()`.
 
-Two differences from `CanLoadRoutesFromDirectory`:
+Three differences from `CanLoadRoutesFromDirectory`:
 
 - Nested directories are appended to the prefix. In 2.x, `routes/v1/admin/stats.php` got the `api/admin`
   prefix; now it gets `api/v1/admin`. Routes one directory deep keep their URIs.
 - The files of a directory are loaded before its subdirectories (2.x loaded subdirectories first), and
   groups are loaded for all modules in turn: first every `api` route, then every `web` route.
-- Route files are loaded while the package boots, before the providers of the application boot. 2.x loaded
-  them after the module route service provider booted. `Route::pattern()` and route macros defined in
-  `AppServiceProvider::boot()` do not reach module routes anymore: define them in the `register()` method
-  of a provider, or use `->where()` in the route files.
+- Route files are loaded while the package provider boots. 2.x loaded them right after the module route
+  service provider booted, so `Route::pattern()` calls and route macros in its `boot()` applied to its routes.
+  When you move them to another provider, define them in its `register()` method, or use `->where()` in the
+  route files: the `boot()` of another provider may run after the module routes are loaded.
 
 When two routes can match the same URL (`posts/{post}` and `posts/export`), make sure the specific one is
 still registered first.
@@ -378,9 +390,11 @@ Two changes in `InteractsWithTestUser`:
 
 - The facade is `Laraneat\Modules\Facades\Modules` (was `Laraneat\Modules\Support\Facades\Modules`). The
   global `Modules` alias points to the new facade.
-- `Laraneat\Modules\ModulesRepository` is `Laraneat\Modules\ModuleRepository`. The 2.x exceptions and the
-  classes of `Laraneat\Modules\Providers` are removed; the exceptions of 3.0 extend
-  `Laraneat\Modules\Exceptions\ModulesException`.
+- `Laraneat\Modules\ModulesRepository` is `Laraneat\Modules\ModuleRepository`. The classes of
+  `Laraneat\Modules\Providers` are replaced by one `Laraneat\Modules\ModulesServiceProvider`.
+- The 2.x exceptions are removed, except `ModuleNotFound`: its `make()`, `makeForName()` and
+  `makeForNameOrPackageName()` are replaced by `ModuleNotFound::named()`. Every exception of 3.0 implements the
+  `Laraneat\Modules\Exceptions\ModulesException` interface.
 - Modules are identified by their directory name, not by the package name.
 
 | 2.x                                        | 3.0                                           |
@@ -399,9 +413,11 @@ Two changes in `InteractsWithTestUser`:
 | `$module->subPath('src')`, `subNamespace('Models')` | `$module->path.'/src'`, `$module->namespace.'\\Models'` |
 | `$module->getStudlyName()`, `getKebabName()`, `getSnakeName()` | `Str::studly($module->name)`, `$module->name`, `Str::snake(Str::camel($module->name))` |
 | `$module->getProviders()`, `getAliases()`  | `extra.laravel` of the module `composer.json`  |
+| `(string) $module`                         | `$module->package`                             |
+| `Module::macro()`                          | removed: `Module` is a read-only object         |
 
 ```bash
-grep -rnE 'Laraneat\\Modules\\(Support|Enums|Exceptions|Providers|ModulesRepository|Module;)|Modules::' \
+grep -rnE 'Laraneat\\Modules\\(Support|Enums|Exceptions|Providers|Commands|ModulesRepository|Module;)|Modules::' \
   app modules tests database routes config bootstrap
 ```
 
@@ -436,7 +452,8 @@ The `module:make:*` commands are replaced by the Laravel generators with `--modu
 | `module:stub:publish`, `custom_stubs`          | `php artisan stub:publish`, which customizes the Laravel stubs |
 
 `make:data` adds the `Data` suffix to names that do not end with it: `make:data CreatePostDTO` creates
-`CreatePostDTOData`. Pass the full name without a suffix, or configure the suffix of laravel-data.
+`CreatePostDTOData`. Pass `--suffix=` to keep the name as given, or set `data.commands.make.suffix` (for
+example to `DTO`) in the laravel-data config.
 
 The generated code follows the Laravel stubs, not the Porto stubs of 2.x. If you relied on the 2.x stubs,
 put your versions in `stubs/` with `php artisan stub:publish`; they apply to the application and to the
@@ -451,6 +468,9 @@ Module migrations are registered with the Laravel migrator:
 | `module:migrate`                 | `migrate`                                                    |
 | `module:migrate blog`            | `migrate --path=modules/blog/database/migrations`            |
 | `module:migrate:rollback`, `:refresh`, `:reset`, `:status` | `migrate:rollback`, `migrate:refresh`, `migrate:reset`, `migrate:status` |
+
+`migrate` also runs the migrations of the application, in one order by file name. In production it asks for
+confirmation, like `module:migrate` did: keep `--force` in deployment scripts.
 
 Update scripts, CI jobs and deployment that call the old commands. `module:delete` now deletes one module
 at a time, takes the directory name (`blog`, not `app/blog`), and needs `--force` in non-interactive mode.
