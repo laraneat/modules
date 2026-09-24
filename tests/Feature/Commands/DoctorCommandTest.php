@@ -152,7 +152,7 @@ it('skips directories it can not read', function () {
 it('accepts equivalent autoload paths and skips directories a module does not have', function () {
     // shop-order has no database/factories directory.
     $composerJson = $this->readJson('modules/shop-order/composer.json');
-    $composerJson['autoload']['psr-4'] = ['Modules\\ShopOrder\\' => './src', 'Modules\\ShopOrder\\Database\\Seeders\\' => './database/seeders'];
+    $composerJson['autoload']['psr-4'] = ['Modules\\ShopOrder\\' => './src', 'Modules\\ShopOrder\\Database\\Seeders\\' => ['lib/', './database/seeders']];
     $composerJson['extra'] = ['laravel' => ['providers' => ['Modules\\ShopOrder\\Providers\\MissingServiceProvider']]];
     $this->files(['modules/shop-order/composer.json' => json_encode($composerJson)]);
     $this->installModules();

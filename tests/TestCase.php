@@ -224,13 +224,15 @@ abstract class TestCase extends Orchestra
             $composer = json_decode((string) file_get_contents($composerJson), true);
             $psr4 = [...(array) ($composer['autoload']['psr-4'] ?? []), ...(array) ($composer['autoload-dev']['psr-4'] ?? [])];
 
-            foreach ($psr4 as $namespace => $directory) {
-                $file = dirname($composerJson).'/'.$directory.'/'.str_replace('\\', '/', substr($class, strlen($namespace))).'.php';
+            foreach ($psr4 as $namespace => $directories) {
+                foreach ((array) $directories as $directory) {
+                    $file = dirname($composerJson).'/'.$directory.'/'.str_replace('\\', '/', substr($class, strlen($namespace))).'.php';
 
-                if (str_starts_with($class, $namespace) && is_file($file)) {
-                    require $file;
+                    if (str_starts_with($class, $namespace) && is_file($file)) {
+                        require $file;
 
-                    return;
+                        return;
+                    }
                 }
             }
         }

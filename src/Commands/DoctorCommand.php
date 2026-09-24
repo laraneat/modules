@@ -140,9 +140,12 @@ final class DoctorCommand extends Command
 
         foreach (['database/factories' => 'Database\\Factories', 'database/seeders' => 'Database\\Seeders'] as $directory => $namespace) {
             $namespace = $module->namespace.'\\'.$namespace.'\\';
-            $mapped = $autoload[$namespace] ?? null;
+            $mapped = array_map(
+                static fn (string $path): string => trim((string) preg_replace('{^\./}', '', $path), '/'),
+                array_filter((array) ($autoload[$namespace] ?? []), is_string(...)),
+            );
 
-            if (is_dir($module->path.'/'.$directory) && (! is_string($mapped) || trim((string) preg_replace('{^\./}', '', $mapped), '/') !== $directory)) {
+            if (is_dir($module->path.'/'.$directory) && ! in_array($directory, $mapped, true)) {
                 $problems[] = [true, "\"autoload.psr-4\" must map [{$namespace}] to [{$directory}/]."];
             }
         }
