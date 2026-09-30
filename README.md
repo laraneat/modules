@@ -101,6 +101,8 @@ php artisan make:test PostTest --module=blog
 Add a route file, then migrate:
 
 ```php
+<?php
+
 // modules/blog/routes/api/posts.php
 use Illuminate\Support\Facades\Route;
 use Modules\Blog\Http\Controllers\PostController;
@@ -373,6 +375,8 @@ Route groups are defined in `config/modules.php`:
   them. Define those in the `register()` method of a provider, or use `->where()` in the route files.
 
 ```php
+<?php
+
 // modules/blog/routes/api/posts.php
 use Illuminate\Support\Facades\Route;
 use Modules\Blog\Http\Controllers\PostController;
@@ -432,8 +436,9 @@ requests there, and the controller imports the requests from `UI\API\Requests`.
   `make:test`, `Modules\Blog\Database\Factories` for `make:factory`, `Modules\Blog\Database\Seeders`
   for `make:seeder` and `Modules\Blog` for the others.
 - A name that starts with the module namespace is used as it is: `make:action "Modules\Blog\Domain\Publish"`.
-- An empty namespace is the root namespace of the module: `'make:policy' => ''` creates `Modules\Blog\PostPolicy`.
-  The `make:command` namespace can not be empty, because module commands are discovered in it.
+- An empty namespace puts classes right where the generator puts them: `'make:event' => ''` creates
+  `Modules\Blog\PostPublished`. The `make:command` namespace cannot be empty, because module commands are
+  discovered in it.
 - The `make:model` namespace also applies to `--model` and `--parent` of the Laravel generators. The factory
   of `make:model -f` goes where the factory resolver looks for it, whatever the `make:factory` namespace.
 - `Modules::seeders()` reads only direct subdirectories of `database/seeders`, so a `make:seeder` namespace
@@ -484,7 +489,8 @@ final class DatabaseSeeder extends Seeder
 - Class names come from the file paths (PSR-4): a seeder whose namespace does not match its path is not found.
 - Seeders run in the order of their integer `_N` class name suffix (`PermissionsSeeder_1` before
   `UsersSeeder_2`); seeders without a suffix run last. Equal suffixes run in the order of the class names.
-- Abstract classes and classes that do not extend `Seeder` are skipped.
+- Abstract classes, classes that do not extend `Seeder` and files that do not declare a class of their name
+  are skipped.
 
 ## Tests
 
@@ -581,9 +587,9 @@ provider loads everything from the manifest and does not look for module files b
 - Without the cache file, the manifest is built once per process, so it is never stale. The cache is written
   only by `optimize` and `module:cache`: a deploy that skips them scans the modules in every process.
 - The cached manifest lists the files it loads. After `php artisan optimize` on a development machine, new
-  modules, new `lang`, `resources/views` and `database/migrations` directories, and new route, config, seeder
-  and command files are ignored until `php artisan optimize:clear` (or `module:clear`); deleted files are
-  skipped.
+  modules, new `lang`, `resources/views` and `database/migrations` directories, the first JSON translation file
+  of a module, and new route, config, seeder and command files are ignored until `php artisan optimize:clear`
+  (or `module:clear`); deleted files are skipped.
 - `module:make`, `module:sync` and `module:delete` rebuild the cache file if it exists.
 - The config and route caches include the module config and routes, so the package skips them when they
   are cached.

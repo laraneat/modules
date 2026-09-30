@@ -106,7 +106,9 @@ The package now loads the resources of every module. For each module in `modules
      `loadAllFiles()` and `getPublishableViewPaths()` do not exist anymore.
 3. Delete the route service provider that uses `Laraneat\Modules\Support\Concerns\CanLoadRoutesFromDirectory`
    and remove it from `extra.laravel.providers`. Keep anything it does besides loading routes (route
-   patterns, model bindings, rate limiters) in another provider.
+   patterns, model bindings, rate limiters) in another provider of the module: keep the module service
+   provider for it, or create one and add it to `extra.laravel.providers`. Define route patterns and macros
+   in its `register()` method (see step 4).
 4. Remove the calls that load the module directories themselves: `mergeConfigFrom()`, `loadMigrationsFrom()`,
    `loadViewsFrom()` and `loadTranslationsFrom()` with paths of the module.
 
@@ -384,7 +386,7 @@ Two changes in `InteractsWithTestUser`:
 - The user model comes from `$testUserClass` or the `users` auth provider, not from `modules.user_model`.
 - An explicit empty access now creates a user without access: `actingAsTestUser(null, [])` is the same as
   `actingAsTestUserWithoutAccess()`. In 2.x it gave the default access. Find such calls with
-  `grep -rn "TestUser([^)]*\[\])" modules tests`.
+  `grep -rn "TestUser([^)]*\[\])" modules tests`. The match inside the copied trait is expected.
 
 ### 7. Update the code that uses the package API
 
@@ -420,6 +422,9 @@ Two changes in `InteractsWithTestUser`:
 grep -rnE 'Laraneat\\Modules\\(Support|Enums|Exceptions|Providers|Commands|ModulesRepository|Module;)|Modules::' \
   app modules tests database routes config bootstrap
 ```
+
+The grep also finds the calls of the new facade `Laraneat\Modules\Facades\Modules`, like the
+`Modules::seeders()` of step 5: they are already correct.
 
 ### 8. Reinstall the modules and sync them
 
