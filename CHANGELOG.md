@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## 3.0.1 - 2026-09-30
+
+### Fixed
+
+- Module commands and seeders whose class is declared on a line with other code (`namespace Blog; class
+  Foo {}`, `/** ... */ final class Foo`) or with its name on the next line are discovered again.
+- A broken symbolic link in a module commands or seeders directory no longer fails the application boot.
+- `module:doctor` finds unloaded route files at any depth, and no longer reports hidden ones, which are never
+  loaded.
+
 ## 3.0.0 - 2026-09-24
 
 Version 3 is a rewrite. See [UPGRADE.md](UPGRADE.md) for the upgrade from 2.x.
@@ -42,7 +52,7 @@ Version 3 is a rewrite. See [UPGRADE.md](UPGRADE.md) for the upgrade from 2.x.
 - The views and translations namespace of a module is its directory name. Every `config/*.php` file of a
   module is merged, not only `config/<module>.php`.
 - Route files of a directory are loaded before its subdirectories.
-- An invalid module `composer.json` fails the application boot, and two modules can not share a namespace.
+- An invalid module `composer.json` fails the application boot, and two modules cannot share a namespace.
   2.x skipped a module without a name.
 - `module:make` requires new modules with `*@dev` and has no `--force` option.
 - `ModuleNotFound` is created with `ModuleNotFound::named()`; every exception implements `ModulesException`.
