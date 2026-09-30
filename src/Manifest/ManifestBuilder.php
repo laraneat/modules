@@ -266,14 +266,12 @@ final readonly class ManifestBuilder
     }
 
     /**
-     * Whether a line of the file declares a class, an interface, a trait or an enum of the name.
+     * Whether the file declares a class, an interface, a trait or an enum of the name.
      */
     private function declares(string $file, string $class): bool
     {
-        return preg_match(
-            '/^[ \t]*(?:#\[.*\][ \t]*)?(?:(?:abstract|final|readonly)[ \t]+)*(?:class|interface|trait|enum)[ \t]+'.$class.'\b/mi',
-            (string) file_get_contents($file),
-        ) === 1;
+        return is_file($file)
+            && preg_match('/\b(?:class|interface|trait|enum)\s+'.$class.'\b/i', (string) file_get_contents($file)) === 1;
     }
 
     /**

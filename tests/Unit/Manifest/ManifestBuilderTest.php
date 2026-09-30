@@ -290,28 +290,29 @@ it('collects commands of a module whose root namespace is its directory', functi
 it('leaves out files that do not declare a class of their name', function () {
     $modules = $this->files([
         'demo/composer.json' => moduleComposerJson('app/demo'),
-        'demo/src/Console/Commands/AbstractCommand.php' => phpClass('AbstractCommand', 'abstract class'),
-        'demo/src/Console/Commands/AttributeCommand.php' => "<?php\n\n#[AsCommand('demo:attribute')] final class AttributeCommand {}\n",
         'demo/src/Console/Commands/CommandContract.php' => phpClass('CommandContract', 'interface'),
         'demo/src/Console/Commands/CommandTrait.php' => phpClass('CommandTrait', 'trait'),
-        'demo/src/Console/Commands/IndentedCommand.php' => "<?php\n\nnamespace Demo {\n    final readonly class IndentedCommand {}\n}\n",
-        'demo/src/Console/Commands/Status.php' => phpClass('Status', 'enum'),
+        'demo/src/Console/Commands/OneLineCommand.php' => '<?php namespace Demo; /** @internal */ final class OneLineCommand {}',
+        'demo/src/Console/Commands/Status.php' => phpClass('Status', 'ENUM'),
+        'demo/src/Console/Commands/WindowsCommand.php' => "<?php\r\n\r\n#[AsCommand('demo:windows')]\r\nfinal class\r\n    WindowsCommand\r\n{\r\n}\r\n",
         'demo/src/Console/Commands/helpers.php' => "<?php\n\nfunction helpers(): void {}\n",
-        'demo/src/Console/Commands/Commented.php' => "<?php\n\n// class Commented\n/**\n * class Commented\n */\n",
         'demo/src/Console/Commands/Other.php' => phpClass('OtherCommand'),
         'demo/src/Console/Commands/Prefix.php' => phpClass('PrefixCommand'),
         'demo/database/seeders/helpers.php' => "<?php\n\nfunction seed(): void {}\n",
     ]);
+    // A symbolic link whose target is gone: Windows links only to an existing file.
+    touch($modules.'/demo/Deleted.php');
+    symlink($modules.'/demo/Deleted.php', $modules.'/demo/src/Console/Commands/DanglingCommand.php');
+    unlink($modules.'/demo/Deleted.php');
 
     $module = manifestBuilder($modules)->build()['demo'];
 
     expect($module['commands'])->toBe([
-        'Modules\\Demo\\Console\\Commands\\AbstractCommand',
-        'Modules\\Demo\\Console\\Commands\\AttributeCommand',
         'Modules\\Demo\\Console\\Commands\\CommandContract',
         'Modules\\Demo\\Console\\Commands\\CommandTrait',
-        'Modules\\Demo\\Console\\Commands\\IndentedCommand',
+        'Modules\\Demo\\Console\\Commands\\OneLineCommand',
         'Modules\\Demo\\Console\\Commands\\Status',
+        'Modules\\Demo\\Console\\Commands\\WindowsCommand',
     ])->and($module['seeders'])->toBe([]);
 });
 
