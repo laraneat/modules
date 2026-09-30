@@ -10,7 +10,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\ServiceProvider;
-use Laraneat\Modules\Module;
 use Laraneat\Modules\ModuleRepository;
 use Laraneat\Modules\Scaffold\ApplicationComposer;
 use Laraneat\Modules\Scaffold\ComposerJson;
@@ -164,13 +163,7 @@ abstract class TestCase extends Orchestra
         $packages = [];
 
         foreach ($modules as $name) {
-            $module = new Module(
-                $name,
-                'app/'.$name,
-                'Modules\\'.str_replace(' ', '', ucwords(str_replace('-', ' ', $name))),
-                $this->path('modules/'.$name),
-                $this->path('modules/'.$name.'/src'),
-            );
+            $module = $this->app->make(ModuleRepository::class)->get($name);
             $composer->addModule($root, $module, $this->path('modules'));
 
             $packages[] = [

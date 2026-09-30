@@ -128,9 +128,11 @@ final class ModulesServiceProvider extends ServiceProvider
             }
         }
 
+        $commands = $generators['make:command'] ?? 'Console\\Commands';
+
         // An empty namespace would make every class of a module a candidate command.
-        if (trim($generators['make:command'] ?? 'Console\\Commands', '\\') === '') {
-            throw InvalidConfiguration::because('the namespace of the [make:command] generator can not be empty: module commands are discovered in it.');
+        if (trim($commands, '\\') === '') {
+            throw InvalidConfiguration::because('the namespace of the [make:command] generator cannot be empty: module commands are discovered in it.');
         }
 
         $path = Config::string('modules.path');
@@ -138,7 +140,7 @@ final class ModulesServiceProvider extends ServiceProvider
         return new ManifestBuilder(
             self::isAbsolute($path) ? $path : $app->basePath($path),
             $routes,
-            $generators['make:command'] ?? 'Console\\Commands',
+            $commands,
         );
     }
 

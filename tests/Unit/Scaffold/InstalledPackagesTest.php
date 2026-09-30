@@ -14,7 +14,7 @@ const INSTALLED_BLOG = [
     'autoload' => ['psr-4' => ['Modules\\Blog\\' => 'src/']],
 ];
 
-it('reads the packages of composer 2', function () {
+it('reads the installed packages', function () {
     $vendor = $this->files(['composer/installed.json' => json_encode(['packages' => [INSTALLED_BLOG], 'dev' => true])]);
 
     $installed = InstalledPackages::read($vendor);
@@ -22,12 +22,6 @@ it('reads the packages of composer 2', function () {
     expect($installed->has('app/blog'))->toBeTrue()
         ->and($installed->has('app/shop'))->toBeFalse()
         ->and($installed->path('app/blog'))->toBe($vendor.'/app/blog');
-});
-
-it('reads the packages of composer 1', function () {
-    $vendor = $this->files(['composer/installed.json' => json_encode([INSTALLED_BLOG])]);
-
-    expect(InstalledPackages::read($vendor)->has('app/blog'))->toBeTrue();
 });
 
 it('has no packages without installed.json', function (?string $contents) {

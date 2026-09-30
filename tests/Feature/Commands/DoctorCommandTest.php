@@ -26,7 +26,8 @@ it('finds no problems in installed modules', function () {
 
     expect($status)->toBe(0)
         ->and($output)->toContain('Configuration', 'blog', 'shop-order', 'No problems found.')
-        ->not->toContain('FAIL', 'WARN');
+        ->not->toContain('FAIL')
+        ->not->toContain('WARN');
 });
 
 it('reports modules that are not installed', function () {
@@ -132,7 +133,10 @@ it('reports problems of the module structure', function () {
             "    ! The route file [routes/admin/users.php] is not in a route group of config/modules.php.\n    ! The route file [routes/zeta/users.php] is not in a route group of config/modules.php.",
         )
         ->toMatch('/^  blog \\.+ FAIL$/m')
-        ->not->toContain('secret.php', 'fixture.php', 'lib/routes', 'routes/api/posts.php');
+        ->not->toContain('secret.php')
+        ->not->toContain('fixture.php')
+        ->not->toContain('lib/routes')
+        ->not->toContain('routes/api/posts.php');
 });
 
 it('skips directories it can not read', function () {

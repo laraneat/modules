@@ -54,7 +54,7 @@ final class SyncCommand extends Command
             return self::SUCCESS;
         }
 
-        if (! $runner->update($outdated, $this->streamOutput(...))) {
+        if (! $runner->update($outdated, $this->output)) {
             $this->components->error('Composer failed to install the modules. Fix the problem and run: '.$runner->commandLine('update', $outdated));
 
             return self::FAILURE;
@@ -63,10 +63,5 @@ final class SyncCommand extends Command
         $this->components->info('Modules are in sync with Composer.');
 
         return self::SUCCESS;
-    }
-
-    private function streamOutput(string $type, string $line): void
-    {
-        $this->output->write($line);
     }
 }

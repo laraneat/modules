@@ -42,7 +42,7 @@ jobs:
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, fileinfo, libxml, mbstring, zip, json, pdo_sqlite
+          extensions: dom, curl, fileinfo, libxml, mbstring, zip, pdo_sqlite
           coverage: none
 
       # Packages declare the PHP versions they support, and a PHP release in development is newer than all of them.
@@ -50,7 +50,7 @@ jobs:
         run: composer update --prefer-dist --no-interaction ${{ matrix.dependencies == 'lowest' && '--prefer-lowest --prefer-stable' || '' }} ${{ matrix.php == '8.6' && '--ignore-platform-req=php+' || '' }}
 
       - name: Run tests
-        run: vendor/bin/pest --parallel --order-by=random
+        run: vendor/bin/pest --parallel
 
   coverage:
     runs-on: ubuntu-latest
@@ -67,7 +67,7 @@ jobs:
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: '8.5'
-          extensions: dom, curl, libxml, mbstring, zip, json, pdo_sqlite
+          extensions: dom, curl, libxml, mbstring, zip, pdo_sqlite
           coverage: pcov
 
       - name: Install dependencies
@@ -94,7 +94,7 @@ jobs:
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: '8.3'
-          extensions: dom, curl, libxml, mbstring, zip, json
+          extensions: dom, curl, libxml, mbstring, zip
           coverage: none
 
       - name: Install dependencies

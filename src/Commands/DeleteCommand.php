@@ -57,7 +57,7 @@ final class DeleteCommand extends Command
         }
 
         // Uninstall first: when Composer fails, the module and composer.json are left as they were.
-        if (! $this->option('no-update') && ! $runner->remove([$module->package], $this->streamOutput(...))) {
+        if (! $this->option('no-update') && ! $runner->remove([$module->package], $this->output)) {
             $files->put($composer->composerJsonPath(), $original);
             $this->components->error('Composer failed to remove the module, nothing was deleted.');
 
@@ -109,10 +109,5 @@ final class DeleteCommand extends Command
         $this->components->warn('The module was not deleted.');
 
         return false;
-    }
-
-    private function streamOutput(string $type, string $line): void
-    {
-        $this->output->write($line);
     }
 }

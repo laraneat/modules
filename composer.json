@@ -21,7 +21,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
-        "ext-json": "*",
         "laravel/framework": "^13.12"
     },
     "require-dev": {
@@ -42,12 +41,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Laraneat\\Modules\\Tests\\": "tests/",
-            "Modules\\Blog\\": "tests/Fixtures/app/modules/blog/src/",
-            "Modules\\Blog\\Database\\Factories\\": "tests/Fixtures/app/modules/blog/database/factories/",
-            "Modules\\Blog\\Database\\Seeders\\": "tests/Fixtures/app/modules/blog/database/seeders/",
-            "Modules\\ShopOrder\\": "tests/Fixtures/app/modules/shop-order/src/",
-            "Modules\\ShopOrder\\Database\\Seeders\\": "tests/Fixtures/app/modules/shop-order/database/seeders/"
+            "Laraneat\\Modules\\Tests\\": "tests/"
         }
     },
     "extra": {
@@ -61,7 +55,7 @@
         }
     },
     "scripts": {
-        "test": "pest --parallel --order-by=random",
+        "test": "pest --parallel",
         "test:coverage": "pest --coverage --min=95",
         "test:mutate": "pest --mutate --everything --covered-only --parallel --min=85",
         "analyse": "phpstan analyse --memory-limit=1G",

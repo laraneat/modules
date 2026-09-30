@@ -8,7 +8,6 @@ use Illuminate\Console\Application as Artisan;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\Foundation\Application as ApplicationContract;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Laraneat\Modules\Manifest\ManifestBuilder;
@@ -116,7 +115,7 @@ final readonly class ConsoleRegistrar
         }
 
         try {
-            $root = Container::getInstance()->make(ApplicationContract::class)->getNamespace();
+            $root = Container::getInstance()->make(Application::class)->getNamespace();
         } catch (Throwable) {
             $root = 'App\\';
         }

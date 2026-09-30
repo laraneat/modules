@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Laraneat\Modules\Commands;
 
-use FilesystemIterator;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository;
 use Laraneat\Modules\Exceptions\ModulesException;
@@ -14,11 +13,8 @@ use Laraneat\Modules\ModuleRepository;
 use Laraneat\Modules\Scaffold\ApplicationComposer;
 use Laraneat\Modules\Scaffold\ComposerJson;
 use Laraneat\Modules\Scaffold\InstalledPackages;
-use RecursiveCallbackFilterIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Read-only checks of the modules and of how they are installed.
@@ -177,21 +173,13 @@ final class DoctorCommand extends Command
         )));
 
         $files = [];
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveCallbackFilterIterator(
-                new RecursiveDirectoryIterator($module->path, FilesystemIterator::SKIP_DOTS),
-                static fn (SplFileInfo $file): bool => ! $file->isDir() || preg_match('{^(vendor|node_modules|tests|\..*)$}', $file->getFilename()) !== 1,
-            ),
-            RecursiveIteratorIterator::LEAVES_ONLY,
-            RecursiveIteratorIterator::CATCH_GET_CHILD,
-        );
-        $iterator->setMaxDepth(6);
+        $finder = Finder::create()->files()->in($module->path)->name('*.php')->path('{(^|/)routes/}')
+            ->exclude(['vendor', 'node_modules', 'tests'])->ignoreUnreadableDirs();
 
-        /** @var SplFileInfo $file */
-        foreach ($iterator as $file) {
-            $path = substr(str_replace('\\', '/', $file->getPathname()), strlen($module->path) + 1);
+        foreach ($finder as $file) {
+            $path = str_replace('\\', '/', $file->getRelativePathname());
 
-            if ($file->getExtension() === 'php' && preg_match('{(^|/)routes/}', $path) === 1 && ! in_array($path, $loaded, true)) {
+            if (! in_array($path, $loaded, true)) {
                 $files[] = $path;
             }
         }

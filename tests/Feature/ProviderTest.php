@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Laraneat\Modules\Exceptions\InvalidConfiguration;
 use Laraneat\Modules\Facades\Modules;
-use Laraneat\Modules\ModuleRepository;
 use Laraneat\Modules\ModulesServiceProvider;
 use Modules\Blog\Models\Post;
 
@@ -118,7 +117,7 @@ it('refuses a generator namespace that is not a string', function () {
 it('refuses an empty make:command namespace', function (string $namespace) {
     $this->files(['config/modules.php' => '<?php return ["generators" => ["make:command" => '.var_export($namespace, true).']];']);
 
-    expect(fn () => $this->reboot())->toThrow(InvalidConfiguration::class, 'the namespace of the [make:command] generator can not be empty');
+    expect(fn () => $this->reboot())->toThrow(InvalidConfiguration::class, 'the namespace of the [make:command] generator cannot be empty');
 })->with(['', '\\']);
 
 it('resolves a relative modules path against the application', function () {
@@ -151,8 +150,7 @@ it('stores the manifest cache where MODULES_CACHE points', function (string $pat
 
     $this->artisan('module:cache')->assertSuccessful();
 
-    expect(app(ModuleRepository::class)->cachePath())->toBe($expected)
-        ->and(file_exists($expected))->toBeTrue();
+    expect(file_exists($expected))->toBeTrue();
 })->with([
     'relative' => ['storage/modules.php', fn () => base_path('storage/modules.php')],
     'absolute' => [fn () => $this->path('storage/framework/modules.php'), fn () => $this->path('storage/framework/modules.php')],

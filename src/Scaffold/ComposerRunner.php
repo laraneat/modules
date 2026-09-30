@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Laraneat\Modules\Scaffold;
 
-use Closure;
 use Illuminate\Support\Facades\Process;
+use Symfony\Component\Console\Output\OutputInterface;
 
 use function Illuminate\Support\php_binary;
 
@@ -23,18 +23,16 @@ final readonly class ComposerRunner
 
     /**
      * @param  list<string>  $packages
-     * @param  (Closure(string, string): void)|null  $output
      */
-    public function update(array $packages, ?Closure $output = null): bool
+    public function update(array $packages, ?OutputInterface $output = null): bool
     {
         return $this->run('update', $packages, $output);
     }
 
     /**
      * @param  list<string>  $packages
-     * @param  (Closure(string, string): void)|null  $output
      */
-    public function remove(array $packages, ?Closure $output = null): bool
+    public function remove(array $packages, ?OutputInterface $output = null): bool
     {
         return $this->run('remove', $packages, $output);
     }
@@ -53,7 +51,7 @@ final readonly class ComposerRunner
      * @param  list<string>  $packages
      * @return list<string>
      */
-    public function command(string $action, array $packages): array
+    private function command(string $action, array $packages): array
     {
         $composer = is_file($this->basePath.'/composer.phar')
             ? [php_binary(), 'composer.phar']
@@ -64,14 +62,13 @@ final readonly class ComposerRunner
 
     /**
      * @param  list<string>  $packages
-     * @param  (Closure(string, string): void)|null  $output
      */
-    private function run(string $action, array $packages, ?Closure $output): bool
+    private function run(string $action, array $packages, ?OutputInterface $output): bool
     {
         return Process::path($this->basePath)
             ->env(['COMPOSER_MEMORY_LIMIT' => '-1'])
             ->forever()
-            ->run($this->command($action, $packages), $output)
+            ->run($this->command($action, $packages), static fn (string $type, string $line) => $output?->write($line))
             ->successful();
     }
 }

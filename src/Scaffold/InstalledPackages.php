@@ -24,7 +24,7 @@ final readonly class InstalledPackages
         $json = is_file($file = $vendorPath.'/composer/installed.json') ? json_decode((string) file_get_contents($file), true) : null;
         $packages = [];
 
-        foreach ((array) (is_array($json) && isset($json['packages']) ? $json['packages'] : $json) as $package) {
+        foreach ((array) (is_array($json) ? ($json['packages'] ?? []) : []) as $package) {
             if (is_array($package) && is_string($package['name'] ?? null)) {
                 $packages[$package['name']] = $package;
             }

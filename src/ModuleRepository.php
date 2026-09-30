@@ -108,14 +108,6 @@ final class ModuleRepository
     /**
      * @internal
      */
-    public function cachePath(): string
-    {
-        return $this->cache->path();
-    }
-
-    /**
-     * @internal
-     */
     public function isCached(): bool
     {
         return $this->cache->exists();

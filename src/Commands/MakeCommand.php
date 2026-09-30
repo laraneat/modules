@@ -60,9 +60,12 @@ final class MakeCommand extends Command
                 throw InvalidTemplate::at($preset, 'the template must contain a "composer.json" or "composer.json.stub" file.');
             }
 
-            $this->write($files, $path, $rendered);
-
             try {
+                foreach ($rendered as $file => $contents) {
+                    $files->ensureDirectoryExists(dirname($path.'/'.$file));
+                    $files->put($path.'/'.$file, $contents);
+                }
+
                 $modules->refresh();
                 $module = $modules->get($name);
 
@@ -93,7 +96,7 @@ final class MakeCommand extends Command
             return self::SUCCESS;
         }
 
-        if (! $runner->update([$package], $this->streamOutput(...))) {
+        if (! $runner->update([$package], $this->output)) {
             $this->components->error('Composer failed to install the module. Fix the problem and run: '.$runner->commandLine('update', [$package]));
 
             return self::FAILURE;
@@ -117,27 +120,5 @@ final class MakeCommand extends Command
         }
 
         throw InvalidTemplate::at("stubs/module/{$preset}", 'the preset does not exist.');
-    }
-
-    /**
-     * @param  array<string, string>  $rendered
-     */
-    private function write(Filesystem $files, string $path, array $rendered): void
-    {
-        try {
-            foreach ($rendered as $file => $contents) {
-                $files->ensureDirectoryExists(dirname($path.'/'.$file));
-                $files->put($path.'/'.$file, $contents);
-            }
-        } catch (Throwable $exception) {
-            $files->deleteDirectory($path);
-
-            throw $exception;
-        }
-    }
-
-    private function streamOutput(string $type, string $line): void
-    {
-        $this->output->write($line);
     }
 }

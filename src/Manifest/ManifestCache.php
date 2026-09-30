@@ -60,9 +60,7 @@ final readonly class ManifestCache
 
     public function delete(): void
     {
-        if ($this->exists()) {
-            $this->files->delete($this->path);
-        }
+        $this->files->delete($this->path);
     }
 
     private function relative(string $path): string

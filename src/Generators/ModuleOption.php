@@ -79,7 +79,7 @@ final class ModuleOption
     /**
      * The option is added when the command is resolved, and the command code is replaced by
      * a closure bound to the command, so its protected execute() still does the work.
-     * Symfony binds the input before the code runs, which is why this can not happen earlier.
+     * Symfony binds the input before the code runs, which is why this cannot happen earlier.
      */
     public static function addTo(Command $command): void
     {
