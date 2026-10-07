@@ -36,7 +36,7 @@ final readonly class RouteRegistrar
                 continue;
             }
 
-            unset($attributes['path']);
+            unset($attributes['path'], $attributes['except']);
             $prefix = is_string($attributes['prefix'] ?? null) ? trim($attributes['prefix'], '/') : '';
 
             foreach ($this->manifest as $module) {

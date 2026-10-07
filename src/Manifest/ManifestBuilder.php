@@ -40,11 +40,13 @@ final readonly class ManifestBuilder
 
     /**
      * @param  array<string, string>  $routes  The route directory of every route group.
+     * @param  array<string, list<string>>  $except  The modules that a route group does not load, by route group.
      */
     public function __construct(
         string $modulesPath,
         private array $routes,
         string $commandsNamespace,
+        private array $except = [],
     ) {
         $this->modulesPath = rtrim(str_replace('\\', '/', $modulesPath), '/');
         $this->commandsNamespace = trim($commandsNamespace, '\\');
@@ -55,7 +57,7 @@ final readonly class ManifestBuilder
      */
     public function key(): string
     {
-        return hash('xxh128', serialize([$this->modulesPath, $this->routes, $this->commandsNamespace]));
+        return hash('xxh128', serialize([$this->modulesPath, $this->routes, $this->commandsNamespace, $this->except]));
     }
 
     public function modulesPath(): string
@@ -159,7 +161,8 @@ final readonly class ManifestBuilder
 
     /**
      * Route files by route group, then by the prefix of their directory: files of a directory
-     * come before its subdirectories, everything in alphabetical order.
+     * come before its subdirectories, everything in alphabetical order. A group that excepts
+     * the module is left out.
      *
      * @return array<string, array<string, list<string>>>
      */
@@ -169,6 +172,10 @@ final readonly class ManifestBuilder
 
         foreach ($this->routes as $group => $directory) {
             $directory = trim(str_replace('\\', '/', $directory), '/');
+
+            if (in_array(basename($path), $this->except[$group] ?? [], true)) {
+                continue;
+            }
 
             if (is_dir($path.'/'.$directory)) {
                 $routes[$group] = $this->routeFiles($path, $directory, '');

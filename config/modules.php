@@ -40,6 +40,8 @@ return [
     | Every PHP file found in a module's "path" directory is loaded inside a
     | route group with the other attributes. Nested directories are added to
     | the prefix: "routes/api/v1/posts.php" is loaded with the "api/v1" prefix.
+    | "except" lists the modules that load the files of the directory
+    | themselves: 'except' => ['billing'].
     |
     */
 

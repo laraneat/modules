@@ -6,6 +6,7 @@ namespace Laraneat\Modules;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
@@ -56,6 +57,8 @@ final class ModulesServiceProvider extends ServiceProvider
             (new RouteRegistrar($this->app->make('router'), Config::array('modules.routes', []), $manifest, $this->isCached()))->register();
         }
 
+        $this->app->booted(self::finishRoutes(...));
+
         if ($this->app->runningInConsole()) {
             $this->bootConsole($manifest);
         }
@@ -97,6 +100,28 @@ final class ModulesServiceProvider extends ServiceProvider
     }
 
     /**
+     * Laravel leaves the cached routes and the name and action lookups to the route service provider
+     * of the application ("withRouting()"). An application with all of its routes in the modules may
+     * not have one: its module routes would not be found by name, or not be served at all when cached.
+     */
+    private static function finishRoutes(Application $app): void
+    {
+        if ($app->getProviders(RouteServiceProvider::class) !== []) {
+            return;
+        }
+
+        if ($app->routesAreCached()) {
+            require $app->getCachedRoutesPath();
+
+            return;
+        }
+
+        $routes = $app->make('router')->getRoutes();
+        $routes->refreshNameLookups();
+        $routes->refreshActionLookups();
+    }
+
+    /**
      * @return Manifest
      */
     private function manifest(): array
@@ -112,6 +137,7 @@ final class ModulesServiceProvider extends ServiceProvider
     private static function manifestBuilder(Application $app): ManifestBuilder
     {
         $routes = [];
+        $except = [];
         $generators = Config::array('modules.generators', []);
 
         foreach (Config::array('modules.routes', []) as $group => $attributes) {
@@ -119,7 +145,15 @@ final class ModulesServiceProvider extends ServiceProvider
                 throw InvalidConfiguration::because("the [{$group}] route group must have a \"path\".");
             }
 
+            $modules = $attributes['except'] ?? [];
+            $names = is_array($modules) ? array_values(array_filter($modules, is_string(...))) : null;
+
+            if ($names === null || $names !== $modules) {
+                throw InvalidConfiguration::because("the \"except\" of the [{$group}] route group must be a list of module names.");
+            }
+
             $routes[(string) $group] = $attributes['path'];
+            $except[(string) $group] = $names;
         }
 
         foreach ($generators as $command => $namespace) {
@@ -141,6 +175,7 @@ final class ModulesServiceProvider extends ServiceProvider
             self::isAbsolute($path) ? $path : $app->basePath($path),
             $routes,
             $commands,
+            $except,
         );
     }
 

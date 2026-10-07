@@ -16,12 +16,29 @@ use ReflectionClass;
 final class ModuleRepository
 {
     /**
-     * Manifests are immutable, so every application of the process shares them:
-     * the test suite builds the manifest once instead of once per test.
+     * Manifests built from the modules on disk are immutable, so every application of the process
+     * shares them: the test suite builds the manifest once instead of once per test.
      *
      * @var array<string, Manifest>
      */
     private static array $manifests = [];
+
+    /**
+     * Whether the first repository of the process has been created.
+     */
+    private static bool $booted = false;
+
+    /**
+     * Only the first application of a process reads the cache file. A later one is the fresh application
+     * that "config:cache" and "route:cache" boot to cache what it registers, while "optimize" rewrites
+     * the cache file last: it must see the modules as they are on disk, not as the previous deploy cached them.
+     */
+    private readonly bool $trustsCache;
+
+    /**
+     * @var Manifest|null
+     */
+    private ?array $cached = null;
 
     /**
      * @var array<string, Module>|null
@@ -31,7 +48,10 @@ final class ModuleRepository
     public function __construct(
         private readonly ManifestBuilder $builder,
         private readonly ManifestCache $cache,
-    ) {}
+    ) {
+        $this->trustsCache = ! self::$booted;
+        self::$booted = true;
+    }
 
     /**
      * @return array<string, Module>
@@ -94,7 +114,11 @@ final class ModuleRepository
      */
     public function manifest(): array
     {
-        return self::$manifests[$this->key()] ??= $this->cache->exists() ? $this->cache->read() : $this->builder->build();
+        if ($this->isCached()) {
+            return $this->cached ??= $this->cache->read();
+        }
+
+        return self::$manifests[$this->key()] ??= $this->builder->build();
     }
 
     /**
@@ -106,11 +130,13 @@ final class ModuleRepository
     }
 
     /**
+     * Whether the manifest of this application comes from the cache file.
+     *
      * @internal
      */
     public function isCached(): bool
     {
-        return $this->cache->exists();
+        return $this->trustsCache && $this->cache->exists();
     }
 
     /**
@@ -161,12 +187,16 @@ final class ModuleRepository
     public static function flushState(): void
     {
         self::$manifests = [];
+        self::$booted = false;
     }
 
-    private function forget(): void
+    /**
+     * @internal
+     */
+    public function forget(): void
     {
         unset(self::$manifests[$this->key()]);
-        $this->modules = null;
+        $this->cached = $this->modules = null;
     }
 
     private function key(): string

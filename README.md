@@ -25,7 +25,8 @@ stays out of the module code:
 - **Laravel-native.** Modules use the Laravel generators, stubs and conventions (`Models`, `Http\Controllers`, ...)
   unless you map them elsewhere. `migrate`, `route:cache`, `optimize`, Tinker and Octane work as usual.
 - **Fast.** The package scans the modules once and caches the result with `php artisan optimize`. A cached
-  application does no filesystem scans, and HTTP requests never run the console-only parts.
+  application does no filesystem scans, and migrations, commands and factories are registered only in the
+  console.
 - **Safe with Composer.** Modules are installed as symlinked path packages; their vendor is excluded from
   Packagist, so a missing module cannot be replaced by a public package with the same name.
   `module:doctor` checks the whole setup.
@@ -73,6 +74,13 @@ config, and InterNACHI/modular on Laravel 11 or 12.
 - PHP 8.3 or newer
 - Laravel 13.12 or newer
 - Composer 2
+
+| Version | Laravel   | PHP  | Documentation                                                    |
+|---------|-----------|------|------------------------------------------------------------------|
+| 3.x     | 13.12+    | 8.3+ | this file                                                        |
+| 2.x     | 10 to 13  | 8.1+ | [README of 2.x](https://github.com/laraneat/modules/tree/2.x#readme) |
+
+On an older Laravel, `composer require laraneat/modules` installs 2.x, which this file does not describe.
 
 ## Installation
 
@@ -368,8 +376,17 @@ Route groups are defined in `config/modules.php`:
 - Nested directories are appended to the prefix: `routes/api/v1/admin/stats.php` is loaded with the
   `api/v1/admin` prefix.
 - Files of a directory are loaded before its subdirectories, in alphabetical order.
-- Groups apply to all modules. A module with its own layout can load its routes in its service provider.
+- Groups apply to all modules. `except` lists the modules that a group skips:
+  `'api' => ['path' => 'routes/api', 'prefix' => 'api', 'middleware' => ['api'], 'except' => ['billing']]`.
+  Such a module loads the files of the directory in its own service provider, with its own prefix and
+  middleware. Without `except` they would be registered twice: by the module, and by the group with the
+  attributes of the group. A module can also keep its routes outside of the group directories.
+- Modules are loaded in the order of their directory names, one group after another: every `api` route,
+  then every `web` route.
 - Nothing is loaded when the routes are cached: `php artisan route:cache` includes the module routes.
+- The application does not need route files of its own. Without a route service provider in the
+  application (`withRouting()` in `bootstrap/app.php`, or a class that extends the `RouteServiceProvider` of
+  Laravel), the package loads the cached routes and refreshes the route name lookups itself.
 - Route files are loaded while the package boots, like the routes of other packages: before the providers
   of the application boot. `Route::pattern()` and route macros from `AppServiceProvider::boot()` do not reach
   them. Define those in the `register()` method of a provider, or use `->where()` in the route files.
@@ -463,8 +480,25 @@ the changed module, so that Laravel package discovery picks it up.
 
 Module providers are loaded by package discovery, in the order of the package names. The module config,
 views and translations are registered while the Laraneat provider registers, which may happen after the
-`register()` of a module provider. In `register()`, do not read config or use the `Modules` facade directly:
-do it in `boot()` or inside the closures of your bindings.
+`register()` of a module provider: it does for every vendor that sorts before `laraneat`, the default `app`
+included. In `register()`, do not read config or use the `Modules` facade directly: do it in `boot()` or
+inside the closures of your bindings.
+
+The module config read in `register()` is `null` only while the config is not cached: with
+`php artisan config:cache` the value is there, so the code behaves differently in development and in
+production. A provider that needs its config in `register()` merges the file itself first, as any package
+does; the package merges it again later, and the application config still wins:
+
+```php
+public function register(): void
+{
+    $this->mergeConfigFrom(__DIR__.'/../../config/blog.php', 'blog');
+
+    if (config('blog.search.enabled')) {
+        // ...
+    }
+}
+```
 
 ## Seeders
 
@@ -545,7 +579,8 @@ Composer runs in the application directory: `composer.phar` there if it exists, 
 - the `autoload-dev` entries of the module tests;
 - that the root namespace directory exists and that factories and seeders are autoloaded;
 - that the `extra.laravel.providers` classes exist;
-- route files outside of the configured route groups;
+- route files outside of the configured route groups, and route groups that except a module that does
+  not exist;
 - unknown keys in `config/modules.php`, an outdated manifest cache, and a modules path that
   `octane:start --watch` cannot watch.
 
@@ -564,7 +599,7 @@ return [
     'namespace' => 'Modules',
     'vendor' => 'app',
 
-    // Route groups, see "Routes".
+    // Route groups, see "Routes". 'except' => ['billing'] leaves a module out of a group.
     'routes' => [
         'api' => ['path' => 'routes/api', 'prefix' => 'api', 'middleware' => ['api']],
         'web' => ['path' => 'routes/web', 'middleware' => ['web']],
@@ -584,7 +619,8 @@ provider loads everything from the manifest and does not look for module files b
   the config and route caches. A cached application loads it with one `require`. Set `MODULES_CACHE` to
   store it elsewhere, like `APP_CONFIG_CACHE`. It must be a real environment variable: `.env` is not read
   when the config is cached.
-- Without the cache file, the manifest is built once per process, so it is never stale. The cache is written
+- Without the cache file, the manifest is built once per process, so it is never stale. The scan lists the
+  module directories and reads the seeder and command files, for HTTP requests too. The cache is written
   only by `optimize` and `module:cache`: a deploy that skips them scans the modules in every process.
 - The cached manifest lists the files it loads. After `php artisan optimize` on a development machine, new
   modules, new `lang`, `resources/views` and `database/migrations` directories, the first JSON translation file
@@ -600,6 +636,21 @@ Cache the application when you deploy:
 ```bash
 php artisan optimize
 ```
+
+A deploy may keep `bootstrap/cache` from the previous release: one `optimize` caches the config and the
+routes from the modules on disk, and rewrites the module cache last. Run it before `migrate` and the other
+commands of the deploy, which read the module cache of the previous release until then.
+
+What this does not cover:
+
+- `optimize` called outside of the console (`Artisan::call('optimize')` in an HTTP request or an Octane
+  worker) does not rewrite the module cache: the package registers its commands only in the console. Run
+  `module:cache` from the command line after it.
+- A process that outlives a release (a queue or Octane worker) scans the modules once. Restart it before
+  it calls `config:cache` or `route:cache` again.
+- With `opcache.enable_cli=1`, a changed `config/modules.php` reaches neither the route cache nor the
+  module cache while the old config cache is in place, and Laravel itself builds the route cache from the
+  old config. Remove it first, in a process of its own: `php artisan config:clear && php artisan optimize`.
 
 ## Octane
 

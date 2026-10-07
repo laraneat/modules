@@ -243,6 +243,15 @@ it('uses the route directories of the config', function () {
         ->toBe(['api' => ['v1' => ['src/UI/API/routes/v1/posts.php']]]);
 });
 
+it('leaves a module out of the route groups that except it', function () {
+    $builder = new ManifestBuilder(FIXTURE_MODULES, ['api' => 'routes/api', 'web' => 'routes/web'], 'Console\\Commands', ['api' => ['blog'], 'web' => ['shop-order', 'wiki']]);
+    $manifest = $builder->build();
+
+    expect(array_keys($manifest['blog']['routes']))->toBe(['web'])
+        ->and($manifest['shop-order']['routes'])->toBe([])
+        ->and($builder->key())->not->toBe(manifestBuilder(FIXTURE_MODULES)->key());
+});
+
 it('collects seeders of database/seeders and its direct subdirectories only', function () {
     $modules = $this->files([
         'demo/composer.json' => moduleComposerJson('app/demo'),

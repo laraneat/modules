@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Request;
 use Illuminate\Routing\Route as RouteObject;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
+use Laraneat\Modules\Exceptions\InvalidConfiguration;
 use Laraneat\Modules\ModuleRepository;
 use Laraneat\Modules\Registrars\RouteRegistrar;
 
@@ -59,6 +62,33 @@ it('uses the directory as the prefix of a group without a prefix', function () {
     expect(array_keys(moduleRoutes()))->toBe(['posts', 'v1/feed', 'v1/admin/stats']);
 });
 
+it('leaves the route files of an excepted module to the module', function () {
+    $this->files(['config/modules.php' => <<<'PHP'
+        <?php return ['routes' => [
+            'api' => ['path' => 'routes/api', 'prefix' => 'api', 'middleware' => ['api'], 'except' => ['blog']],
+            'web' => ['path' => 'routes/web', 'middleware' => ['web'], 'except' => ['shop-order']],
+        ]];
+        PHP]);
+    $this->providersBeforeModules = [ModuleLoadingItsRoutes::class];
+    $this->reboot();
+
+    expect(moduleRoutes())->toBe([
+        'internal/v2/posts' => ['auth:sanctum'],
+        'blog' => ['web'],
+    ])
+        ->and(Route::getRoutes()->match(Request::create('/blog'))->getAction())->not->toHaveKey('except');
+});
+
+it('refuses a route group that excepts something else than module names', function (mixed $except) {
+    $this->files(['config/modules.php' => '<?php return ["routes" => ["api" => ["path" => "routes/api", "except" => '.var_export($except, true).']]];']);
+
+    expect(fn () => $this->reboot())->toThrow(InvalidConfiguration::class, 'Invalid config/modules.php: the "except" of the [api] route group must be a list of module names.');
+})->with([
+    'a string' => ['blog'],
+    'not a list' => [['blog' => true]],
+    'not strings' => [['blog', 1]],
+]);
+
 it('does not load the route files when the routes are cached', function () {
     // Laravel loads the cached routes after the providers boot, Testbench does not load them at all.
     $this->files(['bootstrap/cache/routes-v7.php' => '<?php']);
@@ -92,3 +122,11 @@ it('checks the route files only of a cached manifest', function (bool $cached) {
             ->and(array_map(static fn (RouteObject $route): string => $route->uri(), $router->getRoutes()->getRoutes()))->toContain('api/posts', 'blog')
         : expect($register)->toThrow(ErrorException::class, 'Failed to open stream');
 })->with(['cached' => true, 'built' => false]);
+
+final class ModuleLoadingItsRoutes extends ServiceProvider
+{
+    public function boot(): void
+    {
+        Route::prefix('internal/v2')->middleware('auth:sanctum')->group(base_path('modules/blog/routes/api/posts.php'));
+    }
+}

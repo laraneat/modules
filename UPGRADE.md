@@ -13,13 +13,24 @@ every step, and run the checks at the end.
 - The application runs Laravel 13.12 or newer and PHP 8.3 or newer, with `laraneat/modules` 2.1 or newer: the
   first 2.x release that supports Laravel 13. The steps compare 3.0 with it.
 - The test suite passes.
-- Save the routes of the application to compare them later:
+- Every directory of `modules/` with a `composer.json` is a valid module: the file is valid JSON with a valid
+  package `name`, its first `autoload.psr-4` entry maps the root namespace of the module
+  (`"Modules\\Blog\\": "src/"`), and no two modules share a package name or a namespace. 2.x skipped a module
+  without a name; in 3.0 an invalid module is an `InvalidModule` exception while the application boots, for
+  HTTP requests too. The message names the module and the reason.
+- Save the routes of the application to compare them later, sorted by URI and in the order they are
+  registered:
 
   ```bash
-  php artisan route:list --json \
-    | php -r 'echo json_encode(json_decode(stream_get_contents(STDIN)), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), PHP_EOL;' \
-    > /tmp/routes-before.json
+  for sort in uri definition; do
+    php artisan route:list --json --sort=$sort \
+      | php -r 'echo json_encode(json_decode(stream_get_contents(STDIN)), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), PHP_EOL;' \
+      > /tmp/routes-before-$sort.json
+  done
   ```
+
+  The first file shows the routes that appear, disappear or change. Only the second one shows a change of
+  the order, which decides the route that answers when two of them match the same URL.
 
 ### 1. Update the package
 
@@ -77,8 +88,13 @@ layout:
     'make:data' => 'DTO',
     'make:mail' => 'Mails',
     'make:middleware' => 'Middleware',
+    'make:test' => 'UI\API',
 ],
 ```
+
+`make:test` creates tests in `tests/Feature` and `tests/Unit` unless it is mapped: the line above keeps the
+`tests/UI/API` directory of 2.x. Create the tests of `tests/UI/CLI` and `tests/UI/WEB` with a qualified name:
+`make:test "Modules\Blog\Tests\UI\CLI\PublishPostsTest" --module=blog`.
 
 Laravel puts models in `Models` only when the module has a `src/Models` directory, and in the root namespace
 otherwise. Add `'make:model' => 'Models'` to always use `Models`, as 2.x did.
@@ -108,9 +124,14 @@ The package now loads the resources of every module. For each module in `modules
    and remove it from `extra.laravel.providers`. Keep anything it does besides loading routes (route
    patterns, model bindings, rate limiters) in another provider of the module: keep the module service
    provider for it, or create one and add it to `extra.laravel.providers`. Define route patterns and macros
-   in its `register()` method (see step 4).
+   in its `register()` method (see step 4). Keep the route service provider of a module whose routes do
+   not fit the route groups, and except the module from them (see step 4).
 4. Remove the calls that load the module directories themselves: `mergeConfigFrom()`, `loadMigrationsFrom()`,
-   `loadViewsFrom()` and `loadTranslationsFrom()` with paths of the module.
+   `loadViewsFrom()` and `loadTranslationsFrom()` with paths of the module. One exception: keep
+   `mergeConfigFrom()` in a provider that reads the module config in its `register()` method (see below).
+
+This step is about the providers of the modules. Keep the routing of the application itself (`withRouting()`
+in `bootstrap/app.php`, or `App\Providers\RouteServiceProvider`) as it is.
 
 The publish tags of the 2.x module providers (`<module>-config`, `-migrations`, `-translations`, `-views`)
 are gone with them: update the scripts that call `vendor:publish` with these tags.
@@ -121,6 +142,13 @@ What 3.0 loads, and how it differs from the 2.x providers:
   `config/<module>.php` was merged, and only when `loadConfigurations()` was called. Check that the other
   files of `config/` are meant to be config. The application config still wins; module config files are
   not publishable anymore.
+- **Config in `register()`**: the package merges the module config while its own provider registers. The
+  providers of modules whose vendor sorts before `laraneat` (the default `app` does) register earlier, so
+  `config('blog.enabled')` in their `register()` is `null`. It is `null` only without the config cache: the
+  code works in production and fails in development and in the tests. In 2.x the provider merged its config
+  itself. Find the reads with `grep -rn "config(" modules/*/src/Providers`, and move them to `boot()` or
+  into the closures of the bindings, or keep `$this->mergeConfigFrom()` for that file at the top of
+  `register()`.
 - **Views and translations**: the namespace is the module directory name (`blog::`). In 2.x it was the kebab
   case name of the module; rename the directory or the references if they differ. Views published into
   `resources/views/modules/<module>` or `resources/views/vendor/<module>` do not override the module views
@@ -147,10 +175,21 @@ Module routes are loaded by the route groups of `config/modules.php`. For the de
 ],
 ```
 
-Use the prefix, middleware and other attributes of the deleted route service providers. A module whose routes
-do not fit the groups loads them in its own service provider with `Route::group()`.
+Use the prefix, middleware and other attributes of the deleted route service providers.
 
-Three differences from `CanLoadRoutesFromDirectory`:
+A group loads the `path` directory of **every** module. A module whose routes do not fit the groups (another
+prefix, its own middleware, no `web` middleware) keeps its route service provider and loads them with
+`Route::group()`; replace `loadRoutesFromDirectory()` there, the trait is removed. Then leave the module out
+of the group. Otherwise its files are registered a second time, with the prefix and the middleware of the
+group and without the middleware of the module, an `auth` middleware for example:
+
+```php
+'api' => ['path' => 'src/UI/API/routes', 'prefix' => 'api', 'middleware' => ['api'], 'except' => ['billing', 'import']],
+```
+
+`except` takes module directory names. `module:doctor` reports a name in `except` that is not a module.
+
+Differences from `CanLoadRoutesFromDirectory`:
 
 - Nested directories are appended to the prefix. In 2.x, `routes/v1/admin/stats.php` got the `api/admin`
   prefix; now it gets `api/v1/admin`. Routes one directory deep keep their URIs.
@@ -160,9 +199,19 @@ Three differences from `CanLoadRoutesFromDirectory`:
   service provider booted, so `Route::pattern()` calls and route macros in its `boot()` applied to its routes.
   When you move them to another provider, define them in its `register()` method, or use `->where()` in the
   route files: the `boot()` of another provider may run after the module routes are loaded.
+- The modules are loaded in the order of their directory names. In 2.x the order was that of the module
+  route service providers: package discovery sorts them by package name (`app/blog`). The two differ when
+  the modules have several vendors, or a package name that is not the directory name.
+- The routes of the modules are registered together, at the place of `laraneat/modules` among the
+  discovered packages. A package whose name sorts between two modules registered its routes between
+  theirs; now they are before or after the routes of all modules. The routes of a module in `except` are
+  registered by its own provider, at the place of the module package: for the default `app` vendor, before
+  the routes of the groups.
+- `$this` in a route file is not the route service provider of the module anymore: it is the
+  `Illuminate\Routing\RouteFileRegistrar` of Laravel, as in `routes/web.php`. Use the `Route` facade.
 
 When two routes can match the same URL (`posts/{post}` and `posts/export`), make sure the specific one is
-still registered first.
+still registered first: compare the `definition` files in [Check the upgrade](#check-the-upgrade).
 
 ### 5. Replace the module seeders trait
 
@@ -479,6 +528,7 @@ confirmation, like `module:migrate` did: keep `--force` in deployment scripts.
 
 Update scripts, CI jobs and deployment that call the old commands. `module:delete` now deletes one module
 at a time, takes the directory name (`blog`, not `app/blog`), and needs `--force` in non-interactive mode.
+`module:make` has no `--force` option anymore and never overwrites a module: delete the module first.
 
 ### 11. Replace the module templates
 
@@ -499,9 +549,15 @@ module name with filters, for example `{{ name|studly }}`.
 - Models can drop their `newFactory()` method when the factory is in `database/factories` with the same
   name: the package resolves it in the console. Keep `newFactory()` (or add `#[UseFactory]`) for models
   that create factories while serving HTTP requests.
-- Remove the deployment steps that cleared `bootstrap/cache` to refresh the module cache. Run
-  `php artisan optimize` when you deploy; it caches the modules together with the config and routes.
+- Run `php artisan optimize` when you deploy; it caches the modules together with the config and routes.
   2.x wrote the cache by itself in production, 3.0 does not: without `optimize`, every process scans the modules.
+- The deployment steps that cleared `bootstrap/cache` to refresh the module cache are not needed: one
+  `optimize` is enough. Run it before `migrate`, and see "Performance and caching" in the README for
+  `opcache.enable_cli=1`.
+- Stop the processes of the old release before the first `optimize` of 3.0 when they share
+  `bootstrap/cache`: `packages.php` and `services.php` then list the provider of 3.0, which the old code
+  does not have.
+- Remove the code of the application that added the module namespaces to `tinker.alias`: the package does it.
 - `octane.watch` does not need the modules path anymore; it is added automatically.
 
 ### Check the upgrade
@@ -509,14 +565,20 @@ module name with filters, for example `{{ name|studly }}`.
 ```bash
 php artisan optimize:clear
 php artisan module:doctor
-php artisan route:list --json \
-  | php -r 'echo json_encode(json_decode(stream_get_contents(STDIN)), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), PHP_EOL;' \
-  > /tmp/routes-after.json
-diff /tmp/routes-before.json /tmp/routes-after.json
+for sort in uri definition; do
+  php artisan route:list --json --sort=$sort \
+    | php -r 'echo json_encode(json_decode(stream_get_contents(STDIN)), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), PHP_EOL;' \
+    > /tmp/routes-after-$sort.json
+  diff /tmp/routes-before-$sort.json /tmp/routes-after-$sort.json
+done
 php artisan test
 php artisan optimize && php artisan optimize:clear
 ```
 
 - `module:doctor` reports no errors.
-- The routes are the same, except for the prefixes of nested route directories (step 4).
+- The `uri` files are the same, except for the prefixes of nested route directories (step 4). A route that
+  appears twice, or with the middleware of a route group in place of its own, belongs to a module that
+  loads its routes itself: add the module to `except` (step 4).
+- The `definition` files differ only in the order: the groups are loaded one after another (every `api`
+  route, then every `web` route). Check every pair of routes that can match the same URL and changed places.
 - The tests pass.

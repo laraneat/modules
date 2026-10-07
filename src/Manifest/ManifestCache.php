@@ -56,6 +56,12 @@ final readonly class ManifestCache
 
         $this->files->ensureDirectoryExists(dirname($this->path));
         $this->files->replace($this->path, '<?php return '.var_export($manifest, true).';'.PHP_EOL);
+
+        // With "opcache.enable_cli", a process that has read the file would read its compiled copy again.
+        // OPcache refuses with a warning under "opcache.restrict_api".
+        if (function_exists('opcache_invalidate')) {
+            @opcache_invalidate($this->path, true);
+        }
     }
 
     public function delete(): void

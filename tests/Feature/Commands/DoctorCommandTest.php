@@ -168,6 +168,26 @@ it('accepts equivalent autoload paths and skips directories a module does not ha
         ->toContain('Found 1 error(s) and 0 warning(s).');
 });
 
+it('accepts the route files of a route group that excepts the module', function () {
+    $this->installModules();
+    $this->files([
+        'config/modules.php' => '<?php return ["routes" => ["api" => ["path" => "routes/api/", "except" => ["blog"]], "web" => ["path" => "routes/web", "except" => ["wiki", "shop-order", "forum"]]]];',
+        'modules/blog/routes/apiary/hive.php' => '<?php',
+    ]);
+    $this->reboot();
+
+    [$status, $output] = doctor();
+
+    expect($status)->toBe(0)
+        ->and($output)->toContain(
+            '! The [web] route group excepts modules that do not exist: wiki, forum.',
+            '! The route file [routes/apiary/hive.php] is not in a route group of config/modules.php.',
+            'Found 2 warning(s).',
+        )
+        ->not->toContain('routes/api/')
+        ->not->toContain('routes/web/');
+});
+
 it('reports problems of the configuration', function () {
     $this->installModules();
     $this->files([

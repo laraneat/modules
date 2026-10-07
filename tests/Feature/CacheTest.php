@@ -36,6 +36,28 @@ it('boots from the cache without scanning the modules', function () {
         ->and(Route::has('blog.posts'))->toBeTrue();
 });
 
+it('does not let a later application of the process read the cache file', function () {
+    $this->artisan('module:cache');
+    $this->files([
+        'modules/wiki/composer.json' => '{"name": "app/wiki", "autoload": {"psr-4": {"Modules\\\\Wiki\\\\": "src/"}}}',
+        'modules/wiki/config/wiki.php' => '<?php return ["title" => "Wiki"];',
+    ]);
+    $this->reboot();
+    $first = $this->app;
+
+    expect(app(ModuleRepository::class)->isCached())->toBeTrue()
+        ->and(array_keys(Modules::all()))->toBe(['blog', 'shop-order']);
+
+    // Like the application that "config:cache" and "route:cache" boot in the process of "optimize".
+    $this->reloadApplication();
+
+    expect($this->app)->not->toBe($first)
+        ->and(app(ModuleRepository::class)->isCached())->toBeFalse()
+        ->and(array_keys(Modules::all()))->toBe(['blog', 'shop-order', 'wiki'])
+        ->and(config('wiki.title'))->toBe('Wiki')
+        ->and(array_keys(require $this->path('bootstrap/cache/modules.php')))->toBe(['blog', 'shop-order']);
+});
+
 it('skips the files of a module deleted since the cache was written', function () {
     $this->artisan('module:cache');
     TemporaryDirectory::delete($this->path('modules/blog'));

@@ -6,6 +6,7 @@ namespace Laraneat\Modules\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Support\Str;
 use Laraneat\Modules\Exceptions\ModulesException;
 use Laraneat\Modules\Manifest\ManifestBuilder;
 use Laraneat\Modules\Module;
@@ -77,6 +78,12 @@ final class DoctorCommand extends Command
 
         if (($unknown = array_diff(array_keys((array) $config->get('modules', [])), self::CONFIG_KEYS)) !== []) {
             $problems[] = [false, 'Unknown keys in config/modules.php: '.implode(', ', $unknown).'.'];
+        }
+
+        foreach ($this->routeGroups() as $group => $attributes) {
+            if (($unknown = array_diff($attributes['except'], array_keys($modules->all()))) !== []) {
+                $problems[] = [false, "The [{$group}] route group excepts modules that do not exist: ".implode(', ', $unknown).'.'];
+            }
         }
 
         if ($modules->isCacheStale()) {
@@ -160,7 +167,8 @@ final class DoctorCommand extends Command
     }
 
     /**
-     * PHP files in "routes" directories of the module that no route group loads.
+     * PHP files in "routes" directories of the module that no route group loads. The directory
+     * of a route group that excepts the module is skipped: the module loads these files itself.
      *
      * @param  ModuleManifest  $manifest
      * @return list<string>
@@ -172,6 +180,14 @@ final class DoctorCommand extends Command
             $manifest['routes'],
         )));
 
+        $excepted = [];
+
+        foreach ($this->routeGroups() as $attributes) {
+            if (in_array($module->name, $attributes['except'], true)) {
+                $excepted[] = $attributes['path'].'/';
+            }
+        }
+
         $files = [];
         $finder = Finder::create()->files()->in($module->path)->name('*.php')->path('{(^|/)routes/}')
             ->exclude(['vendor', 'node_modules', 'tests'])->ignoreUnreadableDirs();
@@ -179,7 +195,7 @@ final class DoctorCommand extends Command
         foreach ($finder as $file) {
             $path = str_replace('\\', '/', $file->getRelativePathname());
 
-            if (! in_array($path, $loaded, true)) {
+            if (! in_array($path, $loaded, true) && ! Str::startsWith($path, $excepted)) {
                 $files[] = $path;
             }
         }
@@ -209,6 +225,27 @@ final class DoctorCommand extends Command
         foreach ($problems as [$isError, $message]) {
             $this->line('    '.($isError ? '<fg=red>✗</>' : '<fg=yellow>!</>').' '.$message);
         }
+    }
+
+    /**
+     * The directory of every route group and the modules it excepts.
+     *
+     * @return array<array-key, array{path: string, except: list<string>}>
+     */
+    private function routeGroups(): array
+    {
+        $groups = [];
+
+        foreach ((array) $this->config()->get('modules.routes', []) as $group => $attributes) {
+            if (is_array($attributes) && is_string($attributes['path'] ?? null)) {
+                $groups[$group] = [
+                    'path' => trim(str_replace('\\', '/', $attributes['path']), '/'),
+                    'except' => array_values(array_filter((array) ($attributes['except'] ?? []), is_string(...))),
+                ];
+            }
+        }
+
+        return $groups;
     }
 
     private function config(): Repository

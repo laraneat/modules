@@ -2,6 +2,37 @@
 
 All notable changes to this project are documented in this file.
 
+## 3.1.0 - Unreleased
+
+### Added
+
+- The `except` key of a route group lists the modules that the group does not load: a module with its own
+  prefix or middleware loads the files of the directory in its service provider and is no longer registered a
+  second time by the group. `module:doctor` reports excepted modules that do not exist, and does not report
+  the route files of an excepted module.
+
+### Fixed
+
+- `php artisan optimize` over an existing `bootstrap/cache/modules.php` cached the config and the routes
+  from the manifest of the previous deploy: a new module, route file or module config file was missing until
+  the second `optimize`. Only the first application of a process reads the manifest cache now: the
+  application that `config:cache` and `route:cache` boot scans the modules.
+- `module:cache` as a part of `optimize` used the route groups of the config cache that the process started
+  from; it now reads them from a fresh application, as `route:cache` does.
+- A process that had read the manifest cache read its compiled copy again after rewriting the file when
+  `opcache.enable_cli` is on: the file is invalidated in OPcache when it is written.
+- In an application without a route service provider (no `withRouting()`), module routes were not found by
+  name (`route()`, `Route::has()`), and returned 404 when the routes were cached. The package now loads the
+  cached routes and refreshes the name and action lookups there.
+
+### Changed
+
+- Only the first application of a process reads `bootstrap/cache/modules.php`; a later one builds the
+  manifest from the modules on disk.
+- UPGRADE.md: the route comparison also covers the order of the routes; the order of the modules, module
+  config in `register()`, modules that load their routes themselves, invalid module `composer.json` files,
+  `module:make --force` and the deploy steps are described.
+
 ## 3.0.1 - 2026-09-30
 
 ### Fixed
@@ -77,3 +108,52 @@ Version 3 is a rewrite. See [UPGRADE.md](UPGRADE.md) for the upgrade from 2.x.
 - `InteractsWithTestUser` and `WithJsonResponseHelpers`: UPGRADE.md has versions to copy into the application.
 - The `components`, `composer.author`, `user_model`, `create_permission` and `cache` config keys.
 - The `composer/composer` dependency.
+
+## 2.1.0 - 2026-09-23
+
+The last 2.x feature release, and the starting point of the upgrade to 3.0.
+
+### Added
+
+- Laravel 13 and PHP 8.5 support.
+- Adding a module to `composer.json` excludes the module vendor from Packagist, so a missing local module
+  cannot be replaced by a public package with the same name.
+
+### Fixed
+
+- `module:delete` runs `composer remove` before deleting the module files, refuses to delete a symlinked
+  module and fails when a module could not be deleted. `ModulesRepository::delete()` can throw
+  `CannotDeleteModule`.
+- Package names are validated with the Composer rules and passed to Composer after `--`; module package
+  names that are not valid Composer names are rejected, and the configured author is JSON-escaped.
+- Generator names are validated segment by segment, so `../` cannot write files outside of the module. A
+  name with another invalid segment (`v1.1/foo`) is rejected too.
+- `runSeedersFromModules()` includes every requested subdirectory: an array union dropped the first one, so
+  its seeders now run.
+- Seeders run in the order of their integer `_N` suffix (`_2` before `_10`), seeders without a suffix last,
+  ties by class name.
+- Route, seeder and provider loaders ignore files that are not `.php` files.
+- `module:sync` fails when syncing fails.
+
+## 2.0.0 - 2025-12-09
+
+A rewrite of 1.x for PHP 8.1 and Laravel 10 to 12.
+
+### Added
+
+- `ModulesRepository` finds modules by their `composer.json` and caches the manifest in production.
+- `module:sync` and `module:stub:publish`; the `CanLoadRoutesFromDirectory`, `CanRunModuleSeeders` and
+  `InteractsWithTestUser` traits; a `ModuleServiceProvider` base class for module providers.
+
+### Changed
+
+- The package registers four providers of `Laraneat\Modules\Providers`: `ComposerServiceProvider`,
+  `ConsoleServiceProvider`, `ModulesRepositoryServiceProvider` and `ModulesServiceProvider`.
+
+### Removed
+
+- Enabling and disabling modules (`EnableCommand`, `DisableCommand`, `FileActivator`).
+- `InstallCommand`, `SetupCommand`, `UpdateCommand`, `UseCommand`, `UnUseCommand`, `SeedCommand`, `DumpCommand`
+  and `ComponentsMakeCommand`.
+- The global helper functions, the `FileRepository`, `Json` and `Migrator` classes and the traits of
+  `src/Traits`.
